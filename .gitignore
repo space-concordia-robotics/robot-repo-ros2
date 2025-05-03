@@ -1,0 +1,38 @@
+# ROS 2 build, install, and log directories
+/build/
+/install/
+/log/
+
+# ROS 2 colcon metadata
+.colcon/
+
+# CMake build files
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+
+# Editor and IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*.user
+*.db
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Python cache files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Temporary files
+*.tmp
+*.bak
+*.old
+*.orig
+*.rej
