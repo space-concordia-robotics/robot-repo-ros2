@@ -1,2 +1,2 @@
-# ros2_ws
- personal ros repo
+# ros-rover-rep
+ first test of the new rover repo
