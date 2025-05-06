@@ -4,7 +4,8 @@ WheelsControllerNode::WheelsControllerNode() : rclcpp::Node("wheels_controller_n
     this->declare_parameter("can_path", "can0");
     this->declare_parameter("multiplier", 500);
 
-    if (CANController::configureCAN("can0") != SUCCESS) {
+   
+   if (CANController::configureCAN("can0") != SUCCESS) {
         
         RCLCPP_ERROR(this->get_logger(), "Failed to configure CAN interface");
         rclcpp::shutdown();
