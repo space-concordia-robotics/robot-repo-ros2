@@ -146,27 +146,6 @@ void ArmControllerNode::JoyMessageCallback(const sensor_msgs::msg::Joy::SharedPt
         }
     }
 
-
-    // LEFT HORIZ : axes[0]
-    // LEFT VERT : axes[1]
-    // if(joy_msg->buttons[4] == 1){
-    //     joy_msg->axes[]
-    // }
-    // RIGHT HORIZ : axes[3]
-    // RIGHT VERT : axes[4]
-    
-    // L2 : axes [2]
-    // R2 : axes [5]
-
-
-    // joy_msg->axes[2] = (joy_msg->axes[2] - 1.f)/2.f;
-    
-    // joy_msg->axes[5] = (joy_msg->axes[5] - 1.f)/2.f;
-
-    /*
-        Hold R2 or L2 to control the turning the base rotation
-        
-    */
     float rotation;
 
     if (controller_type == 0) {

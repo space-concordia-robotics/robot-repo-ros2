@@ -16,13 +16,28 @@ class JoyMuxController(Node):
         self.last_toggle = 0
 
     def joy_callback(self, msg: Joy):
+        
         if msg.buttons[self.toggle_button] == 1 and self.last_toggle == 0:
             self.current_mode = 1 - self.current_mode
             self.get_logger().info(f"Switched to {'Arm' if self.current_mode else 'Rover'} mode")
         self.last_toggle = msg.buttons[self.toggle_button]
 
-        if msg.buttons[self.deadman_button] != 1:
-            # Explicitly set all values to zero when the deadman button is not pressed
+        if msg.buttons[self.deadman_button] == 1:
+            if self.current_mode == 0:
+                twist = Twist()
+                twist.linear.x = msg.axes[0]
+                twist.angular.z = msg.axes[1]
+                twist.linear.y = msg.axes[7]
+                twist.linear.z = msg.axes[6]
+                self.rover_pub.publish(twist)
+            else:
+                vec = Vector3()
+                vec.x = msg.axes[0]
+                vec.y = msg.axes[1]
+                vec.z = msg.axes[7]
+                self.arm_pub.publish(vec)
+        else:
+         # Explicitly set all values to zero when the deadman button is not pressed
             twist = Twist()
             twist.linear.x = 0.0
             twist.linear.y = 0.0
@@ -39,17 +54,7 @@ class JoyMuxController(Node):
             self.arm_pub.publish(vec)
             return
 
-        if self.current_mode == 0:
-            twist = Twist()
-            twist.linear.x = msg.axes[1]
-            twist.angular.z = msg.axes[3]
-            self.rover_pub.publish(twist)
-        else:
-            vec = Vector3()
-            vec.x = msg.axes[0]
-            vec.y = msg.axes[1]
-            vec.z = msg.axes[4]
-            self.arm_pub.publish(vec)
+      
 
 def main(args=None):
     rclpy.init(args=args)
