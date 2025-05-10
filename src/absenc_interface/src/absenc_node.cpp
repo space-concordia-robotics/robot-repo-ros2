@@ -42,10 +42,6 @@
     );
 
 
-    if (this->get_parameter("local_mode").as_bool()) {
-        RCLCPP_INFO(this->get_logger(), "Local mode is enabled, skipping serial connection.");
-        return;
-    }
 
     // Open serial connection
     ABSENC_Error_t err = AbsencDriver::OpenPort(this->get_parameter("absenc_path").as_string().c_str(), s_fd);
@@ -64,49 +60,48 @@
   }
 
 void Absenc::absEncPollingCallback() {
-  
-  
+    ABSENC_Meas_t absenc_meas_1, absenc_meas_2, absenc_meas_3, absenc_meas_4;
 
-  ABSENC_Meas_t absenc_meas_1, absenc_meas_2, absenc_meas_3;
+    ABSENC_Error_t err1 = AbsencDriver::PollSlave(1, &absenc_meas_1, s_fd);
+    ABSENC_Error_t err2 = AbsencDriver::PollSlave(2, &absenc_meas_2, s_fd);
+    ABSENC_Error_t err3 = AbsencDriver::PollSlave(3, &absenc_meas_3, s_fd);
+    ABSENC_Error_t err4 = AbsencDriver::PollSlave(4, &absenc_meas_4, s_fd);
 
-  ABSENC_Error_t err1 = AbsencDriver::PollSlave(1, &absenc_meas_1, s_fd);
-  ABSENC_Error_t err2 = AbsencDriver::PollSlave(2, &absenc_meas_2, s_fd);
-  ABSENC_Error_t err3 = AbsencDriver::PollSlave(3, &absenc_meas_3, s_fd);
+    if (err1.error != NO_ERROR) {
+        RCLCPP_ERROR(this->get_logger(), "Error on 1: %s cause %d line %d\n", strAbsencErr(err1.error), err1.cause, err1.line);
+    }
+    if (err2.error != NO_ERROR) {
+        RCLCPP_ERROR(this->get_logger(), "Error on 2: %s cause %d line %d\n", strAbsencErr(err2.error), err2.cause, err2.line);
+    }
+    if (err3.error != NO_ERROR) {
+        RCLCPP_ERROR(this->get_logger(), "Error on 3: %s cause %d line %d\n", strAbsencErr(err3.error), err3.cause, err3.line);
+    }
+    if (err4.error != NO_ERROR) {
+        RCLCPP_ERROR(this->get_logger(), "Error on 4: %s cause %d line %d\n", strAbsencErr(err4.error), err4.cause, err4.line);
+    }
 
-  if (err1.error != NO_ERROR) {
-    RCLCPP_ERROR(this->get_logger(), "Error on 1: %s cause %d line %d\n", strAbsencErr(err1.error), err1.cause, err1.line);
-  }
-  if (err2.error != NO_ERROR) {
-    RCLCPP_ERROR(this->get_logger(), "Error on 2: %s cause %d line %d\n", strAbsencErr(err2.error), err2.cause, err2.line);
-  }
-  if (err3.error != NO_ERROR) {
-    RCLCPP_ERROR(this->get_logger(), "Error on 3: %s cause %d line %d\n", strAbsencErr(err3.error), err3.cause, err3.line);
-  }
+    if (absenc_meas_1.status != 0 || absenc_meas_2.status != 0 || absenc_meas_3.status != 0 || absenc_meas_4.status != 0) {
+        RCLCPP_ERROR(this->get_logger(),
+            "One of the absenc status returned an error. Here are the error codes: %d %d %d %d\n",
+            absenc_meas_1.status, absenc_meas_2.status, absenc_meas_3.status, absenc_meas_4.status);
+        return;
+    }
 
-  if (absenc_meas_1.status != 0 || absenc_meas_2.status != 0 || absenc_meas_3.status != 0) {
-    RCLCPP_ERROR(this->get_logger(),
-      "One of the absenc status returned an error. Here are the error codes: %d %d %d \n",
-      absenc_meas_1.status, absenc_meas_2.status, absenc_meas_3.status);
-    return;
-  }
+    float angle_1 = (absenc_meas_1.angval < 0 ? absenc_meas_1.angval + 180.f : absenc_meas_1.angval - 180);
+    float angle_2 = absenc_meas_2.angval;
+    float angle_3 = absenc_meas_3.angval < 0 ? 180 + absenc_meas_3.angval : absenc_meas_3.angval - 180.f;
+    float angle_4 = absenc_meas_4.angval;
 
-  float angle_1 = (absenc_meas_1.angval < 0 ? absenc_meas_1.angval + 180.f : absenc_meas_1.angval - 180);
-  float angle_2 = absenc_meas_2.angval;
-  float angle_3 = absenc_meas_3.angval < 0 ? 180 + absenc_meas_3.angval : absenc_meas_3.angval - 180.f;
-  // Clamp angles to a range of -180 to 180 degrees
-
-  //publish angles  
-  auto joint_state_msg = sensor_msgs::msg::JointState();
+    // Publish angles
+    auto joint_state_msg = sensor_msgs::msg::JointState();
     joint_state_msg.header.stamp = this->now();
-    joint_state_msg.name = {"joint_1", "joint_2", "joint_3"};
-    joint_state_msg.position = {absenc_meas_1.angval, absenc_meas_2.angval, absenc_meas_3.angval};
+    joint_state_msg.name = {"joint_1", "joint_2", "joint_3", "joint_4"};
+    joint_state_msg.position = {absenc_meas_1.angval, absenc_meas_2.angval, absenc_meas_3.angval, absenc_meas_4.angval};
 
+    angles_publisher_->publish(joint_state_msg);
 
-  angles_publisher_->publish(joint_state_msg);
-  
-  // Print angles to the terminal
-  
-  RCLCPP_INFO(this->get_logger(), "Angles: [%f, %f, %f]", angle_1, angle_2, angle_3);
+    // Print angles to the terminal
+    RCLCPP_INFO(this->get_logger(), "Angles: [%f, %f, %f, %f]", angle_1, angle_2, angle_3, angle_4);
 }
 
 
