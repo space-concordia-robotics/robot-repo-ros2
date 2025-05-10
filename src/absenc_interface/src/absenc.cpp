@@ -179,7 +179,7 @@ ABSENC_Error_t AbsencDriver::PollSlave(int slvnum, ABSENC_Meas_t * meas, int s_f
     // Construct the measurement data storage object
     meas->slvnum = slvnum; // Slave number
     meas->status = rawdata[1]; // Status value (usually zero)
-    meas->angval = ((double)(int16_t)rawdata[1]) / 65536.0 * 360.0; // Angular value, maps the uint16_t space to 360 degrees
+    meas->angval = ((double)(int16_t)rawdata[0]) / 65536.0 * 360.0; // Angular value, maps the uint16_t space to 360 degrees
     meas->angspd = 0.0; // Deprecated: this value is no longer provided.
     return no_error; 
 }
