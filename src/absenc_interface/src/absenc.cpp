@@ -125,7 +125,7 @@ ABSENC_Error_t AbsencDriver::PollSlave(int slvnum, ABSENC_Meas_t * meas, int s_f
 
     // Response packets have a fixed format: "> X, AAAA, BBBB". X is slave number, A is position and B is status (usually zero).
     // Note that we have already received the SOF character. Ignore the \r\n that follows.
-    char rxbuf[21]; 
+    char rxbuf[14]; 
     int nrecv = read(s_fd, rxbuf, sizeof(rxbuf)); 
     if(nrecv < 0) {
         int errno0 = errno; 
