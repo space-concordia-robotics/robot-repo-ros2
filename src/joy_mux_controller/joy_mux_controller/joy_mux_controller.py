@@ -1,14 +1,14 @@
 import rclpy
 from rclpy.node import Node
-from sensor_msgs.msg import Joy
-from geometry_msgs.msg import Twist, Vector3
+from sensor_msgs.msg import Joy, JointState
+from geometry_msgs.msg import Twist
 
 class JoyMuxController(Node):
     def __init__(self):
         super().__init__('joy_mux_controller')
         self.subscription = self.create_subscription(Joy, '/joy', self.joy_callback, 10)
         self.rover_pub = self.create_publisher(Twist, '/cmd_vel', 10)
-        self.arm_pub = self.create_publisher(Vector3, '/arm_xyz_cmd', 10)
+        self.arm_pub = self.create_publisher(JointState, '/arm_xyz_cmd', 10)  # Changed to JointState
 
         self.deadman_button = 4
         self.toggle_button = 12
@@ -31,30 +31,21 @@ class JoyMuxController(Node):
                 twist.linear.z = msg.axes[6]
                 self.rover_pub.publish(twist)
             else:
-                vec = Vector3()
-                vec.x = msg.axes[0]
-                vec.y = msg.axes[1]
-                vec.z = msg.axes[7]
-                self.arm_pub.publish(vec)
-        else:
-         # Explicitly set all values to zero when the deadman button is not pressed
-            twist = Twist()
-            twist.linear.x = 0.0
-            twist.linear.y = 0.0
-            twist.linear.z = 0.0
-            twist.angular.x = 0.0
-            twist.angular.y = 0.0
-            twist.angular.z = 0.0
-            self.rover_pub.publish(twist)
-
-            vec = Vector3()
-            vec.x = 0.0
-            vec.y = 0.0
-            vec.z = 0.0
-            self.arm_pub.publish(vec)
-            return
-
-      
+                joint_state = JointState()
+                joint_state.name = [f'joint{i+1}' for i in range(7)]  # Names for 7 joints
+                joint_state.velocity = [
+                    msg.axes[0],  # Joint 1
+                    msg.axes[1],  # Joint 2
+                    msg.axes[2],  # Joint 3
+                    msg.axes[3],  # Joint 4
+                    msg.axes[4],  # Joint 5
+                    msg.axes[5],  # Joint 6
+                    (1 if msg.buttons[0] else 0) - (1 if msg.buttons[1] else 0)  # Joint 7: Positive (button 0) and negative (button 1)
+                ]
+                joint_state.position = []  # Empty position field
+                joint_state.effort = []    # Empty effort field
+                self.arm_pub.publish(joint_state)
+        return
 
 def main(args=None):
     rclpy.init(args=args)
