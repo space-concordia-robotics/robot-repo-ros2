@@ -104,7 +104,6 @@ ABSENC_Error_t AbsencDriver::PollSlave(int slvnum, ABSENC_Meas_t * meas, int s_f
                 __LINE__, 
             }; 
         }
-        for(int i = 0; i < 10000; i++);
         if(nrecv == 0) { // Timed out (encoder died)
             return ABSENC_Error_t{
                 ERR_NO_RESPONSE, 
