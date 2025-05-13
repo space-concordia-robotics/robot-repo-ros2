@@ -85,7 +85,7 @@ ABSENC_Error_t AbsencDriver::PollSlave(int slvnum, ABSENC_Meas_t * meas, int s_f
         return ABSENC_Error_t{
             ERR_SERIAL_FAILURE, 
             errno0, 
-            __LINE__, 
+            12, 
         }; 
     }
     // tcdrain(s_fd); // Flush TX buffer? seems not needed
@@ -95,20 +95,22 @@ ABSENC_Error_t AbsencDriver::PollSlave(int slvnum, ABSENC_Meas_t * meas, int s_f
     char sof = 0; 
     for(int i = 0; i < 50; i++) { // Ensure SOF search always ends
         int nrecv = read(s_fd, &sof, 1); 
+        std::cout << slvnum << "\t" << sof << std::endl;
         if(nrecv < 0) {
             int errno0 = errno; 
             errno = 0; 
             return ABSENC_Error_t{
                 ERR_SERIAL_FAILURE, 
                 errno0, 
-                __LINE__, 
+                69, 
             }; 
         }
+        for(int i = 0; i < 10000; i++);
         if(nrecv == 0) { // Timed out (encoder died)
             return ABSENC_Error_t{
                 ERR_NO_RESPONSE, 
                 0, 
-                __LINE__, 
+                85, 
             }; 
         }
         if(sof == '>') break; // If it is indeed SOF, break out of the loop
@@ -143,6 +145,8 @@ ABSENC_Error_t AbsencDriver::PollSlave(int slvnum, ABSENC_Meas_t * meas, int s_f
             __LINE__, 
         }; 
     }
+
+    std::cout << "Received: " << rxbuf << std::endl;
 
     // Debug code 
     /*
