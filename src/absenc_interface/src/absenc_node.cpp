@@ -84,7 +84,7 @@ void Absenc::absEncPollingCallback() {
         RCLCPP_ERROR(this->get_logger(),
             "One of the absenc status returned an error. Here are the error codes: %d %d %d %d\n",
             absenc_meas_1.status, absenc_meas_2.status, absenc_meas_3.status, absenc_meas_4.status);
-        return;
+        //return;
     }
 
     float angle_1 = (absenc_meas_1.angval < 0 ? absenc_meas_1.angval + 180.f : absenc_meas_1.angval - 180);
