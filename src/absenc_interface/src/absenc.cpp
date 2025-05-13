@@ -95,7 +95,6 @@ ABSENC_Error_t AbsencDriver::PollSlave(int slvnum, ABSENC_Meas_t * meas, int s_f
     char sof = 0; 
     for(int i = 0; i < 50; i++) { // Ensure SOF search always ends
         int nrecv = read(s_fd, &sof, 1); 
-        std::cout << slvnum << "\t" << sof << std::endl;
         if(nrecv < 0) {
             int errno0 = errno; 
             errno = 0; 
@@ -146,7 +145,6 @@ ABSENC_Error_t AbsencDriver::PollSlave(int slvnum, ABSENC_Meas_t * meas, int s_f
         }; 
     }
 
-    std::cout << "Received: " << rxbuf << std::endl;
 
     // Debug code 
     /*
