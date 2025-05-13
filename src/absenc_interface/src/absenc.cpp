@@ -85,7 +85,7 @@ ABSENC_Error_t AbsencDriver::PollSlave(int slvnum, ABSENC_Meas_t * meas, int s_f
         return ABSENC_Error_t{
             ERR_SERIAL_FAILURE, 
             errno0, 
-            12, 
+            __LINE__, 
         }; 
     }
     // tcdrain(s_fd); // Flush TX buffer? seems not needed
@@ -101,7 +101,7 @@ ABSENC_Error_t AbsencDriver::PollSlave(int slvnum, ABSENC_Meas_t * meas, int s_f
             return ABSENC_Error_t{
                 ERR_SERIAL_FAILURE, 
                 errno0, 
-                69, 
+                __LINE__, 
             }; 
         }
         for(int i = 0; i < 10000; i++);
@@ -109,7 +109,7 @@ ABSENC_Error_t AbsencDriver::PollSlave(int slvnum, ABSENC_Meas_t * meas, int s_f
             return ABSENC_Error_t{
                 ERR_NO_RESPONSE, 
                 0, 
-                85, 
+                __LINE__, 
             }; 
         }
         if(sof == '>') break; // If it is indeed SOF, break out of the loop
