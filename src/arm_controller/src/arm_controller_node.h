@@ -2,7 +2,7 @@
 #define ARM_CONTROLLER_NODE_H
 
 #include "rclcpp/rclcpp.hpp"
-#include "geometry_msgs/msg/vector3.hpp"
+#include "sensor_msgs/msg/joint_state.hpp" // Updated to use JointState
 
 #include <cstdint>
 #include <cstdio>
@@ -23,10 +23,10 @@ public:
     ArmControllerNode();
     ~ArmControllerNode();
 
-    void ArmXYZCallback(const geometry_msgs::msg::Vector3::SharedPtr msg);
+    void ArmJointCallback(const sensor_msgs::msg::JointState::SharedPtr msg); // Updated callback signature
 
 private:
-    rclcpp::Subscription<geometry_msgs::msg::Vector3>::SharedPtr arm_xyz_sub;
+    rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr arm_joint_sub; // Updated subscription type
 
     int fd;
     int controller_type = -1;
