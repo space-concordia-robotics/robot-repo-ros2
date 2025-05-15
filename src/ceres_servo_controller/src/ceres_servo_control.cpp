@@ -29,8 +29,8 @@ void PublishJointCommands(const control_msgs::msg::JointJog::SharedPtr msg)
         "base_pivot_shoulder_gearbox_joint", 
         "shoulder_tube_joint", 
         "bicep_tube_gearbox_joint",
-         "bicep_gearbox_forearm_tube_joint", 
-         "forearm_tube_wrist_gearbox_joint",
+        "bicep_gearbox_forearm_tube_joint", 
+        "forearm_tube_wrist_gearbox_joint",
         "wrist_gearbox_wrist_joint", 
         "gripper_claw_joint"
     };
