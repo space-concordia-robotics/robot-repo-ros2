@@ -1,6 +1,6 @@
 #include "rclcpp/rclcpp.hpp"
-#include "geometry_msgs/msg/twist_stamped.hpp"
 #include "control_msgs/msg/joint_jog.hpp"
+#include "sensor_msgs/msg/joy.hpp"
 
 
 class GoalTwistPublisher: public rclcpp::Node
@@ -8,77 +8,50 @@ class GoalTwistPublisher: public rclcpp::Node
 public:
     GoalTwistPublisher(): Node("vel_goal_control_node")
     {
-        twist_pub_ = this->create_publisher<geometry_msgs::msg::TwistStamped>("goal_twist", 10);
-        joint_pub_ = this->create_publisher<control_msgs::msg::JointJog>("joint_states", 10); 
-        twist_sub_ = this->create_subscription<geometry_msgs::msg::TwistStamped>(
-            "/cmd_vel", 10, std::bind(&GoalTwistPublisher::PublishVelocityCommands, this, std::placeholders::_1));
-        joint_sub_ = this->create_subscription<control_msgs::msg::JointJog>("/cmd_vel", 10, std::bind(&GoalTwistPublisher::PublishJointCommands, this, std::placeholders::_1));
+        joy_sub_ = this->create_subscription<sensor_msgs::msg::Joy>("/joy", 10, std::bind(&GoalTwistPublisher::PublishJointCommands, this, std::placeholders::_1));
+        joint_pub_ = this->create_publisher<control_msgs::msg::JointJog>("/joint_states", 10); 
         RCLCPP_INFO(this->get_logger(), "GoalTwistPublisher node started");
     }
   
     
 private:
 
-void PublishVelocityCommands(const geometry_msgs::msg::TwistStamped::SharedPtr msg)
+void PublishJointCommands(const sensor_msgs::msg::Joy::SharedPtr msg)
 {
-    auto twist_msg = geometry_msgs::msg::TwistStamped();
-    twist_msg.header.stamp = this->now();
-    twist_msg.header.frame_id = "base_structure_link";
-    twist_msg.twist.linear.x = msg->twist.linear.x;
-    twist_msg.twist.linear.y = msg->twist.linear.y;
-    twist_msg.twist.linear.z = msg->twist.linear.z;
-    twist_msg.twist.angular.x = msg->twist.angular.x;
-    twist_msg.twist.angular.y = msg->twist.angular.y;
-    twist_msg.twist.angular.z = msg->twist.angular.z;
-    
-    twist_pub_->publish(twist_msg); 
 
-    RCLCPP_INFO(this->get_logger(), "Publishing linear velocity commands to arm:" "[%f, %f, %f]", 
-        twist_msg.twist.linear.x, twist_msg.twist.linear.y, twist_msg.twist.linear.z);    
-    RCLCPP_INFO(this->get_logger(), "Publishing angular velocity commands to arm:" "[%f, %f, %f]",
-        twist_msg.twist.angular.x, twist_msg.twist.angular.y, twist_msg.twist.angular.z);
-
-}
-
-void PublishJointCommands(const control_msgs::msg::JointJog::SharedPtr msg)
-{
-    auto joint_msg = control_msgs::msg::JointJog();
-    joint_msg.header.stamp = this->now();
-    joint_msg.header.frame_id = "base_structure_link";
-    joint_msg.joint_names = {
-        "base_structure_link", 
-        "base_pivot_shoulder_gearbox_joint", 
-        "shoulder_tube_joint", 
+    auto joint_msgs = std::make_unique<control_msgs::msg::JointJog>();
+    joint_msgs->header.stamp = this->now();
+    joint_msgs->header.frame_id = "base_structure_link"; 
+    joint_msgs->joint_names = {
+        "base_structure_link",
+        "base_pivot_shoulder_gearbox_joint",
         "bicep_tube_gearbox_joint",
-         "bicep_gearbox_forearm_tube_joint", 
-         "forearm_tube_wrist_gearbox_joint",
-        "wrist_gearbox_wrist_joint", 
+        "forearm_tube_wrist_gearbox_joint",
+        "forearm_tube_wrist_gearbox_joint",
         "gripper_claw_joint"
     };
 
-    joint_msg.velocities = { 
-        msg->velocities[0], 
-        msg->velocities[1], 
-        msg->velocities[2],
-        msg->velocities[3], 
-        msg->velocities[4], 
-        msg->velocities[5], 
-        msg->velocities[6], 
-        msg->velocities[7]
-    };
+    joint_msgs->velocities.push_back(msg->axes.size() > 0 ? msg->axes[0] : 0.0);    
+    joint_msgs->velocities.push_back(msg->axes.size() > 1 ? msg->axes[1] : 0.0); 
+    joint_msgs->velocities.push_back(msg->axes.size() > 2 ? msg->axes[2] : 0.0);
+    joint_msgs->velocities.push_back(msg->axes.size() > 3 ? msg->axes[3] : 0.0);
+    joint_msgs->velocities.push_back(msg->axes.size() > 4 ? msg->axes[4] : 0.0);
+    joint_msgs->velocities.push_back(msg->axes.size() > 5 ? msg->axes[5] : 0.0);
 
-    joint_pub_->publish(joint_msg);
-    RCLCPP_INFO(this->get_logger(), "Publishing joint velocity commands to arm:" "[%f, %f, %f, %f, %f, %f, %f, %f]", 
-        joint_msg.velocities[0], joint_msg.velocities[1], joint_msg.velocities[2], 
-        joint_msg.velocities[3], joint_msg.velocities[4], joint_msg.velocities[5],
-        joint_msg.velocities[6], joint_msg.velocities[7]);
+    joint_pub_->publish(std::move(joint_msgs));
+    RCLCPP_INFO(this->get_logger(), "Publishing Joint Commands: %f %f %f %f %f %f", 
+        msg->axes.size() > 0 ? msg->axes[0] : 0.0,
+        msg->axes.size() > 1 ? msg->axes[1] : 0.0,
+        msg->axes.size() > 2 ? msg->axes[2] : 0.0,
+        msg->axes.size() > 3 ? msg->axes[3] : 0.0,
+        msg->axes.size() > 4 ? msg->axes[4] : 0.0,
+        msg->axes.size() > 5 ? msg->axes[5] : 0.0);
+
 }
 
-rclcpp::Publisher<geometry_msgs::msg::TwistStamped>::SharedPtr twist_pub_;
+rclcpp::Subscription<sensor_msgs::msg::Joy>::SharedPtr joy_sub_;
 rclcpp::Publisher<control_msgs::msg::JointJog>::SharedPtr joint_pub_;
-rclcpp::Subscription<geometry_msgs::msg::TwistStamped>::SharedPtr twist_sub_;
-rclcpp::Subscription<control_msgs::msg::JointJog>::SharedPtr joint_sub_;
-rclcpp::TimerBase::SharedPtr timer_;
+
 
 
 };

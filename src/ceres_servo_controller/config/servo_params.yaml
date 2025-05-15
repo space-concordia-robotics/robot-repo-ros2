@@ -4,10 +4,10 @@
     max_expected_latency: 0.1 #delay between sending a command and the robot executing it. 
 
     command_in_type: "unitless" #speed_untis cmds are in m/s and rad/s (set to unitless if command comes from a joystick)
-    scale:
-      linear: 0.2 #Max linear speed in m/s
-      rotational: 0.8 #Max rotational speed in rad/s
-      joint: 0.5 
+    scale: 
+        linear: 0.2
+        rotational: 0.8
+        joint: 0.5
 
 
     # Output and feedback 
