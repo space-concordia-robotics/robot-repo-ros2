@@ -8,11 +8,11 @@ endif()
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
-find_package(geometry_msgs REQUIRED)
 find_package(control_msgs REQUIRED)
+find_package(sensor_msgs REQUIRED)
 
 add_executable(ceres_servo src/ceres_servo_control.cpp)
-ament_target_dependencies(ceres_servo rclcpp geometry_msgs)
+ament_target_dependencies(ceres_servo rclcpp control_msgs sensor_msgs)
 
 install(TARGETS 
   ceres_servo
