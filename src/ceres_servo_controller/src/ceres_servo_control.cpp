@@ -1,6 +1,7 @@
 #include "rclcpp/rclcpp.hpp"
 #include "control_msgs/msg/joint_jog.hpp"
 #include "sensor_msgs/msg/joy.hpp"
+#include "sensor_msgs/msg/joint_state.hpp"
 
 
 class VelocityPublisherNode: public rclcpp::Node
@@ -9,15 +10,16 @@ public:
     VelocityPublisherNode(): Node("vel_goal_control_node")
     {
 
-        joint_pub_ = this->create_publisher<control_msgs::msg::JointJog>("joint_states", 10); 
-        joy_sub_ = this->create_subscription<sensor_msgs::msg::Joy>("/joy", 10, std::bind(&VelocityPublisherNode::PublishJointCommands, this, std::placeholders::_1));
+        joint_pub_ = this->create_publisher<control_msgs::msg::JointJog>("/servo_node/delta_joint_cmds", 10);
+        joint_state_sub_ = this->create_subscription<sensor_msgs::msg::JointState>("joint_states", 10, std::bind(&VelocityPublisherNode::PublishJointVelocities, this, std::placeholders::_1));
+        joy_sub_ = this->create_subscription<sensor_msgs::msg::Joy>("/joy", 10, std::bind(&VelocityPublisherNode::PublishJointVelocities, this, std::placeholders::_1));
         RCLCPP_INFO(this->get_logger(), "GoalTwistPublisher node started");
     }
   
     
 private:
 
-void PublishJointCommands(const sensor_msgs::msg::Joy::SharedPtr msg)
+void PublishJointVelocities(const sensor_msgs::msg::Joy::SharedPtr msg)
 {
     auto joint_msgs = std::make_unique<control_msgs::msg::JointJog>();
     joint_msgs->header.stamp = this->now();
@@ -36,14 +38,34 @@ void PublishJointCommands(const sensor_msgs::msg::Joy::SharedPtr msg)
     joint_msgs->velocities.push_back(msg->axes.size() > 3 ? msg->axes[3] : 0.0);
     joint_msgs->velocities.push_back(msg->axes.size() > 4 ? msg->axes[4] : 0.0);
 
-    joint_pub_->publish(std::move(joint_msgs));
-    RCLCPP_INFO(this->get_logger(), "Publishing joint commands");
-    RCLCPP_INFO(this->get_logger(), "Joint commands: %f, %f, %f, %f, %f", 
+
+     RCLCPP_INFO(this->get_logger(), "Publishing joint velocities");
+    RCLCPP_INFO(this->get_logger(), "Joint velocities: %f, %f, %f, %f, %f", 
         joint_msgs->velocities[0], joint_msgs->velocities[1], joint_msgs->velocities[2], 
         joint_msgs->velocities[3], joint_msgs->velocities[4]);
 
+    joint_pub_->publish(std::move(joint_msgs));
 }
 
+void PublishJointAngles(const sensor_msgs::msg::JointState::SharedPtr msg)
+{
+    auto joint_angles_ = std::make_unique<sensor_msgs::msg::JointState>(); 
+    joint_angles_->header.stamp = this->now();
+    joint_angles_->header.frame_id = "base_structure_link";
+    joint_angles_->name = {
+            "base_structure_link",
+            "base_pivot_shoulder_gearbox_link",
+            "bicep_tube_gearbox_link",
+            "forearm_tube_wrist_gearbox_link",
+            "gripper_claw_link"
+        };
+    
+    
+
+}
+
+
+rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr joint_state_sub_; 
 rclcpp::Subscription<sensor_msgs::msg::Joy>::SharedPtr joy_sub_;
 rclcpp::Publisher<control_msgs::msg::JointJog>::SharedPtr joint_pub_;
 

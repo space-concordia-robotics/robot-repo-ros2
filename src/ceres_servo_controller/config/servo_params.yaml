@@ -22,8 +22,8 @@
     
     # Command input topics
     cartesian_command_in_topic: /goal_twist # The topic on which the servo receives twist commands.
-    joint_command_in_topic: /joint_states
-    pose_command_in_topic: /pose_goal
+    joint_command_in_topic: /servo_node/delta_joint_cmds # The topic on which the servo receives joint commands.
+    pose_command_in_topic: /servo_node/delta_joint_angles
 
     # Collision checking
     check_collisions: true
