@@ -11,8 +11,10 @@ public:
     {
 
         joint_pub_ = this->create_publisher<control_msgs::msg::JointJog>("/servo_node/delta_joint_cmds", 10);
+
         joint_angles_pub_ = this->create_publisher<sensor_msgs::msg::JointState>("/servo_node/delta_joint_angles", 10); 
         joint_state_sub_ = this->create_subscription<sensor_msgs::msg::JointState>("joint_states", 10, std::bind(&VelocityPublisherNode::PublishJointAngles, this, std::placeholders::_1));
+        joint_state_sub_ = this->create_subscription<sensor_msgs::msg::JointState>("joint_states", 10, std::bind(&VelocityPublisherNode::PublishJointVelocities, this, std::placeholders::_1));
         joy_sub_ = this->create_subscription<sensor_msgs::msg::Joy>("/joy", 10, std::bind(&VelocityPublisherNode::PublishJointVelocities, this, std::placeholders::_1));
         RCLCPP_INFO(this->get_logger(), "GoalTwistPublisher node started");
     }
@@ -73,9 +75,7 @@ void PublishJointAngles(const sensor_msgs::msg::JointState::SharedPtr msg)
 
     joint_angles_pub_->publish(std::move(joint_angles_));    
     
-
 }
-
 
 rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr joint_state_sub_; 
 rclcpp::Subscription<sensor_msgs::msg::Joy>::SharedPtr joy_sub_;
@@ -99,3 +99,4 @@ int main(int argc, char** argv)
     rclcpp::shutdown();
     return 0;
 }
+

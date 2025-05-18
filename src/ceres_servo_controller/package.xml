@@ -5,6 +5,7 @@
   <version>0.0.0</version>
   <description>TODO: Package description</description>
   <maintainer email="michael.lythgoe@spaceconcordia.ca">mikevm</maintainer>
+  <maintainer email="michael.lythgoe@spaceconcordia.ca">mike</maintainer>
   <license>TODO: License declaration</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
@@ -12,6 +13,8 @@
   <depend>rclcpp</depend>
   <depend>geometry_msgs</depend>
   <depend>std_msgs</depend>
+  <depend>control_msgs</depend>
+
   <depend>sensor_msgs</depend>
 
   <test_depend>ament_lint_auto</test_depend>

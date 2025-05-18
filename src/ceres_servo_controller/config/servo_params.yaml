@@ -1,0 +1,32 @@
+
+    planning_frame: base_structure_link
+    publish_period: 0.01  # 100 Hz
+    max_expected_latency: 0.1 #delay between sending a command and the robot executing it. 
+
+    command_in_type: "unitless" #speed_untis cmds are in m/s and rad/s (set to unitless if command comes from a joystick)
+    scale: 
+        linear: 0.2
+        rotational: 0.8
+        joint: 0.5
+
+
+    # Output and feedback 
+    command_out_type: trajectory_msgs/JointTrajectory # Need to change this based on the type of message the controller needs
+    command_out_topic: joint_trajectory # Need to change to the input topic of controller
+                                       
+
+    publish_joint_velocities: true
+
+    # Robot groups
+    move_group_name: ceres_arm_config
+    
+    # Command input topics
+    cartesian_command_in_topic: /goal_twist # The topic on which the servo receives twist commands.
+    joint_command_in_topic: /servo_node/delta_joint_cmds # The topic on which the servo receives joint commands.
+    pose_command_in_topic: /servo_node/delta_joint_angles
+
+    # Collision checking
+    check_collisions: true
+    collision_check_rate: 10.0  # Hz
+    self_collision_proximity_threshold: 0.01
+    scene_collision_proximity_threshold: 0.02
