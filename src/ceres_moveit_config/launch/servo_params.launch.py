@@ -6,17 +6,19 @@ from launch.substitutions import LaunchConfiguration
 from ament_index_python.packages import get_package_share_directory
 from moveit_configs_utils import MoveItConfigsBuilder
 from launch_param_builder import ParameterBuilder
+from launch_ros.parameter_descriptions import ParameterFile
+
 
 def generate_launch_description():
     moveit_config = (
-    MoveItConfigsBuilder("ceres_servo_controller")
+    MoveItConfigsBuilder("ceres")
     .robot_description(file_path="config/ceres_rover.urdf.xacro")
     .joint_limits(file_path="config/joint_limits.yaml")
     .to_moveit_configs()
     )
 
     servo_params = {
-        "ceres_servo" :ParameterBuilder("ceres_servo")
+        "ceres_servo" :ParameterBuilder("ceres_moveit_config")
         .yaml("config/servo_params.yaml").to_dict()
     }
 
@@ -25,11 +27,11 @@ def generate_launch_description():
     planning_group_name = {"planning_group_name": "ceres_arm"}
 
 
-    #Rviz config (hardest part)
+    #Rviz config 
 
     rviz_config_file = (
-        get_package_share_directory("ceres_servo_controller")
-        + "/config/ceres_arm_servo.rviz"
+        get_package_share_directory("ceres_moveit_config")
+        + "/config/moveit.rviz"
     )
     rviz_node = launch_ros.actions.Node(
         package="rviz2",
@@ -44,7 +46,7 @@ def generate_launch_description():
     )
 
     ros2_controllers_path = os.path.join(
-        get_package_share_directory("ceres_servo_controller"),
+        get_package_share_directory("ceres_moveit_config"),
         "config",
         "ros2_controllers.yaml",
     )
@@ -53,11 +55,11 @@ def generate_launch_description():
         package="controller_manager",
         executable="ros2_control_node",
         name="ros2_control_node",
-        parameters=[ros2_controllers_path],
+        parameters=[ParameterFile(ros2_controllers_path, allow_substs=True)],
         remappings=[
             ("/controller_manager/robot_description", "/robot_description"),
         ],
-        output="screen"
+    output="screen"
     )
 
     joint_state_broadcaser_spawner = launch_ros.actions.Node(
@@ -114,29 +116,12 @@ def generate_launch_description():
         output="screen",
     )
 
-    servo_node = launch_ros.actions.Node(
-        package="ceres_servo_controller",
-        executable="ceres_servo_node",
-        name="ceres_servo_node",
-        parameters=[
-            servo_params,
-            acceleration_filter_update_period,
-            planning_group_name,
-            moveit_config.robot_description,
-            moveit_config.robot_description_semantic,
-            moveit_config.robot_description_kinematics,
-            moveit_config.joint_limits, 
-        ],
-        output="screen",
-    )
-
-    return launch.LaunchDescription(
+    return LaunchDescription(
         [ 
             rviz_node,
             ros2_control_node,
             joint_state_broadcaser_spawner,
             ceres_arm_controller_spawner,
             container,
-            servo_node,
         ]
     )

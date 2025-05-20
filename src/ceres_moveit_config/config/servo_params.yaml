@@ -18,7 +18,7 @@
     publish_joint_velocities: true
 
     # Robot groups
-    move_group_name: ceres_arm_config
+    move_group_name: ceres_moveit_config
     
     # Command input topics
     cartesian_command_in_topic: /goal_twist # The topic on which the servo receives twist commands.
