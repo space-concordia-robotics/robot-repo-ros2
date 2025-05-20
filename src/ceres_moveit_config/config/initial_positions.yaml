@@ -1,0 +1,8 @@
+# Default initial positions for ceres_rover's ros2_control fake system
+
+initial_positions:
+  base_pivot_shoulder_gearbox_joint: 0
+  base_structure_joint: 0
+  bicep_tube_gearbox_joint: 0
+  forearm_tube_wrist_gearbox_joint: 0
+  gripper_claw_joint: 0
