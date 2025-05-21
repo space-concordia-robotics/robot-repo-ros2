@@ -51,15 +51,9 @@ public:
 
 private:
 
-    float old_angle_1 = 0;
-    float old_angle_2 = 0;
-    float old_angle_3 = 0;
     float old_angle_4 = 0;
 
-    uint8_t angle_1_zone = 0;
-    uint8_t angle_2_zone = 0;
-    uint8_t angle_3_zone = 0;
-    uint8_t angle_4_zone = 0;
+    int8_t angle_4_zone = 0;
 
 
     void absEncPollingCallback();
