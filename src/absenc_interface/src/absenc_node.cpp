@@ -87,12 +87,21 @@ void Absenc::absEncPollingCallback() {
         //return;
     }
 
-    float angle_1 = absenc_meas_1.angval + 20;
-    float angle_2 = absenc_meas_2.angval - 180;
-    float angle_3 = absenc_meas_3.angval;
+    float angle_1 = absenc_meas_1.angval - 330;
+    float angle_2 = absenc_meas_2.angval + 95;
+    float angle_3 = absenc_meas_3.angval; 
     float angle_4 = absenc_meas_4.angval / 4.0f;
 
-    // Zone decreased
+    // Normalize angles to range [0, 360)
+    //////////////////////////////////////////////////
+    angle_1 = angle_1 > 0 ? angle_1 : angle_1 + 360;
+    angle_2 = angle_2 > 0 ? angle_2 : angle_2 + 360; 
+    angle_3 = angle_3 > 0 ? angle_3 : angle_3 + 360;
+    
+    //////////////////////////////////////////////////
+    // fixing 1 to 4 ratio of angle 4
+
+    // Finding the zone of the angle 4
     if(old_angle_4 - angle_4 > 70 ) {
         this -> angle_4_zone = (this -> angle_4_zone + 1) % 4;
     }
@@ -102,14 +111,11 @@ void Absenc::absEncPollingCallback() {
     }
 
 
-    // Zone increased
-
-    this -> old_angle_1 = angle_1;
-    this -> old_angle_2 = angle_2;
-    this -> old_angle_3 = angle_3;
+    // update the old angle
     this -> old_angle_4 = angle_4;
-
-    angle_4 = angle_4 + this -> angle_4_zone * 90;
+    
+    angle_4 = angle_4 + this -> angle_4_zone * 90 - 30;
+    /////////////////////////////////////////////////
 
     // Publish angles
     auto joint_state_msg = sensor_msgs::msg::JointState();
