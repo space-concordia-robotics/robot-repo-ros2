@@ -4,48 +4,7 @@ from launch_ros.actions import Node
 
 def generate_launch_description():
     return LaunchDescription([
-        # Execute shell commands to configure the CAN interface
-        ExecuteProcess(
-            cmd=['sudo', 'chmod', '777', '/dev/ttyTHS1'],
-            shell=True
-        ),
-        ExecuteProcess(
-            cmd=['sudo', 'chmod', '777', '/dev/ttyTHS2'],
-            shell=True
-        ),
-        ExecuteProcess(
-            cmd=['sudo', 'chmod', '777', '/dev/ttyUSB0'],
-            shell=True
-        ),
-        ExecuteProcess(
-            cmd=['sudo', 'chmod', '777', '/dev/ttyUSB1'],
-            shell=True
-        ),
-        ExecuteProcess(
-            cmd=['sudo', 'busybox', 'devmem', '0x0c303018', 'w', '0xc458'],
-            shell=True
-        ),
-        ExecuteProcess(
-            cmd=['sudo', 'busybox', 'devmem', '0x0c303010', 'w', '0xc400'],
-            shell=True
-        ),
-        ExecuteProcess(
-            cmd=['sudo', 'modprobe', 'can'],
-            shell=True
-        ),
-        ExecuteProcess(
-            cmd=['sudo', 'modprobe', 'can_raw'],
-            shell=True
-        ),
-        ExecuteProcess(
-            cmd=['sudo', 'modprobe', 'mttcan'],
-            shell=True
-        ),
-        ExecuteProcess(
-            cmd=['sudo', 'ip', 'link', 'set', 'can0', 'up', 'type', 'can', 'bitrate', '1000000'],
-            shell=True
-        ),
-
+     
         # Launch the joy_node
         Node(
             package='joy',
