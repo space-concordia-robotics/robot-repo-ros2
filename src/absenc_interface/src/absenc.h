@@ -50,6 +50,12 @@ public:
     ~Absenc();
 
 private:
+
+    float old_angle_4 = 0;
+
+    int8_t angle_4_zone = 0;
+
+
     void absEncPollingCallback();
 
     int s_fd = -1;
