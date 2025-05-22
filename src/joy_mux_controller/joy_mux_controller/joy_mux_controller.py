@@ -25,8 +25,8 @@ class JoyMuxController(Node):
         if msg.buttons[self.deadman_button] == 1:
             if self.current_mode == 0:
                 twist = Twist()
-                twist.linear.x = msg.axes[0]
-                twist.angular.z = msg.axes[1]
+                twist.linear.x = msg.axes[1]
+                twist.angular.z = msg.axes[0]
                 twist.linear.y = msg.axes[7]
                 twist.linear.z = msg.axes[6]
                 self.rover_pub.publish(twist)
