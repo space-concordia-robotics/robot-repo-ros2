@@ -87,16 +87,18 @@ void Absenc::absEncPollingCallback() {
         //return;
     }
 
-    float angle_1 = absenc_meas_1.angval - 330;
-    float angle_2 = absenc_meas_2.angval + 95;
-    float angle_3 = absenc_meas_3.angval; 
+
+    // Fix the Home
+    float angle_1 = absenc_meas_1.angval + 25; //-355
+    float angle_2 = absenc_meas_2.angval - 174; //-175
+    float angle_3 = absenc_meas_3.angval * -1; 
     float angle_4 = absenc_meas_4.angval / 4.0f;
 
-    // Normalize angles to range [0, 360)
+    // Normalize angles to range [-180, 180) rn it's 0 to 360
     //////////////////////////////////////////////////
-    angle_1 = angle_1 > 0 ? angle_1 : angle_1 + 360;
-    angle_2 = angle_2 > 0 ? angle_2 : angle_2 + 360; 
-    angle_3 = angle_3 > 0 ? angle_3 : angle_3 + 360;
+    angle_1 = angle_1 < 180 ? angle_1 : angle_1 - 360;
+    angle_2 = angle_2 > -180 ? angle_2 : angle_2 + 360; 
+    
     
     //////////////////////////////////////////////////
     // fixing 1 to 4 ratio of angle 4
@@ -120,13 +122,13 @@ void Absenc::absEncPollingCallback() {
     // Publish angles
     auto joint_state_msg = sensor_msgs::msg::JointState();
     joint_state_msg.header.stamp = this->now();
-    joint_state_msg.name = {"joint_1", "joint_2", "joint_3", "joint_4"};
-    joint_state_msg.position = {absenc_meas_1.angval, absenc_meas_2.angval, absenc_meas_3.angval, absenc_meas_4.angval};
+    joint_state_msg.name = {"base", "shoulder", "bicep", "wrist"};
+    joint_state_msg.position = {absenc_meas_4.angval, absenc_meas_1.angval, absenc_meas_2.angval, absenc_meas_3.angval};
 
     angles_publisher_->publish(joint_state_msg);
 
     // Print angles to the terminal
-    RCLCPP_INFO(this->get_logger(), "Angles: [%f, %f, %f, %f]", angle_1, angle_2, angle_3, angle_4);
+    RCLCPP_INFO(this->get_logger(), "Angles: [%f, %f, %f, %f]",angle_4, angle_1, angle_2, angle_3);
 }
 
 
