@@ -34,7 +34,7 @@ ArmControllerNode::ArmControllerNode() : Node("arm_controller_node") {
 
     // Subscription to JointState messages
     arm_joint_sub = this->create_subscription<sensor_msgs::msg::JointState>(
-        "/arm_xyz_cmd", 10, std::bind(&ArmControllerNode::ArmJointCallback, this, std::placeholders::_1));
+        "/joint_trajectory", 10, std::bind(&ArmControllerNode::ArmJointCallback, this, std::placeholders::_1));
 
     RCLCPP_INFO(this->get_logger(), "Subscriptions initialized.");
 }

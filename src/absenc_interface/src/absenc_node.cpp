@@ -33,7 +33,7 @@
    
 
     // Initialize publisher
-    angles_publisher_ = this->create_publisher<sensor_msgs::msg::JointState>("joint_states", 10);
+    angles_publisher_ = this->create_publisher<sensor_msgs::msg::JointState>("/joint_states", 10);
 
     // Initialize timer for polling
     timer_ = this->create_wall_timer(
