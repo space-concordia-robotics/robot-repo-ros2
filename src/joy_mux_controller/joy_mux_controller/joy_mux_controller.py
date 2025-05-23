@@ -11,7 +11,7 @@ class JoyMuxController(Node):
         self.arm_pub = self.create_publisher(JointState, '/arm_xyz_cmd', 10)  # Changed to JointState
 
         self.deadman_button = 4
-        self.toggle_button = 12
+        self.toggle_button = 10
         self.current_mode = 0
         self.last_toggle = 0
 
