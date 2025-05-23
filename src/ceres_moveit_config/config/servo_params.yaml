@@ -12,17 +12,21 @@
 
     # Output and feedback 
     command_out_type: trajectory_msgs/JointTrajectory # Need to change this based on the type of message the controller needs
-    command_out_topic: /joint_trajectory # Need to change to the input topic of controller
+    command_out_topic: /joint_trajectory # Publish outgoing commands here
                                        
 
     publish_joint_velocities: true
 
     # Robot groups
     move_group_name: ceres_arm_
+
+    joint_limit_margins: [0.12] #Add larger value if moving faster
     
     # Command input topics to be determined.... not yet complete
-    cartesian_command_in_topic: /arm_xyz_cmd
-    joint_command_in_topic: /joint_jog_cmd
+    cartesian_command_in_topic: /arm_xyz_cmd # topic for incoming twist commands
+    joint_command_in_topic: /joint_jog_cmd # topic for incoming joint angle commands
+    joint_states_topic: /joint_states # Topic for incoming Joint states
+
 
     # Collision checking
     check_collisions: true

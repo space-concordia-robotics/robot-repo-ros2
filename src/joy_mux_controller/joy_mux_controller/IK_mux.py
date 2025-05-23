@@ -10,7 +10,8 @@ class JoyMuxController(Node):
         super().__init__('joy_mux_controller')
         self.subscription = self.create_subscription(Joy, '/joy', self.joy_callback, 10)
         self.rover_pub = self.create_publisher(Twist, '/cmd_vel', 10)
-        self.arm_pub = self.create_publisher(TwistStamped, '/arm_xyz_cmd', 10)  # Changed to JointState
+        self.arm_pub = self.create_publisher(TwistStamped, '/arm_xyz_cmd', 10) 
+        #self.jog_pub = self.create_publisher(JointJog, '/joint_jog_cmd', 10)
 
         self.deadman_button = 4
         self.toggle_button = 12
@@ -40,6 +41,20 @@ class JoyMuxController(Node):
                 stamp.twist.linear.y = msg.axes[1]
                 stamp.twist.linear.z = msg.axes[5]
                 self.arm_pub.publish(stamp)
+
+                
+                #jog = JointJog()
+                #jog.header.frame_id = "base_structure_link"
+                #jog.header.stamp = self.get_clock().now()
+                #jog.joint_names = ['base_pivot_shoulder_gearbox_joint', 'base_structure_joint', 'bicep_tube_gearbox_joint', 'forearm_tube_wrist_gearbox_joint', 'gripper_claw_joint']
+                #jog.velocities = [
+                #   msg.axes[0],
+                #   msg.axes[1],
+                #   msg.axes[2],
+                #   msg.axes[3],
+                #   msg.axes[4]
+                #]
+                #self.jog_pub.publish(jog)
         return
 
 def main(args=None):
