@@ -37,7 +37,7 @@ class JoyMuxController(Node):
                     float(msg.axes[7]),  # Joint 1
                     float(msg.axes[6]),  # Joint 2
                     float(msg.axes[3]),  # Joint 3
-                    float((1 if msg.buttons[4] else 0) - (1 if msg.buttons[0] else 0)),   # Joint 4
+                    float((1 if msg.buttons[3] else 0) - (1 if msg.buttons[2] else 0)),   # Joint 4
                     float(msg.axes[4]),   # Joint 5
                     float(msg.axes[0]),  # Joint 6
                     float((1 if msg.buttons[0] else 0) - (1 if msg.buttons[1] else 0))  # Joint 7: Positive (button 0) and negative (button 1)
