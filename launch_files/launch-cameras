@@ -1,0 +1,19 @@
+#!/bin/bash
+
+gst-launch-1.0 rtspsrc location=rtsp://10.240.0.10:8445/arm buffer-mode=auto latency=0 ! \
+               rtpssrcdemux ! rtph264depay ! \
+               h264parse ! avdec_h264 ! \
+               videoflip method=rotate-180 ! gamma gamma=1.0 ! \
+               queue ! videoconvert ! autovideosink &
+
+gst-launch-1.0 rtspsrc location=rtsp://10.240.0.10:8445/front buffer-mode=auto latency=0 ! \
+               rtpssrcdemux ! rtph264depay ! \
+               h264parse ! avdec_h264 ! \
+               videoflip method=rotate-180 ! gamma gamma=0.5 ! \
+               queue ! videoconvert ! autovideosink &
+
+gst-launch-1.0 rtspsrc location=rtsp://10.240.0.10:8445/antena buffer-mode=auto latency=0 ! \
+               rtpssrcdemux ! rtph264depay ! \
+               h264parse ! avdec_h264 ! \
+               videoflip method=none ! gamma gamma=1.0 ! \
+               queue ! videoconvert ! autovideosink &
