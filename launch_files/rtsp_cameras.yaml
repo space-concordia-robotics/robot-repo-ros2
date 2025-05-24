@@ -24,21 +24,21 @@
           rtph_pay: "rtpav1pay name=pay0"
 
     enabled_streams:
+      - front
       - antena
-      - zed
       - arm
       - test
 
     streams:
-      antena:
+      front:
         type: camera
         source: /dev/video2
-        mountpoint: /antena
+        mountpoint: /front
         encoder: h264
-        bitrate: 1000000
-        fps: 10
-        width: 960
-        height: 600
+        bitrate: 2000000
+        fps: 50
+        width: 1920
+        height: 1200
       # camera1:
       #   type: camera
       #   source: /dev/video2
@@ -48,18 +48,20 @@
       #   fps: 60
       #   width: 2560
       #   height: 720
-      zed:
+      antena:
         type: camera
         source: /dev/video0
-        mountpoint: /zed
+        mountpoint: /antena
         encoder: h264
         bitrate: 4000000
-        fps: 10
-        width: 1344
-        height: 376
+        fps: 30
+        width: 1920
+        height: 1080
       arm:
-        type: camera
-        source: /dev/video6
+        type: topic
+        source: /usb_cam/image_raw
+        #type: camera
+        #source: /dev/video4
         mountpoint: /arm
         encoder: h264
         bitrate: 4000000

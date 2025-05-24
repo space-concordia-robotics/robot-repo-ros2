@@ -14,17 +14,17 @@ def generate_launch_description():
     return LaunchDescription([
         Node(
             package='usb_cam',
-            namespace=f'usb_cam_{cam_id.path[-1]}',
+            namespace=f'usb_cam',
             executable='usb_cam_node_exe',
             parameters=[{
         	'video_device': str(cam_id.path),
-        	'framerate': 10.0,
+        	'framerate': 30.0,
         	'io_method': str("mmap"),
         	'frame_id': str("camera"),
         	'pixel_format': str("yuyv2rgb"),
         	'av_device_format': str("YUV422P"),
-        	'image_width': 960,
-        	'image_height': 600,
+        	'image_width': 1920,
+        	'image_height': 1080,
         	'camera_name': str("test_camera"),
         	'camera_info_url': str("package://usb_cam/config/camera_info.yaml"),
         	'brightness': -1,
@@ -38,6 +38,4 @@ def generate_launch_description():
         	'exposure': 100,
         	'autofocus': False,
         	'focus': -1}
-         ])
-        for cam_id in list(enumerate_cameras(cv2.CAP_V4L2))]
-	)
+         ]) for cam_id in list(enumerate_cameras(cv2.CAP_V4L2)) if cam_id.path == "/dev/video4"])
