@@ -15,8 +15,8 @@ def generate_launch_description():
         Node(
             package='aruco_opencv',
             executable='aruco_tracker_autostart',
-            parameters=[{'cam_base_topic':'zed/zed_node/rgb/image_rect_color'},
-            {'image_is_rectified':True},
+            parameters=[{'cam_base_topic':'/usb_cam_2/image_raw'},
+            {'image_is_rectified':False},
             #{'marker_dict':'5x5_50'}
             ]
             )])
