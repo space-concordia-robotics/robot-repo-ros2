@@ -2,11 +2,10 @@
 
 WheelsControllerNode::WheelsControllerNode() : rclcpp::Node("wheels_controller_node") {
     this->declare_parameter("can_path", "can0");
-    this->declare_parameter("multiplier", 500);
+    multiplier = this->declare_parameter("multiplier", 500);
 
    
    if (CANController::configureCAN("can0") != SUCCESS) {
-        
         RCLCPP_ERROR(this->get_logger(), "Failed to configure CAN interface");
         rclcpp::shutdown();
     }
@@ -16,26 +15,42 @@ WheelsControllerNode::WheelsControllerNode() : rclcpp::Node("wheels_controller_n
         "cmd_vel", 10, std::bind(&WheelsControllerNode::TwistMessageCallback, this, std::placeholders::_1)
     );
 
+    parameter_event_handler = std::make_shared<rclcpp::ParameterEventHandler>(this);
+
+    auto multiplier_callback = [this](const rclcpp::Parameter parameter) {
+        if (parameter.get_name() == "multiplier")
+            multiplier = parameter.as_int();
+    };
+
+    multiplier_callback_handle = parameter_event_handler->add_parameter_callback("multiplier", multiplier_callback);
+
 
     RCLCPP_INFO(this->get_logger(), "Subscribed to cmd_vel topic.");
+
+    // Start the motors
+    uint64_t mask = 0x7E;
+    RevMotorController::startMotor(mask);
 
     RCLCPP_INFO(this->get_logger(), "Movement controller initialized.");
 }
 
 void WheelsControllerNode::TwistMessageCallback(const geometry_msgs::msg::Twist::SharedPtr twist_msg) {
     // Extract linear and angular velocities from cmd_vel
-    float linear_y = twist_msg->linear.x;
-    float angular_z = twist_msg->angular.z;
+    auto linear_y = twist_msg->linear.x;
+    auto angular_z = twist_msg->angular.z;
+
+    // multiply them for exponential control
+    linear_y *= linear_y;
+    angular_z *= angular_z;
 
     // Calculate wheel velocities
-    float slip_track = 1.2f; // Distance between wheels
-    float right_wheels_velocity = linear_y - (-angular_z * slip_track * 0.5f);
-    float left_wheels_velocity = linear_y + (-angular_z * slip_track * 0.5f);
+    auto slip_track = 1.2f; // Distance between wheels
+    auto right_wheels_velocity = linear_y - (-angular_z * slip_track * 0.5f);
+    auto left_wheels_velocity = linear_y + (-angular_z * slip_track * 0.5f);
 
     // Convert to RPM using the multiplier parameter
-    float multiplier = this->get_parameter("multiplier").as_int();
-    float right_wheels_vel_rpm = right_wheels_velocity * multiplier;
-    float left_wheels_vel_rpm = left_wheels_velocity * multiplier;
+    auto right_wheels_vel_rpm = right_wheels_velocity * this->multiplier;
+    auto left_wheels_vel_rpm = left_wheels_velocity * this->multiplier;
 
     // Send commands to the motors
     RevMotorController::velocityControl(1, right_wheels_vel_rpm);
@@ -46,9 +61,9 @@ void WheelsControllerNode::TwistMessageCallback(const geometry_msgs::msg::Twist:
     RevMotorController::velocityControl(5, left_wheels_vel_rpm);
     RevMotorController::velocityControl(6, left_wheels_vel_rpm);
 
-    // Start the motors
-    uint64_t mask = 0x7E;
-    RevMotorController::startMotor(mask);
+    // // Start the motors
+    // uint64_t mask = 0x7E;
+    // RevMotorController::startMotor(mask);
 
     RCLCPP_INFO(this->get_logger(), "Motor commands sent: Right RPM = %.2f, Left RPM = %.2f", right_wheels_vel_rpm, left_wheels_vel_rpm);
 }
