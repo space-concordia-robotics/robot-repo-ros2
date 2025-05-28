@@ -20,7 +20,6 @@ ceres_arm_controller:
       - gripper_claw_joint
     command_interfaces:
       - position
-      - velocity
     state_interfaces:
       - position
       - velocity

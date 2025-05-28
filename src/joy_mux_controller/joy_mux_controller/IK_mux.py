@@ -35,7 +35,7 @@ class JoyMuxController(Node):
                 self.rover_pub.publish(twist)
             else:
                 stamp = TwistStamped()
-                stamp.header.stamp = self.get_clock().now()
+                stamp.header.stamp = self.get_clock().now().to_msg()
                 stamp.header.frame_id = "base_structure_link"
                 stamp.twist.linear.x = msg.axes[0]
                 stamp.twist.linear.y = msg.axes[1]

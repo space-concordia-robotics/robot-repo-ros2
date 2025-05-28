@@ -7,11 +7,10 @@ moveit_setup_assistant_config:
   package_settings:
     author_name: Michael Lythgoe
     author_email: michael.lythgoe@spaceconcordia.ca
-    generated_timestamp: 1747073212
+    generated_timestamp: 1748356430
   control_xacro:
     command:
       - position
-      - velocity
     state:
       - position
       - velocity
@@ -21,7 +20,6 @@ moveit_setup_assistant_config:
   control_xacro:
     command:
       - position
-      - velocity
     state:
       - position
       - velocity
