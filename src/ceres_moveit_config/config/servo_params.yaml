@@ -18,7 +18,7 @@
     publish_joint_velocities: true
 
     # Robot groups
-    move_group_name: ceres_arm_
+    move_group_name: ceres_arm
 
     joint_limit_margins: [0.12] #Add larger value if moving faster
     

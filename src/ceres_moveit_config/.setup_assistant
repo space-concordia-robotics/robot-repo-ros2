@@ -7,7 +7,7 @@ moveit_setup_assistant_config:
   package_settings:
     author_name: Michael Lythgoe
     author_email: michael.lythgoe@spaceconcordia.ca
-    generated_timestamp: 1748356430
+    generated_timestamp: 1748481676
   control_xacro:
     command:
       - position

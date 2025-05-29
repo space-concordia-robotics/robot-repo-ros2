@@ -13,6 +13,7 @@ def generate_launch_description():
         MoveItConfigsBuilder("ceres")
         .robot_description(file_path="config/ceres_rover.urdf.xacro")
         .joint_limits(file_path="config/joint_limits.yaml")
+        .robot_description_kinematics()
         .to_moveit_configs()
     )
 
@@ -23,16 +24,11 @@ def generate_launch_description():
 
     # Get parameters for the Servo node
     servo_params = {
-        "ceres_servo": ParameterBuilder("ceres_moveit_config")
+        "ceres_moveit_config": ParameterBuilder("ceres_moveit_config")
         .yaml("config/servo_params.yaml")
         .to_dict()
     }
 
-    kinematics_path = {
-        "ceres_servo": ParameterBuilder("ceres_moveit_config")
-        .yaml("config/kinematics.yaml")
-        .to_dict()
-    }
 
     # This sets the update rate and planning group name for the acceleration limiting filter.
     acceleration_filter_update_period = {"update_period": 0.01}
@@ -40,7 +36,7 @@ def generate_launch_description():
 
     # RViz
     rviz_config_file = (
-        get_package_share_directory("moveit_servo")
+        get_package_share_directory("ceres_moveit_config")
         + "/config/moveit.rviz"
     )
     rviz_node = launch_ros.actions.Node(
@@ -89,6 +85,15 @@ def generate_launch_description():
         arguments=["ceres_arm_controller", "-c", "/controller_manager"],
     )
 
+    move_group_node = launch_ros.actions.Node(
+    package="moveit_ros_move_group",
+    executable="move_group",
+    output="screen",
+    parameters=[
+        moveit_config.to_dict(),
+    ],
+)
+
     # Launch as much as possible in components
     container = launch_ros.actions.ComposableNodeContainer(
         name="ceres_servo_container",
@@ -96,24 +101,6 @@ def generate_launch_description():
         package="rclcpp_components",
         executable="component_container_mt",
         composable_node_descriptions=[
-            # Example of launching Servo as a node component
-            # Launching as a node component makes ROS 2 intraprocess communication more efficient.
-            launch_ros.descriptions.ComposableNode(
-                package="ceres_moveit_config",
-                plugin="moveit_servo::ServoNode",
-                name="servo_node",
-                parameters=[
-                    servo_params,
-                    kinematics_path,
-                    acceleration_filter_update_period,
-                    planning_group_name,
-                    moveit_config.robot_description,
-                    moveit_config.robot_description_semantic,
-                    moveit_config.robot_description_kinematics,
-                    moveit_config.joint_limits,
-                ],
-                condition=UnlessCondition(launch_as_standalone_node),
-            ),
             launch_ros.descriptions.ComposableNode(
                 package="robot_state_publisher",
                 plugin="robot_state_publisher::RobotStatePublisher",
@@ -129,15 +116,15 @@ def generate_launch_description():
         ],
         output="screen",
     )
+    
     # Launch a standalone Servo node.
     # As opposed to a node component, this may be necessary (for example) if Servo is running on a different PC
     servo_node = launch_ros.actions.Node(
-        package="ceres_moveit_config",
-        executable="servo_node",
-        name="servo_node",
+        package="joy_mux_controller",
+        executable="IK_mux",
+        name="IK_mux",
         parameters=[
             servo_params,
-            kinematics_path,
             acceleration_filter_update_period,
             planning_group_name,
             moveit_config.robot_description, #Load urdf
@@ -152,10 +139,12 @@ def generate_launch_description():
 
     return launch.LaunchDescription(
         [
+        
             rviz_node,
             ros2_control_node,
             joint_state_broadcaster_spawner,
             ceres_arm_controller_spawner,
+            move_group_node,
             servo_node,
             container,
         ]
