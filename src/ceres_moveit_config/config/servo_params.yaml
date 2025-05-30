@@ -1,4 +1,4 @@
-
+servo_params:
     planning_frame: base_structure_link
     publish_period: 0.01  # 100 Hz
     max_expected_latency: 0.1 #delay between sending a command and the robot executing it. 

@@ -2,9 +2,7 @@ import os
 import launch
 import launch_ros
 from ament_index_python.packages import get_package_share_directory
-from launch.conditions import IfCondition, UnlessCondition
 from launch.substitutions import LaunchConfiguration
-from launch_param_builder import ParameterBuilder
 from moveit_configs_utils import MoveItConfigsBuilder
 
 
@@ -17,18 +15,12 @@ def generate_launch_description():
         .to_moveit_configs()
     )
 
-    # Launch Servo as a standalone node or as a "node component" for better latency/efficiency
-    launch_as_standalone_node = LaunchConfiguration(
-        "launch_as_standalone_node", default="false"
-    )
 
     # Get parameters for the Servo node
-    servo_params = {
-        "ceres_moveit_config": ParameterBuilder("ceres_moveit_config")
-        .yaml("config/servo_params.yaml")
-        .to_dict()
-    }
-
+    servo_params = os.path.join(get_package_share_directory("ceres_moveit_config"),
+    "config",
+    "servo_params.yaml",
+    )
 
     # This sets the update rate and planning group name for the acceleration limiting filter.
     acceleration_filter_update_period = {"update_period": 0.01}
@@ -91,8 +83,8 @@ def generate_launch_description():
     output="screen",
     parameters=[
         moveit_config.to_dict(),
-    ],
-)
+        ],
+    )
 
     # Launch as much as possible in components
     container = launch_ros.actions.ComposableNodeContainer(
@@ -133,13 +125,11 @@ def generate_launch_description():
             moveit_config.joint_limits,
         ],
         output="screen",
-        condition=IfCondition(launch_as_standalone_node),
     )
     
-
+#Issues to fix: Get the servo_parmas.yaml file to load (pretty sure thats it)
     return launch.LaunchDescription(
         [
-        
             rviz_node,
             ros2_control_node,
             joint_state_broadcaster_spawner,
