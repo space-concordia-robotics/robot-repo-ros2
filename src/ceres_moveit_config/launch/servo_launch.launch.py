@@ -93,6 +93,23 @@ def generate_launch_description():
         package="rclcpp_components",
         executable="component_container_mt",
         composable_node_descriptions=[
+
+            launch_ros.descriptions.ComposableNode(
+                package="moveit_servo",
+                plugin="moveit_servo::ServoNode",
+                name="servo_node",
+                parameters=[
+                    servo_params,
+                    acceleration_filter_update_period,
+                    planning_group_name,
+                    moveit_config.robot_description, #Load urdf
+                    moveit_config.robot_description_semantic, #Load SRDF
+                    moveit_config.robot_description_kinematics, #Load kinematics.yaml (does not fkn work for some reason)
+                    moveit_config.joint_limits,
+                ],
+                extra_arguments=[{'use_intra_process_comms': True}],
+            ),
+
             launch_ros.descriptions.ComposableNode(
                 package="robot_state_publisher",
                 plugin="robot_state_publisher::RobotStatePublisher",
@@ -112,9 +129,9 @@ def generate_launch_description():
     # Launch a standalone Servo node.
     # As opposed to a node component, this may be necessary (for example) if Servo is running on a different PC
     servo_node = launch_ros.actions.Node(
-        package="joy_mux_controller",
-        executable="IK_mux",
-        name="IK_mux",
+        package="moveit_servo",
+        executable="servo_node_main",
+        name="servo_node",
         parameters=[
             servo_params,
             acceleration_filter_update_period,
@@ -124,6 +141,13 @@ def generate_launch_description():
             moveit_config.robot_description_kinematics, #Load kinematics.yaml (does not fkn work for some reason)
             moveit_config.joint_limits,
         ],
+        output="screen",
+    )
+
+    IK_mux_node = launch_ros.actions.Node(
+        package="joy_mux_controller",
+        executable="IK_mux",
+        name="IK_mux",
         output="screen",
     )
     
@@ -136,6 +160,7 @@ def generate_launch_description():
             ceres_arm_controller_spawner,
             move_group_node,
             servo_node,
+            IK_mux_node,
             container,
         ]
     )
