@@ -4,6 +4,8 @@ import launch_ros
 from ament_index_python.packages import get_package_share_directory
 from launch.substitutions import LaunchConfiguration
 from moveit_configs_utils import MoveItConfigsBuilder
+from launch_param_builder import ParameterBuilder
+from launch.conditions import IfCondition, UnlessCondition
 
 
 def generate_launch_description():
@@ -11,17 +13,21 @@ def generate_launch_description():
         MoveItConfigsBuilder("ceres")
         .robot_description(file_path="config/ceres_rover.urdf.xacro")
         .joint_limits(file_path="config/joint_limits.yaml")
-        .robot_description_kinematics()
+        .robot_description_kinematics(file_path="config/kinematics.yaml")
         .to_moveit_configs()
     )
 
-
-    # Get parameters for the Servo node
-    servo_params = os.path.join(get_package_share_directory("ceres_moveit_config"),
-    "config",
-    "servo_params.yaml",
+    #launch servo as a standalone node or as a "node component" for better latency/efficiencty
+    launch_as_standalone_node = LaunchConfiguration(
+        "launch_as_standalone_node", default="false"
     )
 
+    # Get parameters for the Servo node
+    servo_params =  {
+        "moveit_servo": ParameterBuilder("ceres_moveit_config")
+        .yaml("config/servo_params.yaml")
+        .to_dict()
+    }
     # This sets the update rate and planning group name for the acceleration limiting filter.
     acceleration_filter_update_period = {"update_period": 0.01}
     planning_group_name = {"planning_group_name": "ceres_arm"}
@@ -78,10 +84,10 @@ def generate_launch_description():
     )
 
     move_group_node = launch_ros.actions.Node(
-    package="moveit_ros_move_group",
-    executable="move_group",
-    output="screen",
-    parameters=[
+        package="moveit_ros_move_group",
+        executable="move_group",
+        output="screen",
+        parameters=[
         moveit_config.to_dict(),
         ],
     )
@@ -105,9 +111,10 @@ def generate_launch_description():
                     moveit_config.robot_description, #Load urdf
                     moveit_config.robot_description_semantic, #Load SRDF
                     moveit_config.robot_description_kinematics, #Load kinematics.yaml (does not fkn work for some reason)
-                    moveit_config.joint_limits,
+
                 ],
-                extra_arguments=[{'use_intra_process_comms': True}],
+                extra_arguments=[{'use_intra_process_comms': False}],
+                condition=UnlessCondition(launch_as_standalone_node),
             ),
 
             launch_ros.descriptions.ComposableNode(
@@ -142,6 +149,7 @@ def generate_launch_description():
             moveit_config.joint_limits,
         ],
         output="screen",
+        condition=IfCondition(launch_as_standalone_node),
     )
 
     IK_mux_node = launch_ros.actions.Node(
@@ -151,7 +159,8 @@ def generate_launch_description():
         output="screen",
     )
     
-#Issues to fix: Get the servo_parmas.yaml file to load (pretty sure thats it)
+#Issues to fix: Clean this shit up now. 
+
     return launch.LaunchDescription(
         [
             rviz_node,

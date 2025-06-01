@@ -5,6 +5,14 @@ from geometry_msgs.msg import TwistStamped, Twist
 from control_msgs.msg import JointJog
 from std_msgs.msg import Float32
 
+# Setting our controller binds:
+
+
+
+def convertJoytoCmd(axes, buttons):
+    twist = TwistStamped()
+    joint = JointJog()
+
 class JoyMuxController(Node):
     def __init__(self):
         super().__init__('joy_mux_controller')
@@ -37,7 +45,6 @@ class JoyMuxController(Node):
                 stamp = TwistStamped()
                 stamp.header.stamp = self.get_clock().now().to_msg()
                 stamp.header.frame_id = "base_structure_link"
-                stamp.twist.linear.x = msg.axes[0]
                 stamp.twist.linear.y = msg.axes[1]
                 stamp.twist.linear.z = msg.axes[5]
                 self.arm_pub.publish(stamp)
