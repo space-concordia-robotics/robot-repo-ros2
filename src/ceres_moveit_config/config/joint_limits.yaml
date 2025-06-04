@@ -12,24 +12,24 @@ joint_limits:
     has_velocity_limits: false
     max_velocity: 1.5
     has_acceleration_limits: false
-    max_acceleration: 0
+    max_acceleration: 1.5
   base_structure_joint:
     has_velocity_limits: false
     max_velocity: 1.5
     has_acceleration_limits: false
-    max_acceleration: 0
+    max_acceleration: 1.5
   bicep_tube_gearbox_joint:
     has_velocity_limits: false
     max_velocity: 1.5
     has_acceleration_limits: false
-    max_acceleration: 0
+    max_acceleration: 1.5
   forearm_tube_wrist_gearbox_joint:
     has_velocity_limits: false
     max_velocity: 1.5
     has_acceleration_limits: false
-    max_acceleration: 0
+    max_acceleration: 1.5
   gripper_claw_joint:
     has_velocity_limits: false
     max_velocity: 1.5
     has_acceleration_limits: false
-    max_acceleration: 0
+    max_acceleration: 1.5

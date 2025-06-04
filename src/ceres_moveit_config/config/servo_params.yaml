@@ -1,7 +1,7 @@
 use_gazebo: false # Whether the robot is started in a Gazebo simulation environment
 
 ## Properties of incoming commands
-command_in_type: "speed_units" # "unitless"> in the range [-1:1], as if from joystick. "speed_units"> cmds are in m/s and rad/s
+command_in_type: "unitless" # "unitless"> in the range [-1:1], as if from joystick. "speed_units"> cmds are in m/s and rad/s
 scale:
   # Scale parameters are only used if command_in_type=="unitless"
   linear:  0.6  # Max linear velocity. Unit is [m/s]. Only used for Cartesian commands.
@@ -24,8 +24,6 @@ publish_joint_positions: true
 publish_joint_velocities: true
 publish_joint_accelerations: false
 
-## Plugins for smoothing outgoing commands
-smoothing_filter_plugin_name: "online_signal_smoothing::ButterworthFilterPlugin"
 
 ## MoveIt properties
 move_group_name:  ceres_arm  # Often 'manipulator' or 'arm'
@@ -45,8 +43,8 @@ joint_limit_margin: 0.1 # added as a buffer to joint limits [radians]. If moving
 leaving_singularity_threshold_multiplier: 2.0 # Multiply the hard stop limit by this when leaving singularity (see https://github.com/ros-planning/moveit2/pull/620)
 
 ## Topic names
-cartesian_command_in_topic: ~/delta_twist_cmds  # Topic for incoming Cartesian twist commands
-joint_command_in_topic: ~/delta_joint_cmds # Topic for incoming joint angle commands
+cartesian_command_in_topic: ~/delta_twist_cmds  # Topic for incoming Cartesian twist commands (twiststamp)
+joint_command_in_topic: ~/delta_joint_cmds # Topic for incoming joint angle commands (jointjog)
 joint_topic: /joint_states
 status_topic: ~/status # Publish status to this topic
 command_out_topic: /ceres_arm_controller/joint_trajectory # Publish outgoing commands here

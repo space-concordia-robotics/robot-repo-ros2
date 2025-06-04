@@ -1,5 +1,6 @@
 import os
 import launch
+import yaml
 import launch_ros
 from ament_index_python.packages import get_package_share_directory
 from launch.substitutions import LaunchConfiguration
@@ -7,6 +8,16 @@ from moveit_configs_utils import MoveItConfigsBuilder
 from launch_param_builder import ParameterBuilder
 from launch.conditions import IfCondition, UnlessCondition
 
+
+def load_yaml(package_name, file_path):
+    package_path = get_package_share_directory(package_name)
+    absolute_file_path = os.path.join(package_path, file_path)
+
+    try:
+        with open(absolute_file_path, "r") as file:
+            return yaml.safe_load(file)
+    except EnvironmentError:  # parent of IOError, OSError *and* WindowsError where available
+        return None
 
 def generate_launch_description():
     moveit_config = (
@@ -17,11 +28,15 @@ def generate_launch_description():
 
 
     # Get parameters for the Servo node
-    servo_params =  {
-        "moveit_servo": ParameterBuilder("ceres_moveit_config")
-        .yaml("config/servo_params.yaml")
-        .to_dict()
-    }
+    # servo_params =  {
+    #     "moveit_servo": ParameterBuilder("ceres_moveit_config")
+    #     .yaml("config/servo_params.yaml")
+    #     .to_dict()
+    # }
+    
+    servo_yaml = load_yaml("ceres_moveit_config", "config/servo_params.yaml")
+    servo_params = {"moveit_servo": servo_yaml}
+
 
     # RViz
     rviz_config_file = (
@@ -131,7 +146,7 @@ def generate_launch_description():
         output="screen",
     )
 
-    joy_node = launch.ros.actions.Node(
+    joy_node = launch_ros.actions.Node(
         package="joy",
         executable="joy_node",
         name="joy_node",
