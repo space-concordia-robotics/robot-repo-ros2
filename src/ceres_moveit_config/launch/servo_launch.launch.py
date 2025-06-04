@@ -12,15 +12,9 @@ def generate_launch_description():
     moveit_config = (
         MoveItConfigsBuilder("ceres")
         .robot_description(file_path="config/ceres_rover.urdf.xacro")
-        .joint_limits(file_path="config/joint_limits.yaml")
-        .robot_description_kinematics(file_path="config/kinematics.yaml")
         .to_moveit_configs()
     )
 
-    #launch servo as a standalone node or as a "node component" for better latency/efficiencty
-    launch_as_standalone_node = LaunchConfiguration(
-        "launch_as_standalone_node", default="false"
-    )
 
     # Get parameters for the Servo node
     servo_params =  {
@@ -28,9 +22,6 @@ def generate_launch_description():
         .yaml("config/servo_params.yaml")
         .to_dict()
     }
-    # This sets the update rate and planning group name for the acceleration limiting filter.
-    acceleration_filter_update_period = {"update_period": 0.01}
-    planning_group_name = {"planning_group_name": "ceres_arm"}
 
     # RViz
     rviz_config_file = (
@@ -83,14 +74,16 @@ def generate_launch_description():
         arguments=["ceres_arm_controller", "-c", "/controller_manager"],
     )
 
-    move_group_node = launch_ros.actions.Node(
-        package="moveit_ros_move_group",
-        executable="move_group",
-        output="screen",
-        parameters=[
-        moveit_config.to_dict(),
-        ],
-    )
+    #If ever we wanna launch move_group, we can do it here.
+
+    # move_group_node = launch_ros.actions.Node(
+    #     package="moveit_ros_move_group",
+    #     executable="move_group",
+    #     output="screen",
+    #     parameters=[
+    #     moveit_config.to_dict(),
+    #   ],
+    # )
 
     # Launch as much as possible in components
     container = launch_ros.actions.ComposableNodeContainer(
@@ -99,23 +92,6 @@ def generate_launch_description():
         package="rclcpp_components",
         executable="component_container_mt",
         composable_node_descriptions=[
-
-            launch_ros.descriptions.ComposableNode(
-                package="moveit_servo",
-                plugin="moveit_servo::ServoNode",
-                name="servo_node",
-                parameters=[
-                    servo_params,
-                    acceleration_filter_update_period,
-                    planning_group_name,
-                    moveit_config.robot_description, #Load urdf
-                    moveit_config.robot_description_semantic, #Load SRDF
-                    moveit_config.robot_description_kinematics, #Load kinematics.yaml (does not fkn work for some reason)
-
-                ],
-                extra_arguments=[{'use_intra_process_comms': False}],
-                condition=UnlessCondition(launch_as_standalone_node),
-            ),
 
             launch_ros.descriptions.ComposableNode(
                 package="robot_state_publisher",
@@ -141,15 +117,11 @@ def generate_launch_description():
         name="servo_node",
         parameters=[
             servo_params,
-            acceleration_filter_update_period,
-            planning_group_name,
             moveit_config.robot_description, #Load urdf
             moveit_config.robot_description_semantic, #Load SRDF
             moveit_config.robot_description_kinematics, #Load kinematics.yaml (does not fkn work for some reason)
-            moveit_config.joint_limits,
         ],
         output="screen",
-        condition=IfCondition(launch_as_standalone_node),
     )
 
     IK_mux_node = launch_ros.actions.Node(
@@ -158,8 +130,15 @@ def generate_launch_description():
         name="IK_mux",
         output="screen",
     )
+
+    joy_node = launch.ros.actions.Node(
+        package="joy",
+        executable="joy_node",
+        name="joy_node",
+        output="screen",
+    )
     
-#Issues to fix: Clean this shit up now. 
+#Issues to fix: /joint_states topic is not being published, so the robot state publisher is not working. 
 
     return launch.LaunchDescription(
         [
@@ -167,9 +146,10 @@ def generate_launch_description():
             ros2_control_node,
             joint_state_broadcaster_spawner,
             ceres_arm_controller_spawner,
-            move_group_node,
+            #move_group_node,
             servo_node,
             IK_mux_node,
+            joy_node,
             container,
         ]
     )

@@ -5,24 +5,70 @@ from geometry_msgs.msg import TwistStamped, Twist
 from control_msgs.msg import JointJog
 from std_msgs.msg import Float32
 
-# Setting our controller binds:
+#Mapping Joystick button binds:
+X = 0
+SQUARE = 3
+TRIANGLE = 2
+CIRCLE = 1
+RBUMPER = 5
 
+#Mapping Axis binds: 
 
+LEFT_STICK_X = 0
+LEFT_STICK_Y = 1
+RIGHT_STICK_X = 3
+RIGHT_STICK_Y = 4
+D_PAD_X = 6
+D_PAD_Y = 7
+LTRIGGER = 2
+RTRIGGER = 5
 
-def convertJoytoCmd(axes, buttons):
-    twist = TwistStamped()
-    joint = JointJog()
+AXIS_DEFAULTS = 1.0 # Default value for triggers when not pressed
+
+def convertJoytoCmd(joy_msg: Joy):
+   
+    if joy_msg.buttons[X] or joy_msg.buttons[SQUARE] or joy_msg.buttons[TRIANGLE] or joy_msg.buttons[CIRCLE] or joy_msg.axes[D_PAD_X] or joy_msg.axes[D_PAD_Y]:
+        # If any of the buttons or D-Pad axes are pressed, we assume it's a joint jog command
+        # and not a twist command.
+
+        joint = JointJog()
+        joint.joint_names = [
+        'base_pivot_shoulder_gearbox_joint',
+        'bicep_tube_gearbox_joint',
+        'forearm_tube_wrist_gearbox_joint',
+        'gripper_claw_joint'
+        ]
+        joint.velocities = [
+            float(joy_msg.axes[D_PAD_X]), 
+            float(joy_msg.axes[D_PAD_Y]),
+            float(joy_msg.buttons[X] - joy_msg.buttons[TRIANGLE]),
+            float(joy_msg.buttons[SQUARE] - joy_msg.buttons[CIRCLE])
+            ]
+        return True, None, joint 
+    #Setting this flag to False tells the node not to publish a joint jog commands.
+    #This is because were returning a 3-tuple, and the publish flag is associated to either True/False
+        
+    twist_stamped = TwistStamped()
+    twist_stamped.twist.linear.z = joy_msg.axes[LEFT_STICK_Y]
+    twist_stamped.twist.linear.y = joy_msg.axes[LEFT_STICK_X]
+    
+    lin_x_right = -0.5*(joy_msg.axes[RTRIGGER] - AXIS_DEFAULTS)
+    lin_x_left = 0.5*(joy_msg.axes[LTRIGGER] - AXIS_DEFAULTS)
+    twist_stamped.twist.linear.x = lin_x_right + lin_x_left
+
+    return True, twist_stamped , None
+
 
 class JoyMuxController(Node):
     def __init__(self):
         super().__init__('joy_mux_controller')
         self.subscription = self.create_subscription(Joy, '/joy', self.joy_callback, 10)
         self.rover_pub = self.create_publisher(Twist, '/cmd_vel', 10)
-        self.arm_pub = self.create_publisher(TwistStamped, '/arm_xyz_cmd', 10) 
-        #self.jog_pub = self.create_publisher(JointJog, '/joint_jog_cmd', 10)
+        self.arm_pub = self.create_publisher(TwistStamped, '/servo_node/delta_twist_cmds', 10) 
+        self.jog_pub = self.create_publisher(JointJog, '/servo_node/delta_joint_cmds', 10)
 
         self.deadman_button = 4
-        self.toggle_button = 12
+        self.toggle_button = 10
         self.current_mode = 0
         self.last_toggle = 0
 
@@ -42,26 +88,15 @@ class JoyMuxController(Node):
                 twist.linear.z = msg.axes[6]
                 self.rover_pub.publish(twist)
             else:
-                stamp = TwistStamped()
-                stamp.header.stamp = self.get_clock().now().to_msg()
-                stamp.header.frame_id = "base_structure_link"
-                stamp.twist.linear.y = msg.axes[1]
-                stamp.twist.linear.z = msg.axes[5]
-                self.arm_pub.publish(stamp)
-
-                
-                #jog = JointJog()
-                #jog.header.frame_id = "base_structure_link"
-                #jog.header.stamp = self.get_clock().now()
-                #jog.joint_names = ['base_pivot_shoulder_gearbox_joint', 'base_structure_joint', 'bicep_tube_gearbox_joint', 'forearm_tube_wrist_gearbox_joint', 'gripper_claw_joint']
-                #jog.velocities = [
-                #   msg.axes[0],
-                #   msg.axes[1],
-                #   msg.axes[2],
-                #   msg.axes[3],
-                #   msg.axes[4]
-                #]
-                #self.jog_pub.publish(jog)
+                publish, twist_stamped, joint = convertJoytoCmd(msg)
+                if publish and twist_stamped is not None:
+                    twist_stamped.header.stamp = self.get_clock().now().to_msg()
+                    twist_stamped.header.frame_id = 'base_structure_link'
+                    self.arm_pub.publish(twist_stamped)
+                elif publish and joint is not None:
+                    joint.header.stamp = self.get_clock().now().to_msg()
+                    joint.header.frame_id = 'base_structure_link'
+                    self.jog_pub.publish(joint)     
         return
 
 def main(args=None):
