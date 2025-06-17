@@ -14,6 +14,7 @@ setup(
     entry_points={
         'console_scripts': [
             'joy_mux_controller = joy_mux_controller.joy_mux_controller:main',
+            'ik_mux = joy_mux_controller.ik_mux:main',
         ],
     },
 )
