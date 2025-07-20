@@ -9,7 +9,7 @@
 ros2 launch rover-start.py &
 
 # Launch aruco_tracker in a new terminal
-ros2 launch ardu-cam.py &
+#ros2 launch ardu-cam.py &
 
 # Launch aruco_tracker in a new terminal
-ros2 launch aruco_tracker.py &
+#ros2 launch aruco_tracker.py &

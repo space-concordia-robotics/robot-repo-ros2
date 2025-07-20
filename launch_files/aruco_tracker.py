@@ -17,6 +17,6 @@ def generate_launch_description():
             executable='aruco_tracker_autostart',
             parameters=[{'cam_base_topic':'/usb_cam/image_raw'},
             {'image_is_rectified':False},
-            #{'marker_dict':'5x5_50'}
+            {'marker_dict':'5x5_50'}
             ]
             )])

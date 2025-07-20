@@ -1,3 +1,4 @@
+
 """
 Author: Felipe Lazcano
 Description: This is a ros2 python launch file. 
@@ -38,4 +39,4 @@ def generate_launch_description():
         	'exposure': 100,
         	'autofocus': False,
         	'focus': -1}
-         ]) for cam_id in list(enumerate_cameras(cv2.CAP_V4L2)) if cam_id.path == "/dev/video4"])
+         ]) for cam_id in list(enumerate_cameras(cv2.CAP_V4L2)) if cam_id.path == "/dev/video0"])
