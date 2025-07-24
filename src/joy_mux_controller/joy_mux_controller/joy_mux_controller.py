@@ -11,7 +11,7 @@ class JoyMuxController(Node):
         self.arm_pub = self.create_publisher(JointState, '/arm_xyz_cmd', 10)  # Changed to JointState
 
         self.deadman_button = 4
-        self.toggle_button = 12
+        self.toggle_button = 10
         self.current_mode = 0
         self.last_toggle = 0
 
@@ -25,8 +25,8 @@ class JoyMuxController(Node):
         if msg.buttons[self.deadman_button] == 1:
             if self.current_mode == 0:
                 twist = Twist()
-                twist.linear.x = msg.axes[0]
-                twist.angular.z = msg.axes[1]
+                twist.linear.x = msg.axes[1]
+                twist.angular.z = msg.axes[0]
                 twist.linear.y = msg.axes[7]
                 twist.linear.z = msg.axes[6]
                 self.rover_pub.publish(twist)
@@ -34,12 +34,12 @@ class JoyMuxController(Node):
                 joint_state = JointState()
                 joint_state.name = [f'joint{i+1}' for i in range(7)]  # Names for 7 joints
                 joint_state.velocity = [
-                    float(msg.axes[0]),  # Joint 1
-                    float(msg.axes[1]),  # Joint 2
-                    float(msg.axes[5]),  # Joint 3
-                    float((1 if msg.buttons[2] else 0) - (1 if msg.buttons[3] else 0)),   # Joint 4
-                    float(msg.axes[7]),   # Joint 5
-                    float(msg.axes[6]),  # Joint 6
+                    float(msg.axes[7]),  # Joint 1
+                    float(msg.axes[6]),  # Joint 2
+                    float(msg.axes[4]),  # Joint 3
+                    float((1 if msg.buttons[3] else 0) - (1 if msg.buttons[1] else 0)),   # Joint 4
+                    float(msg.axes[3]),   # Joint 5
+                    float(msg.axes[0]),  # Joint 6
                     float((1 if msg.buttons[0] else 0) - (1 if msg.buttons[1] else 0))  # Joint 7: Positive (button 0) and negative (button 1)
                 ]
                 joint_state.position = []  # Empty position field

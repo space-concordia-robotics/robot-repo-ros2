@@ -42,6 +42,7 @@ def generate_launch_description(): # launch system
             parameters=[{'cam_base_topic':'zed/zed_node/rgb/image_rect_color'},# subscriber to imgs
                         {'image_is_rectified':True}, # removing distortion
                         {'marker_dict':'5X5_50'}
+
             ]
         )
     ])

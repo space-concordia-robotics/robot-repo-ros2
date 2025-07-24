@@ -1,0 +1,79 @@
+/rtsp_camera_node:
+  ros__parameters:
+    port: 8445
+
+    templates:
+      v4l2: "v4l2src do-timestamp=1"
+      appsrc:
+        pipeline: "appsrc name=imagesrc do-timestamp=true min-latency=0 max-latency=0 max-bytes=1000 is-live=true"
+        name: "imagesrc"
+      test: "videotestsrc"
+      encode:
+        encoders:
+          - h264
+          - av1
+        h264:
+          encoder: "nvvidconv ! video/x-raw(memory:NVMM),format=(string)NV12 ! nvv4l2h264enc preset-level=3"
+          bitrate_param: "bitrate"
+          pipeline: "video/x-h264, profile=baseline"
+          rtph_pay: "rtph264pay name=pay0 pt=96"
+        av1:
+          encoder: "nvvidconv ! video/x-raw(memory:NVMM),format=(string)NV12 ! nvv4l2av1enc preset-level=2"
+          bitrate_param: "bitrate"
+          pipeline: "video/x-av1"
+          rtph_pay: "rtpav1pay name=pay0"
+
+    enabled_streams:
+      - front
+      - antena
+      - arm
+      - test
+
+    streams:
+      front:
+        type: camera
+        source: /dev/video2
+        mountpoint: /front
+        encoder: h264
+        bitrate: 2000000
+        fps: 50
+        width: 1920
+        height: 1200
+      # camera1:
+      #   type: camera
+      #   source: /dev/video2
+      #   mountpoint: /camera1
+      #   encoder: h264
+      #   bitrate: 16000000
+      #   fps: 60
+      #   width: 2560
+      #   height: 720
+      antena:
+        type: camera
+        source: /dev/video0
+        mountpoint: /antena
+        encoder: h264
+        bitrate: 4000000
+        fps: 30
+        width: 1920
+        height: 1080
+      arm:
+        type: topic
+        source: /usb_cam/image_raw
+        #type: camera
+        #source: /dev/video4
+        mountpoint: /arm
+        encoder: h264
+        bitrate: 4000000
+        fps: 30
+        width: 1920
+        height: 1080
+      test:
+        type: test
+        source: ""
+        mountpoint: /test
+        encoder: h264 # av1 is currently not supported
+        bitrate: 2000000
+        fps: 30
+        width: 1920
+        height: 1080
