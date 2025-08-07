@@ -28,12 +28,26 @@ Usable values for marker_dict:
     APRILTAG_36h11
 """
 
+"""
+To launch with a specific marker dictionary:
+ros2 launch aruco_tracker.py marker_dict:=4X4_100
+"""
+
 from launch import LaunchDescription # launch system component
 from launch_ros.actions import Node # launch system component
+from launch.actions import DeclareLaunchArgument # launch system component
+from launch.substitutions import LaunchConfiguration # launch system component
 import cv2 # -- not used
 from cv2_enumerate_cameras import enumerate_cameras # -- not used
 
 def generate_launch_description(): # launch system
+    # Declare launch argument for marker_dict
+    marker_dict_arg = DeclareLaunchArgument(
+        'marker_dict',
+        default_value='5X5_50',
+        description='Aruco marker dictionary to use. e.g: 4X4_50, 5X5_100, etc.'
+    )
+
     return LaunchDescription([
         Node(
             package='aruco_opencv',
@@ -41,8 +55,7 @@ def generate_launch_description(): # launch system
             output='screen', # visualize logs in the terminal
             parameters=[{'cam_base_topic':'zed/zed_node/rgb/image_rect_color'},# subscriber to imgs
                         {'image_is_rectified':True}, # removing distortion
-                        {'marker_dict':'5X5_50'}
-
+                        {'marker_dict': LaunchConfiguration('marker_dict')}, # marker dict
             ]
         )
     ])
