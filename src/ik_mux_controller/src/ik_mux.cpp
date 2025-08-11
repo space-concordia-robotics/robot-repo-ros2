@@ -139,46 +139,46 @@ public:
     servo_start_client_->wait_for_service(std::chrono::seconds(1));
     servo_start_client_->async_send_request(std::make_shared<std_srvs::srv::Trigger::Request>());
 
-    // Load the collision scene asynchronously
-    collision_pub_thread_ = std::thread([this]() {
-      rclcpp::sleep_for(std::chrono::seconds(3));
-      // Create collision object, in the way of servoing
-      moveit_msgs::msg::CollisionObject collision_object;
-      collision_object.header.frame_id = "base_structure_link";
-      collision_object.id = "box";
+    // // Load the collision scene asynchronously
+    // collision_pub_thread_ = std::thread([this]() {
+    //   rclcpp::sleep_for(std::chrono::seconds(3));
+    //   // Create collision object, in the way of servoing
+    //   moveit_msgs::msg::CollisionObject collision_object;
+    //   collision_object.header.frame_id = "base_structure_link";
+    //   collision_object.id = "box";
 
-      shape_msgs::msg::SolidPrimitive table_1;
-      table_1.type = table_1.BOX;
-      table_1.dimensions = { 0.4, 0.6, 0.03 };
+    //   shape_msgs::msg::SolidPrimitive table_1;
+    //   table_1.type = table_1.BOX;
+    //   table_1.dimensions = { 0.4, 0.6, 0.03 };
 
-      geometry_msgs::msg::Pose table_1_pose;
-      table_1_pose.position.x = 0.6;
-      table_1_pose.position.y = 0.0;
-      table_1_pose.position.z = 0.4;
+    //   geometry_msgs::msg::Pose table_1_pose;
+    //   table_1_pose.position.x = 0.6;
+    //   table_1_pose.position.y = 0.0;
+    //   table_1_pose.position.z = 0.4;
 
-      shape_msgs::msg::SolidPrimitive table_2;
-      table_2.type = table_2.BOX;
-      table_2.dimensions = { 0.6, 0.4, 0.03 };
+    //   shape_msgs::msg::SolidPrimitive table_2;
+    //   table_2.type = table_2.BOX;
+    //   table_2.dimensions = { 0.6, 0.4, 0.03 };
 
-      geometry_msgs::msg::Pose table_2_pose;
-      table_2_pose.position.x = 0.0;
-      table_2_pose.position.y = 0.5;
-      table_2_pose.position.z = 0.25;
+    //   geometry_msgs::msg::Pose table_2_pose;
+    //   table_2_pose.position.x = 0.0;
+    //   table_2_pose.position.y = 0.5;
+    //   table_2_pose.position.z = 0.25;
 
-      collision_object.primitives.push_back(table_1);
-      collision_object.primitive_poses.push_back(table_1_pose);
-      collision_object.primitives.push_back(table_2);
-      collision_object.primitive_poses.push_back(table_2_pose);
-      collision_object.operation = collision_object.ADD;
+    //   collision_object.primitives.push_back(table_1);
+    //   collision_object.primitive_poses.push_back(table_1_pose);
+    //   collision_object.primitives.push_back(table_2);
+    //   collision_object.primitive_poses.push_back(table_2_pose);
+    //   collision_object.operation = collision_object.ADD;
 
-      moveit_msgs::msg::PlanningSceneWorld psw;
-      psw.collision_objects.push_back(collision_object);
+    //   moveit_msgs::msg::PlanningSceneWorld psw;
+    //   psw.collision_objects.push_back(collision_object);
 
-      auto ps = std::make_unique<moveit_msgs::msg::PlanningScene>();
-      ps->world = psw;
-      ps->is_diff = true;
-      collision_pub_->publish(std::move(ps));
-    });
+    //   auto ps = std::make_unique<moveit_msgs::msg::PlanningScene>();
+    //   ps->world = psw;
+    //   ps->is_diff = true;
+    //   collision_pub_->publish(std::move(ps));
+    // });
   }
 
   ~JoyToServoPub() override
