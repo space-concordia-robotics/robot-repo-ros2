@@ -143,51 +143,56 @@
     </link> 
 
 
-    <joint name="base_structure_joint" type="continuous">
+    <joint name="joint1" type="continuous">
         <parent link="base_structure_link"/>
         <child link="base_pivot_link"/>
         <origin xyz="0 0 0.1618" rpy="0 0 0"/>
+        <limit effort="20" velocity="1.0" lower="-2.355" upper="1.57"/>
         <axis xyz="0 0 1"/>
     </joint>
 
-    <joint name="base_bicep_tube_joint" type="continuous">
+    <joint name="joint2" type="continuous">
         <parent link="base_pivot_link"/>
         <child link="bicep_tube_link"/>
         <origin xyz="0.11645 0 0" rpy="0 0 0"/>
+        <limit effort="20" velocity="1.0" lower="-0.785" upper="1.0467"/>
     </joint>
 
-    <joint name="bicep_gearbox_joint" type="continuous">
+    <joint name="joint3" type="continuous">
         <parent link="bicep_tube_link"/>
         <child link="bicep_gearbox_link"/>
         <origin xyz="-0.092875 0 0.440" rpy="0 0 0"/>
+        <limit effort="20" velocity="1.0" lower="-0.466" upper="1.989"/>
         <axis xyz="1 0 0"/>
     </joint>
     
-   <joint name="gearbox_forearm_joint" type="fixed">
+   <joint name="joint4" type="fixed">
         <parent link="bicep_gearbox_link"/>
         <child link="forearm_tube_link"/>
         <origin xyz="0 0 0.085" rpy="0 0 0"/>
         <axis xyz=" 0 0 1"/>
     </joint>
     
-    <joint name="forearm_bracket_joint" type="continuous">
+    <joint name="joint5" type="continuous">
         <parent link="forearm_tube_link"/>
         <child link="bracket_connection_link"/>
         <origin xyz="0.0421 0 0.3" rpy="0 0 0"/>
+        <limit effort="20" velocity="1.0" lower="-1.57" upper="1.57"/>
         <axis xyz=" 1 0 0"/>
     </joint>
 
 
-    <joint name="bracket_wrist_joint" type="fixed">
+    <joint name="joint6" type="fixed">
         <parent link="bracket_connection_link"/>
         <child link="wrist_gearbox_link"/>
         <origin xyz="-0.026225 0 0.070075" rpy="0 0 0"/>
     </joint>
 
-    <joint name="wrist_gripper_joint" type="continuous">
+    <joint name="joint7" type="continuous">
         <parent link="wrist_gearbox_link"/>
         <child link="gripper_claw_link"/>
         <origin xyz="0.005725 0 0.159" rpy="0 0 0"/>
+        <limit effort="20" velocity="1.0" lower="-3.14" upper="3.14"/>
         <axis xyz="0 0 1"/>
     </joint>
 </robot>
