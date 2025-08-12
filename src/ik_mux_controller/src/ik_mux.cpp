@@ -1,3 +1,43 @@
+/*********************************************************************
+ * Software License Agreement (BSD License)
+ *
+ *  Copyright (c) 2020, PickNik Inc.
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without
+ *  modification, are permitted provided that the following conditions
+ *  are met:
+ *
+ *   * Redistributions of source code must retain the above copyright
+ *     notice, this list of conditions and the following disclaimer.
+ *   * Redistributions in binary form must reproduce the above
+ *     copyright notice, this list of conditions and the following
+ *     disclaimer in the documentation and/or other materials provided
+ *     with the distribution.
+ *   * Neither the name of PickNik Inc. nor the names of its
+ *     contributors may be used to endorse or promote products derived
+ *     from this software without specific prior written permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ *  FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+ *  COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+ *  INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ *  LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ *  LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+ *  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *  POSSIBILITY OF SUCH DAMAGE.
+ *********************************************************************/
+
+/*      Title     : joystick_servo_example.cpp
+ *      Project   : moveit_servo
+ *      Created   : 08/07/2020
+ *      Author    : Adam Pettinger
+ */
+
 #include "rclcpp/rclcpp.hpp"
 #include <sensor_msgs/msg/joy.hpp>
 #include <geometry_msgs/msg/twist_stamped.hpp>
@@ -19,6 +59,7 @@
 const std::string JOY_TOPIC = "/joy";
 const std::string TWIST_TOPIC = "/servo_node/delta_twist_cmds";
 const std::string JOINT_TOPIC = "/servo_node/delta_joint_cmds";
+const std::string WHEEL_VEL_TOPIC = "/cmd_vel";
 const std::string EEF_FRAME_ID = "gripper_claw_link";
 const std::string BASE_FRAME_ID = "base_structure_link";
 
@@ -37,17 +78,17 @@ enum Axis
 };
 enum Button
 {
-  A = 0,
-  B = 1,
-  X = 2,
-  Y = 3,
+  X = 0,
+  CIRCLE = 1,
+  TRIANGLE = 2,
+  SQUARE = 3,
   LEFT_BUMPER = 4,
   RIGHT_BUMPER = 5,
   CHANGE_VIEW = 6,
-  MENU = 7,
-  HOME = 8,
-  LEFT_STICK_CLICK = 9,
-  RIGHT_STICK_CLICK = 10
+  SHARE = 8,
+  HOME = 10,
+  LEFT_STICK_CLICK = 11,
+  RIGHT_STICK_CLICK = 12
 };
 
 // Some axes have offsets (e.g. the default trigger position is 1.0 not 0)
@@ -70,7 +111,7 @@ bool convertJoyToCmd(const std::vector<float>& axes, const std::vector<int>& but
 {
   // Give joint jogging priority because it is only buttons
   // If any joint jog command is requested, we are only publishing joint commands
-  if (buttons[A] || buttons[B] || buttons[X] || buttons[Y] || axes[D_PAD_X] || axes[D_PAD_Y])
+  if (buttons[X] || buttons[CIRCLE] || buttons[TRIANGLE] || buttons[SQUARE] || axes[D_PAD_X] || axes[D_PAD_Y])
   {
     // Map the D_PAD to the proximal joints
     joint->joint_names.push_back("joint1");
@@ -80,9 +121,9 @@ bool convertJoyToCmd(const std::vector<float>& axes, const std::vector<int>& but
 
     // Map the diamond to the distal joints
     joint->joint_names.push_back("joint3");
-    joint->velocities.push_back(buttons[B] - buttons[X]);
+    joint->velocities.push_back(buttons[CIRCLE] - buttons[SQUARE]);
     joint->joint_names.push_back("joint5");
-    joint->velocities.push_back(buttons[Y] - buttons[A]);
+    joint->velocities.push_back(buttons[TRIANGLE] - buttons[X]);
     return false;
   }
 
@@ -112,7 +153,7 @@ void updateCmdFrame(std::string& frame_name, const std::vector<int>& buttons)
 {
   if (buttons[CHANGE_VIEW] && frame_name == EEF_FRAME_ID)
     frame_name = BASE_FRAME_ID;
-  else if (buttons[MENU] && frame_name == BASE_FRAME_ID)
+  else if (buttons[SHARE] && frame_name == BASE_FRAME_ID)
     frame_name = EEF_FRAME_ID;
 }
 
@@ -131,6 +172,7 @@ public:
 
     twist_pub_ = this->create_publisher<geometry_msgs::msg::TwistStamped>(TWIST_TOPIC, rclcpp::SystemDefaultsQoS());
     joint_pub_ = this->create_publisher<control_msgs::msg::JointJog>(JOINT_TOPIC, rclcpp::SystemDefaultsQoS());
+    wheel_pub_ = this->create_publisher<geometry_msgs::msg::Twist>(WHEEL_VEL_TOPIC, rclcpp::SystemDefaultsQoS());
     collision_pub_ =
         this->create_publisher<moveit_msgs::msg::PlanningScene>("/planning_scene", rclcpp::SystemDefaultsQoS());
 
@@ -192,6 +234,14 @@ public:
     // Create the messages we might publish
     auto twist_msg = std::make_unique<geometry_msgs::msg::TwistStamped>();
     auto joint_msg = std::make_unique<control_msgs::msg::JointJog>();
+    static bool last_deadman_state = false;
+    bool current_deadman_state = msg->buttons[HOME];
+
+    if(current_deadman_state && !last_deadman_state)
+    {
+      rover_mode = !rover_mode;
+      RCLCPP_INFO(this->get_logger(), "Rover mode switched to %s", rover_mode? "Rover" : "Arm");
+    }
 
     // This call updates the frame for twist commands
     updateCmdFrame(frame_to_publish_, msg->buttons);
@@ -219,6 +269,8 @@ private:
   rclcpp::Publisher<control_msgs::msg::JointJog>::SharedPtr joint_pub_;
   rclcpp::Publisher<moveit_msgs::msg::PlanningScene>::SharedPtr collision_pub_;
   rclcpp::Client<std_srvs::srv::Trigger>::SharedPtr servo_start_client_;
+  rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr wheel_pub_; 
+  bool rover_mode = true;
 
   std::string frame_to_publish_;
 
