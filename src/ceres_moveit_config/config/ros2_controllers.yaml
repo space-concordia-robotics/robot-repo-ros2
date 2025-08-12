@@ -21,6 +21,7 @@ ceres_arm_controller:
       - joint2
       - joint3
       - joint5
+      - joint7
     command_interfaces:
       - position
     state_interfaces:

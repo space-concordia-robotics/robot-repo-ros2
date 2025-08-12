@@ -111,7 +111,7 @@ bool convertJoyToCmd(const std::vector<float>& axes, const std::vector<int>& but
 {
   // Give joint jogging priority because it is only buttons
   // If any joint jog command is requested, we are only publishing joint commands
-  if (buttons[X] || buttons[CIRCLE] || buttons[TRIANGLE] || buttons[SQUARE] || axes[D_PAD_X] || axes[D_PAD_Y])
+  if (buttons[X] || buttons[CIRCLE] || buttons[TRIANGLE] || buttons[SQUARE] || axes[D_PAD_X] || axes[D_PAD_Y] || buttons[RIGHT_STICK_CLICK] || buttons[LEFT_STICK_CLICK])
   {
     // Map the D_PAD to the proximal joints
     joint->joint_names.push_back("joint1");
@@ -124,12 +124,14 @@ bool convertJoyToCmd(const std::vector<float>& axes, const std::vector<int>& but
     joint->velocities.push_back(buttons[CIRCLE] - buttons[SQUARE]);
     joint->joint_names.push_back("joint5");
     joint->velocities.push_back(buttons[TRIANGLE] - buttons[X]);
+    joint->joint_names.push_back("joint7");
+    joint->velocities.push_back(buttons[LEFT_STICK_CLICK] - buttons[RIGHT_STICK_CLICK]);
     return false;
   }
 
   // The bread and butter: map buttons to twist commands
-  twist->twist.linear.z = axes[RIGHT_STICK_Y];
-  twist->twist.linear.y = axes[RIGHT_STICK_X];
+  twist->twist.linear.z = axes[RIGHT_STICK_X];
+  twist->twist.linear.y = axes[RIGHT_STICK_Y];
 
   double lin_x_right = -0.5 * (axes[RIGHT_TRIGGER] - AXIS_DEFAULTS.at(RIGHT_TRIGGER));
   double lin_x_left = 0.5 * (axes[LEFT_TRIGGER] - AXIS_DEFAULTS.at(LEFT_TRIGGER));
@@ -242,25 +244,38 @@ public:
       rover_mode = !rover_mode;
       RCLCPP_INFO(this->get_logger(), "Rover mode switched to %s", rover_mode? "Rover" : "Arm");
     }
+    last_deadman_state = current_deadman_state;
 
-    // This call updates the frame for twist commands
-    updateCmdFrame(frame_to_publish_, msg->buttons);
+    if(rover_mode)
+    {
+      auto twist_msgs = geometry_msgs::msg::Twist();
+      twist_msgs.linear.x = msg->axes[LEFT_STICK_X];
+      twist_msgs.linear.y = msg->axes[LEFT_STICK_Y];
+      twist_msgs.angular.z = msg->axes[RIGHT_STICK_Y];
+      twist_msgs.linear.z = msg->axes[RIGHT_STICK_X];
+      wheel_pub_->publish(twist_msgs);
+    }
+    else{
+      // This call updates the frame for twist commands
+      updateCmdFrame(frame_to_publish_, msg->buttons);
 
-    // Convert the joystick message to Twist or JointJog and publish
-    if (convertJoyToCmd(msg->axes, msg->buttons, twist_msg, joint_msg))
-    {
-      // publish the TwistStamped
-      twist_msg->header.frame_id = frame_to_publish_;
-      twist_msg->header.stamp = this->now();
-      twist_pub_->publish(std::move(twist_msg));
+      // Convert the joystick message to Twist or JointJog and publish
+      if (convertJoyToCmd(msg->axes, msg->buttons, twist_msg, joint_msg))
+      {
+        // publish the TwistStamped
+        twist_msg->header.frame_id = frame_to_publish_;
+        twist_msg->header.stamp = this->now();
+        twist_pub_->publish(std::move(twist_msg));
+      }
+      else
+      {
+        // publish the JointJog
+        joint_msg->header.stamp = this->now();
+        joint_msg->header.frame_id = "base_structure_link";
+        joint_pub_->publish(std::move(joint_msg));
+      }
     }
-    else
-    {
-      // publish the JointJog
-      joint_msg->header.stamp = this->now();
-      joint_msg->header.frame_id = "base_structure_link";
-      joint_pub_->publish(std::move(joint_msg));
-    }
+    
   }
 
 private:
@@ -287,6 +302,4 @@ int main(int argc, char** argv)
   rclcpp::spin(node);
   rclcpp::shutdown();
   return 0;
-
-
 }
