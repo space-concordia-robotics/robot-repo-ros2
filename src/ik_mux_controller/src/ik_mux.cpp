@@ -248,6 +248,7 @@ public:
 
     if(rover_mode)
     {
+      //publish the Twist commands for the wheel speeds
       auto twist_msgs = geometry_msgs::msg::Twist();
       twist_msgs.linear.x = msg->axes[LEFT_STICK_X];
       twist_msgs.linear.y = msg->axes[LEFT_STICK_Y];
