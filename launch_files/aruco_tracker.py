@@ -42,7 +42,7 @@ from cv2_enumerate_cameras import enumerate_cameras # -- not used
 
 def generate_launch_description(): # launch system
     # Declare launch argument for marker_dict
-    marker_dict_arg = DeclareLaunchArgument(
+    DeclareLaunchArgument(
         'marker_dict',
         default_value='5X5_50',
         description='Aruco marker dictionary to use. e.g: 4X4_50, 5X5_100, etc.'
