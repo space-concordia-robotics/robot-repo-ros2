@@ -1,0 +1,55 @@
+[0.060s] Invoking command in '/home/liliana/ros2_ws/robot-repo-ros2/src/build/ceres_urdf': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/liliana/ros2_ws/install/my_py_pkg:/home/liliana/install/my_py_pkg:/opt/ros/humble /usr/bin/cmake /home/liliana/ros2_ws/robot-repo-ros2/src/ceres_urdf -DCMAKE_INSTALL_PREFIX=/home/liliana/ros2_ws/robot-repo-ros2/src/install/ceres_urdf
+[0.471s] -- The C compiler identification is GNU 11.4.0
+[1.004s] -- The CXX compiler identification is GNU 11.4.0
+[1.053s] -- Detecting C compiler ABI info
+[1.276s] -- Detecting C compiler ABI info - done
+[1.307s] -- Check for working C compiler: /usr/bin/cc - skipped
+[1.308s] -- Detecting C compile features
+[1.311s] -- Detecting C compile features - done
+[1.327s] -- Detecting CXX compiler ABI info
+[1.596s] -- Detecting CXX compiler ABI info - done
+[1.630s] -- Check for working CXX compiler: /usr/bin/c++ - skipped
+[1.631s] -- Detecting CXX compile features
+[1.633s] -- Detecting CXX compile features - done
+[1.651s] -- Found ament_cmake: 1.3.11 (/opt/ros/humble/share/ament_cmake/cmake)
+[4.175s] -- Found Python3: /usr/bin/python3 (found version "3.10.12") found components: Interpreter 
+[4.778s] -- Configuring done
+[4.787s] -- Generating done
+[4.792s] -- Build files have been written to: /home/liliana/ros2_ws/robot-repo-ros2/src/build/ceres_urdf
+[4.812s] Invoked command in '/home/liliana/ros2_ws/robot-repo-ros2/src/build/ceres_urdf' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/liliana/ros2_ws/install/my_py_pkg:/home/liliana/install/my_py_pkg:/opt/ros/humble /usr/bin/cmake /home/liliana/ros2_ws/robot-repo-ros2/src/ceres_urdf -DCMAKE_INSTALL_PREFIX=/home/liliana/ros2_ws/robot-repo-ros2/src/install/ceres_urdf
+[4.815s] Invoking command in '/home/liliana/ros2_ws/robot-repo-ros2/src/build/ceres_urdf': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/liliana/ros2_ws/install/my_py_pkg:/home/liliana/install/my_py_pkg:/opt/ros/humble /usr/bin/cmake --build /home/liliana/ros2_ws/robot-repo-ros2/src/build/ceres_urdf -- -j6 -l6
+[4.916s] Invoked command in '/home/liliana/ros2_ws/robot-repo-ros2/src/build/ceres_urdf' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/liliana/ros2_ws/install/my_py_pkg:/home/liliana/install/my_py_pkg:/opt/ros/humble /usr/bin/cmake --build /home/liliana/ros2_ws/robot-repo-ros2/src/build/ceres_urdf -- -j6 -l6
+[4.943s] Invoking command in '/home/liliana/ros2_ws/robot-repo-ros2/src/build/ceres_urdf': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/liliana/ros2_ws/install/my_py_pkg:/home/liliana/install/my_py_pkg:/opt/ros/humble /usr/bin/cmake --install /home/liliana/ros2_ws/robot-repo-ros2/src/build/ceres_urdf
+[4.966s] -- Install configuration: ""
+[4.967s] -- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/install/ceres_urdf/share/ceres_urdf//urdf
+[4.981s] -- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/install/ceres_urdf/share/ceres_urdf//urdf/ceres.xacro
+[4.982s] -- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/install/ceres_urdf/share/ceres_urdf//launch
+[4.983s] -- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/install/ceres_urdf/share/ceres_urdf//launch/local_ik.launch.xml
+[4.984s] -- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/install/ceres_urdf/share/ceres_urdf//meshes
+[4.985s] -- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/install/ceres_urdf/share/ceres_urdf//meshes/cycloidal_drive
+[4.986s] -- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/install/ceres_urdf/share/ceres_urdf//meshes/cycloidal_drive/shoulder_gearbox.stl
+[5.260s] -- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/install/ceres_urdf/share/ceres_urdf//meshes/cycloidal_drive/base_pivot.stl
+[5.362s] -- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/install/ceres_urdf/share/ceres_urdf//meshes/cycloidal_drive/wrist_gearbox.stl
+[5.440s] -- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/install/ceres_urdf/share/ceres_urdf//meshes/cycloidal_drive/gripper_gearbox.stl
+[5.461s] -- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/install/ceres_urdf/share/ceres_urdf//meshes/cycloidal_drive/base_struct.stl
+[5.659s] -- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/install/ceres_urdf/share/ceres_urdf//meshes/cycloidal_drive/forearm_tube.stl
+[5.661s] -- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/install/ceres_urdf/share/ceres_urdf//meshes/cycloidal_drive/bicep_gearbox.stl
+[5.925s] -- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/install/ceres_urdf/share/ceres_urdf//meshes/cycloidal_drive/gripper_claw.stl
+[6.767s] -- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/install/ceres_urdf/share/ceres_urdf//meshes/cycloidal_drive/forearm_gearbox.stl
+[6.998s] -- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/install/ceres_urdf/share/ceres_urdf//meshes/cycloidal_drive/bicep_tube.stl
+[7.000s] -- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/install/ceres_urdf/share/ament_index/resource_index/package_run_dependencies/ceres_urdf
+[7.001s] -- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/install/ceres_urdf/share/ament_index/resource_index/parent_prefix_path/ceres_urdf
+[7.001s] -- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/install/ceres_urdf/share/ceres_urdf/environment/ament_prefix_path.sh
+[7.002s] -- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/install/ceres_urdf/share/ceres_urdf/environment/ament_prefix_path.dsv
+[7.002s] -- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/install/ceres_urdf/share/ceres_urdf/environment/path.sh
+[7.003s] -- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/install/ceres_urdf/share/ceres_urdf/environment/path.dsv
+[7.003s] -- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/install/ceres_urdf/share/ceres_urdf/local_setup.bash
+[7.004s] -- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/install/ceres_urdf/share/ceres_urdf/local_setup.sh
+[7.005s] -- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/install/ceres_urdf/share/ceres_urdf/local_setup.zsh
+[7.005s] -- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/install/ceres_urdf/share/ceres_urdf/local_setup.dsv
+[7.006s] -- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/install/ceres_urdf/share/ceres_urdf/package.dsv
+[7.006s] -- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/install/ceres_urdf/share/ament_index/resource_index/packages/ceres_urdf
+[7.007s] -- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/install/ceres_urdf/share/ceres_urdf/cmake/ceres_urdfConfig.cmake
+[7.007s] -- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/install/ceres_urdf/share/ceres_urdf/cmake/ceres_urdfConfig-version.cmake
+[7.008s] -- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/install/ceres_urdf/share/ceres_urdf/package.xml
+[7.015s] Invoked command in '/home/liliana/ros2_ws/robot-repo-ros2/src/build/ceres_urdf' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/liliana/ros2_ws/install/my_py_pkg:/home/liliana/install/my_py_pkg:/opt/ros/humble /usr/bin/cmake --install /home/liliana/ros2_ws/robot-repo-ros2/src/build/ceres_urdf
