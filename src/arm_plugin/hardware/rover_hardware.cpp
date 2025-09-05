@@ -33,13 +33,13 @@ namespace arm_hardware
     
     if (SerialPort < 0)
     {
-        RCLCPP_INFO(rclcpp::get_logger("RobotSystem"), "Error %i from open: %s", errno, sterr(errno));
+        RCLCPP_INFO(rclcpp::get_logger("RobotSystem"), "Error %i from open: %s", errno, strerror(errno));
         return CallbackReturn::ERROR;
     }
 
     if(tcgetattr(SerialPort, &tty) != 0)
     {
-        RCLCPP_INFO(rclcpp::get_logger("RobotSystem"), "Error %i from tcgetattr: %s", errno, sterr(errno));
+        RCLCPP_INFO(rclcpp::get_logger("RobotSystem"), "Error %i from tcgetattr: %s", errno, strerror(errno));
         close(SerialPort);
         return CallbackReturn::ERROR;
     }
@@ -78,7 +78,7 @@ namespace arm_hardware
 
     if (tcsetattr(SerialPort, TCSANOW, &tty) !=0)
     {
-        RCLCPP_INFO(rclcpp::get_logger("RobotSystem"), "Error %i from tcgetattr: %s", errno, sterr(errno));
+        RCLCPP_INFO(rclcpp::get_logger("RobotSystem"), "Error %i from tcgetattr: %s", errno, strerror(errno));
         close(SerialPort);
         return CallbackReturn::ERROR;
     }
@@ -105,32 +105,34 @@ namespace arm_hardware
  CallbackReturn RobotSystem::on_deactivate(const rclcpp_lifecycle::State & previous_state)
  {
     if(SerialPort == -1)
-    (
-        return;
-    )
+    {
+        return CallbackReturn::SUCCESS;
+    }
     tcflush(SerialPort, TCIOFLUSH);
     close(SerialPort);
     RCLCPP_INFO(rclcpp::get_logger("RobotSystem"), "Successfully deactivated!");
     return CallbackReturn::SUCCESS;
  }
 
-CallBackReturn::return_type RobotSystem::read(const rclcpp::Time & time, const rclcpp::Duration & period)  //request data from arduino
+ return_type RobotSystem::read(const rclcpp::Time & time, const rclcpp::Duration & period)  //request data from arduino
  {
-    return CallbackReturn::return_type::OK;
+    return return_type::OK;
  }
 
-std::vector<hardware_interface::StateInterface> RobotSystem::export_state_interfaces()  //hardware_interface?
- {
-    return CallbackReturn::return_type::OK;
- }
-CallbackReturn::return_type RobotSystem::write(const rclcpp::Time & time, const rclcpp::Duration & period)
+ return_type RobotSystem::write(const rclcpp::Time & time, const rclcpp::Duration & period)
  {
     return return_type::OK; 
  }
-std::vector<hardware_interface::StateInterface> RobotSystem::export_command_interfaces()
+
+ std::vector<hardware_interface::StateInterface> RobotSystem::export_state_interfaces()  //hardware_interface?
  {
-    return CallbackReturn::return_type::OK;
+    return {};
  }
+std::vector<hardware_interface::CommandInterface> RobotSystem::export_command_interfaces()
+{
+    // TODO: Populate and return the command interfaces for your hardware
+    return {};
+}
 
 }
 #include "pluginlib/class_list_macros.hpp"
