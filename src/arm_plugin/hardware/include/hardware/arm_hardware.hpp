@@ -61,6 +61,20 @@ private:
     std::vector<double> hw_states_velocities_;
     int SerialPort = -1;
     struct termios tty;
+    int serial_fd_; // file descriptor for /dev/ttyUSB0
+
+    std::string port_;
+
+    // State machine variables for robust serial reading
+    enum ReadState {
+        WAITING_FOR_HEADER,
+        READING_LENGTH,
+        READING_PAYLOAD
+    };
+    ReadState read_state_;
+    uint8_t read_payload_length_ = 0;
+    uint8_t read_buffer_[256]; // Max buffer size
+    size_t read_buffer_pos_ = 0;
 };
 
 }  // namespace arm_hardware

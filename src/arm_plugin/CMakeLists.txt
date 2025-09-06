@@ -5,6 +5,7 @@ project(arm_plugin)
 set(HW_IF_INCLUDE_DEPENDS
   pluginlib
   hardware_interface
+  rclcpp
 )
 
 find_package(ament_cmake REQUIRED)
