@@ -61,9 +61,9 @@ private:
     std::vector<double> hw_states_velocities_;
     int SerialPort = -1;
     struct termios tty;
-    int serial_fd_; // file descriptor for /dev/ttyUSB0
 
     std::string port_;
+    int serial_fd_; // file descriptor for /dev/ttyUSB0
 
     // State machine variables for robust serial reading
     enum ReadState {
