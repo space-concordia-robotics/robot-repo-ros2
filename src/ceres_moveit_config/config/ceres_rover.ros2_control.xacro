@@ -6,7 +6,7 @@
         <ros2_control name="${name}" type="system">
             <hardware>
                 <!-- By default, set up controllers for simulation. This won't work on real hardware -->
-                <plugin>arm_plugin/RobotSystem</plugin>
+                <plugin>arm_hardware/RobotSystem</plugin>
                         <!-- library_name/ClassName -->
                 <param name="port">/dev/ttyUSB0</param>
             </hardware>
