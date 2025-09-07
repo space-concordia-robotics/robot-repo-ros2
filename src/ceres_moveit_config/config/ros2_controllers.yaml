@@ -16,6 +16,7 @@ controller_manager:
 
 ceres_arm_controller:
   ros__parameters:
+    type: arm_hardware::RobotController
     joints:
       - joint1
       - joint2
@@ -29,6 +30,7 @@ ceres_arm_controller:
       - velocity
 gripper_controller:
   ros__parameters:
+    type: arm_hardware::RobotController
     joints:
       - joint7
     command_interfaces:
