@@ -122,8 +122,18 @@ CallbackReturn RobotSystem::on_configure(const rclcpp_lifecycle::State & previou
 }
 
 CallbackReturn RobotSystem::on_activate(const rclcpp_lifecycle::State & previous_state)
-{
-    RCLCPP_INFO(rclcpp::get_logger("RobotSystem"), "Successfully activated!");
+{  
+   //initial commands
+   std::fill(hw_commands_.begin(), hw_commands_.end(), 0.0);
+
+   // initial frame to enable motors
+   if (write(rclcpp::Time(0), rclcpp::Duration(0,0)) != return_type::OK)
+   {
+       RCLCPP_ERROR(rclcpp::get_logger("RobotSystem"), "Failed to send initial zero commands to STM32.");
+       return CallbackReturn::ERROR;
+   }
+
+   RCLCPP_INFO(rclcpp::get_logger("RobotSystem"), "Successfully activated!");
     return CallbackReturn::SUCCESS;
 }
 
