@@ -6,9 +6,7 @@
         <ros2_control name="${name}" type="system">
             <hardware>
                 <!-- By default, set up controllers for simulation. This won't work on real hardware -->
-                <plugin>arm_hardware/RobotSystem</plugin>
-                        <!-- library_name/ClassName -->
-                <param name="port">/dev/ttyUSB0</param>
+                <plugin>mock_components/GenericSystem</plugin>
             </hardware>
             <joint name="joint1">
                 <command_interface name="position"/>
@@ -28,6 +26,13 @@
                 <command_interface name="position"/>
                 <state_interface name="position">
                   <param name="initial_value">${initial_positions['joint3']}</param>
+                </state_interface>
+                <state_interface name="velocity"/>
+            </joint>
+            <joint name="joint4">
+                <command_interface name="position"/>
+                <state_interface name="position">
+                  <param name="initial_value">${initial_positions['joint4']}</param>
                 </state_interface>
                 <state_interface name="velocity"/>
             </joint>

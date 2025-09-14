@@ -166,7 +166,7 @@
         <axis xyz="1 0 0"/>
     </joint>
     
-   <joint name="joint4" type="fixed">
+   <joint name="joint4" type="continuous">
         <parent link="bicep_gearbox_link"/>
         <child link="forearm_tube_link"/>
         <origin xyz="0 0 0.085" rpy="0 0 0"/>
