@@ -49,7 +49,7 @@ ArmControllerNode::~ArmControllerNode() {
 
 void ArmControllerNode::ArmJointCallback(const sensor_msgs::msg::JointState::SharedPtr msg) {
     if (msg->velocity.size() < 7) {
-        RCLCPP_ERROR(this->get_logger(), "Received JointState message with insufficient velocity data.");
+        RCLCPP_ERROR(this->get_logger(), "Received JointState message with insufficient velocity data. Joint size is %zu, expected at least 7.", msg->velocity.size());
         return;
     }
 
