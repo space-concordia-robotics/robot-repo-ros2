@@ -1,0 +1,3 @@
+[console_scripts]
+imu_data = imu_node.imu_node:main
+

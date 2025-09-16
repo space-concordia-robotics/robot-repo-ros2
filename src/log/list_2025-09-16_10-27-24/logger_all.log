@@ -1,0 +1,313 @@
+[0.082s] DEBUG:colcon:Command line arguments: ['/usr/bin/colcon', 'list', '-p', '--base-paths', '/home/scrb/robot-repo/robot-repo-ros2/src', '--log-base', '/dev/null']
+[0.082s] DEBUG:colcon:Parsed command line arguments: Namespace(log_base=None, log_level=None, verb_name='list', build_base='build', ignore_user_meta=False, metas=['./colcon.meta'], base_paths=['/home/scrb/robot-repo/robot-repo-ros2/src', '--log-base', '/dev/null'], packages_ignore=None, packages_ignore_regex=None, paths=None, packages_up_to=None, packages_up_to_regex=None, packages_above=None, packages_above_and_dependencies=None, packages_above_depth=None, packages_select_by_dep=None, packages_skip_by_dep=None, packages_skip_up_to=None, packages_select_build_failed=False, packages_skip_build_finished=False, packages_select_test_failures=False, packages_skip_test_passed=False, packages_select=None, packages_skip=None, packages_select_regex=None, packages_skip_regex=None, packages_start=None, packages_end=None, allow_overriding=[], topological_order=False, names_only=False, paths_only=True, topological_graph=False, topological_graph_dot=False, topological_graph_density=False, topological_graph_legend=False, topological_graph_dot_cluster=False, topological_graph_dot_include_skipped=False, mixin_files=None, mixin=None, verb_parser=<colcon_mixin.mixin.mixin_argument.MixinArgumentDecorator object at 0x72044c75b1f0>, verb_extension=<colcon_package_information.verb.list.ListVerb object at 0x72044c75a410>, main=<bound method ListVerb.main of <colcon_package_information.verb.list.ListVerb object at 0x72044c75a410>>, mixin_verb=('list',))
+[0.188s] Level 1:colcon.colcon_core.package_discovery:discover_packages(colcon_meta) check parameters
+[0.188s] Level 1:colcon.colcon_core.package_discovery:discover_packages(recursive) check parameters
+[0.188s] Level 1:colcon.colcon_core.package_discovery:discover_packages(ignore) check parameters
+[0.188s] Level 1:colcon.colcon_core.package_discovery:discover_packages(path) check parameters
+[0.188s] Level 1:colcon.colcon_core.package_discovery:discover_packages(recursive) discover
+[0.188s] INFO:colcon.colcon_core.package_discovery:Crawling recursively for packages in '/home/scrb/robot-repo/robot-repo-ros2/src', '/home/scrb/robot-repo/robot-repo-ros2/src/--log-base', '/dev/null'
+[0.188s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src) by extensions ['ignore', 'ignore_ament_install']
+[0.188s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src) by extension 'ignore'
+[0.188s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src) by extension 'ignore_ament_install'
+[0.188s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src) by extensions ['colcon_pkg']
+[0.188s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src) by extension 'colcon_pkg'
+[0.188s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src) by extensions ['colcon_meta']
+[0.188s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src) by extension 'colcon_meta'
+[0.188s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src) by extensions ['ros']
+[0.188s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src) by extension 'ros'
+[0.196s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src) by extensions ['cmake', 'python']
+[0.196s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src) by extension 'cmake'
+[0.196s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src) by extension 'python'
+[0.196s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src) by extensions ['python_setup_py']
+[0.196s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src) by extension 'python_setup_py'
+[0.196s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/absenc_interface) by extensions ['ignore', 'ignore_ament_install']
+[0.196s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/absenc_interface) by extension 'ignore'
+[0.196s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/absenc_interface) by extension 'ignore_ament_install'
+[0.196s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/absenc_interface) by extensions ['colcon_pkg']
+[0.196s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/absenc_interface) by extension 'colcon_pkg'
+[0.196s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/absenc_interface) by extensions ['colcon_meta']
+[0.196s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/absenc_interface) by extension 'colcon_meta'
+[0.196s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/absenc_interface) by extensions ['ros']
+[0.196s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/absenc_interface) by extension 'ros'
+[0.198s] DEBUG:colcon.colcon_core.package_identification:Package '/home/scrb/robot-repo/robot-repo-ros2/src/absenc_interface' with type 'ros.ament_cmake' and name 'absenc_interface'
+[0.198s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/arm_controller) by extensions ['ignore', 'ignore_ament_install']
+[0.198s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/arm_controller) by extension 'ignore'
+[0.198s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/arm_controller) by extension 'ignore_ament_install'
+[0.198s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/arm_controller) by extensions ['colcon_pkg']
+[0.198s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/arm_controller) by extension 'colcon_pkg'
+[0.198s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/arm_controller) by extensions ['colcon_meta']
+[0.198s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/arm_controller) by extension 'colcon_meta'
+[0.198s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/arm_controller) by extensions ['ros']
+[0.198s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/arm_controller) by extension 'ros'
+[0.199s] DEBUG:colcon.colcon_core.package_identification:Package '/home/scrb/robot-repo/robot-repo-ros2/src/arm_controller' with type 'ros.ament_cmake' and name 'arm_controller'
+[0.199s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/arm_plugin) by extensions ['ignore', 'ignore_ament_install']
+[0.199s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/arm_plugin) by extension 'ignore'
+[0.199s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/arm_plugin) by extension 'ignore_ament_install'
+[0.199s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/arm_plugin) by extensions ['colcon_pkg']
+[0.199s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/arm_plugin) by extension 'colcon_pkg'
+[0.199s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/arm_plugin) by extensions ['colcon_meta']
+[0.199s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/arm_plugin) by extension 'colcon_meta'
+[0.199s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/arm_plugin) by extensions ['ros']
+[0.199s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/arm_plugin) by extension 'ros'
+[0.199s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/arm_plugin) by extensions ['cmake', 'python']
+[0.199s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/arm_plugin) by extension 'cmake'
+[0.199s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/arm_plugin) by extension 'python'
+[0.199s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/arm_plugin) by extensions ['python_setup_py']
+[0.199s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/arm_plugin) by extension 'python_setup_py'
+[0.199s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ceres_system) by extensions ['ignore', 'ignore_ament_install']
+[0.199s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ceres_system) by extension 'ignore'
+[0.199s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ceres_system) by extension 'ignore_ament_install'
+[0.199s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ceres_system) by extensions ['colcon_pkg']
+[0.199s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ceres_system) by extension 'colcon_pkg'
+[0.199s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ceres_system) by extensions ['colcon_meta']
+[0.199s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ceres_system) by extension 'colcon_meta'
+[0.199s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ceres_system) by extensions ['ros']
+[0.199s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ceres_system) by extension 'ros'
+[0.199s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ceres_system) by extensions ['cmake', 'python']
+[0.199s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ceres_system) by extension 'cmake'
+[0.199s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ceres_system) by extension 'python'
+[0.199s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ceres_system) by extensions ['python_setup_py']
+[0.199s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ceres_system) by extension 'python_setup_py'
+[0.200s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ceres_system/XML_FIle) by extensions ['ignore', 'ignore_ament_install']
+[0.200s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ceres_system/XML_FIle) by extension 'ignore'
+[0.200s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ceres_system/XML_FIle) by extension 'ignore_ament_install'
+[0.200s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ceres_system/XML_FIle) by extensions ['colcon_pkg']
+[0.200s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ceres_system/XML_FIle) by extension 'colcon_pkg'
+[0.200s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ceres_system/XML_FIle) by extensions ['colcon_meta']
+[0.200s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ceres_system/XML_FIle) by extension 'colcon_meta'
+[0.200s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ceres_system/XML_FIle) by extensions ['ros']
+[0.200s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ceres_system/XML_FIle) by extension 'ros'
+[0.200s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ceres_system/XML_FIle) by extensions ['cmake', 'python']
+[0.200s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ceres_system/XML_FIle) by extension 'cmake'
+[0.200s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ceres_system/XML_FIle) by extension 'python'
+[0.200s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ceres_system/XML_FIle) by extensions ['python_setup_py']
+[0.200s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ceres_system/XML_FIle) by extension 'python_setup_py'
+[0.200s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ceres_system/include) by extensions ['ignore', 'ignore_ament_install']
+[0.200s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ceres_system/include) by extension 'ignore'
+[0.200s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ceres_system/include) by extension 'ignore_ament_install'
+[0.200s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ceres_system/include) by extensions ['colcon_pkg']
+[0.200s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ceres_system/include) by extension 'colcon_pkg'
+[0.200s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ceres_system/include) by extensions ['colcon_meta']
+[0.200s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ceres_system/include) by extension 'colcon_meta'
+[0.200s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ceres_system/include) by extensions ['ros']
+[0.200s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ceres_system/include) by extension 'ros'
+[0.200s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ceres_system/include) by extensions ['cmake', 'python']
+[0.200s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ceres_system/include) by extension 'cmake'
+[0.200s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ceres_system/include) by extension 'python'
+[0.200s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ceres_system/include) by extensions ['python_setup_py']
+[0.200s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ceres_system/include) by extension 'python_setup_py'
+[0.200s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ceres_system/include/ceres_system) by extensions ['ignore', 'ignore_ament_install']
+[0.200s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ceres_system/include/ceres_system) by extension 'ignore'
+[0.200s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ceres_system/include/ceres_system) by extension 'ignore_ament_install'
+[0.200s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ceres_system/include/ceres_system) by extensions ['colcon_pkg']
+[0.200s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ceres_system/include/ceres_system) by extension 'colcon_pkg'
+[0.200s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ceres_system/include/ceres_system) by extensions ['colcon_meta']
+[0.200s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ceres_system/include/ceres_system) by extension 'colcon_meta'
+[0.200s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ceres_system/include/ceres_system) by extensions ['ros']
+[0.200s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ceres_system/include/ceres_system) by extension 'ros'
+[0.201s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ceres_system/include/ceres_system) by extensions ['cmake', 'python']
+[0.201s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ceres_system/include/ceres_system) by extension 'cmake'
+[0.201s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ceres_system/include/ceres_system) by extension 'python'
+[0.201s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ceres_system/include/ceres_system) by extensions ['python_setup_py']
+[0.201s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ceres_system/include/ceres_system) by extension 'python_setup_py'
+[0.201s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ceres_system/src) by extensions ['ignore', 'ignore_ament_install']
+[0.201s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ceres_system/src) by extension 'ignore'
+[0.201s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ceres_system/src) by extension 'ignore_ament_install'
+[0.201s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ceres_system/src) by extensions ['colcon_pkg']
+[0.201s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ceres_system/src) by extension 'colcon_pkg'
+[0.201s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ceres_system/src) by extensions ['colcon_meta']
+[0.201s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ceres_system/src) by extension 'colcon_meta'
+[0.201s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ceres_system/src) by extensions ['ros']
+[0.201s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ceres_system/src) by extension 'ros'
+[0.201s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ceres_system/src) by extensions ['cmake', 'python']
+[0.201s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ceres_system/src) by extension 'cmake'
+[0.201s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ceres_system/src) by extension 'python'
+[0.201s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ceres_system/src) by extensions ['python_setup_py']
+[0.201s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ceres_system/src) by extension 'python_setup_py'
+[0.201s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ceres_urdf) by extensions ['ignore', 'ignore_ament_install']
+[0.201s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ceres_urdf) by extension 'ignore'
+[0.201s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ceres_urdf) by extension 'ignore_ament_install'
+[0.201s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ceres_urdf) by extensions ['colcon_pkg']
+[0.201s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ceres_urdf) by extension 'colcon_pkg'
+[0.201s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ceres_urdf) by extensions ['colcon_meta']
+[0.201s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ceres_urdf) by extension 'colcon_meta'
+[0.201s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ceres_urdf) by extensions ['ros']
+[0.201s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ceres_urdf) by extension 'ros'
+[0.202s] DEBUG:colcon.colcon_core.package_identification:Package '/home/scrb/robot-repo/robot-repo-ros2/src/ceres_urdf' with type 'ros.ament_cmake' and name 'ceres_urdf'
+[0.202s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/gps_py) by extensions ['ignore', 'ignore_ament_install']
+[0.202s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/gps_py) by extension 'ignore'
+[0.202s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/gps_py) by extension 'ignore_ament_install'
+[0.202s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/gps_py) by extensions ['colcon_pkg']
+[0.202s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/gps_py) by extension 'colcon_pkg'
+[0.202s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/gps_py) by extensions ['colcon_meta']
+[0.202s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/gps_py) by extension 'colcon_meta'
+[0.202s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/gps_py) by extensions ['ros']
+[0.202s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/gps_py) by extension 'ros'
+[0.202s] DEBUG:colcon.colcon_core.package_identification:Package '/home/scrb/robot-repo/robot-repo-ros2/src/gps_py' with type 'ros.ament_python' and name 'gps_py'
+[0.202s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/imu) by extensions ['ignore', 'ignore_ament_install']
+[0.202s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/imu) by extension 'ignore'
+[0.202s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/imu) by extension 'ignore_ament_install'
+[0.203s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/imu) by extensions ['colcon_pkg']
+[0.203s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/imu) by extension 'colcon_pkg'
+[0.203s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/imu) by extensions ['colcon_meta']
+[0.203s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/imu) by extension 'colcon_meta'
+[0.203s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/imu) by extensions ['ros']
+[0.203s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/imu) by extension 'ros'
+[0.203s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/imu) by extensions ['cmake', 'python']
+[0.203s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/imu) by extension 'cmake'
+[0.203s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/imu) by extension 'python'
+[0.203s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/imu) by extensions ['python_setup_py']
+[0.203s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/imu) by extension 'python_setup_py'
+[0.203s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/imu/imu_ws) by extensions ['ignore', 'ignore_ament_install']
+[0.203s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/imu/imu_ws) by extension 'ignore'
+[0.203s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/imu/imu_ws) by extension 'ignore_ament_install'
+[0.203s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/imu/imu_ws) by extensions ['colcon_pkg']
+[0.203s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/imu/imu_ws) by extension 'colcon_pkg'
+[0.203s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/imu/imu_ws) by extensions ['colcon_meta']
+[0.203s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/imu/imu_ws) by extension 'colcon_meta'
+[0.203s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/imu/imu_ws) by extensions ['ros']
+[0.203s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/imu/imu_ws) by extension 'ros'
+[0.203s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/imu/imu_ws) by extensions ['cmake', 'python']
+[0.203s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/imu/imu_ws) by extension 'cmake'
+[0.203s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/imu/imu_ws) by extension 'python'
+[0.203s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/imu/imu_ws) by extensions ['python_setup_py']
+[0.203s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/imu/imu_ws) by extension 'python_setup_py'
+[0.203s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/imu/imu_ws/build) by extensions ['ignore', 'ignore_ament_install']
+[0.203s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/imu/imu_ws/build) by extension 'ignore'
+[0.203s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/imu/imu_ws/build) ignored
+[0.203s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/imu/imu_ws/install) by extensions ['ignore', 'ignore_ament_install']
+[0.203s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/imu/imu_ws/install) by extension 'ignore'
+[0.203s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/imu/imu_ws/install) ignored
+[0.203s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/imu/imu_ws/log) by extensions ['ignore', 'ignore_ament_install']
+[0.204s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/imu/imu_ws/log) by extension 'ignore'
+[0.204s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/imu/imu_ws/log) ignored
+[0.204s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/imu/imu_ws/src) by extensions ['ignore', 'ignore_ament_install']
+[0.204s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/imu/imu_ws/src) by extension 'ignore'
+[0.204s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/imu/imu_ws/src) by extension 'ignore_ament_install'
+[0.204s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/imu/imu_ws/src) by extensions ['colcon_pkg']
+[0.204s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/imu/imu_ws/src) by extension 'colcon_pkg'
+[0.204s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/imu/imu_ws/src) by extensions ['colcon_meta']
+[0.204s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/imu/imu_ws/src) by extension 'colcon_meta'
+[0.204s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/imu/imu_ws/src) by extensions ['ros']
+[0.204s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/imu/imu_ws/src) by extension 'ros'
+[0.204s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/imu/imu_ws/src) by extensions ['cmake', 'python']
+[0.204s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/imu/imu_ws/src) by extension 'cmake'
+[0.204s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/imu/imu_ws/src) by extension 'python'
+[0.204s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/imu/imu_ws/src) by extensions ['python_setup_py']
+[0.204s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/imu/imu_ws/src) by extension 'python_setup_py'
+[0.204s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/imu/imu_ws/src/imu_node) by extensions ['ignore', 'ignore_ament_install']
+[0.204s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/imu/imu_ws/src/imu_node) by extension 'ignore'
+[0.204s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/imu/imu_ws/src/imu_node) by extension 'ignore_ament_install'
+[0.204s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/imu/imu_ws/src/imu_node) by extensions ['colcon_pkg']
+[0.204s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/imu/imu_ws/src/imu_node) by extension 'colcon_pkg'
+[0.204s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/imu/imu_ws/src/imu_node) by extensions ['colcon_meta']
+[0.204s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/imu/imu_ws/src/imu_node) by extension 'colcon_meta'
+[0.204s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/imu/imu_ws/src/imu_node) by extensions ['ros']
+[0.204s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/imu/imu_ws/src/imu_node) by extension 'ros'
+[0.205s] DEBUG:colcon.colcon_core.package_identification:Package '/home/scrb/robot-repo/robot-repo-ros2/src/imu/imu_ws/src/imu_node' with type 'ros.ament_python' and name 'imu_node'
+[0.205s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/joy_mux_controller_cpp) by extensions ['ignore', 'ignore_ament_install']
+[0.205s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/joy_mux_controller_cpp) by extension 'ignore'
+[0.205s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/joy_mux_controller_cpp) by extension 'ignore_ament_install'
+[0.205s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/joy_mux_controller_cpp) by extensions ['colcon_pkg']
+[0.205s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/joy_mux_controller_cpp) by extension 'colcon_pkg'
+[0.205s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/joy_mux_controller_cpp) by extensions ['colcon_meta']
+[0.205s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/joy_mux_controller_cpp) by extension 'colcon_meta'
+[0.205s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/joy_mux_controller_cpp) by extensions ['ros']
+[0.205s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/joy_mux_controller_cpp) by extension 'ros'
+[0.205s] DEBUG:colcon.colcon_core.package_identification:Package '/home/scrb/robot-repo/robot-repo-ros2/src/joy_mux_controller_cpp' with type 'ros.ament_cmake' and name 'joy_mux_controller_cpp'
+[0.206s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/joy_mux_controller_py) by extensions ['ignore', 'ignore_ament_install']
+[0.206s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/joy_mux_controller_py) by extension 'ignore'
+[0.206s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/joy_mux_controller_py) by extension 'ignore_ament_install'
+[0.206s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/joy_mux_controller_py) by extensions ['colcon_pkg']
+[0.206s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/joy_mux_controller_py) by extension 'colcon_pkg'
+[0.206s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/joy_mux_controller_py) by extensions ['colcon_meta']
+[0.206s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/joy_mux_controller_py) by extension 'colcon_meta'
+[0.206s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/joy_mux_controller_py) by extensions ['ros']
+[0.206s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/joy_mux_controller_py) by extension 'ros'
+[0.206s] DEBUG:colcon.colcon_core.package_identification:Package '/home/scrb/robot-repo/robot-repo-ros2/src/joy_mux_controller_py' with type 'ros.ament_python' and name 'joy_mux_controller_py'
+[0.206s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/log) by extensions ['ignore', 'ignore_ament_install']
+[0.206s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/log) by extension 'ignore'
+[0.206s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/log) ignored
+[0.206s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ouster-ros) by extensions ['ignore', 'ignore_ament_install']
+[0.207s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ouster-ros) by extension 'ignore'
+[0.207s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ouster-ros) by extension 'ignore_ament_install'
+[0.207s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ouster-ros) by extensions ['colcon_pkg']
+[0.207s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ouster-ros) by extension 'colcon_pkg'
+[0.207s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ouster-ros) by extensions ['colcon_meta']
+[0.207s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ouster-ros) by extension 'colcon_meta'
+[0.207s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ouster-ros) by extensions ['ros']
+[0.207s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ouster-ros) by extension 'ros'
+[0.207s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ouster-ros) by extensions ['cmake', 'python']
+[0.207s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ouster-ros) by extension 'cmake'
+[0.207s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ouster-ros) by extension 'python'
+[0.207s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ouster-ros) by extensions ['python_setup_py']
+[0.207s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ouster-ros) by extension 'python_setup_py'
+[0.207s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ouster-ros/docs) by extensions ['ignore', 'ignore_ament_install']
+[0.207s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ouster-ros/docs) by extension 'ignore'
+[0.207s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ouster-ros/docs) by extension 'ignore_ament_install'
+[0.207s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ouster-ros/docs) by extensions ['colcon_pkg']
+[0.207s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ouster-ros/docs) by extension 'colcon_pkg'
+[0.207s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ouster-ros/docs) by extensions ['colcon_meta']
+[0.207s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ouster-ros/docs) by extension 'colcon_meta'
+[0.207s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ouster-ros/docs) by extensions ['ros']
+[0.207s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ouster-ros/docs) by extension 'ros'
+[0.207s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ouster-ros/docs) by extensions ['cmake', 'python']
+[0.207s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ouster-ros/docs) by extension 'cmake'
+[0.207s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ouster-ros/docs) by extension 'python'
+[0.207s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ouster-ros/docs) by extensions ['python_setup_py']
+[0.207s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ouster-ros/docs) by extension 'python_setup_py'
+[0.207s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ouster-ros/docs/images) by extensions ['ignore', 'ignore_ament_install']
+[0.207s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ouster-ros/docs/images) by extension 'ignore'
+[0.207s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ouster-ros/docs/images) by extension 'ignore_ament_install'
+[0.207s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ouster-ros/docs/images) by extensions ['colcon_pkg']
+[0.207s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ouster-ros/docs/images) by extension 'colcon_pkg'
+[0.207s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ouster-ros/docs/images) by extensions ['colcon_meta']
+[0.207s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ouster-ros/docs/images) by extension 'colcon_meta'
+[0.207s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ouster-ros/docs/images) by extensions ['ros']
+[0.207s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ouster-ros/docs/images) by extension 'ros'
+[0.207s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ouster-ros/docs/images) by extensions ['cmake', 'python']
+[0.207s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ouster-ros/docs/images) by extension 'cmake'
+[0.208s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ouster-ros/docs/images) by extension 'python'
+[0.208s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ouster-ros/docs/images) by extensions ['python_setup_py']
+[0.208s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ouster-ros/docs/images) by extension 'python_setup_py'
+[0.208s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ouster-ros/ouster-ros) by extensions ['ignore', 'ignore_ament_install']
+[0.208s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ouster-ros/ouster-ros) by extension 'ignore'
+[0.208s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ouster-ros/ouster-ros) by extension 'ignore_ament_install'
+[0.208s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ouster-ros/ouster-ros) by extensions ['colcon_pkg']
+[0.208s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ouster-ros/ouster-ros) by extension 'colcon_pkg'
+[0.208s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ouster-ros/ouster-ros) by extensions ['colcon_meta']
+[0.208s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ouster-ros/ouster-ros) by extension 'colcon_meta'
+[0.208s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ouster-ros/ouster-ros) by extensions ['ros']
+[0.208s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ouster-ros/ouster-ros) by extension 'ros'
+[0.209s] DEBUG:colcon.colcon_core.package_identification:Package '/home/scrb/robot-repo/robot-repo-ros2/src/ouster-ros/ouster-ros' with type 'ros.ament_cmake' and name 'ouster_ros'
+[0.209s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ouster-ros/ouster-sensor-msgs) by extensions ['ignore', 'ignore_ament_install']
+[0.209s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ouster-ros/ouster-sensor-msgs) by extension 'ignore'
+[0.209s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ouster-ros/ouster-sensor-msgs) by extension 'ignore_ament_install'
+[0.209s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ouster-ros/ouster-sensor-msgs) by extensions ['colcon_pkg']
+[0.209s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ouster-ros/ouster-sensor-msgs) by extension 'colcon_pkg'
+[0.209s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ouster-ros/ouster-sensor-msgs) by extensions ['colcon_meta']
+[0.209s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ouster-ros/ouster-sensor-msgs) by extension 'colcon_meta'
+[0.209s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ouster-ros/ouster-sensor-msgs) by extensions ['ros']
+[0.209s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/ouster-ros/ouster-sensor-msgs) by extension 'ros'
+[0.210s] DEBUG:colcon.colcon_core.package_identification:Package '/home/scrb/robot-repo/robot-repo-ros2/src/ouster-ros/ouster-sensor-msgs' with type 'ros.ament_cmake' and name 'ouster_sensor_msgs'
+[0.210s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/usb_cam) by extensions ['ignore', 'ignore_ament_install']
+[0.210s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/usb_cam) by extension 'ignore'
+[0.210s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/usb_cam) by extension 'ignore_ament_install'
+[0.210s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/usb_cam) by extensions ['colcon_pkg']
+[0.210s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/usb_cam) by extension 'colcon_pkg'
+[0.210s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/usb_cam) by extensions ['colcon_meta']
+[0.210s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/usb_cam) by extension 'colcon_meta'
+[0.210s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/usb_cam) by extensions ['ros']
+[0.210s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/usb_cam) by extension 'ros'
+[0.222s] DEBUG:colcon.colcon_core.package_identification:Package '/home/scrb/robot-repo/robot-repo-ros2/src/usb_cam' with type 'ros.ament_cmake' and name 'usb_cam'
+[0.223s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/wheels_controller) by extensions ['ignore', 'ignore_ament_install']
+[0.223s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/wheels_controller) by extension 'ignore'
+[0.223s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/wheels_controller) by extension 'ignore_ament_install'
+[0.223s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/wheels_controller) by extensions ['colcon_pkg']
+[0.223s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/wheels_controller) by extension 'colcon_pkg'
+[0.223s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/wheels_controller) by extensions ['colcon_meta']
+[0.223s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/wheels_controller) by extension 'colcon_meta'
+[0.223s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/wheels_controller) by extensions ['ros']
+[0.223s] Level 1:colcon.colcon_core.package_identification:_identify(/home/scrb/robot-repo/robot-repo-ros2/src/wheels_controller) by extension 'ros'
+[0.223s] DEBUG:colcon.colcon_core.package_identification:Package '/home/scrb/robot-repo/robot-repo-ros2/src/wheels_controller' with type 'ros.ament_cmake' and name 'wheels_controller'
+[0.224s] Level 1:colcon.colcon_core.package_discovery:discover_packages(recursive) using defaults

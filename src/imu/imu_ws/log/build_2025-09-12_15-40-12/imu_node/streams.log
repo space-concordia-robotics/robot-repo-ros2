@@ -1,0 +1,24 @@
+[0.392s] Invoking command in '/home/scrb/code/imu/imu_ws/src/imu_node': PYTHONPATH=/home/scrb/code/imu/imu_ws/build/imu_node/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/scrb/code/imu/imu_ws/install/imu_node/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../build/imu_node build --build-base /home/scrb/code/imu/imu_ws/build/imu_node/build install --record /home/scrb/code/imu/imu_ws/build/imu_node/install.log --single-version-externally-managed install_data
+[0.542s] running egg_info
+[0.542s] writing ../../build/imu_node/imu_node.egg-info/PKG-INFO
+[0.542s] writing dependency_links to ../../build/imu_node/imu_node.egg-info/dependency_links.txt
+[0.542s] writing entry points to ../../build/imu_node/imu_node.egg-info/entry_points.txt
+[0.542s] writing requirements to ../../build/imu_node/imu_node.egg-info/requires.txt
+[0.542s] writing top-level names to ../../build/imu_node/imu_node.egg-info/top_level.txt
+[0.544s] reading manifest file '../../build/imu_node/imu_node.egg-info/SOURCES.txt'
+[0.545s] writing manifest file '../../build/imu_node/imu_node.egg-info/SOURCES.txt'
+[0.545s] running build
+[0.545s] running build_py
+[0.545s] copying imu_node/imu_node.py -> /home/scrb/code/imu/imu_ws/build/imu_node/build/lib/imu_node
+[0.545s] running install
+[0.545s] running install_lib
+[0.546s] copying /home/scrb/code/imu/imu_ws/build/imu_node/build/lib/imu_node/imu_node.py -> /home/scrb/code/imu/imu_ws/install/imu_node/lib/python3.10/site-packages/imu_node
+[0.546s] byte-compiling /home/scrb/code/imu/imu_ws/install/imu_node/lib/python3.10/site-packages/imu_node/imu_node.py to imu_node.cpython-310.pyc
+[0.547s] running install_data
+[0.547s] running install_egg_info
+[0.548s] removing '/home/scrb/code/imu/imu_ws/install/imu_node/lib/python3.10/site-packages/imu_node-0.0.0-py3.10.egg-info' (and everything under it)
+[0.548s] Copying ../../build/imu_node/imu_node.egg-info to /home/scrb/code/imu/imu_ws/install/imu_node/lib/python3.10/site-packages/imu_node-0.0.0-py3.10.egg-info
+[0.548s] running install_scripts
+[0.561s] Installing imu_data script to /home/scrb/code/imu/imu_ws/install/imu_node/lib/imu_node
+[0.562s] writing list of installed files to '/home/scrb/code/imu/imu_ws/build/imu_node/install.log'
+[0.578s] Invoked command in '/home/scrb/code/imu/imu_ws/src/imu_node' returned '0': PYTHONPATH=/home/scrb/code/imu/imu_ws/build/imu_node/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/scrb/code/imu/imu_ws/install/imu_node/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../build/imu_node build --build-base /home/scrb/code/imu/imu_ws/build/imu_node/build install --record /home/scrb/code/imu/imu_ws/build/imu_node/install.log --single-version-externally-managed install_data
