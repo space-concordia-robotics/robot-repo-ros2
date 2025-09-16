@@ -14,7 +14,7 @@ def generate_launch_description():
 
         # Launch the joy_mux_controller
         Node(
-            package='joy_mux_controller',
+            package='joy_mux_controller_cpp',
             executable='joy_mux',
             name='joy_mux_controller',
             #output='screen',
