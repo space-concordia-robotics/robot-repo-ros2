@@ -20,7 +20,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'joy_mux_controller = joy_mux_controller.joy_mux_controller:main',
+            'joy_mux_controller = joy_mux_controller_py.joy_mux_controller:main',
         ],
     },
 )
