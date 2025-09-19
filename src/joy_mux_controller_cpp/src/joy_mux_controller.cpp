@@ -67,16 +67,21 @@ class JoyMuxNode : public rclcpp::Node
         else
         {
             auto joint = sensor_msgs::msg::JointState();
-            joint.position.resize(joint.name.size(), 0.0);
             joint.name = {"joint1", "joint2", "joint3", "joint4", "joint5", "joint6"};
-            joint.velocity = {
-                joy_cmds->axes[D_PAD_X],
-                joy_cmds->axes[D_PAD_Y],
-                joy_cmds->axes[LEFT_STICK_X],
-                joy_cmds->axes[LEFT_STICK_Y],
-                joy_cmds->axes[LEFT_TRIGGER],
-                joy_cmds->axes[RIGHT_TRIGGER]
-            };
+            size_t n = joint.name.size();
+            // Fill velocity, position, and effort arrays to match name size
+            joint.velocity.resize(n, 0.0);
+            joint.position.resize(n, 0.0);
+            joint.effort.resize(n, 0.0);
+            // Assign values from joy_cmds axes, if available
+            if (joy_cmds->axes.size() >= 6) {
+                joint.velocity[0] = joy_cmds->axes[D_PAD_X];
+                joint.velocity[1] = joy_cmds->axes[D_PAD_Y];
+                joint.velocity[2] = joy_cmds->axes[LEFT_STICK_X];
+                joint.velocity[3] = joy_cmds->axes[LEFT_STICK_Y];
+                joint.velocity[4] = joy_cmds->axes[LEFT_TRIGGER];
+                joint.velocity[5] = joy_cmds->axes[RIGHT_TRIGGER];
+            }
             joint_state_pub_->publish(joint);
         }
     }
