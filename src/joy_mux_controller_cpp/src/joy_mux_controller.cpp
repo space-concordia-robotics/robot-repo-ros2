@@ -18,71 +18,67 @@ class JoyMuxNode : public rclcpp::Node
 
     private:
 
-        enum Axis
-        {
-            LEFT_STICK_X = 0,
-            LEFT_STICK_Y = 1,
-            LEFT_TRIGGER = 2,
-            RIGHT_STICK_X = 3,
-            RIGHT_STICK_Y = 4,
-            RIGHT_TRIGGER = 5,
-            D_PAD_X = 6,
-            D_PAD_Y = 7
+        // Axis and button mapping to match the Python code
+        enum Axis {
+            AXIS_LEFT_STICK_X = 0,
+            AXIS_LEFT_STICK_Y = 1,
+            AXIS_RIGHT_STICK_X = 3,
+            AXIS_RIGHT_STICK_Y = 4,
+            AXIS_DPAD_X = 6,
+            AXIS_DPAD_Y = 7
         };
-        enum Button
-        {
-            square= 0,
-            triangle = 1,
-            X = 2,
-            circle = 3,
+        enum Button {
+            BUTTON_A = 0, // X in PS
+            BUTTON_B = 1, // Circle in PS
+            BUTTON_X = 2, // Square in PS
+            BUTTON_Y = 3, // Triangle in PS
             LEFT_BUMPER = 4,
             RIGHT_BUMPER = 5,
-            CHANGE_VIEW = 6,
-            MENU = 7,
-            HOME = 10,
-            LEFT_STICK_CLICK = 9,
-            RIGHT_STICK_CLICK = 12
+            // ... other buttons ...
+            TOGGLE_BUTTON = 10 // Mode toggle (HOME)
         };
     void JoyToCmdCB(const sensor_msgs::msg::Joy::SharedPtr joy_cmds)
     {
-        static bool last_deadman_state = false;
-        bool current_deadman_state = joy_cmds->buttons[HOME];
-
-        // Toggle mode on button press (edge detection)
-        if (current_deadman_state && !last_deadman_state) {
+        static int last_toggle = 0;
+        // Mode toggle logic (edge detection)
+        if (joy_cmds->buttons.size() > TOGGLE_BUTTON && joy_cmds->buttons[TOGGLE_BUTTON] == 1 && last_toggle == 0) {
             publish_twist_mode_ = !publish_twist_mode_;
-            RCLCPP_INFO(this->get_logger(), "Rover mode Switched to %s", publish_twist_mode_? "Rover" : "Arm");
+            RCLCPP_INFO(this->get_logger(), "Switched to %s mode", publish_twist_mode_ ? "Rover" : "Arm");
         }
-        last_deadman_state = current_deadman_state;
+        if (joy_cmds->buttons.size() > TOGGLE_BUTTON)
+            last_toggle = joy_cmds->buttons[TOGGLE_BUTTON];
 
-        if(publish_twist_mode_)
-        {
-            auto twist = geometry_msgs::msg::Twist();
-            twist.linear.x = joy_cmds->axes[LEFT_STICK_X];
-            twist.linear.y = joy_cmds->axes[LEFT_STICK_Y];
-            twist.linear.z = joy_cmds->axes[LEFT_TRIGGER - 1];
-            twist.angular.z = joy_cmds->axes[RIGHT_TRIGGER - 1];
-            twist_pub_->publish(twist);
-        }
-        else
-        {
-            auto joint = sensor_msgs::msg::JointState();
-            joint.name = {"joint1", "joint2", "joint3", "joint4", "joint5", "joint6"};
-            size_t n = joint.name.size();
-            // Fill velocity, position, and effort arrays to match name size
-            joint.velocity.resize(n, 0.0);
-            joint.position.resize(n, 0.0);
-            joint.effort.resize(n, 0.0);
-            // Assign values from joy_cmds axes, if available
-            if (joy_cmds->axes.size() >= 6) {
-                joint.velocity[0] = joy_cmds->axes[D_PAD_X];
-                joint.velocity[1] = joy_cmds->axes[D_PAD_Y];
-                joint.velocity[2] = joy_cmds->axes[LEFT_STICK_X];
-                joint.velocity[3] = joy_cmds->axes[LEFT_STICK_Y];
-                joint.velocity[4] = joy_cmds->axes[LEFT_TRIGGER];
-                joint.velocity[5] = joy_cmds->axes[RIGHT_TRIGGER];
+        // Deadman button (LEFT_BUMPER)
+        if (joy_cmds->buttons.size() > LEFT_BUMPER && joy_cmds->buttons[LEFT_BUMPER] == 1) {
+            if (publish_twist_mode_) {
+                auto twist = geometry_msgs::msg::Twist();
+                // Map axes as in Python code
+                if (joy_cmds->axes.size() > 7) {
+                    twist.linear.x = joy_cmds->axes[AXIS_LEFT_STICK_Y]; // axes[1]
+                    twist.angular.z = joy_cmds->axes[AXIS_LEFT_STICK_X]; // axes[0]
+                    twist.linear.y = joy_cmds->axes[AXIS_DPAD_Y]; // axes[7]
+                    twist.linear.z = joy_cmds->axes[AXIS_DPAD_X]; // axes[6]
+                }
+                twist_pub_->publish(twist);
+            } else {
+                auto joint = sensor_msgs::msg::JointState();
+                joint.name = {"joint1", "joint2", "joint3", "joint4", "joint5", "joint6", "joint7"};
+                size_t n = joint.name.size();
+                joint.velocity.resize(n, 0.0);
+                joint.position.resize(n, 0.0);
+                joint.effort.resize(n, 0.0);
+                // Fill velocity array as in Python code
+                if (joy_cmds->axes.size() > 7 && joy_cmds->buttons.size() > 3) {
+                    joint.velocity[0] = static_cast<double>(joy_cmds->axes[AXIS_DPAD_Y]); // axes[7]
+                    joint.velocity[1] = static_cast<double>(joy_cmds->axes[AXIS_DPAD_X]); // axes[6]
+                    joint.velocity[2] = static_cast<double>(joy_cmds->axes[AXIS_RIGHT_STICK_Y]); // axes[4]
+                    joint.velocity[3] = static_cast<double>((joy_cmds->buttons.size() > 3 ? (joy_cmds->buttons[BUTTON_Y] ? 1 : 0) : 0) - (joy_cmds->buttons.size() > 1 ? (joy_cmds->buttons[BUTTON_B] ? 1 : 0) : 0));
+                    joint.velocity[4] = static_cast<double>(joy_cmds->axes[AXIS_RIGHT_STICK_X]); // axes[3]
+                    joint.velocity[5] = static_cast<double>(joy_cmds->axes[AXIS_LEFT_STICK_X]); // axes[0]
+                    joint.velocity[6] = static_cast<double>((joy_cmds->buttons.size() > 0 ? (joy_cmds->buttons[BUTTON_A] ? 1 : 0) : 0) - (joy_cmds->buttons.size() > 1 ? (joy_cmds->buttons[BUTTON_B] ? 1 : 0) : 0));
+                }
+                joint_state_pub_->publish(joint);
             }
-            joint_state_pub_->publish(joint);
         }
     }
         rclcpp::Subscription<sensor_msgs::msg::Joy>::SharedPtr joy_sub_;
