@@ -52,6 +52,16 @@ public:
 private:
    std::shared_ptr<AbsencDriver> absenc_; 
    std::shared_ptr<ArmControllerNode> arm_controller_; 
+   std::string port_; 
+   int joint1_id_;
+   int joint2_id_;
+   int joint3_id_;
+   int joint4_id_;
+   int joint5_id_;
+   int joint6_id_; 
+   int joint7_id_;
+   int joint8_id_;
+   int joint9_id_;
 };
 
 }  // namespace arm_hardware

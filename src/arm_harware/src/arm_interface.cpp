@@ -18,47 +18,49 @@ namespace arm_interface
 {
 
 
-CallbackReturn ArmInterface::on_init(const hardware_interface::HardwareInfo &info)
+hardware_interface::CallbackReturn ArmInterface::on_init(const hardware_interface::HardwareInfo &info)
 {
     if (hardware_interface::SystemInterface::on_init(info) != CallbackReturn::SUCCESS)
     {
         return hardware_interface::CallbackReturn::ERROR;
     }
 
-    info_ = info;
+    info_ = info;   
 
-    
+    port_ = "/dev/ttyUSB0";
+    absenc_ = std::make_shared<AbsencDriver>(port_);
+    arm_controller_ = std::make_shared<ArmControllerNode>(port_); 
 
     RCLCPP_INFO(rclcpp::get_logger("ArmInterface"), "on_init() successfully completed.");
-    return CallbackReturn::SUCCESS;
+    return hardware_interface::CallbackReturn::SUCCESS;
 }
 
-CallbackReturn ArmInterface::on_configure(const rclcpp_lifecycle::State & previous_state)
+hardware_interface::CallbackReturn ArmInterface::on_configure(const rclcpp_lifecycle::State & previous_state)
 {
 
     RCLCPP_INFO(rclcpp::get_logger("ArmInterface"), "Successfully configured! Serial port %s opened: %d", port_.c_str(), SerialPort);
     return CallbackReturn::SUCCESS;
 }
 
-CallbackReturn ArmInterface::on_activate(const rclcpp_lifecycle::State & previous_state)
+hardware_interface::CallbackReturn ArmInterface::on_activate(const rclcpp_lifecycle::State & previous_state)
 {  
    
 }
 
-CallbackReturn ArmInterface::on_deactivate(const rclcpp_lifecycle::State & previous_state)
+hardware_interface::CallbackReturn ArmInterface::on_deactivate(const rclcpp_lifecycle::State & previous_state)
 {
 
 }
 
 // Reading information from the hardware and then goes to the controller
-return_type ArmInterface::read(const rclcpp::Time & time, const rclcpp::Duration & period)
+hardware_interface::return_type ArmInterface::read(const rclcpp::Time & time, const rclcpp::Duration & period)
 {
    
     return return_type::OK;
 }
 
 // The write sends the controller data back to the hardware data.
-return_type ArmInterface::write(const rclcpp::Time & time, const rclcpp::Duration & period)
+hardware_interface::return_type ArmInterface::write(const rclcpp::Time & time, const rclcpp::Duration & period)
 {
 
     return return_type::OK; 
