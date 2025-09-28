@@ -5,9 +5,10 @@
 #include "arm_hardware/arm_controller_node.h"
 #include "arm_hardware/absenc.h"
 
-#include "string"
-#include "unordered_map"
-#include "vector"
+#include <string>
+#include <unordered_map>
+#include <vector>
+#include <limits>
 
 #include <termios.h>
 #include "hardware_interface/handle.hpp"
@@ -50,20 +51,21 @@ public:
   std::vector<hardware_interface::CommandInterface> export_command_interfaces() override;
 
 private:
-   std::shared_ptr<AbsencDriver> absenc_; 
-   std::shared_ptr<ArmControllerNode> arm_controller_; 
-   std::string port_; 
-   int joint1_id_;
-   int joint2_id_;
-   int joint3_id_;
-   int joint4_id_;
-   int joint5_id_;
-   int joint6_id_; 
-   int joint7_id_;
-   int joint8_id_;
-   int joint9_id_;
+    // Hardware info
+    hardware_interface::HardwareInfo info_;
+   
+    std::vector<double> hw_states_position_;
+    std::vector<double> hw_states_velocity_;
+    std::vector<double> hw_commands_position_;
+    
+    int serial_fd_{-1};
+    int motor_serial_fd_;
+    std::shared_ptr<ArmControllerNode> arm_controller_;
+    std::shared_ptr<AbsencDriver> absenc_;
+
+    std::string port_ = "/dev/ttyUSB0";
 };
 
-}  // namespace arm_hardware
+}  // namespace arm_interface
 
 #endif  // ARM_INTERFACE_HPP
