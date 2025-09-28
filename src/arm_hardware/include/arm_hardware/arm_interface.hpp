@@ -33,7 +33,7 @@ public:
 
   hardware_interface::CallbackReturn on_activate(const rclcpp_lifecycle::State & previous_state) override;
 
-  harware_interface::CallbackReturn on_deactivate(const rclcpp_lifecycle::State & previous_state) override;
+  hardware_interface::CallbackReturn on_deactivate(const rclcpp_lifecycle::State & previous_state) override;
 
   // SystemInterface node override
   hardware_interface::CallbackReturn on_init(const hardware_interface::HardwareInfo & info) override;
