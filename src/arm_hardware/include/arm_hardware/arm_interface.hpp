@@ -54,16 +54,18 @@ private:
     // Hardware info
     hardware_interface::HardwareInfo info_;
    
+    int serial_fd_{-1}; //for encoder port
+    int motor_serial_fd_{-1}; //for arm motor port
+
+    std::string port_ = "/dev/ttyUSB0";
+
     std::vector<double> hw_states_position_;
     std::vector<double> hw_states_velocity_;
     std::vector<double> hw_commands_position_;
-    
-    int serial_fd_{-1};
-    int motor_serial_fd_;
-    std::shared_ptr<ArmControllerNode> arm_controller_;
-    std::shared_ptr<AbsencDriver> absenc_;
 
-    std::string port_ = "/dev/ttyUSB0";
+    float old_angle_4 = 0;
+    int8_t angle_4_zone = 0;
+
 };
 
 }  // namespace arm_interface

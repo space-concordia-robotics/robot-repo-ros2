@@ -32,6 +32,8 @@ gripper_controller:
   ros__parameters:
     joints:
       - joint7
+      - joint8
+      - joint9
     command_interfaces:
       - position
     state_interfaces:

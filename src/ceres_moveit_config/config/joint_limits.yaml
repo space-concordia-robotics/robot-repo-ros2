@@ -25,7 +25,7 @@ joint_limits:
     max_acceleration: 0
   joint4:
     has_velocity_limits: false
-    max_velocity: 2
+    max_velocity: 0
     has_acceleration_limits: false
     max_acceleration: 0
   joint5:
@@ -34,6 +34,16 @@ joint_limits:
     has_acceleration_limits: false
     max_acceleration: 0
   joint7:
+    has_velocity_limits: true
+    max_velocity: 2
+    has_acceleration_limits: false
+    max_acceleration: 0
+  joint8:
+    has_velocity_limits: true
+    max_velocity: 2
+    has_acceleration_limits: false
+    max_acceleration: 0
+  joint9:
     has_velocity_limits: true
     max_velocity: 2
     has_acceleration_limits: false
