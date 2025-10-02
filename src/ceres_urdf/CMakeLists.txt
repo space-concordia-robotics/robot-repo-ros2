@@ -1,17 +1,16 @@
 cmake_minimum_required(VERSION 3.8)
 project(ceres_urdf)
 
-if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  add_compile_options(-Wall -Wextra -Wpedantic)
-endif()
+if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    add_compile_options(-Wall -Wextra -Wpedantic)
+endif ()
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
 
-install (
-  DIRECTORY urdf launch meshes
-  DESTINATION share/${PROJECT_NAME}/    
-
+install(
+        DIRECTORY config urdf rviz launch meshes
+        DESTINATION share/${PROJECT_NAME}/
 )
 
 ament_package()

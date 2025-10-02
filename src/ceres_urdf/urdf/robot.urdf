@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<robot name="ceres"
+       xmlns="https://www.ros.org"
+       xmlns:xacro="https://ros.org/wiki/xacro"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="https://www.ros.org ../urdf.xsd https://ros.org/wiki/xacro ../xacro.xsd">
+    <xacro:arg name="mode" default="production"/>
+    <xacro:arg name="control" default="ros"/>
+
+    <xacro:property name="mode" value="$(arg mode)"/>
+    <xacro:property name="production" value="${mode == 'production'}"/>
+    <xacro:property name="simulation" value="${mode == 'simulation'}"/>
+
+    <xacro:property name="control" value="$(arg control)"/>
+    <xacro:property name="ros_control" value="${control == 'ros'}"/>
+    <xacro:property name="gazebo_control" value="${control == 'gazebo'}"/>
+
+    <xacro:include filename="robot.core.urdf"/>
+
+    <xacro:include filename="robot.sensors.urdf"/>
+
+    <xacro:if value="${ros_control}">
+        <xacro:include filename="control.ros.urdf"/>
+    </xacro:if>
+    <xacro:if value="${gazebo_control}">
+        <xacro:include filename="control.gazebo.urdf"/>
+        <!-- TODO 2025-08-30 (Will Free): Gazebo control -->
+    </xacro:if>
+</robot>
