@@ -1,0 +1,201 @@
+<?xml version="1.0"?>
+<robot name="ceres"
+       xmlns="https://www.ros.org"
+       xmlns:xacro="https://ros.org/wiki/xacro"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="https://www.ros.org ../urdf.xsd https://ros.org/wiki/xacro ../xacro.xsd">
+    <xacro:arg name="mode" default="production"/>
+    <xacro:arg name="control" default="ros"/>
+
+    <xacro:property name="mode" value="$(arg mode)"/>
+    <xacro:property name="production" value="${mode == 'production'}"/>
+    <xacro:property name="simulation" value="${mode == 'simulation'}"/>
+
+    <xacro:property name="control" value="$(arg control)"/>
+    <xacro:property name="ros_control" value="${control == 'ros'}"/>
+    <xacro:property name="gazebo_control" value="${control == 'gazebo'}"/>
+
+    <!-- region IMU -->
+    <joint name="base_to_imu" type="fixed">
+        <parent link="base_link"/>
+        <child link="imu_link"/>
+    </joint>
+
+    <link name="imu_link">
+        <inertial>
+            <mass value="0"/>
+            <inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0"/>
+        </inertial>
+    </link>
+
+    <xacro:if value="${simulation}">
+        <gazebo reference="imu_link">
+            <sensor name="imu_sensor" type="imu">
+                <plugin filename="libgazebo_ros_imu_sensor.so" name="imu_plugin">
+                    <ros>
+                        <namespace>/demo</namespace>
+                        <remapping>~/out:=imu</remapping>
+                    </ros>
+                    <initial_orientation_as_reference>false</initial_orientation_as_reference>
+                </plugin>
+                <always_on>true</always_on>
+                <update_rate>100</update_rate>
+                <visualize>true</visualize>
+
+                <!-- TODO 2025-09-19 (Will Free): Get the correct values for this -->
+                <imu>
+                    <angular_velocity>
+                        <x>
+                            <noise type="gaussian">
+                                <mean>0.0</mean>
+                                <stddev>2e-4</stddev>
+                                <bias_mean>0.0000075</bias_mean>
+                                <bias_stddev>0.0000008</bias_stddev>
+                            </noise>
+                        </x>
+                        <y>
+                            <noise type="gaussian">
+                                <mean>0.0</mean>
+                                <stddev>2e-4</stddev>
+                                <bias_mean>0.0000075</bias_mean>
+                                <bias_stddev>0.0000008</bias_stddev>
+                            </noise>
+                        </y>
+                        <z>
+                            <noise type="gaussian">
+                                <mean>0.0</mean>
+                                <stddev>2e-4</stddev>
+                                <bias_mean>0.0000075</bias_mean>
+                                <bias_stddev>0.0000008</bias_stddev>
+                            </noise>
+                        </z>
+                    </angular_velocity>
+
+                    <linear_acceleration>
+                        <x>
+                            <noise type="gaussian">
+                                <mean>0.0</mean>
+                                <stddev>1.7e-2</stddev>
+                                <bias_mean>0.1</bias_mean>
+                                <bias_stddev>0.001</bias_stddev>
+                            </noise>
+                        </x>
+                        <y>
+                            <noise type="gaussian">
+                                <mean>0.0</mean>
+                                <stddev>1.7e-2</stddev>
+                                <bias_mean>0.1</bias_mean>
+                                <bias_stddev>0.001</bias_stddev>
+                            </noise>
+                        </y>
+                        <z>
+                            <noise type="gaussian">
+                                <mean>0.0</mean>
+                                <stddev>1.7e-2</stddev>
+                                <bias_mean>0.1</bias_mean>
+                                <bias_stddev>0.001</bias_stddev>
+                            </noise>
+                        </z>
+                    </linear_acceleration>
+                </imu>
+            </sensor>
+        </gazebo>
+    </xacro:if>
+    <!-- endregion -->
+
+    <!-- region Lidar -->
+    <!-- TODO 2025-08-30 (Will Free): Position this properly & give it the correct dimensions -->
+
+    <xacro:property name="lidar_height" value="0.2"/>
+    <xacro:property name="lidar_radius" value="0.1"/>
+
+    <link name="lidar_link">
+        <visual>
+            <geometry>
+                <cylinder radius="${lidar_radius}" length="${lidar_height}"/>
+            </geometry>
+            <material name="plastic-red"/>
+        </visual>
+    </link>
+
+    <joint name="lidar_joint" type="fixed">
+        <parent link="base_link"/>
+        <child link="lidar_link"/>
+        <origin xyz="${body_length/2} 0 ${lidar_height/2}"/>
+    </joint>
+
+    <xacro:if value="${simulation}">
+        <gazebo reference="lidar_link">
+            <material>Gazebo/Red</material>
+
+            <sensor name="lidar" type="ray">
+                <!-- <pose>0 0 0 0 0 0</pose> -->
+                <!-- <always_on>true</always_on> -->
+                <!-- <visualize>true</visualize> -->
+                <!-- <update_rate>10</update_rate> -->
+                <pose>0 0 0 0 0 0</pose>
+                <visualize>false</visualize>
+                <update_rate>10</update_rate>
+
+                <!-- <ray> -->
+                <!--     <scan> -->
+                <!--         <horizontal> -->
+                <!--             <samples>360</samples> -->
+                <!--             <resolution>1.00</resolution> -->
+                <!--             <min_angle>0.00</min_angle> -->
+                <!--             <max_angle>6.28</max_angle> -->
+                <!--         </horizontal> -->
+                <!--     </scan> -->
+
+                <!--     <range> -->
+                <!--         <min>0.12</min> -->
+                <!--         <max>30</max> -->
+                <!--         <resolution>0.015</resolution> -->
+                <!--     </range> -->
+
+                <!--     <noise> -->
+                <!--         <type>gaussian</type> -->
+                <!--         <mean>0.0</mean> -->
+                <!--         <stddev>0.01</stddev> -->
+                <!--     </noise> -->
+                <!-- </ray> -->
+
+                <ray>
+                    <scan>
+                        <horizontal>
+                            <samples>360</samples>
+                            <min_angle>-3.14</min_angle>
+                            <max_angle>3.14</max_angle>
+                        </horizontal>
+                        <vertical>
+                            <samples>32</samples>
+                            <min_angle>-0.535</min_angle>
+                            <max_angle>0.186</max_angle>
+                        </vertical>
+                    </scan>
+                    <range>
+                        <min>0.3</min>
+                        <max>24</max>
+                    </range>
+
+                    <noise>
+                        <type>gaussian</type>
+                        <mean>0.01</mean>
+                        <stddev>0.01</stddev>
+                    </noise>
+                </ray>
+
+                <plugin name="laser_controller" filename="libgazebo_ros_ray_sensor.so">
+                    <ros>
+                        <remapping>~/out:=scan</remapping>
+                    </ros>
+
+                    <output_type>sensor_msgs/LaserScan</output_type>
+                    <frame_name>lidar_link</frame_name>
+                </plugin>
+            </sensor>
+
+        </gazebo>
+    </xacro:if>
+    <!-- endregion -->
+</robot>

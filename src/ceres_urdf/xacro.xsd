@@ -1,0 +1,79 @@
+<?xml version="1.0" ?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="https://ros.org/wiki/xacro" elementFormDefault="qualified">
+    <xs:element name="property">
+        <xs:complexType>
+            <xs:attribute name="name" type="xs:string" use="required"/>
+            <xs:attribute name="value" type="xs:string" use="required"/>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="if">
+        <xs:complexType>
+            <xs:sequence minOccurs="0" maxOccurs="unbounded">
+                <xs:any minOccurs="0" maxOccurs="unbounded" processContents="lax" />
+            </xs:sequence>
+
+            <xs:attribute name="value" type="xs:string" use="required"/>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="unless">
+        <xs:complexType>
+            <xs:sequence minOccurs="0" maxOccurs="unbounded">
+                <xs:any minOccurs="0" maxOccurs="unbounded" processContents="lax" />
+            </xs:sequence>
+
+            <xs:attribute name="value" type="xs:string" use="required"/>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="arg">
+        <xs:complexType>
+            <xs:attribute name="name" type="xs:string" use="required"/>
+            <xs:attribute name="default" type="xs:string"/>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="macro">
+        <xs:complexType>
+            <xs:sequence minOccurs="0" maxOccurs="unbounded">
+                <xs:any minOccurs="0" maxOccurs="unbounded" processContents="lax" />
+            </xs:sequence>
+
+            <xs:attribute name="name" type="xs:string" use="required"/>
+            <xs:attribute name="params" type="xs:string"/>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="include">
+        <xs:complexType>
+            <xs:sequence minOccurs="0" maxOccurs="unbounded">
+                <xs:any minOccurs="0" maxOccurs="unbounded" processContents="lax" />
+            </xs:sequence>
+
+            <xs:attribute name="filename" type="xs:string" use="required"/>
+            <xs:attribute name="ns" type="xs:string"/>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="element">
+        <xs:complexType>
+            <xs:sequence minOccurs="0" maxOccurs="unbounded">
+                <xs:any minOccurs="0" maxOccurs="unbounded" processContents="lax" />
+            </xs:sequence>
+
+            <xs:attribute name="name" form="qualified" type="xs:string" use="required"/>
+
+            <xs:anyAttribute processContents="lax" namespace="https://www.ros.org"/>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="attribute">
+        <xs:complexType>
+            <xs:attribute name="name" form="qualified" type="xs:string" use="required"/>
+            <xs:attribute name="value" form="qualified" type="xs:string" use="required"/>
+
+            <xs:anyAttribute processContents="lax" />
+        </xs:complexType>
+    </xs:element>
+</xs:schema>
