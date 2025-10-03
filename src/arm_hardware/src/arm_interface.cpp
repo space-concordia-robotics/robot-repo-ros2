@@ -110,7 +110,89 @@ hardware_interface::return_type ArmInterface::read(const rclcpp::Time & time, co
 {
    (void)time;
    (void)period;
-   
+
+
+    ABSENC_Meas_t absenc_meas_1, absenc_meas_2, absenc_meas_3, absenc_meas_4;
+
+    ABSENC_Error_t err1 = AbsencDriver::PollSlave(1, &absenc_meas_1, serial_fd_);
+    ABSENC_Error_t err2 = AbsencDriver::PollSlave(2, &absenc_meas_2, serial_fd_);
+    ABSENC_Error_t err3 = AbsencDriver::PollSlave(3, &absenc_meas_3, serial_fd_);
+    ABSENC_Error_t err4 = AbsencDriver::PollSlave(4, &absenc_meas_4, serial_fd_);
+
+    if (err1.error != NO_ERROR) {
+        RCLCPP_ERROR(rclcpp::get_logger("ArmInterface"), "Error on 1: %s cause %d line %d\n", strAbsencErr(err1.error), err1.cause, err1.line);
+        return return_type::ERROR;
+    }
+    if (err2.error != NO_ERROR) {
+        RCLCPP_ERROR(rclcpp::get_logger("ArmInterface"), "Error on 2: %s cause %d line %d\n", strAbsencErr(err2.error), err2.cause, err2.line);
+        return return_type::ERROR;
+    }
+    if (err3.error != NO_ERROR) {
+        RCLCPP_ERROR(rclcpp::get_logger("ArmInterface"), "Error on 3: %s cause %d line %d\n", strAbsencErr(err3.error), err3.cause, err3.line);
+        return return_type::ERROR;
+    }
+    if (err4.error != NO_ERROR) {
+        RCLCPP_ERROR(rclcpp::get_logger("ArmInterface"), "Error on 4: %s cause %d line %d\n", strAbsencErr(err4.error), err4.cause, err4.line);
+        return return_type::ERROR;
+    }
+
+    if (absenc_meas_1.status != 0 || absenc_meas_2.status != 0 || absenc_meas_3.status != 0 || absenc_meas_4.status != 0) {
+        RCLCPP_ERROR(rclcpp::get_logger("ArmInterface"),
+            "One of the absenc status returned an error. Here are the error codes: %d %d %d %d\n",
+            absenc_meas_1.status, absenc_meas_2.status, absenc_meas_3.status, absenc_meas_4.status);
+        return return_type::ERROR;
+    }
+
+
+    // Fix the Home
+    float angle_1 = absenc_meas_1.angval + 25; //-355
+    float angle_2 = absenc_meas_2.angval - 174; //-175
+    float angle_3 = absenc_meas_3.angval * -1; 
+    float angle_4 = absenc_meas_4.angval / 4.0f;
+
+    // Normalize angles to range [-180, 180) rn it's 0 to 360
+    //////////////////////////////////////////////////
+    angle_1 = angle_1 < 180 ? angle_1 : angle_1 - 360;
+    angle_2 = angle_2 > -180 ? angle_2 : angle_2 + 360; 
+    
+    
+    //////////////////////////////////////////////////
+    // fixing 1 to 4 ratio of angle 4
+
+    // Finding the zone of the angle 4
+    if(old_angle_4 - angle_4 > 70 ) {
+        this -> angle_4_zone = (this -> angle_4_zone + 1) % 4;
+    }
+
+    if(old_angle_4 - angle_4 < -70 ) {
+      this -> angle_4_zone = (this -> angle_4_zone - 1) % 4;
+    }
+
+
+    // update the old angle
+    this -> old_angle_4 = angle_4;
+    
+    angle_4 = angle_4 + this -> angle_4_zone * 90 - 30;
+    /////////////////////////////////////////////////
+
+    const double deg_to_rad = M_PI/180;
+
+    hw_states_position_[0] = angle_4*deg_to_rad;
+    hw_states_velocity_[0] = absenc_meas_4.angspd * deg_to_rad; 
+
+    hw_states_position_[1] = angle_1*deg_to_rad;
+    hw_states_velocity_[1] = absenc_meas_1.angspd * deg_to_rad;
+
+    hw_states_position_[2] = angle_2*deg_to_rad;
+    hw_states_velocity_[2] = absenc_meas_2.angspd * deg_to_rad;
+
+    hw_states_position_[3] = angle_3*deg_to_rad;
+    hw_states_velocity_[3] = absenc_meas_3.angspd * deg_to_rad;
+
+   // Optional: Log the results 
+    RCLCPP_INFO(rclcpp::get_logger("ArmInterface"), "Read Pos (rad): [%.3f, %.3f, %.3f, %.3f]",
+        hw_states_position_[0], hw_states_position_[1], hw_states_position_[2], hw_states_position_[3]);
+
    return return_type::OK;
 }
 
