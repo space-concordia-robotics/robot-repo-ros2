@@ -10,7 +10,10 @@
 #include <chrono>
 #include <cstring>
 #include <limits>
+#include <algorithm>
 #include "rclcpp/logger.hpp"
+
+#define KP_GAIN 5.0 //tunable constant. 
 
 
 namespace arm_interface
@@ -201,6 +204,48 @@ hardware_interface::return_type ArmInterface::write(const rclcpp::Time & time, c
 {
    (void)time;
    (void)period;
+
+    if (info_.joints.size() < 7) {
+        RCLCPP_ERROR(rclcpp::get_logger("ArmInterface"), "Received JointState message with insufficient velocity data.");
+        return;
+    }
+
+    // Create a buffer to send motor commands
+    uint8_t out_buf[1 + 1 + sizeof(float) * 6 + 1] = {}; // Correct buffer size
+    out_buf[0] = SET_MOTOR_SPEED;
+    out_buf[1] = sizeof(float) * 6;
+
+    bool error_flag = false; 
+
+    // Map JointState velocities to motor speeds
+    for (size_t i = 0; i < info_.joints.size(); i++) {
+
+        if( i < info_.joints.size()){
+        //Calculate p-control velocity command: 
+
+        double positional_error = hw_commands_position[i] - hw_states_position[i];
+
+        double velocity_commands_ = std::clamp(positional_error * KP_GAIN, -1.0, 1.0); 
+
+        float speed_to_send = static_cast<float>(velocity_commands_)* MAX_MOTOR_SPEED;
+        memcpy(&out_buf[(i * sizeof(float)) + 2], &speed_to_send, sizeof(float));
+        }else{
+            // If the motor index is beyond the defined joints, send zero speed
+            float zero_speed = 0.0f;
+            memcpy(&out_buf[(i * sizeof(float)) + 2], &zero_speed, sizeof(float));
+            RCLCPP_WARN_ONCE(rclcpp::get_logger("ArmInterface"), 
+                "Motor index %zu is outside the defined joint count. Sending zero speed.", i);
+        }
+    }
+    out_buf[14] = 0x0A; // End of message
+
+     // 4. Send the command buffer via the motor serial port
+    int status = write(motor_serial_fd_, out_buf, sizeof(out_buf));
+
+    if (status == -1) {
+        RCLCPP_ERROR(rclcpp::get_logger("ArmInterface"), "Error writing command to device: %s", strerror(errno));
+        return return_type::ERROR;
+    }
 
    return return_type::OK; 
 }
