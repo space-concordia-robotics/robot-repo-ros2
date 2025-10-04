@@ -204,7 +204,7 @@ hardware_interface::return_type ArmInterface::read(const rclcpp::Time & time, co
     hw_states_position_[3] = angle_3*deg_to_rad;
     hw_states_velocity_[3] = absenc_meas_3.angspd * deg_to_rad;
 
-   // Optional: Log the results 
+ 
     RCLCPP_INFO(rclcpp::get_logger("ArmInterface"), "Read Pos (rad): [%.3f, %.3f, %.3f, %.3f]",
         hw_states_position_[0], hw_states_position_[1], hw_states_position_[2], hw_states_position_[3]);
 
