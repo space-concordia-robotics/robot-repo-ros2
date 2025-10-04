@@ -30,20 +30,20 @@ hardware_interface::CallbackReturn ArmInterface::on_init(const hardware_interfac
     info_ = info;   
 
     //mapping joint states and commands
-    const size_t joint_id = info_.joints.size();
-    hw_commands_position_.resize(joint_id, 0.0); //initalizing commands to 0
-    hw_states_position_.resize(joint_id, std::numeric_limits<double>::quiet_NaN());
-    hw_states_velocity_.resize(joint_id, std::numeric_limits<double>::quiet_NaN());
+    hw_commands_position_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN()); //initalizing commands to 0
+    hw_states_position_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
+    hw_states_velocity_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
 
     //2. Opening encoder port
     std::string port_ = "/dev/ttyUSB0";
     int serial_fd;
     ABSENC_Error_t err = AbsencDriver::OpenPort(port_.c_str(), serial_fd);
     if(err.error != NO_ERROR) {
-        RCLCPP_ERROR(rclcpp::get_logger("ArmInterface"), "Failed to open encoder port.");
-        return CallbackReturn::ERROR;
+        RCLCPP_WARN(rclcpp::get_logger("ArmInterface"), "Failed to open encoder port. Running in simulation mode.");
+        serial_fd_ = -1; // Mark as invalid for simulation mode
+    } else {
+        serial_fd_ = serial_fd; //This is the encoder port
     }
-    serial_fd_ = serial_fd; //This is the encoder port
 
     // configure ArmControllerNode with serial port here if needed
 
@@ -52,25 +52,24 @@ hardware_interface::CallbackReturn ArmInterface::on_init(const hardware_interfac
     motor_serial_fd_ = open("/dev/ttyTHS1", O_RDWR);
     if(motor_serial_fd_ < 0)
     {
-        RCLCPP_ERROR(rclcpp::get_logger("ArmInterface"), "Error opening port %s", strerror(errno));
-        AbsencDriver::ClosePort(serial_fd_);
-        return hardware_interface::CallbackReturn::ERROR;
+        RCLCPP_WARN(rclcpp::get_logger("ArmInterface"), "Error opening motor port: %s. Running in simulation mode.", strerror(errno));
+        motor_serial_fd_ = -1; // Mark as invalid for simulation mode
+    } else {
+        // Configure the motor serial port (replication of termios setup)
+        struct termios ttycfg;
+        memset(&ttycfg, 0, sizeof(ttycfg)); // Initialize to zero
+        ttycfg.c_cflag = CS8 | CREAD | CLOCAL; // 8N1, ignore modem signals
+        ttycfg.c_lflag = 0;
+        ttycfg.c_iflag = 0;
+        ttycfg.c_oflag = 0;
+        ttycfg.c_cc[VTIME] = 1; // 100ms timeout
+        ttycfg.c_cc[VMIN] = 0;  // Return anything read so far
+        cfsetispeed(&ttycfg, B57600);
+        cfsetospeed(&ttycfg, B57600);
+        tcsetattr(motor_serial_fd_, TCSANOW, &ttycfg);
+
+        RCLCPP_INFO(rclcpp::get_logger("ArmInterface"), "Successfully opened motor port /dev/ttyTHS1.");
     }
-
-    // Configure the motor serial port (replication of termios setup)
-    struct termios ttycfg;
-    memset(&ttycfg, 0, sizeof(ttycfg)); // Initialize to zero
-    ttycfg.c_cflag = CS8 | CREAD | CLOCAL; // 8N1, ignore modem signals
-    ttycfg.c_lflag = 0;
-    ttycfg.c_iflag = 0;
-    ttycfg.c_oflag = 0;
-    ttycfg.c_cc[VTIME] = 1; // 100ms timeout
-    ttycfg.c_cc[VMIN] = 0;  // Return anything read so far
-    cfsetispeed(&ttycfg, B57600);
-    cfsetospeed(&ttycfg, B57600);
-    tcsetattr(motor_serial_fd_, TCSANOW, &ttycfg);
-
-    RCLCPP_INFO(rclcpp::get_logger("ArmInterface"), "Successfully opened motor port /dev/ttyTHS1.");
 
 //4. Validating command interface (checking for positon)
     for(const auto & joint : info_.joints)
@@ -92,19 +91,23 @@ hardware_interface::CallbackReturn ArmInterface::on_init(const hardware_interfac
 
 hardware_interface::CallbackReturn ArmInterface::on_configure(const rclcpp_lifecycle::State & previous_state)
 {
- (void)previous_state;
+    (void)previous_state;
+
+
  return hardware_interface::CallbackReturn::SUCCESS;
 }
 
 hardware_interface::CallbackReturn ArmInterface::on_activate(const rclcpp_lifecycle::State & previous_state)
 {  
- (void)previous_state;
+    (void)previous_state;
+
  return hardware_interface::CallbackReturn::SUCCESS;
 }
 
 hardware_interface::CallbackReturn ArmInterface::on_deactivate(const rclcpp_lifecycle::State & previous_state)
 {
- (void)previous_state;
+    (void)previous_state;
+
  return hardware_interface::CallbackReturn::SUCCESS;
 }
 
@@ -114,6 +117,15 @@ hardware_interface::return_type ArmInterface::read(const rclcpp::Time & time, co
    (void)time;
    (void)period;
 
+   // If running in simulation mode (no hardware), provide fake data
+   if (serial_fd_ == -1) {
+       // Provide some fake joint positions for simulation
+       for (size_t i = 0; i < hw_states_position_.size(); ++i) {
+           hw_states_position_[i] = 0.0; // or keep current position
+           hw_states_velocity_[i] = 0.0;
+       }
+       return return_type::OK;
+   }
 
     ABSENC_Meas_t absenc_meas_1, absenc_meas_2, absenc_meas_3, absenc_meas_4;
 
@@ -205,9 +217,20 @@ hardware_interface::return_type ArmInterface::write(const rclcpp::Time & time, c
    (void)time;
    (void)period;
 
+   // If running in simulation mode (no hardware), just return OK
+   if (motor_serial_fd_ == -1) {
+       // In simulation, update position to approach commanded position
+       for (size_t i = 0; i < hw_commands_position_.size() && i < hw_states_position_.size(); ++i) {
+           // Simple simulation: move towards commanded position
+           double error = hw_commands_position_[i] - hw_states_position_[i];
+           hw_states_position_[i] += error * 0.1; // 10% of error per cycle
+       }
+       return return_type::OK;
+   }
+
     if (info_.joints.size() < 7) {
         RCLCPP_ERROR(rclcpp::get_logger("ArmInterface"), "Received JointState message with insufficient velocity data.");
-        return;
+        return return_type::ERROR;
     }
 
     // Create a buffer to send motor commands
@@ -215,7 +238,7 @@ hardware_interface::return_type ArmInterface::write(const rclcpp::Time & time, c
     out_buf[0] = SET_MOTOR_SPEED;
     out_buf[1] = sizeof(float) * 6;
 
-    bool error_flag = false; 
+
 
     // Map JointState velocities to motor speeds
     for (size_t i = 0; i < info_.joints.size(); i++) {
@@ -223,7 +246,7 @@ hardware_interface::return_type ArmInterface::write(const rclcpp::Time & time, c
         if( i < info_.joints.size()){
         //Calculate p-control velocity command: 
 
-        double positional_error = hw_commands_position[i] - hw_states_position[i];
+        double positional_error = hw_commands_position_[i] - hw_states_position_[i];
 
         double velocity_commands_ = std::clamp(positional_error * KP_GAIN, -1.0, 1.0); 
 
@@ -240,7 +263,7 @@ hardware_interface::return_type ArmInterface::write(const rclcpp::Time & time, c
     out_buf[14] = 0x0A; // End of message
 
      // 4. Send the command buffer via the motor serial port
-    int status = write(motor_serial_fd_, out_buf, sizeof(out_buf));
+    int status = ::write(motor_serial_fd_, out_buf, sizeof(out_buf));
 
     if (status == -1) {
         RCLCPP_ERROR(rclcpp::get_logger("ArmInterface"), "Error writing command to device: %s", strerror(errno));
@@ -253,14 +276,26 @@ hardware_interface::return_type ArmInterface::write(const rclcpp::Time & time, c
 std::vector<hardware_interface::StateInterface> ArmInterface::export_state_interfaces()
 {
    std::vector<hardware_interface::StateInterface> state_interfaces;
-   // TODO: Add your state interfaces here
+   
+   for(auto i = 0u; i< info_.joints.size(); i++){
+        state_interfaces.emplace_back(hardware_interface::StateInterface(
+            info_.joints[i].name, hardware_interface::HW_IF_POSITION, &hw_states_position_[i]));
+        state_interfaces.emplace_back(hardware_interface::StateInterface(
+            info_.joints[i].name, hardware_interface::HW_IF_VELOCITY, &hw_states_velocity_[i]));
+    }
+
    return state_interfaces;
 }
 
 std::vector<hardware_interface::CommandInterface> ArmInterface::export_command_interfaces()
 {
    std::vector<hardware_interface::CommandInterface> command_interfaces;
-   // TODO: Add your command interfaces here
+   for(auto i = 0u; i< info_.joints.size(); i++)
+   {
+        command_interfaces.emplace_back(hardware_interface::CommandInterface(
+            info_.joints[i].name, hardware_interface::HW_IF_POSITION, &hw_commands_position_[i]));
+   }
+
    return command_interfaces;
 } 
 

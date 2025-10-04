@@ -31,6 +31,7 @@
         <joint name="joint3" value="0"/>
         <joint name="joint4" value="0"/>
         <joint name="joint5" value="0"/>
+        <joint name="joint7" value="0"/>
     </group_state>
     <group_state name="gripper_ready" group="gripper">
         <joint name="joint7" value="0"/>
