@@ -103,16 +103,7 @@ void Absenc::absEncPollingCallback() {
     //////////////////////////////////////////////////
     // fixing 1 to 4 ratio of angle 4
 
-    // Finding the zone of the angle 4
-    if(old_angle_4 - angle_4 > 70 ) {
-        this -> angle_4_zone = (this -> angle_4_zone + 1) % 4;
-    }
-
-    if(old_angle_4 - angle_4 < -70 ) {
-      this -> angle_4_zone = (this -> angle_4_zone - 1) % 4;
-    }
-
-
+ 
     // update the old angle
     this -> old_angle_4 = angle_4;
     
