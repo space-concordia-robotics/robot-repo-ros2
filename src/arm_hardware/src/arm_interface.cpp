@@ -170,18 +170,6 @@ hardware_interface::return_type ArmInterface::read(const rclcpp::Time & time, co
     angle_1 = angle_1 < 180 ? angle_1 : angle_1 - 360;
     angle_2 = angle_2 > -180 ? angle_2 : angle_2 + 360; 
     
-    
-    //////////////////////////////////////////////////
-    // fixing 1 to 4 ratio of angle 4
-
-    // Finding the zone of the angle 4
-    if(old_angle_4 - angle_4 > 70 ) {
-        this -> angle_4_zone = (this -> angle_4_zone + 1) % 4;
-    }
-
-    if(old_angle_4 - angle_4 < -70 ) {
-      this -> angle_4_zone = (this -> angle_4_zone - 1) % 4;
-    }
 
 
     // update the old angle
