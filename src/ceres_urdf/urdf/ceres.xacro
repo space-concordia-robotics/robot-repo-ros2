@@ -200,7 +200,7 @@
         <axis xyz="1 0 0"/>
     </joint>
     
-   <joint name="joint4" type="continuous">
+   <joint name="joint4" type="fixed">
         <parent link="bicep_gearbox_link"/>
         <child link="forearm_tube_link"/>
         <origin xyz="0 0 0.085" rpy="0 0 0"/>
@@ -222,7 +222,7 @@
         <origin xyz="-0.026225 0 0.070075" rpy="0 0 0"/>
     </joint>
 
-    <joint name="joint7" type="revolute">
+    <joint name="joint7" type="fixed">
         <parent link="wrist_gearbox_link"/>
         <child link="gripper_claw_link"/>
         <origin xyz="0.005725 0 0.07" rpy="0 0 0"/>
@@ -230,7 +230,7 @@
         <axis xyz="0 0 1"/>
     </joint>
 
-    <joint name="joint8" type="prismatic">
+    <joint name="joint8" type="fixed">
         <parent link="gripper_claw_link"/>
         <child link="right_claw_link"/>
         <origin xyz="0 0.036895 0.135" rpy="0 0 0"/>
@@ -238,7 +238,7 @@
         <axis xyz="0 1 0"/>
     </joint>
 
-    <joint name="joint9" type="prismatic">
+    <joint name="joint9" type="fixed">
         <parent link="gripper_claw_link"/>
         <child link="left_claw_link"/>
         <origin xyz="0 -0.036895 0.135" rpy="0 0 0"/>

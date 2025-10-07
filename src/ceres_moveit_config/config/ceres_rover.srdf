@@ -60,8 +60,8 @@
     <disable_collisions link1="bracket_connection_link" link2="gripper_claw_link" reason="Never"/>
     <disable_collisions link1="bracket_connection_link" link2="wrist_gearbox_link" reason="Adjacent"/>
     <disable_collisions link1="forearm_tube_link" link2="wrist_gearbox_link" reason="Never"/>
+    <disable_collisions link1="gripper_claw_link" link2="left_claw_link" reason="Adjacent"/>
+    <disable_collisions link1="gripper_claw_link" link2="right_claw_link" reason="Adjacent"/>
     <disable_collisions link1="gripper_claw_link" link2="wrist_gearbox_link" reason="Adjacent"/>
-    <disable_collisions link1="left_claw_link"  link2="right_claw_link" reason="Adjacent"/>
-    <disable_collisions link1="gripper_claw_link"  link2="right_claw_link" reason="Adjacent"/>
-    <disable_collisions link1="gripper_claw_link"  link2="left_claw_link" reason="Adjacent"/>
+    <disable_collisions link1="left_claw_link" link2="right_claw_link" reason="Adjacent"/>
 </robot>
