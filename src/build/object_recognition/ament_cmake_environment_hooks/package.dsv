@@ -1,0 +1,4 @@
+source;share/object_recognition/local_setup.bash
+source;share/object_recognition/local_setup.dsv
+source;share/object_recognition/local_setup.sh
+source;share/object_recognition/local_setup.zsh

@@ -1,0 +1,22 @@
+[2.957s] Invoking command in '/home/liliana/ros2_ws/robot-repo-ros2/src/object_recognition': PYTHONPATH=/home/liliana/ros2_ws/robot-repo-ros2/src/build/object_recognition/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/liliana/ros2_ws/robot-repo-ros2/src/install/object_recognition/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../build/object_recognition build --build-base /home/liliana/ros2_ws/robot-repo-ros2/src/build/object_recognition/build install --record /home/liliana/ros2_ws/robot-repo-ros2/src/build/object_recognition/install.log --single-version-externally-managed install_data
+[4.107s] running egg_info
+[4.178s] writing ../build/object_recognition/object_recognition.egg-info/PKG-INFO
+[4.179s] writing dependency_links to ../build/object_recognition/object_recognition.egg-info/dependency_links.txt
+[4.180s] writing entry points to ../build/object_recognition/object_recognition.egg-info/entry_points.txt
+[4.180s] writing requirements to ../build/object_recognition/object_recognition.egg-info/requires.txt
+[4.181s] writing top-level names to ../build/object_recognition/object_recognition.egg-info/top_level.txt
+[4.278s] reading manifest file '../build/object_recognition/object_recognition.egg-info/SOURCES.txt'
+[4.281s] writing manifest file '../build/object_recognition/object_recognition.egg-info/SOURCES.txt'
+[4.282s] running build
+[4.282s] running build_py
+[4.283s] running install
+[4.301s] running install_lib
+[4.352s] running install_data
+[4.353s] copying launch/keymap._launch.py -> /home/liliana/ros2_ws/robot-repo-ros2/src/install/object_recognition/share/object_recognition/launch
+[4.353s] running install_egg_info
+[4.398s] removing '/home/liliana/ros2_ws/robot-repo-ros2/src/install/object_recognition/lib/python3.10/site-packages/object_recognition-0.0.0-py3.10.egg-info' (and everything under it)
+[4.399s] Copying ../build/object_recognition/object_recognition.egg-info to /home/liliana/ros2_ws/robot-repo-ros2/src/install/object_recognition/lib/python3.10/site-packages/object_recognition-0.0.0-py3.10.egg-info
+[4.402s] running install_scripts
+[4.585s] Installing keymap_node script to /home/liliana/ros2_ws/robot-repo-ros2/src/install/object_recognition/lib/object_recognition
+[4.585s] writing list of installed files to '/home/liliana/ros2_ws/robot-repo-ros2/src/build/object_recognition/install.log'
+[4.715s] Invoked command in '/home/liliana/ros2_ws/robot-repo-ros2/src/object_recognition' returned '0': PYTHONPATH=/home/liliana/ros2_ws/robot-repo-ros2/src/build/object_recognition/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/liliana/ros2_ws/robot-repo-ros2/src/install/object_recognition/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../build/object_recognition build --build-base /home/liliana/ros2_ws/robot-repo-ros2/src/build/object_recognition/build install --record /home/liliana/ros2_ws/robot-repo-ros2/src/build/object_recognition/install.log --single-version-externally-managed install_data

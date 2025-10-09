@@ -1,0 +1,89 @@
+[0.000000] (-) TimerEvent: {}
+[0.000397] (-) JobUnselected: {'identifier': 'absenc_interface'}
+[0.000489] (-) JobUnselected: {'identifier': 'arm_controller'}
+[0.000556] (-) JobUnselected: {'identifier': 'arm_plugin'}
+[0.000689] (-) JobUnselected: {'identifier': 'ceres_moveit_config'}
+[0.000758] (-) JobUnselected: {'identifier': 'ceres_urdf'}
+[0.000805] (-) JobUnselected: {'identifier': 'ik_mux_controller'}
+[0.003364] (-) JobUnselected: {'identifier': 'joy_mux_controller'}
+[0.003459] (-) JobUnselected: {'identifier': 'sil'}
+[0.003516] (-) JobUnselected: {'identifier': 'usb_cam'}
+[0.003572] (-) JobUnselected: {'identifier': 'wheels_controller'}
+[0.003649] (object_recognition) JobQueued: {'identifier': 'object_recognition', 'dependencies': OrderedDict()}
+[0.003875] (object_recognition) JobStarted: {'identifier': 'object_recognition'}
+[0.114620] (-) TimerEvent: {}
+[0.261786] (-) TimerEvent: {}
+[0.384514] (-) TimerEvent: {}
+[0.595010] (-) TimerEvent: {}
+[0.908564] (-) TimerEvent: {}
+[1.040092] (-) TimerEvent: {}
+[1.160184] (-) TimerEvent: {}
+[1.269166] (-) TimerEvent: {}
+[1.404606] (-) TimerEvent: {}
+[1.508752] (-) TimerEvent: {}
+[1.612586] (-) TimerEvent: {}
+[1.859965] (-) TimerEvent: {}
+[2.158738] (-) TimerEvent: {}
+[2.266979] (-) TimerEvent: {}
+[2.487743] (-) TimerEvent: {}
+[2.592546] (-) TimerEvent: {}
+[2.693796] (-) TimerEvent: {}
+[2.794983] (-) TimerEvent: {}
+[2.895717] (-) TimerEvent: {}
+[3.075052] (-) TimerEvent: {}
+[3.179574] (-) TimerEvent: {}
+[3.429440] (-) TimerEvent: {}
+[3.552663] (-) TimerEvent: {}
+[3.683145] (-) TimerEvent: {}
+[3.764345] (object_recognition) Command: {'cmd': ['/usr/bin/python3', '-W', 'ignore:setup.py install is deprecated', '-W', 'ignore:easy_install command is deprecated', 'setup.py', 'egg_info', '--egg-base', '../build/object_recognition', 'build', '--build-base', '/home/liliana/ros2_ws/robot-repo-ros2/src/build/object_recognition/build', 'install', '--record', '/home/liliana/ros2_ws/robot-repo-ros2/src/build/object_recognition/install.log', '--single-version-externally-managed', 'install_data'], 'cwd': '/home/liliana/ros2_ws/robot-repo-ros2/src/object_recognition', 'env': {'LESSOPEN': '| /usr/bin/lesspipe %s', 'LANGUAGE': 'en_CA:en', 'USER': 'liliana', 'XDG_SESSION_TYPE': 'wayland', 'SHLVL': '1', 'LD_LIBRARY_PATH': '/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib', 'HOME': '/home/liliana', 'OLDPWD': '/home/liliana/ros2_ws/robot-repo-ros2/src/object_recognition', 'DESKTOP_SESSION': 'ubuntu', 'ROS_PYTHON_VERSION': '3', 'GNOME_SHELL_SESSION_MODE': 'ubuntu', 'GTK_MODULES': 'gail:atk-bridge', 'SYSTEMD_EXEC_PID': '2921', 'DBUS_SESSION_BUS_ADDRESS': 'unix:path=/run/user/1000/bus', 'COLORTERM': 'truecolor', 'IM_CONFIG_PHASE': '1', 'WAYLAND_DISPLAY': 'wayland-0', 'COLCON_PREFIX_PATH': '/home/liliana/ros2_ws/install:/home/liliana/install', 'ROS_DISTRO': 'humble', 'LOGNAME': 'liliana', '_': '/usr/bin/colcon', 'ROS_VERSION': '2', 'XDG_SESSION_CLASS': 'user', 'USERNAME': 'liliana', 'TERM': 'xterm-256color', 'GNOME_DESKTOP_SESSION_ID': 'this-is-deprecated', 'ROS_LOCALHOST_ONLY': '0', 'PATH': '/opt/ros/humble/bin:/home/liliana/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/snap/bin:/home/liliana/.local/share/JetBrains/Toolbox/scripts', 'SESSION_MANAGER': 'local/liliana-VirtualBox:@/tmp/.ICE-unix/2899,unix/liliana-VirtualBox:/tmp/.ICE-unix/2899', 'XDG_MENU_PREFIX': 'gnome-', 'GNOME_TERMINAL_SCREEN': '/org/gnome/Terminal/screen/7a4d6b7b_934f_47eb_8c4a_3139a298fc2a', 'GNOME_SETUP_DISPLAY': ':1', 'XDG_RUNTIME_DIR': '/run/user/1000', 'DISPLAY': ':0', 'LANG': 'en_US.UTF-8', 'XDG_CURRENT_DESKTOP': 'ubuntu:GNOME', 'XMODIFIERS': '@im=ibus', 'XDG_SESSION_DESKTOP': 'ubuntu', 'XAUTHORITY': '/run/user/1000/.mutter-Xwaylandauth.FCQDD3', 'LS_COLORS': 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:', 'GNOME_TERMINAL_SERVICE': ':1.106', 'SSH_AGENT_LAUNCHER': 'gnome-keyring', 'SSH_AUTH_SOCK': '/run/user/1000/keyring/ssh', 'AMENT_PREFIX_PATH': '/home/liliana/ros2_ws/install/my_py_pkg:/home/liliana/ros2_ws/install/my_cpp_pkg:/home/liliana/ros2_ws/install/ceres_urdf:/home/liliana/install/my_py_pkg:/home/liliana/install/my_cpp_pkg:/opt/ros/humble', 'SHELL': '/bin/bash', 'QT_ACCESSIBILITY': '1', 'GDMSESSION': 'ubuntu', 'LESSCLOSE': '/usr/bin/lesspipe %s %s', 'QT_IM_MODULE': 'ibus', 'PWD': '/home/liliana/ros2_ws/robot-repo-ros2/src/build/object_recognition', 'LC_ALL': 'en_US.UTF-8', 'XDG_CONFIG_DIRS': '/etc/xdg/xdg-ubuntu:/etc/xdg', 'XDG_DATA_DIRS': '/usr/share/ubuntu:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop', 'PYTHONPATH': '/home/liliana/ros2_ws/robot-repo-ros2/src/build/object_recognition/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/liliana/ros2_ws/robot-repo-ros2/src/install/object_recognition/lib/python3.10/site-packages:/home/liliana/ros2_ws/install/my_py_pkg/lib/python3.10/site-packages:/home/liliana/install/my_py_pkg/lib/python3.10/site-packages:/opt/ros/humble/lib/python3.10/site-packages:/opt/ros/humble/local/lib/python3.10/dist-packages', 'COLCON': '1', 'VTE_VERSION': '6800', 'CMAKE_PREFIX_PATH': '/home/liliana/ros2_ws/install/my_cpp_pkg:/home/liliana/ros2_ws/install/ceres_urdf:/home/liliana/install/my_cpp_pkg'}, 'shell': False}
+[3.785122] (-) TimerEvent: {}
+[3.998692] (-) TimerEvent: {}
+[4.242714] (-) TimerEvent: {}
+[4.603639] (-) TimerEvent: {}
+[4.727379] (-) TimerEvent: {}
+[4.833766] (-) TimerEvent: {}
+[5.083964] (object_recognition) StdoutLine: {'line': b'running egg_info\n'}
+[5.084463] (-) TimerEvent: {}
+[5.085970] (object_recognition) StdoutLine: {'line': b'creating ../build/object_recognition/object_recognition.egg-info\n'}
+[5.164574] (object_recognition) StdoutLine: {'line': b'writing ../build/object_recognition/object_recognition.egg-info/PKG-INFO\n'}
+[5.165207] (object_recognition) StdoutLine: {'line': b'writing dependency_links to ../build/object_recognition/object_recognition.egg-info/dependency_links.txt\n'}
+[5.166354] (object_recognition) StdoutLine: {'line': b'writing entry points to ../build/object_recognition/object_recognition.egg-info/entry_points.txt\n'}
+[5.166867] (object_recognition) StdoutLine: {'line': b'writing requirements to ../build/object_recognition/object_recognition.egg-info/requires.txt\n'}
+[5.167360] (object_recognition) StdoutLine: {'line': b'writing top-level names to ../build/object_recognition/object_recognition.egg-info/top_level.txt\n'}
+[5.167536] (object_recognition) StdoutLine: {'line': b"writing manifest file '../build/object_recognition/object_recognition.egg-info/SOURCES.txt'\n"}
+[5.186908] (-) TimerEvent: {}
+[5.273231] (object_recognition) StdoutLine: {'line': b"reading manifest file '../build/object_recognition/object_recognition.egg-info/SOURCES.txt'\n"}
+[5.276145] (object_recognition) StdoutLine: {'line': b"writing manifest file '../build/object_recognition/object_recognition.egg-info/SOURCES.txt'\n"}
+[5.277209] (object_recognition) StdoutLine: {'line': b'running build\n'}
+[5.277775] (object_recognition) StdoutLine: {'line': b'running build_py\n'}
+[5.278260] (object_recognition) StdoutLine: {'line': b'creating /home/liliana/ros2_ws/robot-repo-ros2/src/build/object_recognition/build\n'}
+[5.278481] (object_recognition) StdoutLine: {'line': b'creating /home/liliana/ros2_ws/robot-repo-ros2/src/build/object_recognition/build/lib\n'}
+[5.278782] (object_recognition) StdoutLine: {'line': b'creating /home/liliana/ros2_ws/robot-repo-ros2/src/build/object_recognition/build/lib/object_recognition\n'}
+[5.279335] (object_recognition) StdoutLine: {'line': b'copying object_recognition/__init__.py -> /home/liliana/ros2_ws/robot-repo-ros2/src/build/object_recognition/build/lib/object_recognition\n'}
+[5.279517] (object_recognition) StdoutLine: {'line': b'copying object_recognition/compute_keymap.py -> /home/liliana/ros2_ws/robot-repo-ros2/src/build/object_recognition/build/lib/object_recognition\n'}
+[5.288925] (-) TimerEvent: {}
+[5.291628] (object_recognition) StdoutLine: {'line': b'copying object_recognition/keymap_node.py -> /home/liliana/ros2_ws/robot-repo-ros2/src/build/object_recognition/build/lib/object_recognition\n'}
+[5.293320] (object_recognition) StdoutLine: {'line': b'running install\n'}
+[5.315438] (object_recognition) StdoutLine: {'line': b'running install_lib\n'}
+[5.368495] (object_recognition) StdoutLine: {'line': b'creating /home/liliana/ros2_ws/robot-repo-ros2/src/install/object_recognition/lib/python3.10/site-packages/object_recognition\n'}
+[5.369202] (object_recognition) StdoutLine: {'line': b'copying /home/liliana/ros2_ws/robot-repo-ros2/src/build/object_recognition/build/lib/object_recognition/__init__.py -> /home/liliana/ros2_ws/robot-repo-ros2/src/install/object_recognition/lib/python3.10/site-packages/object_recognition\n'}
+[5.369477] (object_recognition) StdoutLine: {'line': b'copying /home/liliana/ros2_ws/robot-repo-ros2/src/build/object_recognition/build/lib/object_recognition/compute_keymap.py -> /home/liliana/ros2_ws/robot-repo-ros2/src/install/object_recognition/lib/python3.10/site-packages/object_recognition\n'}
+[5.369654] (object_recognition) StdoutLine: {'line': b'copying /home/liliana/ros2_ws/robot-repo-ros2/src/build/object_recognition/build/lib/object_recognition/keymap_node.py -> /home/liliana/ros2_ws/robot-repo-ros2/src/install/object_recognition/lib/python3.10/site-packages/object_recognition\n'}
+[5.371211] (object_recognition) StdoutLine: {'line': b'byte-compiling /home/liliana/ros2_ws/robot-repo-ros2/src/install/object_recognition/lib/python3.10/site-packages/object_recognition/__init__.py to __init__.cpython-310.pyc\n'}
+[5.371920] (object_recognition) StdoutLine: {'line': b'byte-compiling /home/liliana/ros2_ws/robot-repo-ros2/src/install/object_recognition/lib/python3.10/site-packages/object_recognition/compute_keymap.py to compute_keymap.cpython-310.pyc\n'}
+[5.374099] (object_recognition) StdoutLine: {'line': b'byte-compiling /home/liliana/ros2_ws/robot-repo-ros2/src/install/object_recognition/lib/python3.10/site-packages/object_recognition/keymap_node.py to keymap_node.cpython-310.pyc\n'}
+[5.375203] (object_recognition) StdoutLine: {'line': b'running install_data\n'}
+[5.381796] (object_recognition) StdoutLine: {'line': b'copying resource/object_recognition -> /home/liliana/ros2_ws/robot-repo-ros2/src/install/object_recognition/share/ament_index/resource_index/packages\n'}
+[5.382660] (object_recognition) StdoutLine: {'line': b'copying package.xml -> /home/liliana/ros2_ws/robot-repo-ros2/src/install/object_recognition/share/object_recognition\n'}
+[5.383217] (object_recognition) StdoutLine: {'line': b'running install_egg_info\n'}
+[5.389739] (-) TimerEvent: {}
+[5.438407] (object_recognition) StdoutLine: {'line': b'Copying ../build/object_recognition/object_recognition.egg-info to /home/liliana/ros2_ws/robot-repo-ros2/src/install/object_recognition/lib/python3.10/site-packages/object_recognition-0.0.0-py3.10.egg-info\n'}
+[5.443241] (object_recognition) StdoutLine: {'line': b'running install_scripts\n'}
+[5.562101] (-) TimerEvent: {}
+[5.650789] (object_recognition) StdoutLine: {'line': b'Installing keymap_node script to /home/liliana/ros2_ws/robot-repo-ros2/src/install/object_recognition/lib/object_recognition\n'}
+[5.651930] (object_recognition) StdoutLine: {'line': b"writing list of installed files to '/home/liliana/ros2_ws/robot-repo-ros2/src/build/object_recognition/install.log'\n"}
+[5.662331] (-) TimerEvent: {}
+[5.787612] (-) TimerEvent: {}
+[5.790423] (object_recognition) CommandEnded: {'returncode': 0}
+[5.879019] (object_recognition) JobEnded: {'identifier': 'object_recognition', 'rc': 0}
+[5.881437] (-) EventReactorShutdown: {}

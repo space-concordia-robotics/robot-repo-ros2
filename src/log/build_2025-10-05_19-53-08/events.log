@@ -1,0 +1,13 @@
+[0.000000] (-) TimerEvent: {}
+[0.000798] (-) JobUnselected: {'identifier': 'absenc_interface'}
+[0.000915] (-) JobUnselected: {'identifier': 'arm_controller'}
+[0.000992] (-) JobUnselected: {'identifier': 'arm_plugin'}
+[0.001103] (-) JobUnselected: {'identifier': 'ceres_moveit_config'}
+[0.001543] (-) JobUnselected: {'identifier': 'ceres_urdf'}
+[0.001624] (-) JobUnselected: {'identifier': 'ik_mux_controller'}
+[0.001745] (-) JobUnselected: {'identifier': 'joy_mux_controller'}
+[0.001815] (-) JobUnselected: {'identifier': 'object_recognition'}
+[0.001866] (-) JobUnselected: {'identifier': 'sil'}
+[0.001917] (-) JobUnselected: {'identifier': 'usb_cam'}
+[0.001968] (-) JobUnselected: {'identifier': 'wheels_controller'}
+[0.002420] (-) EventReactorShutdown: {}

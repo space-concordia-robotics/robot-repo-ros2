@@ -1,0 +1,366 @@
+'`':
+  x: -0.146
+  y: 0.038
+  z_top: 0.0
+  width: 0.019
+  height: 0.018
+'1':
+  x: -0.125
+  y: 0.038
+  z_top: 0.0
+  width: 0.019
+  height: 0.018
+'2':
+  x: -0.104
+  y: 0.038
+  z_top: 0.0
+  width: 0.019
+  height: 0.018
+'3':
+  x: -0.083
+  y: 0.038
+  z_top: 0.0
+  width: 0.019
+  height: 0.018
+'4':
+  x: -0.062
+  y: 0.038
+  z_top: 0.0
+  width: 0.019
+  height: 0.018
+'5':
+  x: -0.041
+  y: 0.038
+  z_top: 0.0
+  width: 0.019
+  height: 0.018
+'6':
+  x: -0.02
+  y: 0.038
+  z_top: 0.0
+  width: 0.019
+  height: 0.018
+'7':
+  x: 0.001
+  y: 0.038
+  z_top: 0.0
+  width: 0.019
+  height: 0.018
+'8':
+  x: 0.022
+  y: 0.038
+  z_top: 0.0
+  width: 0.019
+  height: 0.018
+'9':
+  x: 0.043
+  y: 0.038
+  z_top: 0.0
+  width: 0.019
+  height: 0.018
+'0':
+  x: 0.064
+  y: 0.038
+  z_top: 0.0
+  width: 0.019
+  height: 0.018
+'-':
+  x: 0.085
+  y: 0.038
+  z_top: 0.0
+  width: 0.019
+  height: 0.018
+'=':
+  x: 0.106
+  y: 0.038
+  z_top: 0.0
+  width: 0.019
+  height: 0.018
+BACKSPACE:
+  x: 0.1365
+  y: 0.038
+  z_top: 0.0
+  width: 0.038
+  height: 0.018
+TAB:
+  x: -0.138875
+  y: 0.019
+  z_top: 0.0
+  width: 0.02375
+  height: 0.018
+Q:
+  x: -0.1155
+  y: 0.019
+  z_top: 0.0
+  width: 0.019
+  height: 0.018
+W:
+  x: -0.0945
+  y: 0.019
+  z_top: 0.0
+  width: 0.019
+  height: 0.018
+E:
+  x: -0.0735
+  y: 0.019
+  z_top: 0.0
+  width: 0.019
+  height: 0.018
+R:
+  x: -0.0525
+  y: 0.019
+  z_top: 0.0
+  width: 0.019
+  height: 0.018
+T:
+  x: -0.0315
+  y: 0.019
+  z_top: 0.0
+  width: 0.019
+  height: 0.018
+Y:
+  x: -0.0105
+  y: 0.019
+  z_top: 0.0
+  width: 0.019
+  height: 0.018
+U:
+  x: 0.0105
+  y: 0.019
+  z_top: 0.0
+  width: 0.019
+  height: 0.018
+I:
+  x: 0.0315
+  y: 0.019
+  z_top: 0.0
+  width: 0.019
+  height: 0.018
+O:
+  x: 0.0525
+  y: 0.019
+  z_top: 0.0
+  width: 0.019
+  height: 0.018
+P:
+  x: 0.0735
+  y: 0.019
+  z_top: 0.0
+  width: 0.019
+  height: 0.018
+'[':
+  x: 0.0945
+  y: 0.019
+  z_top: 0.0
+  width: 0.019
+  height: 0.018
+']':
+  x: 0.1155
+  y: 0.019
+  z_top: 0.0
+  width: 0.019
+  height: 0.018
+\:
+  x: 0.138875
+  y: 0.019
+  z_top: 0.0
+  width: 0.02375
+  height: 0.018
+CAPS:
+  x: -0.137875
+  y: 0.0
+  z_top: 0.0
+  width: 0.03325
+  height: 0.018
+A:
+  x: -0.10975
+  y: 0.0
+  z_top: 0.0
+  width: 0.019
+  height: 0.018
+S:
+  x: -0.08875
+  y: 0.0
+  z_top: 0.0
+  width: 0.019
+  height: 0.018
+D:
+  x: -0.06775
+  y: 0.0
+  z_top: 0.0
+  width: 0.019
+  height: 0.018
+F:
+  x: -0.04675
+  y: 0.0
+  z_top: 0.0
+  width: 0.019
+  height: 0.018
+G:
+  x: -0.02575
+  y: 0.0
+  z_top: 0.0
+  width: 0.019
+  height: 0.018
+H:
+  x: -0.00475
+  y: 0.0
+  z_top: 0.0
+  width: 0.019
+  height: 0.018
+J:
+  x: 0.01625
+  y: 0.0
+  z_top: 0.0
+  width: 0.019
+  height: 0.018
+K:
+  x: 0.03725
+  y: 0.0
+  z_top: 0.0
+  width: 0.019
+  height: 0.018
+L:
+  x: 0.05825
+  y: 0.0
+  z_top: 0.0
+  width: 0.019
+  height: 0.018
+;:
+  x: 0.07925
+  y: 0.0
+  z_top: 0.0
+  width: 0.019
+  height: 0.018
+'''':
+  x: 0.10025
+  y: 0.0
+  z_top: 0.0
+  width: 0.019
+  height: 0.018
+ENTER:
+  x: 0.133125
+  y: 0.0
+  z_top: 0.0
+  width: 0.042749999999999996
+  height: 0.018
+LSHIFT:
+  x: -0.117875
+  y: -0.019
+  z_top: 0.0
+  width: 0.042749999999999996
+  height: 0.018
+Z:
+  x: -0.085
+  y: -0.019
+  z_top: 0.0
+  width: 0.019
+  height: 0.018
+X:
+  x: -0.064
+  y: -0.019
+  z_top: 0.0
+  width: 0.019
+  height: 0.018
+C:
+  x: -0.043
+  y: -0.019
+  z_top: 0.0
+  width: 0.019
+  height: 0.018
+V:
+  x: -0.022
+  y: -0.019
+  z_top: 0.0
+  width: 0.019
+  height: 0.018
+B:
+  x: -0.001
+  y: -0.019
+  z_top: 0.0
+  width: 0.019
+  height: 0.018
+N:
+  x: 0.02
+  y: -0.019
+  z_top: 0.0
+  width: 0.019
+  height: 0.018
+M:
+  x: 0.041
+  y: -0.019
+  z_top: 0.0
+  width: 0.019
+  height: 0.018
+',':
+  x: 0.062
+  y: -0.019
+  z_top: 0.0
+  width: 0.019
+  height: 0.018
+.:
+  x: 0.083
+  y: -0.019
+  z_top: 0.0
+  width: 0.019
+  height: 0.018
+/:
+  x: 0.104
+  y: -0.019
+  z_top: 0.0
+  width: 0.019
+  height: 0.018
+RSHIFT:
+  x: 0.127375
+  y: -0.019
+  z_top: 0.0
+  width: 0.02375
+  height: 0.018
+LCTRL:
+  x: -0.137625
+  y: -0.038
+  z_top: 0.0
+  width: 0.02375
+  height: 0.018
+LWIN:
+  x: -0.111875
+  y: -0.038
+  z_top: 0.0
+  width: 0.02375
+  height: 0.018
+LALT:
+  x: -0.086125
+  y: -0.038
+  z_top: 0.0
+  width: 0.02375
+  height: 0.018
+SPACE:
+  x: -0.012875
+  y: -0.038
+  z_top: 0.0
+  width: 0.11875
+  height: 0.018
+RALT:
+  x: 0.060375
+  y: -0.038
+  z_top: 0.0
+  width: 0.02375
+  height: 0.018
+FN:
+  x: 0.086125
+  y: -0.038
+  z_top: 0.0
+  width: 0.02375
+  height: 0.018
+MENU:
+  x: 0.111875
+  y: -0.038
+  z_top: 0.0
+  width: 0.02375
+  height: 0.018
+RCTRL:
+  x: 0.137625
+  y: -0.038
+  z_top: 0.0
+  width: 0.02375
+  height: 0.018

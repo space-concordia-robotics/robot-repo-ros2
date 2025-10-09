@@ -1,0 +1,20 @@
+running egg_info
+writing ../build/object_recognition/object_recognition.egg-info/PKG-INFO
+writing dependency_links to ../build/object_recognition/object_recognition.egg-info/dependency_links.txt
+writing entry points to ../build/object_recognition/object_recognition.egg-info/entry_points.txt
+writing requirements to ../build/object_recognition/object_recognition.egg-info/requires.txt
+writing top-level names to ../build/object_recognition/object_recognition.egg-info/top_level.txt
+reading manifest file '../build/object_recognition/object_recognition.egg-info/SOURCES.txt'
+writing manifest file '../build/object_recognition/object_recognition.egg-info/SOURCES.txt'
+running build
+running build_py
+running install
+running install_lib
+running install_data
+copying config/keymap.yaml -> /home/liliana/ros2_ws/robot-repo-ros2/src/install/object_recognition/share/object_recognition/config
+running install_egg_info
+removing '/home/liliana/ros2_ws/robot-repo-ros2/src/install/object_recognition/lib/python3.10/site-packages/object_recognition-0.0.0-py3.10.egg-info' (and everything under it)
+Copying ../build/object_recognition/object_recognition.egg-info to /home/liliana/ros2_ws/robot-repo-ros2/src/install/object_recognition/lib/python3.10/site-packages/object_recognition-0.0.0-py3.10.egg-info
+running install_scripts
+Installing keymap_node script to /home/liliana/ros2_ws/robot-repo-ros2/src/install/object_recognition/lib/object_recognition
+writing list of installed files to '/home/liliana/ros2_ws/robot-repo-ros2/src/build/object_recognition/install.log'
