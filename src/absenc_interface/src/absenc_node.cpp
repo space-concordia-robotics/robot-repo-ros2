@@ -119,7 +119,9 @@ void Absenc::absEncPollingCallback() {
     angles_publisher_->publish(joint_state_msg);
 
     // Print angles to the terminal
-    RCLCPP_INFO(this->get_logger(), "Angles: [%f, %f, %f, %f]",angle_4, angle_1, angle_2, angle_3);
+    if (absenc_meas_1.status == 0 || absenc_meas_2.status == 0 || absenc_meas_3.status == 0 || absenc_meas_4.status == 0){
+      RCLCPP_INFO(this->get_logger(), "Angles: [%f, %f, %f, %f]",angle_4, angle_1, angle_2, angle_3);
+    }
 }
 
 
