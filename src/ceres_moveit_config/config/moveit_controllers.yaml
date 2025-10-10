@@ -5,7 +5,6 @@ moveit_controller_manager: moveit_simple_controller_manager/MoveItSimpleControll
 moveit_simple_controller_manager:
   controller_names:
     - ceres_arm_controller
-    - gripper_controller
 
   ceres_arm_controller:
     type: FollowJointTrajectory
@@ -14,3 +13,4 @@ moveit_simple_controller_manager:
       - joint2
       - joint3
       - joint5
+      - joint7

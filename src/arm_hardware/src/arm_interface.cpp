@@ -31,6 +31,7 @@ hardware_interface::CallbackReturn ArmInterface::on_init(const hardware_interfac
 
     //mapping joint states and commands
     hw_commands_position_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN()); //initalizing commands to 0
+    hw_commands_velocity_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN()); 
     hw_states_position_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
     hw_states_velocity_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
 
@@ -153,7 +154,7 @@ hardware_interface::return_type ArmInterface::read(const rclcpp::Time & time, co
 
     if (absenc_meas_1.status != 0 || absenc_meas_2.status != 0 || absenc_meas_3.status != 0 || absenc_meas_4.status != 0) {
         RCLCPP_ERROR(rclcpp::get_logger("ArmInterface"),
-            "One of the absenc status returned an error. Here are the error codes: %d %d %d %d\n",
+            "One of the absenc status returned an error. Here are the error codes: 0x%04x 0x%04x 0x%04x 0x%04x\n",
             absenc_meas_1.status, absenc_meas_2.status, absenc_meas_3.status, absenc_meas_4.status);
         return return_type::ERROR;
     }
@@ -170,7 +171,6 @@ hardware_interface::return_type ArmInterface::read(const rclcpp::Time & time, co
     angle_1 = angle_1 < 180 ? angle_1 : angle_1 - 360;
     angle_2 = angle_2 > -180 ? angle_2 : angle_2 + 360; 
     
-
 
     // update the old angle
     this -> old_angle_4 = angle_4;
@@ -192,9 +192,11 @@ hardware_interface::return_type ArmInterface::read(const rclcpp::Time & time, co
     hw_states_position_[3] = angle_3*deg_to_rad;
     hw_states_velocity_[3] = absenc_meas_3.angspd * deg_to_rad;
 
- 
+    if (absenc_meas_1.status == 0 || absenc_meas_2.status == 0 || absenc_meas_3.status == 0 || absenc_meas_4.status == 0)
+    {
     RCLCPP_INFO(rclcpp::get_logger("ArmInterface"), "Read Pos (rad): [%.3f, %.3f, %.3f, %.3f]",
         hw_states_position_[0], hw_states_position_[1], hw_states_position_[2], hw_states_position_[3]);
+    }
 
    return return_type::OK;
 }
@@ -216,39 +218,34 @@ hardware_interface::return_type ArmInterface::write(const rclcpp::Time & time, c
        return return_type::OK;
    }
 
-    if (info_.joints.size() < 7) {
+    if (info_.joints.size() < 5) {
         RCLCPP_ERROR(rclcpp::get_logger("ArmInterface"), "Received JointState message with insufficient velocity data.");
         return return_type::ERROR;
     }
 
     // Create a buffer to send motor commands
-    uint8_t out_buf[1 + 1 + sizeof(float) * 6 + 1] = {}; // Correct buffer size
+    uint8_t out_buf[1 + 1 + sizeof(float) * 5 + 1] = {}; // 23 bytes total: 1+1+20+1
     out_buf[0] = SET_MOTOR_SPEED;
-    out_buf[1] = sizeof(float) * 6;
+    out_buf[1] = sizeof(float) * 5;  // 20 bytes of data
 
-
-
-    // Map JointState velocities to motor speeds
-    for (size_t i = 0; i < info_.joints.size(); i++) {
-
-        if( i < info_.joints.size()){
+    // Map JointState velocities to motor speeds (limit to 5 motors max)
+    size_t num_motors = std::min(static_cast<size_t>(5), info_.joints.size());
+    
+    for (size_t i = 0; i < num_motors; i++) {
         //Calculate p-control velocity command: 
-
         double positional_error = hw_commands_position_[i] - hw_states_position_[i];
-
         double velocity_commands_ = std::clamp(positional_error * KP_GAIN, -1.0, 1.0); 
-
-        float speed_to_send = static_cast<float>(velocity_commands_)* MAX_MOTOR_SPEED;
+        float speed_to_send = static_cast<float>(velocity_commands_) * MAX_MOTOR_SPEED;
         memcpy(&out_buf[(i * sizeof(float)) + 2], &speed_to_send, sizeof(float));
-        }else{
-            // If the motor index is beyond the defined joints, send zero speed
-            float zero_speed = 0.0f;
-            memcpy(&out_buf[(i * sizeof(float)) + 2], &zero_speed, sizeof(float));
-            RCLCPP_WARN_ONCE(rclcpp::get_logger("ArmInterface"), 
-                "Motor index %zu is outside the defined joint count. Sending zero speed.", i);
-        }
     }
-    out_buf[14] = 0x0A; // End of message
+    
+    // Fill remaining motor slots with zero if we have fewer than 5 joints
+    for (size_t i = num_motors; i < 5; i++) {
+        float zero_speed = 0.0f;
+        memcpy(&out_buf[(i * sizeof(float)) + 2], &zero_speed, sizeof(float));
+    }
+    
+    out_buf[22] = 0x0A; // End of message (correct index: 1+1+20 = 22)
 
      // 4. Send the command buffer via the motor serial port
     int status = ::write(motor_serial_fd_, out_buf, sizeof(out_buf));
@@ -282,6 +279,8 @@ std::vector<hardware_interface::CommandInterface> ArmInterface::export_command_i
    {
         command_interfaces.emplace_back(hardware_interface::CommandInterface(
             info_.joints[i].name, hardware_interface::HW_IF_POSITION, &hw_commands_position_[i]));
+        command_interfaces.emplace_back(hardware_interface::CommandInterface(
+            info_.joints[i].name, hardware_interface::HW_IF_VELOCITY, &hw_commands_velocity_[i]));
    }
 
    return command_interfaces;

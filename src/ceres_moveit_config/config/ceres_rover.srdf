@@ -14,7 +14,6 @@
         <joint name="joint1"/>
         <joint name="joint2"/>
         <joint name="joint3"/>
-        <joint name="joint4"/>
         <joint name="joint5"/>
         <joint name="joint6"/>
         <joint name="joint7"/>
