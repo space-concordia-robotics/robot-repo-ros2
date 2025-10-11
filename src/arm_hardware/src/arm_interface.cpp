@@ -172,7 +172,7 @@ hardware_interface::return_type ArmInterface::read(const rclcpp::Time & time, co
     angle_2 = angle_2 > -180 ? angle_2 : angle_2 + 360; 
     
 
-    // update the old angle
+    // update the old angl
     this -> old_angle_4 = angle_4;
     
     angle_4 = angle_4 + this -> angle_4_zone * 90 - 30;
