@@ -192,10 +192,26 @@ hardware_interface::return_type ArmInterface::read(const rclcpp::Time & time, co
     hw_states_position_[3] = angle_3*deg_to_rad;
     hw_states_velocity_[3] = absenc_meas_3.angspd * deg_to_rad;
 
+    // Joint 5 (index 4) - gripper rotation joint7
+    // If no encoder available, use commanded position or maintain current position
+    if (hw_states_position_.size() > 4) {
+        if (!std::isnan(hw_commands_position_[4])) {
+            // Move towards commanded position if valid
+            double error = hw_commands_position_[4] - hw_states_position_[4];
+            hw_states_position_[4] += error * 0.1; // Simple simulation
+            hw_states_velocity_[4] = error * 0.1 / 0.01; // Approximate velocity
+        } else {
+            // Initialize to zero if not set
+            hw_states_position_[4] = 0.0;
+            hw_states_velocity_[4] = 0.0;
+        }
+    }
+
     if (absenc_meas_1.status == 0 || absenc_meas_2.status == 0 || absenc_meas_3.status == 0 || absenc_meas_4.status == 0)
     {
-    RCLCPP_INFO(rclcpp::get_logger("ArmInterface"), "Read Pos (rad): [%.3f, %.3f, %.3f, %.3f]",
-        hw_states_position_[0], hw_states_position_[1], hw_states_position_[2], hw_states_position_[3]);
+    RCLCPP_INFO(rclcpp::get_logger("ArmInterface"), "Read Pos (rad): [%.3f, %.3f, %.3f, %.3f, %.3f]",
+        hw_states_position_[0], hw_states_position_[1], hw_states_position_[2], hw_states_position_[3], 
+        hw_states_position_.size() > 4 ? hw_states_position_[4] : 0.0);
     }
 
    return return_type::OK;
