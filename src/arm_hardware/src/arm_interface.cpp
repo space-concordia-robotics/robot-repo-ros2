@@ -279,8 +279,6 @@ std::vector<hardware_interface::CommandInterface> ArmInterface::export_command_i
    {
         command_interfaces.emplace_back(hardware_interface::CommandInterface(
             info_.joints[i].name, hardware_interface::HW_IF_POSITION, &hw_commands_position_[i]));
-        command_interfaces.emplace_back(hardware_interface::CommandInterface(
-            info_.joints[i].name, hardware_interface::HW_IF_VELOCITY, &hw_commands_velocity_[i]));
    }
 
    return command_interfaces;
