@@ -15,6 +15,8 @@
         <joint name="joint2"/>
         <joint name="joint3"/>
         <joint name="joint5"/>
+        <joint name="joint6"/>
+        <joint name="joint7"/>
     </group>
     <group name="gripper">
         <link name="gripper_claw_link"/>
@@ -26,10 +28,14 @@
         <joint name="joint1" value="0"/>
         <joint name="joint2" value="0"/>
         <joint name="joint3" value="0"/>
+        <joint name="joint4" value="0"/>
         <joint name="joint5" value="0"/>
+        <joint name="joint7" value="0"/>
     </group_state>
     <group_state name="gripper_ready" group="gripper">
         <joint name="joint7" value="0"/>
+        <joint name="joint8" value="0.0275"/>
+        <joint name="joint9" value="-0.0275"/>
     </group_state>
     <!--END EFFECTOR: Purpose: Represent information about an end effector.-->
     <end_effector name="gripper" parent_link="base_structure_link" group="gripper" parent_group="ceres_arm"/>

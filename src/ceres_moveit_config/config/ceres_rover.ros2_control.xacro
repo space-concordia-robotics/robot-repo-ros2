@@ -5,12 +5,12 @@
 
         <ros2_control name="${name}" type="system">
             <hardware>
-                <!-- Use the actual hardware interface for the arm -->
+                <!-- By default, set up controllers for simulation. This won't work on real hardware -->
                 <plugin>arm_interface/ArmInterface</plugin>
-                <param name="port_name">/dev/ttyTHS1</param>
             </hardware>
             <joint name="joint1">
                 <command_interface name="position"/>
+                <command_interface name="velocity"/>
                 <state_interface name="position">
                   <param name="initial_value">${initial_positions['joint1']}</param>
                 </state_interface>
@@ -18,6 +18,7 @@
             </joint>
             <joint name="joint2">
                 <command_interface name="position"/>
+                <command_interface name="velocity"/>
                 <state_interface name="position">
                   <param name="initial_value">${initial_positions['joint2']}</param>
                 </state_interface>
@@ -25,6 +26,7 @@
             </joint>
             <joint name="joint3">
                 <command_interface name="position"/>
+                <command_interface name="velocity"/>
                 <state_interface name="position">
                   <param name="initial_value">${initial_positions['joint3']}</param>
                 </state_interface>
@@ -32,8 +34,17 @@
             </joint>
             <joint name="joint5">
                 <command_interface name="position"/>
+                <command_interface name="velocity"/>
                 <state_interface name="position">
                   <param name="initial_value">${initial_positions['joint5']}</param>
+                </state_interface>
+                <state_interface name="velocity"/>
+            </joint>
+            <joint name="joint7">
+                <command_interface name="position"/>
+                <command_interface name="velocity"/>
+                <state_interface name="position">
+                  <param name="initial_value">${initial_positions['joint7']}</param>
                 </state_interface>
                 <state_interface name="velocity"/>
             </joint>
