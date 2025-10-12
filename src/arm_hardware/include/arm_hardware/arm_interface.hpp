@@ -61,7 +61,6 @@ private:
 
     std::vector<double> hw_states_position_;
     std::vector<double> hw_states_velocity_;
-    std::vector<double> hw_commands_position_;
     std::vector<double> hw_commands_velocity_;
 
     float old_angle_4 = 0;

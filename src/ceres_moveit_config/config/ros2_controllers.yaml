@@ -24,6 +24,7 @@ ceres_arm_controller:
       - joint7
     command_interfaces:
       - position
+      - velocity
     state_interfaces:
       - position
       - velocity
