@@ -30,7 +30,7 @@ hardware_interface::CallbackReturn ArmInterface::on_init(const hardware_interfac
     info_ = info;   
 
     //mapping joint states and commands
-    hw_commands_velocity_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN()); //initalizing commands to 0
+    hw_commands_position_.resize(info_.joints.size(), 0.0);
     hw_states_position_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
     hw_states_velocity_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
 
@@ -71,12 +71,12 @@ hardware_interface::CallbackReturn ArmInterface::on_init(const hardware_interfac
         RCLCPP_INFO(rclcpp::get_logger("ArmInterface"), "Successfully opened motor port /dev/ttyTHS1.");
     }
 
-//4. Validating command interface (checking for velocity)
+//4. Validating command interface (checking for position)
     for(const auto & joint : info_.joints)
     {
-        if(joint.command_interfaces.size() != 1 || joint.command_interfaces[0].name != hardware_interface::HW_IF_VELOCITY)
+        if(joint.command_interfaces.size() != 1 || joint.command_interfaces[0].name != hardware_interface::HW_IF_POSITION)
         {
-            RCLCPP_FATAL(rclcpp::get_logger("ArmInterface"), "Joint '%s' has %zu command interfaces, but exactly one velocity command interface is required", 
+            RCLCPP_FATAL(rclcpp::get_logger("ArmInterface"), "Joint '%s' has %zu command interfaces, but exactly one position command interface is required", 
                 joint.name.c_str(), joint.command_interfaces.size());
             //Best practice to close ports before returning error
             AbsencDriver::ClosePort(serial_fd_);
@@ -179,37 +179,23 @@ hardware_interface::return_type ArmInterface::read(const rclcpp::Time & time, co
 
     const double deg_to_rad = M_PI/180;
 
-    hw_states_position_[0] = angle_4*deg_to_rad;
-    hw_states_velocity_[0] = absenc_meas_4.angspd * deg_to_rad; 
+    // Map encoders to URDF joint order: joint1, joint2, joint3, joint5
+    hw_states_position_[0] = angle_1*deg_to_rad;  // joint1 <- encoder 1
+    hw_states_velocity_[0] = absenc_meas_1.angspd * deg_to_rad; 
 
-    hw_states_position_[1] = angle_1*deg_to_rad;
-    hw_states_velocity_[1] = absenc_meas_1.angspd * deg_to_rad;
+    hw_states_position_[1] = angle_2*deg_to_rad;  // joint2 <- encoder 2
+    hw_states_velocity_[1] = absenc_meas_2.angspd * deg_to_rad;
 
-    hw_states_position_[2] = angle_2*deg_to_rad;
-    hw_states_velocity_[2] = absenc_meas_2.angspd * deg_to_rad;
+    hw_states_position_[2] = angle_3*deg_to_rad;  // joint3 <- encoder 3
+    hw_states_velocity_[2] = absenc_meas_3.angspd * deg_to_rad;
 
-    hw_states_position_[3] = angle_3*deg_to_rad;
-    hw_states_velocity_[3] = absenc_meas_3.angspd * deg_to_rad;
-
-    // Joint 5 (index 4) - gripper rotation joint7
-    // If no encoder available, use commanded velocity or maintain current state
-    if (hw_states_position_.size() > 4) {
-        if (!std::isnan(hw_commands_velocity_[4])) {
-            // Integrate velocity to get position (assuming dt = 0.01s)
-            hw_states_position_[4] += hw_commands_velocity_[4] * 0.01;
-            hw_states_velocity_[4] = hw_commands_velocity_[4];
-        } else {
-            // Initialize to zero if not set
-            hw_states_position_[4] = 0.0;
-            hw_states_velocity_[4] = 0.0;
-        }
-    }
+    hw_states_position_[3] = angle_4*deg_to_rad;  // joint5 <- encoder 4
+    hw_states_velocity_[3] = absenc_meas_4.angspd * deg_to_rad;
 
     if (absenc_meas_1.status == 0 || absenc_meas_2.status == 0 || absenc_meas_3.status == 0 || absenc_meas_4.status == 0)
     {
-    RCLCPP_INFO(rclcpp::get_logger("ArmInterface"), "Read Pos (rad): [%.3f, %.3f, %.3f, %.3f, %.3f]",
-        hw_states_position_[0], hw_states_position_[1], hw_states_position_[2], hw_states_position_[3], 
-        hw_states_position_.size() > 4 ? hw_states_position_[4] : 0.0);
+    RCLCPP_INFO(rclcpp::get_logger("ArmInterface"), "Read Pos (rad): [%.3f, %.3f, %.3f, %.3f]",
+        hw_states_position_[0], hw_states_position_[1], hw_states_position_[2], hw_states_position_[3]);
     }
 
    return return_type::OK;
@@ -223,46 +209,43 @@ hardware_interface::return_type ArmInterface::write(const rclcpp::Time & time, c
 
    // If running in simulation mode (no hardware), just return OK
    if (motor_serial_fd_ == -1) {
-       // In simulation, integrate velocity commands to update position
-       for (size_t i = 0; i < hw_commands_velocity_.size() && i < hw_states_position_.size(); ++i) {
-           // Simple integration: position += velocity * dt (assuming dt = 0.01s)
-           hw_states_position_[i] += hw_commands_velocity_[i] * 0.01;
-           hw_states_velocity_[i] = hw_commands_velocity_[i]; // Set current velocity to commanded velocity
+       // In simulation, update position to approach commanded position
+       for (size_t i = 0; i < hw_commands_position_.size() && i < hw_states_position_.size(); ++i) {
+           // Simple simulation: move towards commanded position
+           double error = hw_commands_position_[i] - hw_states_position_[i];
+           hw_states_position_[i] += error * 0.1; // 10% of error per cycle
        }
        return return_type::OK;
    }
 
-    if (info_.joints.size() < 5) {
-        RCLCPP_ERROR(rclcpp::get_logger("ArmInterface"), "Received JointState message with insufficient velocity data.");
+    if (info_.joints.size() < 4) {
+        RCLCPP_ERROR(rclcpp::get_logger("ArmInterface"), "Received JointState message with insufficient data.");
         return return_type::ERROR;
     }
 
     // Create a buffer to send motor commands
-    uint8_t out_buf[1 + 1 + sizeof(float) * 5 + 1] = {}; // 23 bytes total: 1+1+20+1
+    uint8_t out_buf[1 + 1 + sizeof(float) * 4 + 1] = {}; // 19 bytes total: 1+1+16+1
     out_buf[0] = SET_MOTOR_SPEED;
-    out_buf[1] = sizeof(float) * 5;  // 20 bytes of data
+    out_buf[1] = sizeof(float) * 4;  // 16 bytes of data
 
-    // Map JointState velocities to motor speeds (limit to 5 motors max)
-    size_t num_motors = std::min(static_cast<size_t>(5), info_.joints.size());
+    // Map JointState positions to motor speeds (4 motors)
+    size_t num_motors = std::min(static_cast<size_t>(4), info_.joints.size());
     
     for (size_t i = 0; i < num_motors; i++) {
-        // Directly use velocity commands - no P-control needed for velocity interface
-        double velocity_command = hw_commands_velocity_[i];
-        
-        // Clamp velocity to safe limits
-        velocity_command = std::clamp(velocity_command, -1.0, 1.0);
-        
-        float speed_to_send = static_cast<float>(velocity_command) * MAX_MOTOR_SPEED;
+        //Calculate p-control velocity command: 
+        double positional_error = hw_commands_position_[i] - hw_states_position_[i];
+        double velocity_commands_ = std::clamp(positional_error * KP_GAIN, -1.0, 1.0); 
+        float speed_to_send = static_cast<float>(velocity_commands_) * MAX_MOTOR_SPEED;
         memcpy(&out_buf[(i * sizeof(float)) + 2], &speed_to_send, sizeof(float));
     }
     
-    // Fill remaining motor slots with zero if we have fewer than 5 joints
-    for (size_t i = num_motors; i < 5; i++) {
+    // Fill remaining motor slots with zero if we have fewer than 4 joints
+    for (size_t i = num_motors; i < 4; i++) {
         float zero_speed = 0.0f;
         memcpy(&out_buf[(i * sizeof(float)) + 2], &zero_speed, sizeof(float));
     }
     
-    out_buf[22] = 0x0A; // End of message (correct index: 1+1+20 = 22)
+    out_buf[18] = 0x0A; // End of message (correct index: 1+1+16 = 18)
 
      // 4. Send the command buffer via the motor serial port
     int status = ::write(motor_serial_fd_, out_buf, sizeof(out_buf));
@@ -295,7 +278,7 @@ std::vector<hardware_interface::CommandInterface> ArmInterface::export_command_i
    for(auto i = 0u; i< info_.joints.size(); i++)
    {
         command_interfaces.emplace_back(hardware_interface::CommandInterface(
-            info_.joints[i].name, hardware_interface::HW_IF_VELOCITY, &hw_commands_velocity_[i]));
+            info_.joints[i].name, hardware_interface::HW_IF_POSITION, &hw_commands_position_[i]));
    }
 
    return command_interfaces;
