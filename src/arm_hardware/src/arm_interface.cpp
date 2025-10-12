@@ -135,19 +135,19 @@ hardware_interface::return_type ArmInterface::read(const rclcpp::Time & time, co
     ABSENC_Error_t err4 = AbsencDriver::PollSlave(4, &absenc_meas_4, serial_fd_);
 
     if (err1.error != NO_ERROR) {
-        RCLCPP_ERROR(rclcpp::get_logger("ArmInterface"), "Error on 1: %s cause %d line %d\n", strAbsencErr(err1.error), err1.cause, err1.line);
+        RCLCPP_ERROR(rclcpp::get_logger("ArmInterface"), "Error on 1: %s cause 0x%04x line 0x%04x\n", strAbsencErr(err1.error), err1.cause, err1.line);
         return return_type::ERROR;
     }
     if (err2.error != NO_ERROR) {
-        RCLCPP_ERROR(rclcpp::get_logger("ArmInterface"), "Error on 2: %s cause %d line %d\n", strAbsencErr(err2.error), err2.cause, err2.line);
+        RCLCPP_ERROR(rclcpp::get_logger("ArmInterface"), "Error on 2: %s cause 0x%04x line 0x%04x\n", strAbsencErr(err2.error), err2.cause, err2.line);
         return return_type::ERROR;
     }
     if (err3.error != NO_ERROR) {
-        RCLCPP_ERROR(rclcpp::get_logger("ArmInterface"), "Error on 3: %s cause %d line %d\n", strAbsencErr(err3.error), err3.cause, err3.line);
+        RCLCPP_ERROR(rclcpp::get_logger("ArmInterface"), "Error on 3: %s cause 0x%04x line 0x%04x\n", strAbsencErr(err3.error), err3.cause, err3.line);
         return return_type::ERROR;
     }
     if (err4.error != NO_ERROR) {
-        RCLCPP_ERROR(rclcpp::get_logger("ArmInterface"), "Error on 4: %s cause %d line %d\n", strAbsencErr(err4.error), err4.cause, err4.line);
+        RCLCPP_ERROR(rclcpp::get_logger("ArmInterface"), "Error on 4: %s cause 0x%04x line 0x%04x\n", strAbsencErr(err4.error), err4.cause, err4.line);
         return return_type::ERROR;
     }
 
