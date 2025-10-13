@@ -29,6 +29,12 @@ hardware_interface::CallbackReturn ArmInterface::on_init(const hardware_interfac
 
     info_ = info;   
 
+    // Debug: Print joint information
+    RCLCPP_INFO(rclcpp::get_logger("ArmInterface"), "Found %zu joints:", info_.joints.size());
+    for (size_t i = 0; i < info_.joints.size(); ++i) {
+        RCLCPP_INFO(rclcpp::get_logger("ArmInterface"), "  Joint %zu: %s", i, info_.joints[i].name.c_str());
+    }
+
     //mapping joint states and commands
     hw_commands_position_.resize(info_.joints.size(), 0.0);
     hw_states_position_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
@@ -93,15 +99,38 @@ hardware_interface::CallbackReturn ArmInterface::on_configure(const rclcpp_lifec
 {
     (void)previous_state;
 
+    // Initialize state interfaces with default values
+    for (size_t i = 0; i < hw_states_position_.size(); ++i) {
+        hw_states_position_[i] = 0.0;  // Initialize to zero instead of NaN
+        hw_states_velocity_[i] = 0.0;
+    }
 
- return hardware_interface::CallbackReturn::SUCCESS;
+    // Initialize command interfaces 
+    for (size_t i = 0; i < hw_commands_position_.size(); ++i) {
+        hw_commands_position_[i] = 0.0;
+    }
+
+    RCLCPP_INFO(rclcpp::get_logger("ArmInterface"), "Hardware interface configured successfully.");
+    return hardware_interface::CallbackReturn::SUCCESS;
 }
 
 hardware_interface::CallbackReturn ArmInterface::on_activate(const rclcpp_lifecycle::State & previous_state)
 {  
     (void)previous_state;
 
- return hardware_interface::CallbackReturn::SUCCESS;
+    // Initialize command interfaces with current position to avoid jumps
+    if (hw_states_position_.size() == hw_commands_position_.size()) {
+        for (size_t i = 0; i < hw_commands_position_.size(); ++i) {
+            if (!std::isnan(hw_states_position_[i])) {
+                hw_commands_position_[i] = hw_states_position_[i];
+            } else {
+                hw_commands_position_[i] = 0.0;
+            }
+        }
+    }
+
+    RCLCPP_INFO(rclcpp::get_logger("ArmInterface"), "Hardware interface activated successfully.");
+    return hardware_interface::CallbackReturn::SUCCESS;
 }
 
 hardware_interface::CallbackReturn ArmInterface::on_deactivate(const rclcpp_lifecycle::State & previous_state)
@@ -259,35 +288,34 @@ hardware_interface::return_type ArmInterface::write(const rclcpp::Time & time, c
    return return_type::OK; 
 }
 
-std::vector<std::string> controlled_joints_ = {"joint1", "joint2", "joint3", "joint5"};
-
 std::vector<hardware_interface::StateInterface> ArmInterface::export_state_interfaces()
 {
    std::vector<hardware_interface::StateInterface> state_interfaces;
    
-   for(auto i = 0u; i< info_.joints.size(); i++){
-        if(std::find(controlled_joints_.begin(), controlled_joints_.end(), info_.joints[i].name) != controlled_joints_.end()){
-            state_interfaces.emplace_back(hardware_interface::StateInterface(
-                info_.joints[i].name, hardware_interface::HW_IF_POSITION, &hw_states_position_[i]));
-            state_interfaces.emplace_back(hardware_interface::StateInterface(
-                info_.joints[i].name, hardware_interface::HW_IF_VELOCITY, &hw_states_velocity_[i]));
-        }
+   // Export state interfaces for all joints defined in the URDF
+   for(auto i = 0u; i < info_.joints.size(); i++){
+        state_interfaces.emplace_back(hardware_interface::StateInterface(
+            info_.joints[i].name, hardware_interface::HW_IF_POSITION, &hw_states_position_[i]));
+        state_interfaces.emplace_back(hardware_interface::StateInterface(
+            info_.joints[i].name, hardware_interface::HW_IF_VELOCITY, &hw_states_velocity_[i]));
     }
 
+   RCLCPP_INFO(rclcpp::get_logger("ArmInterface"), "Exported %zu state interfaces", state_interfaces.size());
    return state_interfaces;
 }
 
 std::vector<hardware_interface::CommandInterface> ArmInterface::export_command_interfaces()
 {
    std::vector<hardware_interface::CommandInterface> command_interfaces;
-   for(auto i = 0u; i< info_.joints.size(); i++)
+   
+   // Export command interfaces for all joints defined in the URDF
+   for(auto i = 0u; i < info_.joints.size(); i++)
    {
-    if(std::find(controlled_joints_.begin(), controlled_joints_.end(), info_.joints[i].name) != controlled_joints_.end()){
         command_interfaces.emplace_back(hardware_interface::CommandInterface(
             info_.joints[i].name, hardware_interface::HW_IF_POSITION, &hw_commands_position_[i]));
-    }
    }
 
+   RCLCPP_INFO(rclcpp::get_logger("ArmInterface"), "Exported %zu command interfaces", command_interfaces.size());
    return command_interfaces;
 } 
 
