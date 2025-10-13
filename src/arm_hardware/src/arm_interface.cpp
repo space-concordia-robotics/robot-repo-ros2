@@ -201,6 +201,7 @@ hardware_interface::return_type ArmInterface::read(const rclcpp::Time & time, co
    return return_type::OK;
 }
 
+
 // The write sends the controller data back to the hardware data.
 hardware_interface::return_type ArmInterface::write(const rclcpp::Time & time, const rclcpp::Duration & period)
 {
@@ -258,15 +259,19 @@ hardware_interface::return_type ArmInterface::write(const rclcpp::Time & time, c
    return return_type::OK; 
 }
 
+std::vector<std::string> controlled_joints_ = {"joint1", "joint2", "joint3", "joint5"};
+
 std::vector<hardware_interface::StateInterface> ArmInterface::export_state_interfaces()
 {
    std::vector<hardware_interface::StateInterface> state_interfaces;
    
    for(auto i = 0u; i< info_.joints.size(); i++){
-        state_interfaces.emplace_back(hardware_interface::StateInterface(
-            info_.joints[i].name, hardware_interface::HW_IF_POSITION, &hw_states_position_[i]));
-        state_interfaces.emplace_back(hardware_interface::StateInterface(
-            info_.joints[i].name, hardware_interface::HW_IF_VELOCITY, &hw_states_velocity_[i]));
+        if(std::find(controlled_joints_.begin(), controlled_joints_.end(), info_.joints[i].name) != controlled_joints_.end()){
+            state_interfaces.emplace_back(hardware_interface::StateInterface(
+                info_.joints[i].name, hardware_interface::HW_IF_POSITION, &hw_states_position_[i]));
+            state_interfaces.emplace_back(hardware_interface::StateInterface(
+                info_.joints[i].name, hardware_interface::HW_IF_VELOCITY, &hw_states_velocity_[i]));
+        }
     }
 
    return state_interfaces;
@@ -277,8 +282,10 @@ std::vector<hardware_interface::CommandInterface> ArmInterface::export_command_i
    std::vector<hardware_interface::CommandInterface> command_interfaces;
    for(auto i = 0u; i< info_.joints.size(); i++)
    {
+    if(std::find(controlled_joints_.begin(), controlled_joints_.end(), info_.joints[i].name) != controlled_joints_.end()){
         command_interfaces.emplace_back(hardware_interface::CommandInterface(
             info_.joints[i].name, hardware_interface::HW_IF_POSITION, &hw_commands_position_[i]));
+    }
    }
 
    return command_interfaces;
