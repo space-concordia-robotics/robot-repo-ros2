@@ -99,33 +99,108 @@ hardware_interface::CallbackReturn ArmInterface::on_configure(const rclcpp_lifec
 {
     (void)previous_state;
 
-    // Initialize state interfaces with default values
-    for (size_t i = 0; i < hw_states_position_.size(); ++i) {
-        hw_states_position_[i] = 0.0;  // Initialize to zero instead of NaN
+    // 1) Ensure info_.joints is non-empty
+    if (info_.joints.empty()) {
+        RCLCPP_FATAL(rclcpp::get_logger("ArmInterface"), "No joints defined in hardware info!");
+        return hardware_interface::CallbackReturn::ERROR;
+    }
+
+    // 2) Ensure our internal vectors match the number of joints
+    const size_t nj = info_.joints.size();
+    hw_commands_position_.resize(nj);
+    hw_states_position_.resize(nj);
+    hw_states_velocity_.resize(nj);
+
+    // Initialize values (no NaNs left behind)
+    for (size_t i = 0; i < nj; ++i) {
+        hw_commands_position_[i] = 0.0;
+        hw_states_position_[i] = 0.0;
         hw_states_velocity_[i] = 0.0;
     }
 
-    // Initialize command interfaces 
-    for (size_t i = 0; i < hw_commands_position_.size(); ++i) {
-        hw_commands_position_[i] = 0.0;
+    // 3) If we are supposed to use real hardware, try to open ports if not already opened.
+    //    If ports are missing, return ERROR (so controller_manager doesn't try to activate controllers
+    //    on incomplete hardware). If you intentionally want "simulation fallback", skip returning error.
+    if (serial_fd_ == -1) {
+        // Attempt to open encoder port (repeat OpenPort call used in on_init)
+        int fd;
+        ABSENC_Error_t err = AbsencDriver::OpenPort("/dev/ttyUSB0", fd);
+        if (err.error != NO_ERROR) {
+            RCLCPP_ERROR(rclcpp::get_logger("ArmInterface"),
+                         "Failed to open encoder port '/dev/ttyUSB0' in on_configure(): %s. Running in simulation mode.",
+                         strAbsencErr(err.error));
+            // If you want fail-safe real-arm behavior, uncomment next line to fail configure:
+            // return hardware_interface::CallbackReturn::ERROR;
+            serial_fd_ = -1; // explicit: simulation mode
+        } else {
+            serial_fd_ = fd;
+            RCLCPP_INFO(rclcpp::get_logger("ArmInterface"), "Opened encoder port in on_configure()");
+        }
     }
 
-    RCLCPP_INFO(rclcpp::get_logger("ArmInterface"), "Hardware interface configured successfully.");
+    if (motor_serial_fd_ == -1) {
+        motor_serial_fd_ = open("/dev/ttyTHS1", O_RDWR);
+        if (motor_serial_fd_ < 0) {
+            RCLCPP_ERROR(rclcpp::get_logger("ArmInterface"),
+                         "Failed to open motor port '/dev/ttyTHS1' in on_configure(): %s. Running in simulation mode.",
+                         strerror(errno));
+            // If on real hardware you expect motor port, consider returning ERROR here:
+            // return hardware_interface::CallbackReturn::ERROR;
+            motor_serial_fd_ = -1;
+        } else {
+            // configure termios same as before
+            struct termios ttycfg;
+            memset(&ttycfg, 0, sizeof(ttycfg));
+            ttycfg.c_cflag = CS8 | CREAD | CLOCAL;
+            ttycfg.c_lflag = 0;
+            ttycfg.c_iflag = 0;
+            ttycfg.c_oflag = 0;
+            ttycfg.c_cc[VTIME] = 1;
+            ttycfg.c_cc[VMIN] = 0;
+            cfsetispeed(&ttycfg, B57600);
+            cfsetospeed(&ttycfg, B57600);
+            tcsetattr(motor_serial_fd_, TCSANOW, &ttycfg);
+            RCLCPP_INFO(rclcpp::get_logger("ArmInterface"), "Opened motor port in on_configure()");
+        }
+    }
+
+    // 4) Final verification: ensure every joint has exactly one position command interface (as required)
+    for (const auto &joint : info_.joints) {
+        if (joint.command_interfaces.size() != 1 ||
+            joint.command_interfaces[0].name != hardware_interface::HW_IF_POSITION) {
+            RCLCPP_FATAL(rclcpp::get_logger("ArmInterface"),
+                         "Joint '%s' must expose exactly one position command interface (found %zu).",
+                         joint.name.c_str(), joint.command_interfaces.size());
+            return hardware_interface::CallbackReturn::ERROR;
+        }
+    }
+
+    RCLCPP_INFO(rclcpp::get_logger("ArmInterface"), "on_configure() completed successfully.");
     return hardware_interface::CallbackReturn::SUCCESS;
 }
 
 hardware_interface::CallbackReturn ArmInterface::on_activate(const rclcpp_lifecycle::State & previous_state)
-{  
-    (void)previous_state;
+{ 
+     (void)previous_state;
 
-    // Initialize command interfaces with current position to avoid jumps
-    if (hw_states_position_.size() == hw_commands_position_.size()) {
-        for (size_t i = 0; i < hw_commands_position_.size(); ++i) {
-            if (!std::isnan(hw_states_position_[i])) {
-                hw_commands_position_[i] = hw_states_position_[i];
-            } else {
-                hw_commands_position_[i] = 0.0;
-            }
+    const size_t nj = info_.joints.size();
+    if (hw_states_position_.size() != nj || hw_commands_position_.size() != nj) {
+        RCLCPP_FATAL(rclcpp::get_logger("ArmInterface"),
+                     "Size mismatch in on_activate(): info_.joints=%zu states=%zu cmds=%zu",
+                     nj, hw_states_position_.size(), hw_commands_position_.size());
+        return hardware_interface::CallbackReturn::ERROR;
+    }
+
+    // Copy current state into command buffer to avoid sudden jumps when controller starts
+    for (size_t i = 0; i < nj; ++i) {
+        if (!std::isnan(hw_states_position_[i])) {
+            hw_commands_position_[i] = hw_states_position_[i];
+        } else {
+            // If state is NaN for some reason, set to zero and warn
+            hw_states_position_[i] = 0.0;
+            hw_commands_position_[i] = 0.0;
+            RCLCPP_WARN(rclcpp::get_logger("ArmInterface"),
+                        "hw_states_position_[%zu] was NaN on activate; resetting to 0.", i);
         }
     }
 
