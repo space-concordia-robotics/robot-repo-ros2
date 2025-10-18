@@ -101,23 +101,23 @@ def generate_launch_description():
                 name="static_tf2_broadcaster",
                 parameters=[{"child_frame_id": "/base_structure_link", "frame_id": "/world"}],
             ),
-            ComposableNode(
-                package="joy",
-                plugin="joy::Joy",
-                name="joy_node",
-            ),
+            # ComposableNode(
+            #     package="joy",
+            #     plugin="joy::Joy",
+            #     name="joy_node",
+            # ),
         ],
         output="screen",
     )
         # Launch a standalone Servo node.
     # As opposed to a node component, this may be necessary (for example) if Servo is running on a different PC
 
-    ik_mux_node = Node(
-        package="ik_mux_controller",
-        executable="ik_mux",
-        name="ik_mux",
-        output="screen",
-    )
+    # ik_mux_node = Node(
+    #     package="ik_mux_controller",
+    #     executable="ik_mux",
+    #     name="ik_mux",
+    #     output="screen",
+    # )
     servo_node = Node(
         package="moveit_servo",
         executable="servo_node_main",
@@ -136,7 +136,7 @@ def generate_launch_description():
             ros2_control_node,
             joint_state_broadcaster_spawner,
             ceres_arm_controller_spawner,
-            ik_mux_node,
+            #ik_mux_node,
             servo_node,
             container,
         ]
