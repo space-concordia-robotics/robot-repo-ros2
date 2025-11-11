@@ -26,7 +26,7 @@ using hardware_interface::return_type;
 namespace arm_interface
 {
 
-class ArmInterface : public hardware_interface::SystemInterface
+class ArmInterface : public hardware_interface::SystemInterface //class inheriting from SystemInterface
 {
 public:
   //Lifecycle node override
