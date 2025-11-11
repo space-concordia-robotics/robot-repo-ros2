@@ -143,7 +143,7 @@ hardware_interface::CallbackReturn ArmInterface::on_configure(const rclcpp_lifec
         return hardware_interface::CallbackReturn::ERROR;
     }
 
-    // 2) Ensure our internal vectors match the number of joints
+    //Ensure our internal vectors match the number of joints
     const size_t nj = info_.joints.size();
     hw_commands_position_.resize(nj);
     hw_states_position_.resize(nj);
@@ -165,11 +165,9 @@ hardware_interface::CallbackReturn ArmInterface::on_configure(const rclcpp_lifec
         ABSENC_Error_t err = AbsencDriver::OpenPort("/dev/ttyUSB0", fd);
         if (err.error != NO_ERROR) {
             RCLCPP_ERROR(rclcpp::get_logger("ArmInterface"),
-                         "Failed to open encoder port '/dev/ttyUSB0' in on_configure(): %s. Running in simulation mode.",
+                         "Failed to open encoder port '/dev/ttyUSB0' in on_configure(): %s.",
                          strAbsencErr(err.error));
-            // If you want fail-safe real-arm behavior, uncomment next line to fail configure:
-            // return hardware_interface::CallbackReturn::ERROR;
-            serial_fd_ = -1; // explicit: simulation mode
+            return hardware_interface::CallbackReturn::ERROR;
         } else {
             serial_fd_ = fd;
             RCLCPP_INFO(rclcpp::get_logger("ArmInterface"), "Opened encoder port in on_configure()");
@@ -180,11 +178,9 @@ hardware_interface::CallbackReturn ArmInterface::on_configure(const rclcpp_lifec
         motor_serial_fd_ = open("/dev/ttyTHS1", O_RDWR);
         if (motor_serial_fd_ < 0) {
             RCLCPP_ERROR(rclcpp::get_logger("ArmInterface"),
-                         "Failed to open motor port '/dev/ttyTHS1' in on_configure(): %s. Running in simulation mode.",
+                         "Failed to open motor port '/dev/ttyTHS1' in on_configure(): %s.",
                          strerror(errno));
-            // If on real hardware you expect motor port, consider returning ERROR here:
-            // return hardware_interface::CallbackReturn::ERROR;
-            motor_serial_fd_ = -1;
+            return hardware_interface::CallbackReturn::ERROR;
         } else {
             // configure termios same as before
             struct termios ttycfg;
