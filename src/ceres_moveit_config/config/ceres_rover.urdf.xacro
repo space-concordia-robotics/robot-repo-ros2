@@ -9,6 +9,6 @@
     <xacro:include filename="ceres_rover.ros2_control.xacro" />
 
 
-    <xacro:ceres_rover_ros2_control name="FakeSystem" initial_positions_file="$(arg initial_positions_file)"/>
+    <xacro:ceres_rover_ros2_control name="ArmInterface" initial_positions_file="$(arg initial_positions_file)"/>
 
 </robot>

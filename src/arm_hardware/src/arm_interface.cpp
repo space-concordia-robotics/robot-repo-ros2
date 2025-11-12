@@ -120,7 +120,31 @@ hardware_interface::CallbackReturn ArmInterface::on_init(const hardware_interfac
             RCLCPP_FATAL(rclcpp::get_logger("ArmInterface"), "Joint %s has no state interfaces defined. Please Check URDF", joint.name.c_str());
             return hardware_interface::CallbackReturn::ERROR;
         }
+    }
 
+    RCLCPP_INFO(rclcpp::get_logger("ArmInterface"), " --- Joint Interface Configuration --- ");
+    for(const hardware_interface::ComponentInfo& joint: info_.joints)
+    {
+        RCLCPP_INFO(rclcpp::get_logger("Arminterface"), "Joint: '%s'", joint.name.c_str());
+
+        // Iterate through each joint and display command interface on terminal screen
+        std::string command_interfaces;
+
+        for(const auto & Interface: joint.command_interfaces)
+        {
+            command_interfaces += " " + Interface.name;
+        }
+        RCLCPP_INFO(rclcpp::get_logger("ArmInterface"), "Command Interfaces: %s", command_interfaces.c_str());
+
+
+        //iterating through each joint to now get state interfaces on terminal screen
+        std::string state_interfaces;
+
+        for(const auto & Interface : joint.state_interfaces) // Note to self: Interface is an InterfaceInfo object
+        {
+            state_interfaces += " " + Interface.name;
+        }
+        RCLCPP_INFO(rclcpp::get_logger("ArmInterface"), "State Interfaces: %s", state_interfaces.c_str());
     }
 
     RCLCPP_INFO(rclcpp::get_logger("ArmInterface"), "All joints have their respective command and state interfaces!");
@@ -150,17 +174,15 @@ hardware_interface::CallbackReturn ArmInterface::on_configure(const rclcpp_lifec
     hw_states_velocity_.resize(nj);
 
     // Initialize values (no NaNs left behind)
-    for (size_t i = 0; i < nj; ++i) {
+    for (size_t i = 0; i < nj; i++) {
         hw_commands_position_[i] = 0.0;
         hw_states_position_[i] = 0.0;
         hw_states_velocity_[i] = 0.0;
     }
 
-    // 3) If we are supposed to use real hardware, try to open ports if not already opened.
-    //    If ports are missing, return ERROR (so controller_manager doesn't try to activate controllers
-    //    on incomplete hardware). If you intentionally want "simulation fallback", skip returning error.
+
     if (serial_fd_ == -1) {
-        // Attempt to open encoder port (repeat OpenPort call used in on_init)
+        // Attempt to open encoder port 
         int fd;
         ABSENC_Error_t err = AbsencDriver::OpenPort("/dev/ttyUSB0", fd);
         if (err.error != NO_ERROR) {
@@ -198,10 +220,10 @@ hardware_interface::CallbackReturn ArmInterface::on_configure(const rclcpp_lifec
         }
     }
 
-    // 4) Final verification: ensure every joint has exactly one position command interface (as required)
+    // 4) Final verification: ensure every joint has exactly one velocity command interface (as required)
     for (const auto &joint : info_.joints) {
         if (joint.command_interfaces.size() != 1 ||
-            joint.command_interfaces[0].name != hardware_interface::HW_IF_POSITION) {
+            joint.command_interfaces[0].name != hardware_interface::HW_IF_VELOCITY) {
             RCLCPP_FATAL(rclcpp::get_logger("ArmInterface"),
                          "Joint '%s' must expose exactly one position command interface (found %zu).",
                          joint.name.c_str(), joint.command_interfaces.size());
@@ -213,9 +235,9 @@ hardware_interface::CallbackReturn ArmInterface::on_configure(const rclcpp_lifec
     return hardware_interface::CallbackReturn::SUCCESS;
 }
 
-//Input:
-//Outputs:
-//Errors:
+//Input: Fully initialized joint size vector and obtained joint positions from URDF file. 
+//Outputs: SET INITIAL STATE of robot, send commands to hardware, 
+//Errors checks: Ensure serial communication is  
 hardware_interface::CallbackReturn ArmInterface::on_activate(const rclcpp_lifecycle::State & previous_state)
 { 
      (void)previous_state;
