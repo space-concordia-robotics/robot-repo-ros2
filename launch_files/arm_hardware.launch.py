@@ -77,10 +77,20 @@ def generate_launch_description():
         )
     )
 
+    ik_mux_node = Node(
+
+        package="ik_mux_controller",
+        executable="ik_mux",
+        name="ik_mux_controller",
+        output="screen",
+
+    )
+
     return LaunchDescription([
         
         declare_hw_mode_arg,
         rsp,
         delayed_controller_manager,
         delayed_spawners,
+        ik_mux_node,
     ])
