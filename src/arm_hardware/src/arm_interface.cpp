@@ -267,19 +267,27 @@ hardware_interface::CallbackReturn ArmInterface::on_activate(const rclcpp_lifecy
     return hardware_interface::CallbackReturn::SUCCESS;
 }
 
-//Input:
-//Outputs:
-//Errors:
+//Input: Everything that was in onActivate()
+//Outputs: Shutting down the hardware interface
+//Errors checks: Nan
 hardware_interface::CallbackReturn ArmInterface::on_deactivate(const rclcpp_lifecycle::State & previous_state)
 {
     (void)previous_state;
 
- return hardware_interface::CallbackReturn::SUCCESS;
+    //setting joint state commands back to 0
+    for(size_t i = 0; i< hw_commands_position.size(); i++)
+    {
+        hw_commands_positions[i] = 0.0;
+    }
+
+
+    RCLCPP_INFO(rclcpp::get_logger("ArmInterface"), "Hardware interface deactivated successfully.");
+    return hardware_interface::CallbackReturn::SUCCESS;
 }
 
-//Input:
-//Outputs:
-//Errors:
+//Input: Absolute encoder angle readings from user input
+//Outputs: Mapping given encorder angles (in radians) to each joint in the URDF and publish angles on terminal  
+//Errors checks: Check to see if all encoders are properly working
 hardware_interface::return_type ArmInterface::read(const rclcpp::Time & time, const rclcpp::Duration & period)
 {
    (void)time;
@@ -360,9 +368,9 @@ hardware_interface::return_type ArmInterface::read(const rclcpp::Time & time, co
 }
 
 
-//Input:
-//Outputs:
-//Errors:
+//Input: Incoming absenc encoder values 
+//Outputs: commands to make the arm motors move upon user input
+//Errors  checks: Nan
 hardware_interface::return_type ArmInterface::write(const rclcpp::Time & time, const rclcpp::Duration & period)
 {
    (void)time;
