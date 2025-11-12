@@ -285,16 +285,6 @@ hardware_interface::return_type ArmInterface::read(const rclcpp::Time & time, co
    (void)time;
    (void)period;
 
-   // If running in simulation mode (no hardware), provide fake data
-   if (serial_fd_ == -1) {
-       // Provide some fake joint positions for simulation
-       for (size_t i = 0; i < hw_states_position_.size(); ++i) {
-           hw_states_position_[i] = 0.0; // or keep current position
-           hw_states_velocity_[i] = 0.0;
-       }
-       return return_type::OK;
-   }
-
     ABSENC_Meas_t absenc_meas_1, absenc_meas_2, absenc_meas_3, absenc_meas_4;
 
     ABSENC_Error_t err1 = AbsencDriver::PollSlave(1, &absenc_meas_1, serial_fd_);
@@ -377,17 +367,6 @@ hardware_interface::return_type ArmInterface::write(const rclcpp::Time & time, c
 {
    (void)time;
    (void)period;
-
-   // If running in simulation mode (no hardware), just return OK
-   if (motor_serial_fd_ == -1) {
-       // In simulation, update position to approach commanded position
-       for (size_t i = 0; i < hw_commands_position_.size() && i < hw_states_position_.size(); ++i) {
-           // Simple simulation: move towards commanded position
-           double error = hw_commands_position_[i] - hw_states_position_[i];
-           hw_states_position_[i] += error * 0.1; // 10% of error per cycle
-       }
-       return return_type::OK;
-   }
 
     if (info_.joints.size() < 4) {
         RCLCPP_ERROR(rclcpp::get_logger("ArmInterface"), "Received JointState message with insufficient data.");
