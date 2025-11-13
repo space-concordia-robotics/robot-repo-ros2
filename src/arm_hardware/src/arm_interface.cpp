@@ -93,8 +93,7 @@ hardware_interface::CallbackReturn ArmInterface::on_init(const hardware_interfac
     {
         RCLCPP_ERROR(rclcpp::get_logger("ArmInterface"), "Error: Failed to complete intialization stage");
         return hardware_interface::CallbackReturn::ERROR;
-    }
-    info_ = info;   
+    }  
 
     // Debug: Print joint information
     RCLCPP_INFO(rclcpp::get_logger("ArmInterface"), "Found %zu joints:", info_.joints.size());
@@ -125,7 +124,7 @@ hardware_interface::CallbackReturn ArmInterface::on_init(const hardware_interfac
     RCLCPP_INFO(rclcpp::get_logger("ArmInterface"), " --- Joint Interface Configuration --- ");
     for(const hardware_interface::ComponentInfo& joint: info_.joints)
     {
-        RCLCPP_INFO(rclcpp::get_logger("Arminterface"), "Joint: '%s'", joint.name.c_str());
+        RCLCPP_INFO(rclcpp::get_logger("ArmInterface"), "Joint: '%s'", joint.name.c_str());
 
         // Iterate through each joint and display command interface on terminal screen
         std::string command_interfaces;
@@ -223,7 +222,7 @@ hardware_interface::CallbackReturn ArmInterface::on_configure(const rclcpp_lifec
     // 4) Final verification: ensure every joint has exactly one velocity command interface (as required)
     for (const auto &joint : info_.joints) {
         if (joint.command_interfaces.size() != 1 ||
-            joint.command_interfaces[0].name != hardware_interface::HW_IF_VELOCITY) {
+            joint.command_interfaces[0].name != hardware_interface::HW_IF_POSITION) {
             RCLCPP_FATAL(rclcpp::get_logger("ArmInterface"),
                          "Joint '%s' must expose exactly one position command interface (found %zu).",
                          joint.name.c_str(), joint.command_interfaces.size());
@@ -279,14 +278,7 @@ hardware_interface::CallbackReturn ArmInterface::on_deactivate(const rclcpp_life
     {
         hw_commands_position_[i] = 0.0;
     }
-    for(size_t i = 0; i < hw_states_position_.size(); i++)
-    {
-        hw_states_position_[i] = 0.0;
-    }
-    for(size_t i = 0; i < hw_states_velocity_.size(); i++)
-    {
-        hw_states_velocity_[i] = 0.0;
-    }
+
 
 
     RCLCPP_INFO(rclcpp::get_logger("ArmInterface"), "Hardware interface deactivated successfully.");
@@ -368,7 +360,7 @@ hardware_interface::return_type ArmInterface::read(const rclcpp::Time & time, co
 
     if (absenc_meas_1.status == 0 || absenc_meas_2.status == 0 || absenc_meas_3.status == 0 || absenc_meas_4.status == 0)
     {
-    RCLCPP_INFO(rclcpp::get_logger("ArmInterface"), "Read Pos (rad): [%.3f, %.3f, %.3f, %.3f]",
+    RCLCPP_INFO_THROTTLE(rclcpp::get_logger("ArmInterface"), *rclcpp::Clock::make_shared(), 5000, "Read Pos (rad): [%.3f, %.3f, %.3f, %.3f]",
         hw_states_position_[0], hw_states_position_[1], hw_states_position_[2], hw_states_position_[3]);
     }
 
