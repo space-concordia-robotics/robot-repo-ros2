@@ -269,15 +269,23 @@ hardware_interface::CallbackReturn ArmInterface::on_activate(const rclcpp_lifecy
 
 //Input: Everything that was in onActivate()
 //Outputs: Shutting down the hardware interface
-//Errors checks: Nan
+//Errors checks: none for now
 hardware_interface::CallbackReturn ArmInterface::on_deactivate(const rclcpp_lifecycle::State & previous_state)
 {
     (void)previous_state;
 
     //setting joint state commands back to 0
-    for(size_t i = 0; i< hw_commands_position.size(); i++)
+    for(size_t i = 0; i< hw_commands_position_.size(); i++)
     {
-        hw_commands_positions[i] = 0.0;
+        hw_commands_position_[i] = 0.0;
+    }
+    for(size_t i = 0; i < hw_states_position_.size(); i++)
+    {
+        hw_states_position_[i] = 0.0;
+    }
+    for(size_t i = 0; i < hw_states_velocity_.size(); i++)
+    {
+        hw_states_velocity_[i] = 0.0;
     }
 
 
