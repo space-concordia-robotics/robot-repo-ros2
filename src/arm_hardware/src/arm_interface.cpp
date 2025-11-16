@@ -107,18 +107,10 @@ hardware_interface::CallbackReturn ArmInterface::on_init(const hardware_interfac
     hw_states_velocity_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
 
     //Ensure that all joints have valid state and command interfaces
-    for(const hardware_interface::ComponentInfo & joint: info_.joints)
+    if(info_.joints.empty())
     {
-        if(joint.command_interfaces.empty())
-        {
-            RCLCPP_FATAL(rclcpp::get_logger("ArmInterface"), "Joint %s has no command interface definded. Please check URDF", joint.name.c_str());
-            return hardware_interface::CallbackReturn::ERROR;
-        }
-        if(joint.state_interfaces.empty())
-        {
-            RCLCPP_FATAL(rclcpp::get_logger("ArmInterface"), "Joint %s has no state interfaces defined. Please Check URDF", joint.name.c_str());
-            return hardware_interface::CallbackReturn::ERROR;
-        }
+        RCLCPP_FATAL(rclcpp::get_logger("ArmInterface"), "Found no joint interfaces in da ros2_control URDF");
+        return hardware_interface::CallbackReturn::ERROR;
     }
 
     RCLCPP_INFO(rclcpp::get_logger("ArmInterface"), " --- Joint Interface Configuration --- ");
