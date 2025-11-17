@@ -60,11 +60,11 @@ def generate_launch_description():
     )
 
     # Spawner for the controller that executes trajectories
-    # *** UPDATE "arm_controller" to match your ros2_controllers.yaml ***
+    # *** UPDATE "ceres_arm_controller" to match your ros2_controllers.yaml ***
     arm_controller_spawner = Node(
         package="controller_manager",
         executable="spawner",
-        arguments=["arm_controller"], # <-- The missing controller
+        arguments=["ceres_arm_controller"], # <-- Fixed controller name
         output="screen",
     )
 
@@ -77,14 +77,13 @@ def generate_launch_description():
         )
     )
 
-    ik_mux_node = Node(
-
-        package="ik_mux_controller",
-        executable="ik_mux",
-        name="ik_mux_controller",
-        output="screen",
-
-    )
+    # Temporarily commented out ik_mux_node due to build issues
+    # ik_mux_node = Node(
+    #     package="ik_mux_controller",
+    #     executable="ik_mux",
+    #     name="ik_mux_controller",
+    #     output="screen",
+    # )
 
     return LaunchDescription([
         
@@ -92,5 +91,5 @@ def generate_launch_description():
         rsp,
         delayed_controller_manager,
         delayed_spawners,
-        ik_mux_node,
+        # ik_mux_node,  # Temporarily commented out
     ])
