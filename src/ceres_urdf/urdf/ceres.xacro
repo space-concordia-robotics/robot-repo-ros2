@@ -1,4 +1,4 @@
-<?xml version="2.0"?>
+<?xml version="1.0"?>
 
 <robot name="ceres_rover" xmlns:xacro="http://www.ros.org/wiki/xacro">
 
