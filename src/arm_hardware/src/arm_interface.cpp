@@ -98,7 +98,7 @@ hardware_interface::CallbackReturn ArmInterface::on_init(const hardware_interfac
 
     // Debug: Print joint information
     RCLCPP_INFO(rclcpp::get_logger("ArmInterface"), "Found %zu joints:", info_.joints.size());
-    for (size_t i = 0; i < 4; ++i) {
+    for (size_t i = 0; i < info_.joints.size(); ++i) {
         RCLCPP_INFO(rclcpp::get_logger("ArmInterface"), "  Joint %zu: %s", i, info_.joints[i].name.c_str());
     }
 
