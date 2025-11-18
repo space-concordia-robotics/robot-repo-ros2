@@ -89,6 +89,7 @@ namespace arm_interface
             //check if initialization was successfully completed. 
 hardware_interface::CallbackReturn ArmInterface::on_init(const hardware_interface::HardwareInfo &info)
 {
+    RCLCPP_INFO(rclcpp::get_logger("ArmInterface"), "Starting on_init()...");
     if (hardware_interface::SystemInterface::on_init(info) != CallbackReturn::SUCCESS)
     {
         RCLCPP_ERROR(rclcpp::get_logger("ArmInterface"), "Error: Failed to complete intialization stage");
