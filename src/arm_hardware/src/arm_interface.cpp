@@ -94,11 +94,11 @@ hardware_interface::CallbackReturn ArmInterface::on_init(const hardware_interfac
     {
         RCLCPP_ERROR(rclcpp::get_logger("ArmInterface"), "Error: Failed to complete intialization stage");
         return hardware_interface::CallbackReturn::ERROR;
-    }  
+    } 
 
     // Debug: Print joint information
     RCLCPP_INFO(rclcpp::get_logger("ArmInterface"), "Found %zu joints:", info_.joints.size());
-    for (size_t i = 0; i < info_.joints.size(); ++i) {
+    for (size_t i = 0; i < 4; ++i) {
         RCLCPP_INFO(rclcpp::get_logger("ArmInterface"), "  Joint %zu: %s", i, info_.joints[i].name.c_str());
     }
 
