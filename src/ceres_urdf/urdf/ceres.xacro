@@ -181,7 +181,6 @@
         <parent link="base_structure_link"/>
         <child link="base_pivot_link"/>
         <origin xyz="0 0 0.1618" rpy="0 0 0"/>
-        <!-- <limit effort="20" velocity="2.0" lower="-2.355" upper="1.57"/> -->
         <axis xyz="0 0 1"/>
     </joint>
 
@@ -189,14 +188,12 @@
         <parent link="base_pivot_link"/>
         <child link="bicep_tube_link"/>
         <origin xyz="0.11645 0 0" rpy="0 0 0"/>
-        <!-- <limit effort="20" velocity="2.0" lower="-0.785" upper="2.0467"/> -->
     </joint>
 
     <joint name="joint3" type="continuous">
         <parent link="bicep_tube_link"/>
         <child link="bicep_gearbox_link"/>
         <origin xyz="-0.092875 0 0.440" rpy="0 0 0"/>
-        <!-- <limit effort="20" velocity="2.0" lower="-0.466" upper="1.989"/> -->
         <axis xyz="1 0 0"/>
     </joint>
     
@@ -211,7 +208,6 @@
         <parent link="forearm_tube_link"/>
         <child link="bracket_connection_link"/>
         <origin xyz="0.0421 0 0.3" rpy="0 0 0"/>
-        <limit effort="20" velocity="2.0" lower="-1.57" upper="1.57"/>
         <axis xyz=" 1 0 0"/>
     </joint>
 
@@ -226,7 +222,6 @@
         <parent link="wrist_gearbox_link"/>
         <child link="gripper_claw_link"/>
         <origin xyz="0.005725 0 0.07" rpy="0 0 0"/>
-        <limit effort="20" velocity="2.0" lower="-3.14" upper="3.14"/>
         <axis xyz="0 0 1"/>
     </joint>
 
@@ -234,7 +229,6 @@
         <parent link="gripper_claw_link"/>
         <child link="right_claw_link"/>
         <origin xyz="0 0.036895 0.135" rpy="0 0 0"/>
-        <limit effort="20" velocity="2.0" lower="0" upper="0.0275"/>
         <axis xyz="0 1 0"/>
     </joint>
 
@@ -242,7 +236,6 @@
         <parent link="gripper_claw_link"/>
         <child link="left_claw_link"/>
         <origin xyz="0 -0.036895 0.135" rpy="0 0 0"/>
-        <limit effort="20" velocity="2.0" lower="-0.0275" upper="0"/>
         <axis xyz="0 1 0"/>
     </joint>
 </robot>
