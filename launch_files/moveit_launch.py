@@ -67,7 +67,7 @@ def generate_launch_description():
     ceres_arm_controller_spawner = Node(
         package="controller_manager",
         executable="spawner",
-        arguments=["rover_arm_controller", "-c", "/controller_manager"],
+        arguments=["arm_controller", "-c", "/controller_manager"],
     )
 
         # Launch as much as possible in components
