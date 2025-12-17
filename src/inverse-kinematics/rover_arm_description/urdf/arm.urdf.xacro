@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<robot name="rover_arm" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+    <xacro:include filename="arm.xacro"/>
+    <xacro:include filename="gripper.xacro"/>
+    <xacro:include filename="common_properties.xacro"/>
+
+    <joint name="gripper_base_joint" type="fixed">
+        <parent link="bracket_connection_link"/>
+        <child link="gripper_base_link"/>
+        <origin xyz="-0.026225 0 0.070075" rpy="0 0 0"/>
+    </joint>
+
+</robot>
