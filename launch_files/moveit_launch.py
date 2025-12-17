@@ -10,15 +10,15 @@ from launch_ros.descriptions import ComposableNode
 
 def generate_launch_description():
     moveit_config = (
-        MoveItConfigsBuilder("ceres")
-        .robot_description(file_path="config/ceres_rover.urdf.xacro")
+        MoveItConfigsBuilder("rover_arm")
+        .robot_description(file_path="config/rover_arm.urdf.xacro")
         .joint_limits(file_path="config/joint_limits.yaml")
         .to_moveit_configs()
     )
 
     servo_params = {
-        "moveit_servo": ParameterBuilder("ceres_moveit_config")
-        .yaml("config/ceres_servo.yaml")
+        "moveit_servo": ParameterBuilder("rover_arm_moveit_config")
+        .yaml("config/rover_arm_servo.yaml")
         .to_dict()
     }
 
@@ -41,7 +41,7 @@ def generate_launch_description():
 
     # ros2_control using FakeSystem as hardware
     ros2_controllers_path = os.path.join(
-        get_package_share_directory("ceres_moveit_config"),
+        get_package_share_directory("rover_arm_moveit_config"),
         "config",
         "ros2_controllers.yaml",
     )
@@ -67,7 +67,7 @@ def generate_launch_description():
     ceres_arm_controller_spawner = Node(
         package="controller_manager",
         executable="spawner",
-        arguments=["ceres_arm_controller", "-c", "/controller_manager"],
+        arguments=["rover_arm_controller", "-c", "/controller_manager"],
     )
 
         # Launch as much as possible in components
