@@ -124,8 +124,8 @@ bool convertJoyToCmd(const std::vector<float>& axes, const std::vector<int>& but
     joint->velocities.push_back(buttons[CIRCLE] - buttons[SQUARE]);
     joint->joint_names.push_back("joint5");
     joint->velocities.push_back(buttons[TRIANGLE] - buttons[X]);
-    joint->joint_names.push_back("joint7");
-    joint->velocities.push_back(buttons[LEFT_STICK_CLICK] - buttons[RIGHT_STICK_CLICK]);
+    // joint->joint_names.push_back("joint7");
+    // joint->velocities.push_back(buttons[LEFT_STICK_CLICK] - buttons[RIGHT_STICK_CLICK]);
     return false;
   }
 

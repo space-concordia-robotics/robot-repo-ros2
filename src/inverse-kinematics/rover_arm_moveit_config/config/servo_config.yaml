@@ -42,9 +42,9 @@ is_primary_planning_scene_monitor: true
 move_group_name:  arm  # Often 'manipulator' or 'arm'
 planning_frame: base_structure_link  # The MoveIt planning frame. Often 'base_link' or 'world'
 
-#Other frames
-ee_frame_name: gripper_base_link  # The name of the end effector link, used to return the EE pose
-robot_link_command_frame:  bracket_connection_link  # commands must be given in the frame of a robot link. Usually either the base or end effector
+## Other frames
+ee_frame_name: gripper_claw_link  # The name of the end effector link, used to return the EE pose
+robot_link_command_frame:  base_structure_link  # commands must be given in the frame of a robot link. Usually either the base or end effector
 
 ## Stopping behaviour
 incoming_command_timeout:  0.1  # Stop servoing if X seconds elapse without a new command
@@ -63,7 +63,7 @@ cartesian_command_in_topic: ~/delta_twist_cmds  # Topic for incoming Cartesian t
 joint_command_in_topic: ~/delta_joint_cmds # Topic for incoming joint angle commands
 joint_topic: /joint_states
 status_topic: ~/status # Publish status to this topic
-command_out_topic: /rover_arm_controller/joint_trajectory # Publish outgoing commands here
+command_out_topic: /ceres_arm_controller/joint_trajectory # Publish outgoing commands here
 
 ## Collision checking for the entire robot body
 check_collisions: true # Check collisions?

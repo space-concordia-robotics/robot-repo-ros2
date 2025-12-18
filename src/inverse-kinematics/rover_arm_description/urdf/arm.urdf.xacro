@@ -5,10 +5,11 @@
     <xacro:include filename="gripper.xacro"/>
     <xacro:include filename="common_properties.xacro"/>
 
-    <joint name="gripper_base_joint" type="fixed">
-        <parent link="bracket_connection_link"/>
-        <child link="gripper_base_link"/>
-        <origin xyz="-0.026225 0 0.070075" rpy="0 0 0"/>
+    <joint name="joint7" type="fixed">
+        <parent link="gripper_base_link"/>
+        <child link="gripper_claw_link"/>
+        <origin xyz="0.005725 0 0.07" rpy="0 0 0"/>
+        <axis xyz="0 0 1"/>
     </joint>
 
 </robot>
