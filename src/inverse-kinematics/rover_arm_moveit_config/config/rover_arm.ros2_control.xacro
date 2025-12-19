@@ -6,10 +6,11 @@
         <ros2_control name="${name}" type="system">
             <hardware>
                 <!-- By default, set up controllers for simulation. This won't work on real hardware -->
-                <!-- Note: RVIZ only takes positional command interfaces, so when using this interface on the real arm 
-                one can simply comment out or remove the position command interfaces.-->
                 <plugin>mock_components/GenericSystem</plugin>
             </hardware>
+
+            <!-- Note: RVIZ only takes positional command interfaces, so when using this interface on the real arm 
+              one can simply comment out or remove the position command interfaces.-->
             <joint name="joint1">
                 <command_interface name="velocity"/>
                 <command_interface name="position"/>
