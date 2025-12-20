@@ -1,0 +1,6 @@
+[31mCMake Error at cmake_install.cmake:66 (file):
+  file INSTALL cannot find
+  "/home/liliana/ros2_ws/robot-repo-ros2/src/object_recognition/object_recognition/keymap.py":
+  No such file or directory.
+
+[0m

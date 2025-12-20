@@ -1,0 +1,26 @@
+[33mCMake Warning at CMakeLists.txt:17 (find_package):
+  By not providing "Findmoveit_move_group_interface.cmake" in
+  CMAKE_MODULE_PATH this project has asked CMake to find a package
+  configuration file provided by "moveit_move_group_interface", but CMake did
+  not find one.
+
+  Could not find a package configuration file provided by
+  "moveit_move_group_interface" with any of the following names:
+
+    moveit_move_group_interfaceConfig.cmake
+    moveit_move_group_interface-config.cmake
+
+  Add the installation prefix of "moveit_move_group_interface" to
+  CMAKE_PREFIX_PATH or set "moveit_move_group_interface_DIR" to a directory
+  containing one of the above files.  If "moveit_move_group_interface"
+  provides a separate development package or SDK, be sure it has been
+  installed.
+
+[0m
+[01m[K/home/liliana/ros2_ws/robot-repo-ros2/src/object_recognition/src/move_group.cpp:2:10:[m[K [01;31m[Kfatal error: [m[Kmoveit/move_group_interface/move_group_interface.hpp: No such file or directory
+    2 | #include [01;31m[K<moveit/move_group_interface/move_group_interface.hpp>[m[K
+      |          [01;31m[K^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[m[K
+compilation terminated.
+gmake[2]: *** [CMakeFiles/move_group_node.dir/build.make:76: CMakeFiles/move_group_node.dir/src/move_group.cpp.o] Error 1
+gmake[1]: *** [CMakeFiles/Makefile2:137: CMakeFiles/move_group_node.dir/all] Error 2
+gmake: *** [Makefile:146: all] Error 2

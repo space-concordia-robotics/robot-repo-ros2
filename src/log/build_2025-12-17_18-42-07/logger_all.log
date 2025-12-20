@@ -1,0 +1,279 @@
+[0.371s] DEBUG:colcon:Command line arguments: ['/usr/bin/colcon', 'build', '--packages-select', 'ceres_moveit_config']
+[0.372s] DEBUG:colcon:Parsed command line arguments: Namespace(log_base=None, log_level=None, verb_name='build', build_base='build', install_base='install', merge_install=False, symlink_install=False, test_result_base=None, continue_on_error=False, executor='parallel', parallel_workers=6, event_handlers=None, ignore_user_meta=False, metas=['./colcon.meta'], base_paths=['.'], packages_ignore=None, packages_ignore_regex=None, paths=None, packages_up_to=None, packages_up_to_regex=None, packages_above=None, packages_above_and_dependencies=None, packages_above_depth=None, packages_select_by_dep=None, packages_skip_by_dep=None, packages_skip_up_to=None, packages_select_build_failed=False, packages_skip_build_finished=False, packages_select_test_failures=False, packages_skip_test_passed=False, packages_select=['ceres_moveit_config'], packages_skip=None, packages_select_regex=None, packages_skip_regex=None, packages_start=None, packages_end=None, allow_overriding=[], cmake_args=None, cmake_target=None, cmake_target_skip_unavailable=False, cmake_clean_cache=False, cmake_clean_first=False, cmake_force_configure=False, ament_cmake_args=None, catkin_cmake_args=None, catkin_skip_building_tests=False, mixin_files=None, mixin=None, verb_parser=<colcon_mixin.mixin.mixin_argument.MixinArgumentDecorator object at 0x777c46e885e0>, verb_extension=<colcon_core.verb.build.BuildVerb object at 0x777c46e88100>, main=<bound method BuildVerb.main of <colcon_core.verb.build.BuildVerb object at 0x777c46e88100>>, mixin_verb=('build',))
+[1.273s] Level 1:colcon.colcon_core.package_discovery:discover_packages(colcon_meta) check parameters
+[1.273s] Level 1:colcon.colcon_core.package_discovery:discover_packages(recursive) check parameters
+[1.273s] Level 1:colcon.colcon_core.package_discovery:discover_packages(ignore) check parameters
+[1.273s] Level 1:colcon.colcon_core.package_discovery:discover_packages(path) check parameters
+[1.273s] Level 1:colcon.colcon_core.package_discovery:discover_packages(colcon_meta) discover
+[1.274s] Level 1:colcon.colcon_core.package_discovery:discover_packages(recursive) discover
+[1.274s] INFO:colcon.colcon_core.package_discovery:Crawling recursively for packages in '/home/liliana/ros2_ws/robot-repo-ros2/src'
+[1.274s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['ignore', 'ignore_ament_install']
+[1.274s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'ignore'
+[1.274s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'ignore_ament_install'
+[1.275s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['colcon_pkg']
+[1.275s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'colcon_pkg'
+[1.275s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['colcon_meta']
+[1.275s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'colcon_meta'
+[1.275s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['ros']
+[1.275s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'ros'
+[1.314s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['cmake', 'python']
+[1.314s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'cmake'
+[1.314s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'python'
+[1.315s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['python_setup_py']
+[1.315s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'python_setup_py'
+[1.315s] Level 1:colcon.colcon_core.package_identification:_identify(absenc_interface) by extensions ['ignore', 'ignore_ament_install']
+[1.315s] Level 1:colcon.colcon_core.package_identification:_identify(absenc_interface) by extension 'ignore'
+[1.316s] Level 1:colcon.colcon_core.package_identification:_identify(absenc_interface) by extension 'ignore_ament_install'
+[1.316s] Level 1:colcon.colcon_core.package_identification:_identify(absenc_interface) by extensions ['colcon_pkg']
+[1.316s] Level 1:colcon.colcon_core.package_identification:_identify(absenc_interface) by extension 'colcon_pkg'
+[1.316s] Level 1:colcon.colcon_core.package_identification:_identify(absenc_interface) by extensions ['colcon_meta']
+[1.316s] Level 1:colcon.colcon_core.package_identification:_identify(absenc_interface) by extension 'colcon_meta'
+[1.316s] Level 1:colcon.colcon_core.package_identification:_identify(absenc_interface) by extensions ['ros']
+[1.316s] Level 1:colcon.colcon_core.package_identification:_identify(absenc_interface) by extension 'ros'
+[1.326s] DEBUG:colcon.colcon_core.package_identification:Package 'absenc_interface' with type 'ros.ament_cmake' and name 'absenc_interface'
+[1.327s] Level 1:colcon.colcon_core.package_identification:_identify(arm_controller) by extensions ['ignore', 'ignore_ament_install']
+[1.327s] Level 1:colcon.colcon_core.package_identification:_identify(arm_controller) by extension 'ignore'
+[1.327s] Level 1:colcon.colcon_core.package_identification:_identify(arm_controller) by extension 'ignore_ament_install'
+[1.327s] Level 1:colcon.colcon_core.package_identification:_identify(arm_controller) by extensions ['colcon_pkg']
+[1.327s] Level 1:colcon.colcon_core.package_identification:_identify(arm_controller) by extension 'colcon_pkg'
+[1.327s] Level 1:colcon.colcon_core.package_identification:_identify(arm_controller) by extensions ['colcon_meta']
+[1.328s] Level 1:colcon.colcon_core.package_identification:_identify(arm_controller) by extension 'colcon_meta'
+[1.328s] Level 1:colcon.colcon_core.package_identification:_identify(arm_controller) by extensions ['ros']
+[1.328s] Level 1:colcon.colcon_core.package_identification:_identify(arm_controller) by extension 'ros'
+[1.329s] DEBUG:colcon.colcon_core.package_identification:Package 'arm_controller' with type 'ros.ament_cmake' and name 'arm_controller'
+[1.330s] Level 1:colcon.colcon_core.package_identification:_identify(arm_hardware) by extensions ['ignore', 'ignore_ament_install']
+[1.330s] Level 1:colcon.colcon_core.package_identification:_identify(arm_hardware) by extension 'ignore'
+[1.330s] Level 1:colcon.colcon_core.package_identification:_identify(arm_hardware) by extension 'ignore_ament_install'
+[1.330s] Level 1:colcon.colcon_core.package_identification:_identify(arm_hardware) by extensions ['colcon_pkg']
+[1.330s] Level 1:colcon.colcon_core.package_identification:_identify(arm_hardware) by extension 'colcon_pkg'
+[1.330s] Level 1:colcon.colcon_core.package_identification:_identify(arm_hardware) by extensions ['colcon_meta']
+[1.331s] Level 1:colcon.colcon_core.package_identification:_identify(arm_hardware) by extension 'colcon_meta'
+[1.331s] Level 1:colcon.colcon_core.package_identification:_identify(arm_hardware) by extensions ['ros']
+[1.331s] Level 1:colcon.colcon_core.package_identification:_identify(arm_hardware) by extension 'ros'
+[1.333s] DEBUG:colcon.colcon_core.package_identification:Package 'arm_hardware' with type 'ros.ament_cmake' and name 'arm_hardware'
+[1.333s] Level 1:colcon.colcon_core.package_identification:_identify(build) by extensions ['ignore', 'ignore_ament_install']
+[1.334s] Level 1:colcon.colcon_core.package_identification:_identify(build) by extension 'ignore'
+[1.334s] Level 1:colcon.colcon_core.package_identification:_identify(build) ignored
+[1.334s] Level 1:colcon.colcon_core.package_identification:_identify(ceres_moveit_config) by extensions ['ignore', 'ignore_ament_install']
+[1.334s] Level 1:colcon.colcon_core.package_identification:_identify(ceres_moveit_config) by extension 'ignore'
+[1.335s] Level 1:colcon.colcon_core.package_identification:_identify(ceres_moveit_config) by extension 'ignore_ament_install'
+[1.335s] Level 1:colcon.colcon_core.package_identification:_identify(ceres_moveit_config) by extensions ['colcon_pkg']
+[1.335s] Level 1:colcon.colcon_core.package_identification:_identify(ceres_moveit_config) by extension 'colcon_pkg'
+[1.335s] Level 1:colcon.colcon_core.package_identification:_identify(ceres_moveit_config) by extensions ['colcon_meta']
+[1.335s] Level 1:colcon.colcon_core.package_identification:_identify(ceres_moveit_config) by extension 'colcon_meta'
+[1.335s] Level 1:colcon.colcon_core.package_identification:_identify(ceres_moveit_config) by extensions ['ros']
+[1.335s] Level 1:colcon.colcon_core.package_identification:_identify(ceres_moveit_config) by extension 'ros'
+[1.338s] DEBUG:colcon.colcon_core.package_identification:Package 'ceres_moveit_config' with type 'ros.ament_cmake' and name 'ceres_moveit_config'
+[1.339s] Level 1:colcon.colcon_core.package_identification:_identify(ceres_urdf) by extensions ['ignore', 'ignore_ament_install']
+[1.339s] Level 1:colcon.colcon_core.package_identification:_identify(ceres_urdf) by extension 'ignore'
+[1.339s] Level 1:colcon.colcon_core.package_identification:_identify(ceres_urdf) by extension 'ignore_ament_install'
+[1.339s] Level 1:colcon.colcon_core.package_identification:_identify(ceres_urdf) by extensions ['colcon_pkg']
+[1.339s] Level 1:colcon.colcon_core.package_identification:_identify(ceres_urdf) by extension 'colcon_pkg'
+[1.339s] Level 1:colcon.colcon_core.package_identification:_identify(ceres_urdf) by extensions ['colcon_meta']
+[1.339s] Level 1:colcon.colcon_core.package_identification:_identify(ceres_urdf) by extension 'colcon_meta'
+[1.340s] Level 1:colcon.colcon_core.package_identification:_identify(ceres_urdf) by extensions ['ros']
+[1.340s] Level 1:colcon.colcon_core.package_identification:_identify(ceres_urdf) by extension 'ros'
+[1.341s] DEBUG:colcon.colcon_core.package_identification:Package 'ceres_urdf' with type 'ros.ament_cmake' and name 'ceres_urdf'
+[1.342s] Level 1:colcon.colcon_core.package_identification:_identify(ik_mux_controller) by extensions ['ignore', 'ignore_ament_install']
+[1.342s] Level 1:colcon.colcon_core.package_identification:_identify(ik_mux_controller) by extension 'ignore'
+[1.342s] Level 1:colcon.colcon_core.package_identification:_identify(ik_mux_controller) by extension 'ignore_ament_install'
+[1.342s] Level 1:colcon.colcon_core.package_identification:_identify(ik_mux_controller) by extensions ['colcon_pkg']
+[1.342s] Level 1:colcon.colcon_core.package_identification:_identify(ik_mux_controller) by extension 'colcon_pkg'
+[1.342s] Level 1:colcon.colcon_core.package_identification:_identify(ik_mux_controller) by extensions ['colcon_meta']
+[1.342s] Level 1:colcon.colcon_core.package_identification:_identify(ik_mux_controller) by extension 'colcon_meta'
+[1.343s] Level 1:colcon.colcon_core.package_identification:_identify(ik_mux_controller) by extensions ['ros']
+[1.343s] Level 1:colcon.colcon_core.package_identification:_identify(ik_mux_controller) by extension 'ros'
+[1.346s] DEBUG:colcon.colcon_core.package_identification:Package 'ik_mux_controller' with type 'ros.ament_cmake' and name 'ik_mux_controller'
+[1.347s] Level 1:colcon.colcon_core.package_identification:_identify(install) by extensions ['ignore', 'ignore_ament_install']
+[1.347s] Level 1:colcon.colcon_core.package_identification:_identify(install) by extension 'ignore'
+[1.347s] Level 1:colcon.colcon_core.package_identification:_identify(install) ignored
+[1.347s] Level 1:colcon.colcon_core.package_identification:_identify(joy_mux_controller) by extensions ['ignore', 'ignore_ament_install']
+[1.348s] Level 1:colcon.colcon_core.package_identification:_identify(joy_mux_controller) by extension 'ignore'
+[1.348s] Level 1:colcon.colcon_core.package_identification:_identify(joy_mux_controller) by extension 'ignore_ament_install'
+[1.348s] Level 1:colcon.colcon_core.package_identification:_identify(joy_mux_controller) by extensions ['colcon_pkg']
+[1.348s] Level 1:colcon.colcon_core.package_identification:_identify(joy_mux_controller) by extension 'colcon_pkg'
+[1.348s] Level 1:colcon.colcon_core.package_identification:_identify(joy_mux_controller) by extensions ['colcon_meta']
+[1.348s] Level 1:colcon.colcon_core.package_identification:_identify(joy_mux_controller) by extension 'colcon_meta'
+[1.348s] Level 1:colcon.colcon_core.package_identification:_identify(joy_mux_controller) by extensions ['ros']
+[1.348s] Level 1:colcon.colcon_core.package_identification:_identify(joy_mux_controller) by extension 'ros'
+[1.350s] DEBUG:colcon.colcon_core.package_identification:Package 'joy_mux_controller' with type 'ros.ament_python' and name 'joy_mux_controller'
+[1.351s] Level 1:colcon.colcon_core.package_identification:_identify(log) by extensions ['ignore', 'ignore_ament_install']
+[1.351s] Level 1:colcon.colcon_core.package_identification:_identify(log) by extension 'ignore'
+[1.351s] Level 1:colcon.colcon_core.package_identification:_identify(log) ignored
+[1.352s] Level 1:colcon.colcon_core.package_identification:_identify(object_recognition) by extensions ['ignore', 'ignore_ament_install']
+[1.352s] Level 1:colcon.colcon_core.package_identification:_identify(object_recognition) by extension 'ignore'
+[1.352s] Level 1:colcon.colcon_core.package_identification:_identify(object_recognition) by extension 'ignore_ament_install'
+[1.352s] Level 1:colcon.colcon_core.package_identification:_identify(object_recognition) by extensions ['colcon_pkg']
+[1.352s] Level 1:colcon.colcon_core.package_identification:_identify(object_recognition) by extension 'colcon_pkg'
+[1.352s] Level 1:colcon.colcon_core.package_identification:_identify(object_recognition) by extensions ['colcon_meta']
+[1.352s] Level 1:colcon.colcon_core.package_identification:_identify(object_recognition) by extension 'colcon_meta'
+[1.352s] Level 1:colcon.colcon_core.package_identification:_identify(object_recognition) by extensions ['ros']
+[1.352s] Level 1:colcon.colcon_core.package_identification:_identify(object_recognition) by extension 'ros'
+[1.356s] DEBUG:colcon.colcon_core.package_identification:Package 'object_recognition' with type 'ros.ament_cmake' and name 'object_recognition'
+[1.356s] Level 1:colcon.colcon_core.package_identification:_identify(ros_aruco_opencv) by extensions ['ignore', 'ignore_ament_install']
+[1.357s] Level 1:colcon.colcon_core.package_identification:_identify(ros_aruco_opencv) by extension 'ignore'
+[1.357s] Level 1:colcon.colcon_core.package_identification:_identify(ros_aruco_opencv) by extension 'ignore_ament_install'
+[1.357s] Level 1:colcon.colcon_core.package_identification:_identify(ros_aruco_opencv) by extensions ['colcon_pkg']
+[1.357s] Level 1:colcon.colcon_core.package_identification:_identify(ros_aruco_opencv) by extension 'colcon_pkg'
+[1.357s] Level 1:colcon.colcon_core.package_identification:_identify(ros_aruco_opencv) by extensions ['colcon_meta']
+[1.357s] Level 1:colcon.colcon_core.package_identification:_identify(ros_aruco_opencv) by extension 'colcon_meta'
+[1.357s] Level 1:colcon.colcon_core.package_identification:_identify(ros_aruco_opencv) by extensions ['ros']
+[1.357s] Level 1:colcon.colcon_core.package_identification:_identify(ros_aruco_opencv) by extension 'ros'
+[1.357s] Level 1:colcon.colcon_core.package_identification:_identify(ros_aruco_opencv) by extensions ['cmake', 'python']
+[1.358s] Level 1:colcon.colcon_core.package_identification:_identify(ros_aruco_opencv) by extension 'cmake'
+[1.358s] Level 1:colcon.colcon_core.package_identification:_identify(ros_aruco_opencv) by extension 'python'
+[1.358s] Level 1:colcon.colcon_core.package_identification:_identify(ros_aruco_opencv) by extensions ['python_setup_py']
+[1.358s] Level 1:colcon.colcon_core.package_identification:_identify(ros_aruco_opencv) by extension 'python_setup_py'
+[1.358s] Level 1:colcon.colcon_core.package_identification:_identify(sil) by extensions ['ignore', 'ignore_ament_install']
+[1.358s] Level 1:colcon.colcon_core.package_identification:_identify(sil) by extension 'ignore'
+[1.358s] Level 1:colcon.colcon_core.package_identification:_identify(sil) by extension 'ignore_ament_install'
+[1.359s] Level 1:colcon.colcon_core.package_identification:_identify(sil) by extensions ['colcon_pkg']
+[1.359s] Level 1:colcon.colcon_core.package_identification:_identify(sil) by extension 'colcon_pkg'
+[1.359s] Level 1:colcon.colcon_core.package_identification:_identify(sil) by extensions ['colcon_meta']
+[1.359s] Level 1:colcon.colcon_core.package_identification:_identify(sil) by extension 'colcon_meta'
+[1.359s] Level 1:colcon.colcon_core.package_identification:_identify(sil) by extensions ['ros']
+[1.359s] Level 1:colcon.colcon_core.package_identification:_identify(sil) by extension 'ros'
+[1.361s] DEBUG:colcon.colcon_core.package_identification:Package 'sil' with type 'ros.ament_cmake' and name 'sil'
+[1.362s] Level 1:colcon.colcon_core.package_identification:_identify(ublox) by extensions ['ignore', 'ignore_ament_install']
+[1.362s] Level 1:colcon.colcon_core.package_identification:_identify(ublox) by extension 'ignore'
+[1.362s] Level 1:colcon.colcon_core.package_identification:_identify(ublox) by extension 'ignore_ament_install'
+[1.363s] Level 1:colcon.colcon_core.package_identification:_identify(ublox) by extensions ['colcon_pkg']
+[1.363s] Level 1:colcon.colcon_core.package_identification:_identify(ublox) by extension 'colcon_pkg'
+[1.363s] Level 1:colcon.colcon_core.package_identification:_identify(ublox) by extensions ['colcon_meta']
+[1.363s] Level 1:colcon.colcon_core.package_identification:_identify(ublox) by extension 'colcon_meta'
+[1.363s] Level 1:colcon.colcon_core.package_identification:_identify(ublox) by extensions ['ros']
+[1.363s] Level 1:colcon.colcon_core.package_identification:_identify(ublox) by extension 'ros'
+[1.363s] Level 1:colcon.colcon_core.package_identification:_identify(ublox) by extensions ['cmake', 'python']
+[1.363s] Level 1:colcon.colcon_core.package_identification:_identify(ublox) by extension 'cmake'
+[1.363s] Level 1:colcon.colcon_core.package_identification:_identify(ublox) by extension 'python'
+[1.363s] Level 1:colcon.colcon_core.package_identification:_identify(ublox) by extensions ['python_setup_py']
+[1.364s] Level 1:colcon.colcon_core.package_identification:_identify(ublox) by extension 'python_setup_py'
+[1.364s] Level 1:colcon.colcon_core.package_identification:_identify(usb_cam) by extensions ['ignore', 'ignore_ament_install']
+[1.364s] Level 1:colcon.colcon_core.package_identification:_identify(usb_cam) by extension 'ignore'
+[1.364s] Level 1:colcon.colcon_core.package_identification:_identify(usb_cam) by extension 'ignore_ament_install'
+[1.364s] Level 1:colcon.colcon_core.package_identification:_identify(usb_cam) by extensions ['colcon_pkg']
+[1.364s] Level 1:colcon.colcon_core.package_identification:_identify(usb_cam) by extension 'colcon_pkg'
+[1.364s] Level 1:colcon.colcon_core.package_identification:_identify(usb_cam) by extensions ['colcon_meta']
+[1.364s] Level 1:colcon.colcon_core.package_identification:_identify(usb_cam) by extension 'colcon_meta'
+[1.365s] Level 1:colcon.colcon_core.package_identification:_identify(usb_cam) by extensions ['ros']
+[1.365s] Level 1:colcon.colcon_core.package_identification:_identify(usb_cam) by extension 'ros'
+[1.385s] DEBUG:colcon.colcon_core.package_identification:Package 'usb_cam' with type 'ros.ament_cmake' and name 'usb_cam'
+[1.385s] Level 1:colcon.colcon_core.package_identification:_identify(wheels_controller) by extensions ['ignore', 'ignore_ament_install']
+[1.385s] Level 1:colcon.colcon_core.package_identification:_identify(wheels_controller) by extension 'ignore'
+[1.386s] Level 1:colcon.colcon_core.package_identification:_identify(wheels_controller) by extension 'ignore_ament_install'
+[1.386s] Level 1:colcon.colcon_core.package_identification:_identify(wheels_controller) by extensions ['colcon_pkg']
+[1.386s] Level 1:colcon.colcon_core.package_identification:_identify(wheels_controller) by extension 'colcon_pkg'
+[1.386s] Level 1:colcon.colcon_core.package_identification:_identify(wheels_controller) by extensions ['colcon_meta']
+[1.386s] Level 1:colcon.colcon_core.package_identification:_identify(wheels_controller) by extension 'colcon_meta'
+[1.386s] Level 1:colcon.colcon_core.package_identification:_identify(wheels_controller) by extensions ['ros']
+[1.386s] Level 1:colcon.colcon_core.package_identification:_identify(wheels_controller) by extension 'ros'
+[1.388s] DEBUG:colcon.colcon_core.package_identification:Package 'wheels_controller' with type 'ros.ament_cmake' and name 'wheels_controller'
+[1.388s] Level 1:colcon.colcon_core.package_identification:_identify(zed-ros2-wrapper) by extensions ['ignore', 'ignore_ament_install']
+[1.388s] Level 1:colcon.colcon_core.package_identification:_identify(zed-ros2-wrapper) by extension 'ignore'
+[1.389s] Level 1:colcon.colcon_core.package_identification:_identify(zed-ros2-wrapper) by extension 'ignore_ament_install'
+[1.389s] Level 1:colcon.colcon_core.package_identification:_identify(zed-ros2-wrapper) by extensions ['colcon_pkg']
+[1.389s] Level 1:colcon.colcon_core.package_identification:_identify(zed-ros2-wrapper) by extension 'colcon_pkg'
+[1.389s] Level 1:colcon.colcon_core.package_identification:_identify(zed-ros2-wrapper) by extensions ['colcon_meta']
+[1.389s] Level 1:colcon.colcon_core.package_identification:_identify(zed-ros2-wrapper) by extension 'colcon_meta'
+[1.389s] Level 1:colcon.colcon_core.package_identification:_identify(zed-ros2-wrapper) by extensions ['ros']
+[1.389s] Level 1:colcon.colcon_core.package_identification:_identify(zed-ros2-wrapper) by extension 'ros'
+[1.389s] Level 1:colcon.colcon_core.package_identification:_identify(zed-ros2-wrapper) by extensions ['cmake', 'python']
+[1.389s] Level 1:colcon.colcon_core.package_identification:_identify(zed-ros2-wrapper) by extension 'cmake'
+[1.390s] Level 1:colcon.colcon_core.package_identification:_identify(zed-ros2-wrapper) by extension 'python'
+[1.390s] Level 1:colcon.colcon_core.package_identification:_identify(zed-ros2-wrapper) by extensions ['python_setup_py']
+[1.390s] Level 1:colcon.colcon_core.package_identification:_identify(zed-ros2-wrapper) by extension 'python_setup_py'
+[1.390s] Level 1:colcon.colcon_core.package_discovery:discover_packages(recursive) using defaults
+[1.390s] Level 1:colcon.colcon_core.package_discovery:discover_packages(ignore) discover
+[1.390s] Level 1:colcon.colcon_core.package_discovery:discover_packages(ignore) using defaults
+[1.390s] Level 1:colcon.colcon_core.package_discovery:discover_packages(path) discover
+[1.390s] Level 1:colcon.colcon_core.package_discovery:discover_packages(path) using defaults
+[1.450s] INFO:colcon.colcon_core.package_selection:Skipping not selected package 'absenc_interface' in 'absenc_interface'
+[1.450s] INFO:colcon.colcon_core.package_selection:Skipping not selected package 'arm_controller' in 'arm_controller'
+[1.450s] INFO:colcon.colcon_core.package_selection:Skipping not selected package 'arm_hardware' in 'arm_hardware'
+[1.450s] INFO:colcon.colcon_core.package_selection:Skipping not selected package 'ceres_urdf' in 'ceres_urdf'
+[1.450s] INFO:colcon.colcon_core.package_selection:Skipping not selected package 'ik_mux_controller' in 'ik_mux_controller'
+[1.450s] INFO:colcon.colcon_core.package_selection:Skipping not selected package 'joy_mux_controller' in 'joy_mux_controller'
+[1.451s] INFO:colcon.colcon_core.package_selection:Skipping not selected package 'object_recognition' in 'object_recognition'
+[1.451s] INFO:colcon.colcon_core.package_selection:Skipping not selected package 'sil' in 'sil'
+[1.451s] INFO:colcon.colcon_core.package_selection:Skipping not selected package 'usb_cam' in 'usb_cam'
+[1.451s] INFO:colcon.colcon_core.package_selection:Skipping not selected package 'wheels_controller' in 'wheels_controller'
+[1.452s] Level 1:colcon.colcon_core.package_discovery:discover_packages(prefix_path) check parameters
+[1.452s] Level 1:colcon.colcon_core.package_discovery:discover_packages(prefix_path) discover
+[1.462s] DEBUG:colcon.colcon_installed_package_information.package_discovery:Found 8 installed packages in /home/liliana/ros2_ws/install
+[1.467s] DEBUG:colcon.colcon_installed_package_information.package_discovery:Found 45 installed packages in /home/liliana/ws_moveit/install
+[1.469s] DEBUG:colcon.colcon_installed_package_information.package_discovery:Found 2 installed packages in /home/liliana/install
+[1.475s] DEBUG:colcon.colcon_installed_package_information.package_discovery:Found 419 installed packages in /opt/ros/humble
+[1.486s] Level 1:colcon.colcon_core.package_discovery:discover_packages(prefix_path) using defaults
+[1.674s] Level 5:colcon.colcon_core.verb:set package 'ceres_moveit_config' build argument 'cmake_args' from command line to 'None'
+[1.674s] Level 5:colcon.colcon_core.verb:set package 'ceres_moveit_config' build argument 'cmake_target' from command line to 'None'
+[1.674s] Level 5:colcon.colcon_core.verb:set package 'ceres_moveit_config' build argument 'cmake_target_skip_unavailable' from command line to 'False'
+[1.674s] Level 5:colcon.colcon_core.verb:set package 'ceres_moveit_config' build argument 'cmake_clean_cache' from command line to 'False'
+[1.674s] Level 5:colcon.colcon_core.verb:set package 'ceres_moveit_config' build argument 'cmake_clean_first' from command line to 'False'
+[1.675s] Level 5:colcon.colcon_core.verb:set package 'ceres_moveit_config' build argument 'cmake_force_configure' from command line to 'False'
+[1.675s] Level 5:colcon.colcon_core.verb:set package 'ceres_moveit_config' build argument 'ament_cmake_args' from command line to 'None'
+[1.675s] Level 5:colcon.colcon_core.verb:set package 'ceres_moveit_config' build argument 'catkin_cmake_args' from command line to 'None'
+[1.675s] Level 5:colcon.colcon_core.verb:set package 'ceres_moveit_config' build argument 'catkin_skip_building_tests' from command line to 'False'
+[1.675s] DEBUG:colcon.colcon_core.verb:Building package 'ceres_moveit_config' with the following arguments: {'ament_cmake_args': None, 'build_base': '/home/liliana/ros2_ws/robot-repo-ros2/src/build/ceres_moveit_config', 'catkin_cmake_args': None, 'catkin_skip_building_tests': False, 'cmake_args': None, 'cmake_clean_cache': False, 'cmake_clean_first': False, 'cmake_force_configure': False, 'cmake_target': None, 'cmake_target_skip_unavailable': False, 'install_base': '/home/liliana/ros2_ws/robot-repo-ros2/src/install/ceres_moveit_config', 'merge_install': False, 'path': '/home/liliana/ros2_ws/robot-repo-ros2/src/ceres_moveit_config', 'symlink_install': False, 'test_result_base': None}
+[1.675s] INFO:colcon.colcon_core.executor:Executing jobs using 'parallel' executor
+[1.679s] DEBUG:colcon.colcon_parallel_executor.executor.parallel:run_until_complete
+[1.679s] INFO:colcon.colcon_ros.task.ament_cmake.build:Building ROS package in '/home/liliana/ros2_ws/robot-repo-ros2/src/ceres_moveit_config' with build type 'ament_cmake'
+[1.681s] INFO:colcon.colcon_cmake.task.cmake.build:Building CMake package in '/home/liliana/ros2_ws/robot-repo-ros2/src/ceres_moveit_config'
+[1.687s] INFO:colcon.colcon_core.plugin_system:Skipping extension 'colcon_core.shell.bat': Not used on non-Windows systems
+[1.688s] INFO:colcon.colcon_core.shell:Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[1.688s] DEBUG:colcon.colcon_core.shell:Skip shell extension 'dsv' for command environment
+[1.761s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/home/liliana/ros2_ws/robot-repo-ros2/src/build/ceres_moveit_config': AMENT_PREFIX_PATH=/home/liliana/ros2_ws/robot-repo-ros2/src/install/ceres_urdf:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/liliana/ros2_ws/robot-repo-ros2/src/install/ceres_urdf:/home/liliana/ws_moveit/install/pilz_industrial_motion_planner_testutils:/home/liliana/ws_moveit/install/moveit_runtime:/home/liliana/ws_moveit/install/moveit:/home/liliana/ws_moveit/install/moveit_planners:/home/liliana/ws_moveit/install/pilz_industrial_motion_planner:/home/liliana/ws_moveit/install/moveit_ros_control_interface:/home/liliana/ws_moveit/install/moveit_plugins:/home/liliana/ws_moveit/install/moveit_simple_controller_manager:/home/liliana/ws_moveit/install/moveit_setup_assistant:/home/liliana/ws_moveit/install/moveit_setup_srdf_plugins:/home/liliana/ws_moveit/install/moveit_setup_core_plugins:/home/liliana/ws_moveit/install/moveit_setup_controllers:/home/liliana/ws_moveit/install/moveit_setup_app_plugins:/home/liliana/ws_moveit/install/moveit_setup_framework:/home/liliana/ws_moveit/install/moveit_servo:/home/liliana/ws_moveit/install/moveit_ros:/home/liliana/ws_moveit/install/moveit_ros_visualization:/home/liliana/ws_moveit/install/moveit_hybrid_planning:/home/liliana/ws_moveit/install/moveit_ros_planning_interface:/home/liliana/ws_moveit/install/moveit_ros_benchmarks:/home/liliana/ws_moveit/install/moveit_ros_warehouse:/home/liliana/ws_moveit/install/moveit_ros_robot_interaction:/home/liliana/ws_moveit/install/moveit_ros_perception:/home/liliana/ws_moveit/install/moveit_resources_prbt_pg70_support:/home/liliana/ws_moveit/install/moveit_resources_prbt_moveit_config:/home/liliana/ws_moveit/install/moveit_ros_move_group:/home/liliana/ws_moveit/install/moveit_planners_ompl:/home/liliana/ws_moveit/install/moveit_ros_planning:/home/liliana/ws_moveit/install/moveit_ros_occupancy_map_monitor:/home/liliana/ws_moveit/install/moveit_resources_prbt_support:/home/liliana/ws_moveit/install/moveit_resources_prbt_ikfast_manipulator_plugin:/home/liliana/ws_moveit/install/moveit_resources:/home/liliana/ws_moveit/install/moveit_resources_pr2_description:/home/liliana/ws_moveit/install/moveit_resources_panda_moveit_config:/home/liliana/ws_moveit/install/moveit_resources_panda_description:/home/liliana/ws_moveit/install/moveit_resources_fanuc_moveit_config:/home/liliana/ws_moveit/install/moveit_resources_fanuc_description:/home/liliana/ws_moveit/install/moveit_planners_chomp:/home/liliana/ws_moveit/install/moveit_kinematics:/home/liliana/ws_moveit/install/moveit_chomp_optimizer_adapter:/home/liliana/ws_moveit/install/chomp_motion_planner:/home/liliana/ws_moveit/install/moveit_core:/home/liliana/ws_moveit/install/moveit_msgs:/home/liliana/ws_moveit/install/moveit_common:/home/liliana/ros2_ws/install/my_cpp_pkg:/home/liliana/ros2_ws/install/ceres_urdf:/home/liliana/ros2_ws/install/arm_hardware:/home/liliana/ros2_ws/install/arm_controller:/home/liliana/ros2_ws/install/absenc_interface:/home/liliana/install/my_cpp_pkg:/home/liliana/ws_moveit/install/moveit_configs_utils:/home/liliana/ros2_ws/install/my_py_pkg:/home/liliana/ros2_ws/install/joy_mux_controller:/home/liliana/install/my_py_pkg:/opt/ros/humble /usr/bin/cmake --build /home/liliana/ros2_ws/robot-repo-ros2/src/build/ceres_moveit_config -- -j6 -l6
+[1.987s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/home/liliana/ros2_ws/robot-repo-ros2/src/build/ceres_moveit_config' returned '0': AMENT_PREFIX_PATH=/home/liliana/ros2_ws/robot-repo-ros2/src/install/ceres_urdf:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/liliana/ros2_ws/robot-repo-ros2/src/install/ceres_urdf:/home/liliana/ws_moveit/install/pilz_industrial_motion_planner_testutils:/home/liliana/ws_moveit/install/moveit_runtime:/home/liliana/ws_moveit/install/moveit:/home/liliana/ws_moveit/install/moveit_planners:/home/liliana/ws_moveit/install/pilz_industrial_motion_planner:/home/liliana/ws_moveit/install/moveit_ros_control_interface:/home/liliana/ws_moveit/install/moveit_plugins:/home/liliana/ws_moveit/install/moveit_simple_controller_manager:/home/liliana/ws_moveit/install/moveit_setup_assistant:/home/liliana/ws_moveit/install/moveit_setup_srdf_plugins:/home/liliana/ws_moveit/install/moveit_setup_core_plugins:/home/liliana/ws_moveit/install/moveit_setup_controllers:/home/liliana/ws_moveit/install/moveit_setup_app_plugins:/home/liliana/ws_moveit/install/moveit_setup_framework:/home/liliana/ws_moveit/install/moveit_servo:/home/liliana/ws_moveit/install/moveit_ros:/home/liliana/ws_moveit/install/moveit_ros_visualization:/home/liliana/ws_moveit/install/moveit_hybrid_planning:/home/liliana/ws_moveit/install/moveit_ros_planning_interface:/home/liliana/ws_moveit/install/moveit_ros_benchmarks:/home/liliana/ws_moveit/install/moveit_ros_warehouse:/home/liliana/ws_moveit/install/moveit_ros_robot_interaction:/home/liliana/ws_moveit/install/moveit_ros_perception:/home/liliana/ws_moveit/install/moveit_resources_prbt_pg70_support:/home/liliana/ws_moveit/install/moveit_resources_prbt_moveit_config:/home/liliana/ws_moveit/install/moveit_ros_move_group:/home/liliana/ws_moveit/install/moveit_planners_ompl:/home/liliana/ws_moveit/install/moveit_ros_planning:/home/liliana/ws_moveit/install/moveit_ros_occupancy_map_monitor:/home/liliana/ws_moveit/install/moveit_resources_prbt_support:/home/liliana/ws_moveit/install/moveit_resources_prbt_ikfast_manipulator_plugin:/home/liliana/ws_moveit/install/moveit_resources:/home/liliana/ws_moveit/install/moveit_resources_pr2_description:/home/liliana/ws_moveit/install/moveit_resources_panda_moveit_config:/home/liliana/ws_moveit/install/moveit_resources_panda_description:/home/liliana/ws_moveit/install/moveit_resources_fanuc_moveit_config:/home/liliana/ws_moveit/install/moveit_resources_fanuc_description:/home/liliana/ws_moveit/install/moveit_planners_chomp:/home/liliana/ws_moveit/install/moveit_kinematics:/home/liliana/ws_moveit/install/moveit_chomp_optimizer_adapter:/home/liliana/ws_moveit/install/chomp_motion_planner:/home/liliana/ws_moveit/install/moveit_core:/home/liliana/ws_moveit/install/moveit_msgs:/home/liliana/ws_moveit/install/moveit_common:/home/liliana/ros2_ws/install/my_cpp_pkg:/home/liliana/ros2_ws/install/ceres_urdf:/home/liliana/ros2_ws/install/arm_hardware:/home/liliana/ros2_ws/install/arm_controller:/home/liliana/ros2_ws/install/absenc_interface:/home/liliana/install/my_cpp_pkg:/home/liliana/ws_moveit/install/moveit_configs_utils:/home/liliana/ros2_ws/install/my_py_pkg:/home/liliana/ros2_ws/install/joy_mux_controller:/home/liliana/install/my_py_pkg:/opt/ros/humble /usr/bin/cmake --build /home/liliana/ros2_ws/robot-repo-ros2/src/build/ceres_moveit_config -- -j6 -l6
+[2.025s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/home/liliana/ros2_ws/robot-repo-ros2/src/build/ceres_moveit_config': AMENT_PREFIX_PATH=/home/liliana/ros2_ws/robot-repo-ros2/src/install/ceres_urdf:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/liliana/ros2_ws/robot-repo-ros2/src/install/ceres_urdf:/home/liliana/ws_moveit/install/pilz_industrial_motion_planner_testutils:/home/liliana/ws_moveit/install/moveit_runtime:/home/liliana/ws_moveit/install/moveit:/home/liliana/ws_moveit/install/moveit_planners:/home/liliana/ws_moveit/install/pilz_industrial_motion_planner:/home/liliana/ws_moveit/install/moveit_ros_control_interface:/home/liliana/ws_moveit/install/moveit_plugins:/home/liliana/ws_moveit/install/moveit_simple_controller_manager:/home/liliana/ws_moveit/install/moveit_setup_assistant:/home/liliana/ws_moveit/install/moveit_setup_srdf_plugins:/home/liliana/ws_moveit/install/moveit_setup_core_plugins:/home/liliana/ws_moveit/install/moveit_setup_controllers:/home/liliana/ws_moveit/install/moveit_setup_app_plugins:/home/liliana/ws_moveit/install/moveit_setup_framework:/home/liliana/ws_moveit/install/moveit_servo:/home/liliana/ws_moveit/install/moveit_ros:/home/liliana/ws_moveit/install/moveit_ros_visualization:/home/liliana/ws_moveit/install/moveit_hybrid_planning:/home/liliana/ws_moveit/install/moveit_ros_planning_interface:/home/liliana/ws_moveit/install/moveit_ros_benchmarks:/home/liliana/ws_moveit/install/moveit_ros_warehouse:/home/liliana/ws_moveit/install/moveit_ros_robot_interaction:/home/liliana/ws_moveit/install/moveit_ros_perception:/home/liliana/ws_moveit/install/moveit_resources_prbt_pg70_support:/home/liliana/ws_moveit/install/moveit_resources_prbt_moveit_config:/home/liliana/ws_moveit/install/moveit_ros_move_group:/home/liliana/ws_moveit/install/moveit_planners_ompl:/home/liliana/ws_moveit/install/moveit_ros_planning:/home/liliana/ws_moveit/install/moveit_ros_occupancy_map_monitor:/home/liliana/ws_moveit/install/moveit_resources_prbt_support:/home/liliana/ws_moveit/install/moveit_resources_prbt_ikfast_manipulator_plugin:/home/liliana/ws_moveit/install/moveit_resources:/home/liliana/ws_moveit/install/moveit_resources_pr2_description:/home/liliana/ws_moveit/install/moveit_resources_panda_moveit_config:/home/liliana/ws_moveit/install/moveit_resources_panda_description:/home/liliana/ws_moveit/install/moveit_resources_fanuc_moveit_config:/home/liliana/ws_moveit/install/moveit_resources_fanuc_description:/home/liliana/ws_moveit/install/moveit_planners_chomp:/home/liliana/ws_moveit/install/moveit_kinematics:/home/liliana/ws_moveit/install/moveit_chomp_optimizer_adapter:/home/liliana/ws_moveit/install/chomp_motion_planner:/home/liliana/ws_moveit/install/moveit_core:/home/liliana/ws_moveit/install/moveit_msgs:/home/liliana/ws_moveit/install/moveit_common:/home/liliana/ros2_ws/install/my_cpp_pkg:/home/liliana/ros2_ws/install/ceres_urdf:/home/liliana/ros2_ws/install/arm_hardware:/home/liliana/ros2_ws/install/arm_controller:/home/liliana/ros2_ws/install/absenc_interface:/home/liliana/install/my_cpp_pkg:/home/liliana/ws_moveit/install/moveit_configs_utils:/home/liliana/ros2_ws/install/my_py_pkg:/home/liliana/ros2_ws/install/joy_mux_controller:/home/liliana/install/my_py_pkg:/opt/ros/humble /usr/bin/cmake --install /home/liliana/ros2_ws/robot-repo-ros2/src/build/ceres_moveit_config
+[2.075s] Level 1:colcon.colcon_core.environment:create_environment_scripts_only(ceres_moveit_config)
+[2.077s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/home/liliana/ros2_ws/robot-repo-ros2/src/build/ceres_moveit_config' returned '0': AMENT_PREFIX_PATH=/home/liliana/ros2_ws/robot-repo-ros2/src/install/ceres_urdf:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/liliana/ros2_ws/robot-repo-ros2/src/install/ceres_urdf:/home/liliana/ws_moveit/install/pilz_industrial_motion_planner_testutils:/home/liliana/ws_moveit/install/moveit_runtime:/home/liliana/ws_moveit/install/moveit:/home/liliana/ws_moveit/install/moveit_planners:/home/liliana/ws_moveit/install/pilz_industrial_motion_planner:/home/liliana/ws_moveit/install/moveit_ros_control_interface:/home/liliana/ws_moveit/install/moveit_plugins:/home/liliana/ws_moveit/install/moveit_simple_controller_manager:/home/liliana/ws_moveit/install/moveit_setup_assistant:/home/liliana/ws_moveit/install/moveit_setup_srdf_plugins:/home/liliana/ws_moveit/install/moveit_setup_core_plugins:/home/liliana/ws_moveit/install/moveit_setup_controllers:/home/liliana/ws_moveit/install/moveit_setup_app_plugins:/home/liliana/ws_moveit/install/moveit_setup_framework:/home/liliana/ws_moveit/install/moveit_servo:/home/liliana/ws_moveit/install/moveit_ros:/home/liliana/ws_moveit/install/moveit_ros_visualization:/home/liliana/ws_moveit/install/moveit_hybrid_planning:/home/liliana/ws_moveit/install/moveit_ros_planning_interface:/home/liliana/ws_moveit/install/moveit_ros_benchmarks:/home/liliana/ws_moveit/install/moveit_ros_warehouse:/home/liliana/ws_moveit/install/moveit_ros_robot_interaction:/home/liliana/ws_moveit/install/moveit_ros_perception:/home/liliana/ws_moveit/install/moveit_resources_prbt_pg70_support:/home/liliana/ws_moveit/install/moveit_resources_prbt_moveit_config:/home/liliana/ws_moveit/install/moveit_ros_move_group:/home/liliana/ws_moveit/install/moveit_planners_ompl:/home/liliana/ws_moveit/install/moveit_ros_planning:/home/liliana/ws_moveit/install/moveit_ros_occupancy_map_monitor:/home/liliana/ws_moveit/install/moveit_resources_prbt_support:/home/liliana/ws_moveit/install/moveit_resources_prbt_ikfast_manipulator_plugin:/home/liliana/ws_moveit/install/moveit_resources:/home/liliana/ws_moveit/install/moveit_resources_pr2_description:/home/liliana/ws_moveit/install/moveit_resources_panda_moveit_config:/home/liliana/ws_moveit/install/moveit_resources_panda_description:/home/liliana/ws_moveit/install/moveit_resources_fanuc_moveit_config:/home/liliana/ws_moveit/install/moveit_resources_fanuc_description:/home/liliana/ws_moveit/install/moveit_planners_chomp:/home/liliana/ws_moveit/install/moveit_kinematics:/home/liliana/ws_moveit/install/moveit_chomp_optimizer_adapter:/home/liliana/ws_moveit/install/chomp_motion_planner:/home/liliana/ws_moveit/install/moveit_core:/home/liliana/ws_moveit/install/moveit_msgs:/home/liliana/ws_moveit/install/moveit_common:/home/liliana/ros2_ws/install/my_cpp_pkg:/home/liliana/ros2_ws/install/ceres_urdf:/home/liliana/ros2_ws/install/arm_hardware:/home/liliana/ros2_ws/install/arm_controller:/home/liliana/ros2_ws/install/absenc_interface:/home/liliana/install/my_cpp_pkg:/home/liliana/ws_moveit/install/moveit_configs_utils:/home/liliana/ros2_ws/install/my_py_pkg:/home/liliana/ros2_ws/install/joy_mux_controller:/home/liliana/install/my_py_pkg:/opt/ros/humble /usr/bin/cmake --install /home/liliana/ros2_ws/robot-repo-ros2/src/build/ceres_moveit_config
+[2.091s] Level 1:colcon.colcon_core.environment:checking '/home/liliana/ros2_ws/robot-repo-ros2/src/install/ceres_moveit_config' for CMake module files
+[2.093s] Level 1:colcon.colcon_core.environment:checking '/home/liliana/ros2_ws/robot-repo-ros2/src/install/ceres_moveit_config' for CMake config files
+[2.094s] Level 1:colcon.colcon_core.shell:create_environment_hook('ceres_moveit_config', 'cmake_prefix_path')
+[2.095s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/liliana/ros2_ws/robot-repo-ros2/src/install/ceres_moveit_config/share/ceres_moveit_config/hook/cmake_prefix_path.ps1'
+[2.097s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/home/liliana/ros2_ws/robot-repo-ros2/src/install/ceres_moveit_config/share/ceres_moveit_config/hook/cmake_prefix_path.dsv'
+[2.099s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/liliana/ros2_ws/robot-repo-ros2/src/install/ceres_moveit_config/share/ceres_moveit_config/hook/cmake_prefix_path.sh'
+[2.103s] Level 1:colcon.colcon_core.environment:checking '/home/liliana/ros2_ws/robot-repo-ros2/src/install/ceres_moveit_config/bin'
+[2.103s] Level 1:colcon.colcon_core.environment:checking '/home/liliana/ros2_ws/robot-repo-ros2/src/install/ceres_moveit_config/lib/pkgconfig/ceres_moveit_config.pc'
+[2.103s] Level 1:colcon.colcon_core.environment:checking '/home/liliana/ros2_ws/robot-repo-ros2/src/install/ceres_moveit_config/lib/python3.10/site-packages'
+[2.104s] Level 1:colcon.colcon_core.environment:checking '/home/liliana/ros2_ws/robot-repo-ros2/src/install/ceres_moveit_config/bin'
+[2.105s] INFO:colcon.colcon_core.shell:Creating package script '/home/liliana/ros2_ws/robot-repo-ros2/src/install/ceres_moveit_config/share/ceres_moveit_config/package.ps1'
+[2.108s] INFO:colcon.colcon_core.shell:Creating package descriptor '/home/liliana/ros2_ws/robot-repo-ros2/src/install/ceres_moveit_config/share/ceres_moveit_config/package.dsv'
+[2.111s] INFO:colcon.colcon_core.shell:Creating package script '/home/liliana/ros2_ws/robot-repo-ros2/src/install/ceres_moveit_config/share/ceres_moveit_config/package.sh'
+[2.114s] INFO:colcon.colcon_core.shell:Creating package script '/home/liliana/ros2_ws/robot-repo-ros2/src/install/ceres_moveit_config/share/ceres_moveit_config/package.bash'
+[2.117s] INFO:colcon.colcon_core.shell:Creating package script '/home/liliana/ros2_ws/robot-repo-ros2/src/install/ceres_moveit_config/share/ceres_moveit_config/package.zsh'
+[2.119s] Level 1:colcon.colcon_core.environment:create_file_with_runtime_dependencies(/home/liliana/ros2_ws/robot-repo-ros2/src/install/ceres_moveit_config/share/colcon-core/packages/ceres_moveit_config)
+[2.123s] Level 1:colcon.colcon_core.environment:create_environment_scripts_only(ceres_moveit_config)
+[2.124s] Level 1:colcon.colcon_core.environment:checking '/home/liliana/ros2_ws/robot-repo-ros2/src/install/ceres_moveit_config' for CMake module files
+[2.125s] Level 1:colcon.colcon_core.environment:checking '/home/liliana/ros2_ws/robot-repo-ros2/src/install/ceres_moveit_config' for CMake config files
+[2.126s] Level 1:colcon.colcon_core.shell:create_environment_hook('ceres_moveit_config', 'cmake_prefix_path')
+[2.127s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/liliana/ros2_ws/robot-repo-ros2/src/install/ceres_moveit_config/share/ceres_moveit_config/hook/cmake_prefix_path.ps1'
+[2.128s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/home/liliana/ros2_ws/robot-repo-ros2/src/install/ceres_moveit_config/share/ceres_moveit_config/hook/cmake_prefix_path.dsv'
+[2.129s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/liliana/ros2_ws/robot-repo-ros2/src/install/ceres_moveit_config/share/ceres_moveit_config/hook/cmake_prefix_path.sh'
+[2.131s] Level 1:colcon.colcon_core.environment:checking '/home/liliana/ros2_ws/robot-repo-ros2/src/install/ceres_moveit_config/bin'
+[2.132s] Level 1:colcon.colcon_core.environment:checking '/home/liliana/ros2_ws/robot-repo-ros2/src/install/ceres_moveit_config/lib/pkgconfig/ceres_moveit_config.pc'
+[2.133s] Level 1:colcon.colcon_core.environment:checking '/home/liliana/ros2_ws/robot-repo-ros2/src/install/ceres_moveit_config/lib/python3.10/site-packages'
+[2.134s] Level 1:colcon.colcon_core.environment:checking '/home/liliana/ros2_ws/robot-repo-ros2/src/install/ceres_moveit_config/bin'
+[2.135s] INFO:colcon.colcon_core.shell:Creating package script '/home/liliana/ros2_ws/robot-repo-ros2/src/install/ceres_moveit_config/share/ceres_moveit_config/package.ps1'
+[2.136s] INFO:colcon.colcon_core.shell:Creating package descriptor '/home/liliana/ros2_ws/robot-repo-ros2/src/install/ceres_moveit_config/share/ceres_moveit_config/package.dsv'
+[2.138s] INFO:colcon.colcon_core.shell:Creating package script '/home/liliana/ros2_ws/robot-repo-ros2/src/install/ceres_moveit_config/share/ceres_moveit_config/package.sh'
+[2.139s] INFO:colcon.colcon_core.shell:Creating package script '/home/liliana/ros2_ws/robot-repo-ros2/src/install/ceres_moveit_config/share/ceres_moveit_config/package.bash'
+[2.140s] INFO:colcon.colcon_core.shell:Creating package script '/home/liliana/ros2_ws/robot-repo-ros2/src/install/ceres_moveit_config/share/ceres_moveit_config/package.zsh'
+[2.141s] Level 1:colcon.colcon_core.environment:create_file_with_runtime_dependencies(/home/liliana/ros2_ws/robot-repo-ros2/src/install/ceres_moveit_config/share/colcon-core/packages/ceres_moveit_config)
+[2.142s] DEBUG:colcon.colcon_parallel_executor.executor.parallel:closing loop
+[2.143s] DEBUG:colcon.colcon_parallel_executor.executor.parallel:loop closed
+[2.143s] DEBUG:colcon.colcon_parallel_executor.executor.parallel:run_until_complete finished with '0'
+[2.143s] DEBUG:colcon.colcon_core.event_reactor:joining thread
+[2.160s] INFO:colcon.colcon_core.plugin_system:Skipping extension 'colcon_notification.desktop_notification.terminal_notifier': Not used on non-Darwin systems
+[2.161s] INFO:colcon.colcon_core.plugin_system:Skipping extension 'colcon_notification.desktop_notification.win32': Not used on non-Windows systems
+[2.161s] INFO:colcon.colcon_notification.desktop_notification:Sending desktop notification using 'notify2'
+[2.192s] DEBUG:colcon.colcon_core.event_reactor:joined thread
+[2.193s] INFO:colcon.colcon_core.shell:Creating prefix script '/home/liliana/ros2_ws/robot-repo-ros2/src/install/local_setup.ps1'
+[2.197s] INFO:colcon.colcon_core.shell:Creating prefix util module '/home/liliana/ros2_ws/robot-repo-ros2/src/install/_local_setup_util_ps1.py'
+[2.202s] INFO:colcon.colcon_core.shell:Creating prefix chain script '/home/liliana/ros2_ws/robot-repo-ros2/src/install/setup.ps1'
+[2.212s] INFO:colcon.colcon_core.shell:Creating prefix script '/home/liliana/ros2_ws/robot-repo-ros2/src/install/local_setup.sh'
+[2.215s] INFO:colcon.colcon_core.shell:Creating prefix util module '/home/liliana/ros2_ws/robot-repo-ros2/src/install/_local_setup_util_sh.py'
+[2.217s] INFO:colcon.colcon_core.shell:Creating prefix chain script '/home/liliana/ros2_ws/robot-repo-ros2/src/install/setup.sh'
+[2.226s] INFO:colcon.colcon_core.shell:Creating prefix script '/home/liliana/ros2_ws/robot-repo-ros2/src/install/local_setup.bash'
+[2.228s] INFO:colcon.colcon_core.shell:Creating prefix chain script '/home/liliana/ros2_ws/robot-repo-ros2/src/install/setup.bash'
+[2.238s] INFO:colcon.colcon_core.shell:Creating prefix script '/home/liliana/ros2_ws/robot-repo-ros2/src/install/local_setup.zsh'
+[2.240s] INFO:colcon.colcon_core.shell:Creating prefix chain script '/home/liliana/ros2_ws/robot-repo-ros2/src/install/setup.zsh'

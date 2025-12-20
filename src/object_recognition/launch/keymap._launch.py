@@ -17,16 +17,16 @@ def generate_launch_description():
         ),
 
         Node(
-            package='rviz2',
-            executable='rviz2',
-            name='rviz2',
-            output='screen'
-        ),
-
-        Node(
             package='tf2_ros',
             executable='static_transform_publisher',
             name='static_transform_publisher',
-            arguments=['0', '0.7', '1', '0', '0', '1.5708', 'base_structure_link', 'keyboard']
+            arguments=['0.5', '0', '0.5', '0', '0', '1.5708', 'base_structure_link', 'keyboard']
+        )
+
+        Node(
+            package='object_recognition',
+            executable='move_group_node',
+            name='move_group_node',
+            parameters=[{'config/keymap.yaml'}]
         )
     ])

@@ -1,0 +1,55 @@
+[0.059s] Invoking command in '/home/liliana/ros2_ws/robot-repo-ros2/src/build/object_recognition': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/liliana/ws_moveit/install/moveit_configs_utils:/home/liliana/ros2_ws/install/my_py_pkg:/home/liliana/ros2_ws/install/joy_mux_controller:/home/liliana/install/my_py_pkg:/opt/ros/humble /usr/bin/cmake --build /home/liliana/ros2_ws/robot-repo-ros2/src/build/object_recognition -- -j6 -l6
+[0.151s] -- Found ament_cmake: 1.3.12 (/opt/ros/humble/share/ament_cmake/cmake)
+[0.523s] -- Found rclpy: 3.3.17 (/opt/ros/humble/share/rclpy/cmake)
+[0.523s] -- Found visualization_msgs: 4.9.0 (/opt/ros/humble/share/visualization_msgs/cmake)
+[0.595s] -- Found rosidl_generator_c: 3.1.7 (/opt/ros/humble/share/rosidl_generator_c/cmake)
+[0.604s] -- Found rosidl_adapter: 3.1.7 (/opt/ros/humble/share/rosidl_adapter/cmake)
+[0.621s] -- Found rosidl_generator_cpp: 3.1.7 (/opt/ros/humble/share/rosidl_generator_cpp/cmake)
+[0.658s] -- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c
+[0.701s] -- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp
+[0.953s] -- Found rclcpp: 16.0.15 (/opt/ros/humble/share/rclcpp/cmake)
+[1.034s] -- Found rmw_implementation_cmake: 6.1.2 (/opt/ros/humble/share/rmw_implementation_cmake/cmake)
+[1.041s] -- Found rmw_cyclonedds_cpp: 1.3.4 (/opt/ros/humble/share/rmw_cyclonedds_cpp/cmake)
+[1.101s] -- Using RMW implementation 'rmw_cyclonedds_cpp' as default
+[1.229s] -- Found moveit_msgs: 2.2.1 (/home/liliana/ws_moveit/install/moveit_msgs/share/moveit_msgs/cmake)
+[1.647s] -- Found moveit_ros_planning_interface: 2.5.9 (/home/liliana/ws_moveit/install/moveit_ros_planning_interface/share/moveit_ros_planning_interface/cmake)
+[1.681s] -- Found Boost: /usr/lib/x86_64-linux-gnu/cmake/Boost-1.74.0/BoostConfig.cmake (found version "1.74.0") found components: date_time filesystem program_options system thread 
+[1.719s] -- Found Boost: /usr/lib/x86_64-linux-gnu/cmake/Boost-1.74.0/BoostConfig.cmake (found version "1.74.0") found components: chrono date_time filesystem iostreams program_options regex serialization system thread 
+[1.819s] -- Found parameter_traits: 0.5.0 (/opt/ros/humble/share/parameter_traits/cmake)
+[1.839s] -- Found rclcpp_lifecycle: 16.0.15 (/opt/ros/humble/share/rclcpp_lifecycle/cmake)
+[1.910s] -- Found Boost: /usr/lib/x86_64-linux-gnu/cmake/Boost-1.74.0/BoostConfig.cmake (found version "1.74.0") found components: filesystem 
+[2.029s] -- library: /usr/lib/x86_64-linux-gnu/libcurl.so
+[2.048s] -- Ensuring Eigen3 include directory is part of orocos-kdl CMake target
+[2.427s] -- Found Boost: /usr/lib/x86_64-linux-gnu/cmake/Boost-1.74.0/BoostConfig.cmake (found version "1.74.0") found components: system filesystem date_time program_options thread chrono 
+[2.539s] -- Found Boost: /usr/lib/x86_64-linux-gnu/cmake/Boost-1.74.0/BoostConfig.cmake (found version "1.74.0") found components: thread system filesystem regex date_time program_options 
+[2.630s] -- Found Boost: /usr/lib/x86_64-linux-gnu/cmake/Boost-1.74.0/BoostConfig.cmake (found version "1.74.0") found components: system filesystem date_time program_options thread 
+[2.770s] [33mCMake Warning at CMakeLists.txt:17 (find_package):
+[2.770s]   By not providing "Findmoveit_move_group_interface.cmake" in
+[2.770s]   CMAKE_MODULE_PATH this project has asked CMake to find a package
+[2.770s]   configuration file provided by "moveit_move_group_interface", but CMake did
+[2.771s]   not find one.
+[2.771s] 
+[2.771s]   Could not find a package configuration file provided by
+[2.771s]   "moveit_move_group_interface" with any of the following names:
+[2.771s] 
+[2.771s]     moveit_move_group_interfaceConfig.cmake
+[2.772s]     moveit_move_group_interface-config.cmake
+[2.772s] 
+[2.772s]   Add the installation prefix of "moveit_move_group_interface" to
+[2.772s]   CMAKE_PREFIX_PATH or set "moveit_move_group_interface_DIR" to a directory
+[2.772s]   containing one of the above files.  If "moveit_move_group_interface"
+[2.772s]   provides a separate development package or SDK, be sure it has been
+[2.773s]   installed.
+[2.773s] 
+[2.773s] [0m
+[2.776s] [31mCMake Error at /opt/ros/humble/share/ament_cmake_target_dependencies/cmake/ament_target_dependencies.cmake:77 (message):
+[2.776s]   ament_target_dependencies() the passed package name
+[2.777s]   'moveit_task_constructor_core' was not found before
+[2.777s] Call Stack (most recent call first):
+[2.777s]   CMakeLists.txt:21 (ament_target_dependencies)
+[2.777s] 
+[2.778s] [0m
+[2.778s] -- Configuring incomplete, errors occurred!
+[2.778s] See also "/home/liliana/ros2_ws/robot-repo-ros2/src/build/object_recognition/CMakeFiles/CMakeOutput.log".
+[2.806s] gmake: *** [Makefile:267: cmake_check_build_system] Error 1
+[2.814s] Invoked command in '/home/liliana/ros2_ws/robot-repo-ros2/src/build/object_recognition' returned '2': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/liliana/ws_moveit/install/moveit_configs_utils:/home/liliana/ros2_ws/install/my_py_pkg:/home/liliana/ros2_ws/install/joy_mux_controller:/home/liliana/install/my_py_pkg:/opt/ros/humble /usr/bin/cmake --build /home/liliana/ros2_ws/robot-repo-ros2/src/build/object_recognition -- -j6 -l6

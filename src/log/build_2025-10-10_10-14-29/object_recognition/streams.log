@@ -1,0 +1,61 @@
+[0.074s] Invoking command in '/home/liliana/ros2_ws/robot-repo-ros2/src/build/object_recognition': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/liliana/ws_moveit/install/moveit_configs_utils:/home/liliana/ws_moveit/install/launch_param_builder:/home/liliana/ros2_ws/install/my_py_pkg:/home/liliana/install/my_py_pkg:/opt/ros/humble /usr/bin/cmake /home/liliana/ros2_ws/robot-repo-ros2/src/object_recognition -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_INSTALL_PREFIX=/home/liliana/ros2_ws/robot-repo-ros2/src/install/object_recognition
+[0.799s] -- The C compiler identification is GNU 11.4.0
+[1.082s] -- The CXX compiler identification is GNU 11.4.0
+[1.132s] -- Detecting C compiler ABI info
+[1.462s] -- Detecting C compiler ABI info - done
+[1.490s] -- Check for working C compiler: /usr/bin/cc - skipped
+[1.503s] -- Detecting C compile features
+[1.507s] -- Detecting C compile features - done
+[1.519s] -- Detecting CXX compiler ABI info
+[1.866s] -- Detecting CXX compiler ABI info - done
+[1.892s] -- Check for working CXX compiler: /usr/bin/c++ - skipped
+[1.892s] -- Detecting CXX compile features
+[1.895s] -- Detecting CXX compile features - done
+[2.008s] -- Found ament_cmake: 1.3.12 (/opt/ros/humble/share/ament_cmake/cmake)
+[4.767s] -- Found Python3: /usr/bin/python3 (found version "3.10.12") found components: Interpreter 
+[5.504s] -- Found rclpy: 3.3.17 (/opt/ros/humble/share/rclpy/cmake)
+[5.535s] -- Found visualization_msgs: 4.9.0 (/opt/ros/humble/share/visualization_msgs/cmake)
+[5.978s] -- Found rosidl_generator_c: 3.1.7 (/opt/ros/humble/share/rosidl_generator_c/cmake)
+[6.051s] -- Found rosidl_adapter: 3.1.7 (/opt/ros/humble/share/rosidl_adapter/cmake)
+[6.149s] -- Found rosidl_generator_cpp: 3.1.7 (/opt/ros/humble/share/rosidl_generator_cpp/cmake)
+[6.363s] -- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c
+[6.545s] -- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp
+[7.137s] -- Found rclcpp: 16.0.15 (/opt/ros/humble/share/rclcpp/cmake)
+[7.547s] -- Found rmw_implementation_cmake: 6.1.2 (/opt/ros/humble/share/rmw_implementation_cmake/cmake)
+[7.590s] -- Found rmw_fastrtps_cpp: 6.2.8 (/opt/ros/humble/share/rmw_fastrtps_cpp/cmake)
+[8.273s] -- Found OpenSSL: /usr/lib/x86_64-linux-gnu/libcrypto.so (found version "3.0.2")  
+[8.404s] -- Found FastRTPS: /opt/ros/humble/include  
+[8.596s] -- Using RMW implementation 'rmw_fastrtps_cpp' as default
+[8.710s] -- Looking for pthread.h
+[9.041s] -- Looking for pthread.h - found
+[9.042s] -- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+[9.359s] -- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
+[9.363s] -- Found Threads: TRUE  
+[9.684s] -- Found moveit_msgs: 2.2.2 (/opt/ros/humble/share/moveit_msgs/cmake)
+[10.566s] -- Found moveit_ros_planning_interface: 2.5.9 (/home/liliana/ws_moveit/install/moveit_ros_planning_interface/share/moveit_ros_planning_interface/cmake)
+[10.856s] -- Found Boost: /usr/lib/x86_64-linux-gnu/cmake/Boost-1.74.0/BoostConfig.cmake (found version "1.74.0") found components: date_time filesystem program_options system thread 
+[11.041s] -- Found Boost: /usr/lib/x86_64-linux-gnu/cmake/Boost-1.74.0/BoostConfig.cmake (found version "1.74.0") found components: chrono date_time filesystem iostreams program_options regex serialization system thread 
+[11.473s] -- Found parameter_traits: 0.5.0 (/opt/ros/humble/share/parameter_traits/cmake)
+[11.617s] -- Found rclcpp_lifecycle: 16.0.15 (/opt/ros/humble/share/rclcpp_lifecycle/cmake)
+[11.829s] -- Found Boost: /usr/lib/x86_64-linux-gnu/cmake/Boost-1.74.0/BoostConfig.cmake (found version "1.74.0") found components: filesystem 
+[12.480s] -- library: /usr/lib/x86_64-linux-gnu/libcurl.so
+[12.599s] -- Found Eigen3: TRUE (found version "3.4.0") 
+[12.600s] -- Ensuring Eigen3 include directory is part of orocos-kdl CMake target
+[13.841s] -- Found Boost: /usr/lib/x86_64-linux-gnu/cmake/Boost-1.74.0/BoostConfig.cmake (found version "1.74.0") found components: system filesystem date_time program_options thread chrono 
+[14.015s] -- Found Boost: /usr/lib/x86_64-linux-gnu/cmake/Boost-1.74.0/BoostConfig.cmake (found version "1.74.0") found components: thread system filesystem regex date_time program_options 
+[14.163s] -- Found Boost: /usr/lib/x86_64-linux-gnu/cmake/Boost-1.74.0/BoostConfig.cmake (found version "1.74.0") found components: system filesystem date_time program_options thread 
+[14.402s] -- Found ament_lint_auto: 0.12.14 (/opt/ros/humble/share/ament_lint_auto/cmake)
+[14.917s] -- Configuring done
+[15.109s] -- Generating done
+[15.140s] -- Build files have been written to: /home/liliana/ros2_ws/robot-repo-ros2/src/build/object_recognition
+[15.198s] Invoked command in '/home/liliana/ros2_ws/robot-repo-ros2/src/build/object_recognition' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/liliana/ws_moveit/install/moveit_configs_utils:/home/liliana/ws_moveit/install/launch_param_builder:/home/liliana/ros2_ws/install/my_py_pkg:/home/liliana/install/my_py_pkg:/opt/ros/humble /usr/bin/cmake /home/liliana/ros2_ws/robot-repo-ros2/src/object_recognition -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_INSTALL_PREFIX=/home/liliana/ros2_ws/robot-repo-ros2/src/install/object_recognition
+[15.203s] Invoking command in '/home/liliana/ros2_ws/robot-repo-ros2/src/build/object_recognition': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/liliana/ws_moveit/install/moveit_configs_utils:/home/liliana/ws_moveit/install/launch_param_builder:/home/liliana/ros2_ws/install/my_py_pkg:/home/liliana/install/my_py_pkg:/opt/ros/humble /usr/bin/cmake --build /home/liliana/ros2_ws/robot-repo-ros2/src/build/object_recognition -- -j6 -l6
+[15.468s] [ 50%] [32mBuilding CXX object CMakeFiles/move_group_node.dir/src/move_group.cpp.o[0m
+[15.542s] [01m[K/home/liliana/ros2_ws/robot-repo-ros2/src/object_recognition/src/move_group.cpp:1:10:[m[K [01;31m[Kfatal error: [m[Kmoveit/move_group_interface/move_group_interface.hpp: No such file or directory
+[15.543s]     1 | #include [01;31m[K<moveit/move_group_interface/move_group_interface.hpp>[m[K
+[15.543s]       |          [01;31m[K^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[m[K
+[15.543s] compilation terminated.
+[15.546s] gmake[2]: *** [CMakeFiles/move_group_node.dir/build.make:76: CMakeFiles/move_group_node.dir/src/move_group.cpp.o] Error 1
+[15.546s] gmake[1]: *** [CMakeFiles/Makefile2:137: CMakeFiles/move_group_node.dir/all] Error 2
+[15.548s] gmake: *** [Makefile:146: all] Error 2
+[15.558s] Invoked command in '/home/liliana/ros2_ws/robot-repo-ros2/src/build/object_recognition' returned '2': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/liliana/ws_moveit/install/moveit_configs_utils:/home/liliana/ws_moveit/install/launch_param_builder:/home/liliana/ros2_ws/install/my_py_pkg:/home/liliana/install/my_py_pkg:/opt/ros/humble /usr/bin/cmake --build /home/liliana/ros2_ws/robot-repo-ros2/src/build/object_recognition -- -j6 -l6

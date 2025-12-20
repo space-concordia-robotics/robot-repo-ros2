@@ -1,0 +1,24 @@
+[0.067s] Invoking command in '/home/liliana/ros2_ws/robot-repo-ros2/src/build/object_recognition': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/liliana/ws_moveit/install/moveit_configs_utils:/home/liliana/ros2_ws/install/my_py_pkg:/home/liliana/ros2_ws/install/joy_mux_controller:/home/liliana/install/my_py_pkg:/opt/ros/humble /usr/bin/cmake --build /home/liliana/ros2_ws/robot-repo-ros2/src/build/object_recognition -- -j6 -l6
+[0.465s] [35m[1mConsolidate compiler generated dependencies of target move_group_node[0m
+[0.570s] [100%] Built target move_group_node
+[0.608s] Invoked command in '/home/liliana/ros2_ws/robot-repo-ros2/src/build/object_recognition' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/liliana/ws_moveit/install/moveit_configs_utils:/home/liliana/ros2_ws/install/my_py_pkg:/home/liliana/ros2_ws/install/joy_mux_controller:/home/liliana/install/my_py_pkg:/opt/ros/humble /usr/bin/cmake --build /home/liliana/ros2_ws/robot-repo-ros2/src/build/object_recognition -- -j6 -l6
+[0.649s] Invoking command in '/home/liliana/ros2_ws/robot-repo-ros2/src/build/object_recognition': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/liliana/ws_moveit/install/moveit_configs_utils:/home/liliana/ros2_ws/install/my_py_pkg:/home/liliana/ros2_ws/install/joy_mux_controller:/home/liliana/install/my_py_pkg:/opt/ros/humble /usr/bin/cmake --install /home/liliana/ros2_ws/robot-repo-ros2/src/build/object_recognition
+[0.678s] -- Install configuration: ""
+[0.682s] -- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/install/object_recognition/lib/object_recognition/move_group_node
+[0.684s] -- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/install/object_recognition/lib/object_recognition/keymap_node.py
+[0.686s] -- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/install/object_recognition/share/ament_index/resource_index/package_run_dependencies/object_recognition
+[0.687s] -- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/install/object_recognition/share/ament_index/resource_index/parent_prefix_path/object_recognition
+[0.688s] -- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/install/object_recognition/share/object_recognition/environment/ament_prefix_path.sh
+[0.688s] -- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/install/object_recognition/share/object_recognition/environment/ament_prefix_path.dsv
+[0.688s] -- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/install/object_recognition/share/object_recognition/environment/path.sh
+[0.689s] -- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/install/object_recognition/share/object_recognition/environment/path.dsv
+[0.689s] -- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/install/object_recognition/share/object_recognition/local_setup.bash
+[0.689s] -- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/install/object_recognition/share/object_recognition/local_setup.sh
+[0.689s] -- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/install/object_recognition/share/object_recognition/local_setup.zsh
+[0.690s] -- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/install/object_recognition/share/object_recognition/local_setup.dsv
+[0.690s] -- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/install/object_recognition/share/object_recognition/package.dsv
+[0.691s] -- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/install/object_recognition/share/ament_index/resource_index/packages/object_recognition
+[0.692s] -- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/install/object_recognition/share/object_recognition/cmake/object_recognitionConfig.cmake
+[0.692s] -- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/install/object_recognition/share/object_recognition/cmake/object_recognitionConfig-version.cmake
+[0.692s] -- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/install/object_recognition/share/object_recognition/package.xml
+[0.698s] Invoked command in '/home/liliana/ros2_ws/robot-repo-ros2/src/build/object_recognition' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/liliana/ws_moveit/install/moveit_configs_utils:/home/liliana/ros2_ws/install/my_py_pkg:/home/liliana/ros2_ws/install/joy_mux_controller:/home/liliana/install/my_py_pkg:/opt/ros/humble /usr/bin/cmake --install /home/liliana/ros2_ws/robot-repo-ros2/src/build/object_recognition

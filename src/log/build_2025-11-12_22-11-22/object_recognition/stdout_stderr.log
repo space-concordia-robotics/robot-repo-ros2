@@ -1,0 +1,76 @@
+-- Found ament_cmake: 1.3.12 (/opt/ros/humble/share/ament_cmake/cmake)
+-- Found rclpy: 3.3.17 (/opt/ros/humble/share/rclpy/cmake)
+-- Found visualization_msgs: 4.9.0 (/opt/ros/humble/share/visualization_msgs/cmake)
+-- Found rosidl_generator_c: 3.1.7 (/opt/ros/humble/share/rosidl_generator_c/cmake)
+-- Found rosidl_adapter: 3.1.7 (/opt/ros/humble/share/rosidl_adapter/cmake)
+-- Found rosidl_generator_cpp: 3.1.7 (/opt/ros/humble/share/rosidl_generator_cpp/cmake)
+-- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c
+-- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp
+-- Found rclcpp: 16.0.15 (/opt/ros/humble/share/rclcpp/cmake)
+-- Found rmw_implementation_cmake: 6.1.2 (/opt/ros/humble/share/rmw_implementation_cmake/cmake)
+-- Found rmw_cyclonedds_cpp: 1.3.4 (/opt/ros/humble/share/rmw_cyclonedds_cpp/cmake)
+-- Using RMW implementation 'rmw_cyclonedds_cpp' as default
+-- Found moveit_msgs: 2.2.1 (/home/liliana/ws_moveit/install/moveit_msgs/share/moveit_msgs/cmake)
+-- Found moveit_ros_planning_interface: 2.5.9 (/home/liliana/ws_moveit/install/moveit_ros_planning_interface/share/moveit_ros_planning_interface/cmake)
+-- Found Boost: /usr/lib/x86_64-linux-gnu/cmake/Boost-1.74.0/BoostConfig.cmake (found version "1.74.0") found components: date_time filesystem program_options system thread 
+-- Found Boost: /usr/lib/x86_64-linux-gnu/cmake/Boost-1.74.0/BoostConfig.cmake (found version "1.74.0") found components: chrono date_time filesystem iostreams program_options regex serialization system thread 
+-- Found parameter_traits: 0.5.0 (/opt/ros/humble/share/parameter_traits/cmake)
+-- Found rclcpp_lifecycle: 16.0.15 (/opt/ros/humble/share/rclcpp_lifecycle/cmake)
+-- Found Boost: /usr/lib/x86_64-linux-gnu/cmake/Boost-1.74.0/BoostConfig.cmake (found version "1.74.0") found components: filesystem 
+-- library: /usr/lib/x86_64-linux-gnu/libcurl.so
+-- Ensuring Eigen3 include directory is part of orocos-kdl CMake target
+-- Found Boost: /usr/lib/x86_64-linux-gnu/cmake/Boost-1.74.0/BoostConfig.cmake (found version "1.74.0") found components: system filesystem date_time program_options thread chrono 
+-- Found Boost: /usr/lib/x86_64-linux-gnu/cmake/Boost-1.74.0/BoostConfig.cmake (found version "1.74.0") found components: thread system filesystem regex date_time program_options 
+-- Found Boost: /usr/lib/x86_64-linux-gnu/cmake/Boost-1.74.0/BoostConfig.cmake (found version "1.74.0") found components: system filesystem date_time program_options thread 
+[33mCMake Warning at CMakeLists.txt:20 (find_package):
+  By not providing "Findmoveit_move_group_interface.cmake" in
+  CMAKE_MODULE_PATH this project has asked CMake to find a package
+  configuration file provided by "moveit_move_group_interface", but CMake did
+  not find one.
+
+  Could not find a package configuration file provided by
+  "moveit_move_group_interface" with any of the following names:
+
+    moveit_move_group_interfaceConfig.cmake
+    moveit_move_group_interface-config.cmake
+
+  Add the installation prefix of "moveit_move_group_interface" to
+  CMAKE_PREFIX_PATH or set "moveit_move_group_interface_DIR" to a directory
+  containing one of the above files.  If "moveit_move_group_interface"
+  provides a separate development package or SDK, be sure it has been
+  installed.
+
+[0m
+-- Found ament_lint_auto: 0.12.14 (/opt/ros/humble/share/ament_lint_auto/cmake)
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/liliana/ros2_ws/robot-repo-ros2/src/build/object_recognition
+[35m[1mConsolidate compiler generated dependencies of target move_group_node[0m
+[ 50%] [32mBuilding CXX object CMakeFiles/move_group_node.dir/src/move_group.cpp.o[0m
+In file included from [01m[K/opt/ros/humble/include/rclcpp/rclcpp/client.hpp:40[m[K,
+                 from [01m[K/opt/ros/humble/include/rclcpp/rclcpp/callback_group.hpp:24[m[K,
+                 from [01m[K/opt/ros/humble/include/rclcpp/rclcpp/any_executable.hpp:20[m[K,
+                 from [01m[K/opt/ros/humble/include/rclcpp/rclcpp/memory_strategy.hpp:25[m[K,
+                 from [01m[K/opt/ros/humble/include/rclcpp/rclcpp/memory_strategies.hpp:18[m[K,
+                 from [01m[K/opt/ros/humble/include/rclcpp/rclcpp/executor_options.hpp:20[m[K,
+                 from [01m[K/opt/ros/humble/include/rclcpp/rclcpp/executor.hpp:37[m[K,
+                 from [01m[K/opt/ros/humble/include/rclcpp/rclcpp/executors/multi_threaded_executor.hpp:25[m[K,
+                 from [01m[K/opt/ros/humble/include/rclcpp/rclcpp/executors.hpp:21[m[K,
+                 from [01m[K/opt/ros/humble/include/rclcpp/rclcpp/rclcpp.hpp:155[m[K,
+                 from [01m[K/home/liliana/ros2_ws/robot-repo-ros2/src/object_recognition/src/move_group.cpp:1[m[K:
+[01m[K/home/liliana/ros2_ws/robot-repo-ros2/src/object_recognition/src/move_group.cpp:[m[K In function ‘[01m[Kint main(int, char**)[m[K’:
+[01m[K/home/liliana/ros2_ws/robot-repo-ros2/src/object_recognition/src/move_group.cpp:33:21:[m[K [01;31m[Kerror: [m[K‘[01m[Knode[m[K’ was not declared in this scope
+   33 |         RCLCPP_INFO([01;31m[Knode[m[K->get_logger(), "Plan successful!");
+      |                     [01;31m[K^~~~[m[K
+[01m[K/home/liliana/ros2_ws/robot-repo-ros2/src/object_recognition/src/move_group.cpp:33:9:[m[K [01;31m[Kerror: [m[Ktemplate argument 1 is invalid
+   33 |         [01;31m[KRCLCPP_INFO[m[K(node->get_logger(), "Plan successful!");
+      |         [01;31m[K^~~~~~~~~~~[m[K
+[01m[K/home/liliana/ros2_ws/robot-repo-ros2/src/object_recognition/src/move_group.cpp:36:21:[m[K [01;31m[Kerror: [m[K‘[01m[Knode[m[K’ was not declared in this scope
+   36 |         RCLCPP_WARN([01;31m[Knode[m[K->get_logger(), "Planning failed!");
+      |                     [01;31m[K^~~~[m[K
+[01m[K/home/liliana/ros2_ws/robot-repo-ros2/src/object_recognition/src/move_group.cpp:36:9:[m[K [01;31m[Kerror: [m[Ktemplate argument 1 is invalid
+   36 |         [01;31m[KRCLCPP_WARN[m[K(node->get_logger(), "Planning failed!");
+      |         [01;31m[K^~~~~~~~~~~[m[K
+gmake[2]: *** [CMakeFiles/move_group_node.dir/build.make:76: CMakeFiles/move_group_node.dir/src/move_group.cpp.o] Error 1
+gmake[1]: *** [CMakeFiles/Makefile2:137: CMakeFiles/move_group_node.dir/all] Error 2
+gmake: *** [Makefile:146: all] Error 2

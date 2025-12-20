@@ -1,0 +1,80 @@
+[0.096s] Invoking command in '/home/liliana/ros2_ws/robot-repo-ros2/src/build/object_recognition': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/liliana/ws_moveit/install/moveit_configs_utils:/home/liliana/ros2_ws/install/my_py_pkg:/home/liliana/ros2_ws/install/joy_mux_controller:/home/liliana/install/my_py_pkg:/opt/ros/humble /usr/bin/cmake /home/liliana/ros2_ws/robot-repo-ros2/src/object_recognition -DCMAKE_INSTALL_PREFIX=/home/liliana/ros2_ws/robot-repo-ros2/src/install/object_recognition
+[0.213s] -- Found ament_cmake: 1.3.12 (/opt/ros/humble/share/ament_cmake/cmake)
+[0.884s] -- Found rclpy: 3.3.17 (/opt/ros/humble/share/rclpy/cmake)
+[0.890s] -- Found visualization_msgs: 4.9.0 (/opt/ros/humble/share/visualization_msgs/cmake)
+[1.077s] -- Found rosidl_generator_c: 3.1.7 (/opt/ros/humble/share/rosidl_generator_c/cmake)
+[1.095s] -- Found rosidl_adapter: 3.1.7 (/opt/ros/humble/share/rosidl_adapter/cmake)
+[1.139s] -- Found rosidl_generator_cpp: 3.1.7 (/opt/ros/humble/share/rosidl_generator_cpp/cmake)
+[1.207s] -- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c
+[1.291s] -- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp
+[1.765s] -- Found rclcpp: 16.0.15 (/opt/ros/humble/share/rclcpp/cmake)
+[1.960s] -- Found rmw_implementation_cmake: 6.1.2 (/opt/ros/humble/share/rmw_implementation_cmake/cmake)
+[1.982s] -- Found rmw_cyclonedds_cpp: 1.3.4 (/opt/ros/humble/share/rmw_cyclonedds_cpp/cmake)
+[2.121s] -- Using RMW implementation 'rmw_cyclonedds_cpp' as default
+[2.378s] -- Found moveit_msgs: 2.2.1 (/home/liliana/ws_moveit/install/moveit_msgs/share/moveit_msgs/cmake)
+[3.090s] -- Found moveit_ros_planning_interface: 2.5.9 (/home/liliana/ws_moveit/install/moveit_ros_planning_interface/share/moveit_ros_planning_interface/cmake)
+[3.169s] -- Found Boost: /usr/lib/x86_64-linux-gnu/cmake/Boost-1.74.0/BoostConfig.cmake (found version "1.74.0") found components: date_time filesystem program_options system thread 
+[3.243s] -- Found Boost: /usr/lib/x86_64-linux-gnu/cmake/Boost-1.74.0/BoostConfig.cmake (found version "1.74.0") found components: chrono date_time filesystem iostreams program_options regex serialization system thread 
+[3.414s] -- Found parameter_traits: 0.5.0 (/opt/ros/humble/share/parameter_traits/cmake)
+[3.460s] -- Found rclcpp_lifecycle: 16.0.15 (/opt/ros/humble/share/rclcpp_lifecycle/cmake)
+[3.595s] -- Found Boost: /usr/lib/x86_64-linux-gnu/cmake/Boost-1.74.0/BoostConfig.cmake (found version "1.74.0") found components: filesystem 
+[3.794s] -- library: /usr/lib/x86_64-linux-gnu/libcurl.so
+[3.833s] -- Ensuring Eigen3 include directory is part of orocos-kdl CMake target
+[4.510s] -- Found Boost: /usr/lib/x86_64-linux-gnu/cmake/Boost-1.74.0/BoostConfig.cmake (found version "1.74.0") found components: system filesystem date_time program_options thread chrono 
+[4.670s] -- Found Boost: /usr/lib/x86_64-linux-gnu/cmake/Boost-1.74.0/BoostConfig.cmake (found version "1.74.0") found components: thread system filesystem regex date_time program_options 
+[4.808s] -- Found Boost: /usr/lib/x86_64-linux-gnu/cmake/Boost-1.74.0/BoostConfig.cmake (found version "1.74.0") found components: system filesystem date_time program_options thread 
+[5.023s] [33mCMake Warning at CMakeLists.txt:20 (find_package):
+[5.024s]   By not providing "Findmoveit_move_group_interface.cmake" in
+[5.024s]   CMAKE_MODULE_PATH this project has asked CMake to find a package
+[5.024s]   configuration file provided by "moveit_move_group_interface", but CMake did
+[5.024s]   not find one.
+[5.024s] 
+[5.025s]   Could not find a package configuration file provided by
+[5.025s]   "moveit_move_group_interface" with any of the following names:
+[5.025s] 
+[5.025s]     moveit_move_group_interfaceConfig.cmake
+[5.026s]     moveit_move_group_interface-config.cmake
+[5.026s] 
+[5.026s]   Add the installation prefix of "moveit_move_group_interface" to
+[5.026s]   CMAKE_PREFIX_PATH or set "moveit_move_group_interface_DIR" to a directory
+[5.026s]   containing one of the above files.  If "moveit_move_group_interface"
+[5.027s]   provides a separate development package or SDK, be sure it has been
+[5.027s]   installed.
+[5.027s] 
+[5.027s] [0m
+[5.093s] -- Found ament_lint_auto: 0.12.14 (/opt/ros/humble/share/ament_lint_auto/cmake)
+[5.565s] -- Configuring done
+[5.788s] -- Generating done
+[5.828s] -- Build files have been written to: /home/liliana/ros2_ws/robot-repo-ros2/src/build/object_recognition
+[5.867s] Invoked command in '/home/liliana/ros2_ws/robot-repo-ros2/src/build/object_recognition' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/liliana/ws_moveit/install/moveit_configs_utils:/home/liliana/ros2_ws/install/my_py_pkg:/home/liliana/ros2_ws/install/joy_mux_controller:/home/liliana/install/my_py_pkg:/opt/ros/humble /usr/bin/cmake /home/liliana/ros2_ws/robot-repo-ros2/src/object_recognition -DCMAKE_INSTALL_PREFIX=/home/liliana/ros2_ws/robot-repo-ros2/src/install/object_recognition
+[5.874s] Invoking command in '/home/liliana/ros2_ws/robot-repo-ros2/src/build/object_recognition': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/liliana/ws_moveit/install/moveit_configs_utils:/home/liliana/ros2_ws/install/my_py_pkg:/home/liliana/ros2_ws/install/joy_mux_controller:/home/liliana/install/my_py_pkg:/opt/ros/humble /usr/bin/cmake --build /home/liliana/ros2_ws/robot-repo-ros2/src/build/object_recognition -- -j6 -l6
+[6.114s] [35m[1mConsolidate compiler generated dependencies of target move_group_node[0m
+[6.227s] [ 50%] [32mBuilding CXX object CMakeFiles/move_group_node.dir/src/move_group.cpp.o[0m
+[22.995s] In file included from [01m[K/opt/ros/humble/include/rclcpp/rclcpp/client.hpp:40[m[K,
+[22.995s]                  from [01m[K/opt/ros/humble/include/rclcpp/rclcpp/callback_group.hpp:24[m[K,
+[22.996s]                  from [01m[K/opt/ros/humble/include/rclcpp/rclcpp/any_executable.hpp:20[m[K,
+[22.996s]                  from [01m[K/opt/ros/humble/include/rclcpp/rclcpp/memory_strategy.hpp:25[m[K,
+[22.996s]                  from [01m[K/opt/ros/humble/include/rclcpp/rclcpp/memory_strategies.hpp:18[m[K,
+[22.996s]                  from [01m[K/opt/ros/humble/include/rclcpp/rclcpp/executor_options.hpp:20[m[K,
+[22.997s]                  from [01m[K/opt/ros/humble/include/rclcpp/rclcpp/executor.hpp:37[m[K,
+[22.997s]                  from [01m[K/opt/ros/humble/include/rclcpp/rclcpp/executors/multi_threaded_executor.hpp:25[m[K,
+[22.997s]                  from [01m[K/opt/ros/humble/include/rclcpp/rclcpp/executors.hpp:21[m[K,
+[22.998s]                  from [01m[K/opt/ros/humble/include/rclcpp/rclcpp/rclcpp.hpp:155[m[K,
+[22.998s]                  from [01m[K/home/liliana/ros2_ws/robot-repo-ros2/src/object_recognition/src/move_group.cpp:1[m[K:
+[22.998s] [01m[K/home/liliana/ros2_ws/robot-repo-ros2/src/object_recognition/src/move_group.cpp:[m[K In function ‘[01m[Kint main(int, char**)[m[K’:
+[22.999s] [01m[K/home/liliana/ros2_ws/robot-repo-ros2/src/object_recognition/src/move_group.cpp:33:21:[m[K [01;31m[Kerror: [m[K‘[01m[Knode[m[K’ was not declared in this scope
+[22.999s]    33 |         RCLCPP_INFO([01;31m[Knode[m[K->get_logger(), "Plan successful!");
+[22.999s]       |                     [01;31m[K^~~~[m[K
+[22.999s] [01m[K/home/liliana/ros2_ws/robot-repo-ros2/src/object_recognition/src/move_group.cpp:33:9:[m[K [01;31m[Kerror: [m[Ktemplate argument 1 is invalid
+[23.000s]    33 |         [01;31m[KRCLCPP_INFO[m[K(node->get_logger(), "Plan successful!");
+[23.000s]       |         [01;31m[K^~~~~~~~~~~[m[K
+[23.017s] [01m[K/home/liliana/ros2_ws/robot-repo-ros2/src/object_recognition/src/move_group.cpp:36:21:[m[K [01;31m[Kerror: [m[K‘[01m[Knode[m[K’ was not declared in this scope
+[23.018s]    36 |         RCLCPP_WARN([01;31m[Knode[m[K->get_logger(), "Planning failed!");
+[23.018s]       |                     [01;31m[K^~~~[m[K
+[23.018s] [01m[K/home/liliana/ros2_ws/robot-repo-ros2/src/object_recognition/src/move_group.cpp:36:9:[m[K [01;31m[Kerror: [m[Ktemplate argument 1 is invalid
+[23.018s]    36 |         [01;31m[KRCLCPP_WARN[m[K(node->get_logger(), "Planning failed!");
+[23.019s]       |         [01;31m[K^~~~~~~~~~~[m[K
+[30.654s] gmake[2]: *** [CMakeFiles/move_group_node.dir/build.make:76: CMakeFiles/move_group_node.dir/src/move_group.cpp.o] Error 1
+[30.655s] gmake[1]: *** [CMakeFiles/Makefile2:137: CMakeFiles/move_group_node.dir/all] Error 2
+[30.656s] gmake: *** [Makefile:146: all] Error 2
+[30.667s] Invoked command in '/home/liliana/ros2_ws/robot-repo-ros2/src/build/object_recognition' returned '2': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/liliana/ws_moveit/install/moveit_configs_utils:/home/liliana/ros2_ws/install/my_py_pkg:/home/liliana/ros2_ws/install/joy_mux_controller:/home/liliana/install/my_py_pkg:/opt/ros/humble /usr/bin/cmake --build /home/liliana/ros2_ws/robot-repo-ros2/src/build/object_recognition -- -j6 -l6

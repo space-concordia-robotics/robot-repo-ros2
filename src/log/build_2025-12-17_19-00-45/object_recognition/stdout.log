@@ -1,0 +1,20 @@
+[35m[1mConsolidate compiler generated dependencies of target move_group_node[0m
+[100%] Built target move_group_node
+-- Install configuration: ""
+-- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/install/object_recognition/lib/object_recognition/move_group_node
+-- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/install/object_recognition/lib/object_recognition/keymap_node.py
+-- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/install/object_recognition/share/ament_index/resource_index/package_run_dependencies/object_recognition
+-- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/install/object_recognition/share/ament_index/resource_index/parent_prefix_path/object_recognition
+-- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/install/object_recognition/share/object_recognition/environment/ament_prefix_path.sh
+-- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/install/object_recognition/share/object_recognition/environment/ament_prefix_path.dsv
+-- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/install/object_recognition/share/object_recognition/environment/path.sh
+-- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/install/object_recognition/share/object_recognition/environment/path.dsv
+-- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/install/object_recognition/share/object_recognition/local_setup.bash
+-- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/install/object_recognition/share/object_recognition/local_setup.sh
+-- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/install/object_recognition/share/object_recognition/local_setup.zsh
+-- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/install/object_recognition/share/object_recognition/local_setup.dsv
+-- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/install/object_recognition/share/object_recognition/package.dsv
+-- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/install/object_recognition/share/ament_index/resource_index/packages/object_recognition
+-- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/install/object_recognition/share/object_recognition/cmake/object_recognitionConfig.cmake
+-- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/install/object_recognition/share/object_recognition/cmake/object_recognitionConfig-version.cmake
+-- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/install/object_recognition/share/object_recognition/package.xml

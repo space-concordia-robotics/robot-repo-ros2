@@ -1,0 +1,7 @@
+[35m[1mConsolidate compiler generated dependencies of target move_group_node[0m
+[ 50%] [32mBuilding CXX object CMakeFiles/move_group_node.dir/src/move_group.cpp.o[0m
+[100%] [32m[1mLinking CXX executable move_group_node[0m
+[100%] Built target move_group_node
+-- Install configuration: ""
+-- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/install/object_recognition/lib/object_recognition/move_group_node
+-- Set runtime path of "/home/liliana/ros2_ws/robot-repo-ros2/src/install/object_recognition/lib/object_recognition/move_group_node" to ""

@@ -1,0 +1,44 @@
+[0.058s] Invoking command in '/home/liliana/ros2_ws/robot-repo-ros2/src/build/object_recognition': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/liliana/ws_moveit/install/moveit_configs_utils:/home/liliana/ws_moveit/install/launch_param_builder:/home/liliana/ros2_ws/install/my_py_pkg:/home/liliana/install/my_py_pkg:/opt/ros/humble /usr/bin/cmake /home/liliana/ros2_ws/robot-repo-ros2/src/object_recognition -DCMAKE_INSTALL_PREFIX=/home/liliana/ros2_ws/robot-repo-ros2/src/install/object_recognition
+[0.292s] -- The C compiler identification is GNU 11.4.0
+[0.487s] -- The CXX compiler identification is GNU 11.4.0
+[0.515s] -- Detecting C compiler ABI info
+[0.843s] -- Detecting C compiler ABI info - done
+[0.869s] -- Check for working C compiler: /usr/bin/cc - skipped
+[0.870s] -- Detecting C compile features
+[0.872s] -- Detecting C compile features - done
+[0.881s] -- Detecting CXX compiler ABI info
+[1.240s] -- Detecting CXX compiler ABI info - done
+[1.274s] -- Check for working CXX compiler: /usr/bin/c++ - skipped
+[1.275s] -- Detecting CXX compile features
+[1.276s] -- Detecting CXX compile features - done
+[1.303s] -- Found ament_cmake: 1.3.12 (/opt/ros/humble/share/ament_cmake/cmake)
+[3.860s] -- Found Python3: /usr/bin/python3 (found version "3.10.12") found components: Interpreter 
+[4.357s] -- Found rclpy: 3.3.17 (/opt/ros/humble/share/rclpy/cmake)
+[4.378s] -- Found visualization_msgs: 4.9.0 (/opt/ros/humble/share/visualization_msgs/cmake)
+[4.643s] -- Found rosidl_generator_c: 3.1.7 (/opt/ros/humble/share/rosidl_generator_c/cmake)
+[4.695s] -- Found rosidl_adapter: 3.1.7 (/opt/ros/humble/share/rosidl_adapter/cmake)
+[4.757s] -- Found rosidl_generator_cpp: 3.1.7 (/opt/ros/humble/share/rosidl_generator_cpp/cmake)
+[4.840s] -- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c
+[4.953s] -- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp
+[5.383s] -- Found rclcpp: 16.0.15 (/opt/ros/humble/share/rclcpp/cmake)
+[5.689s] -- Found rmw_implementation_cmake: 6.1.2 (/opt/ros/humble/share/rmw_implementation_cmake/cmake)
+[5.727s] -- Found rmw_fastrtps_cpp: 6.2.8 (/opt/ros/humble/share/rmw_fastrtps_cpp/cmake)
+[6.238s] -- Found OpenSSL: /usr/lib/x86_64-linux-gnu/libcrypto.so (found version "3.0.2")  
+[6.345s] -- Found FastRTPS: /opt/ros/humble/include  
+[6.508s] -- Using RMW implementation 'rmw_fastrtps_cpp' as default
+[6.582s] -- Looking for pthread.h
+[6.866s] -- Looking for pthread.h - found
+[6.867s] -- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+[7.224s] -- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
+[7.227s] -- Found Threads: TRUE  
+[7.482s] -- Found moveit_msgs: 2.2.2 (/opt/ros/humble/share/moveit_msgs/cmake)
+[8.175s] [31mCMake Error at /opt/ros/humble/share/ament_cmake_target_dependencies/cmake/ament_target_dependencies.cmake:77 (message):
+[8.175s]   ament_target_dependencies() the passed package name
+[8.176s]   'moveit_ros_planning_interface' was not found before
+[8.176s] Call Stack (most recent call first):
+[8.176s]   CMakeLists.txt:18 (ament_target_dependencies)
+[8.176s] 
+[8.176s] [0m
+[8.176s] -- Configuring incomplete, errors occurred!
+[8.177s] See also "/home/liliana/ros2_ws/robot-repo-ros2/src/build/object_recognition/CMakeFiles/CMakeOutput.log".
+[8.221s] Invoked command in '/home/liliana/ros2_ws/robot-repo-ros2/src/build/object_recognition' returned '1': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/liliana/ws_moveit/install/moveit_configs_utils:/home/liliana/ws_moveit/install/launch_param_builder:/home/liliana/ros2_ws/install/my_py_pkg:/home/liliana/install/my_py_pkg:/opt/ros/humble /usr/bin/cmake /home/liliana/ros2_ws/robot-repo-ros2/src/object_recognition -DCMAKE_INSTALL_PREFIX=/home/liliana/ros2_ws/robot-repo-ros2/src/install/object_recognition

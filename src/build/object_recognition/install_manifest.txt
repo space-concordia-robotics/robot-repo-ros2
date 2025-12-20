@@ -1,3 +1,5 @@
+/home/liliana/ros2_ws/robot-repo-ros2/src/install/object_recognition/lib/object_recognition/move_group_node
+/home/liliana/ros2_ws/robot-repo-ros2/src/install/object_recognition/lib/object_recognition/keymap_node.py
 /home/liliana/ros2_ws/robot-repo-ros2/src/install/object_recognition/share/ament_index/resource_index/package_run_dependencies/object_recognition
 /home/liliana/ros2_ws/robot-repo-ros2/src/install/object_recognition/share/ament_index/resource_index/parent_prefix_path/object_recognition
 /home/liliana/ros2_ws/robot-repo-ros2/src/install/object_recognition/share/object_recognition/environment/ament_prefix_path.sh

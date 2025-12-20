@@ -1,0 +1,18 @@
+[31mCMake Error at CMakeLists.txt:15 (find_package):
+  By not providing "Findmove_it.cmake" in CMAKE_MODULE_PATH this project has
+  asked CMake to find a package configuration file provided by "move_it", but
+  CMake did not find one.
+
+  Could not find a package configuration file provided by "move_it" with any
+  of the following names:
+
+    move_itConfig.cmake
+    move_it-config.cmake
+
+  Add the installation prefix of "move_it" to CMAKE_PREFIX_PATH or set
+  "move_it_DIR" to a directory containing one of the above files.  If
+  "move_it" provides a separate development package or SDK, be sure it has
+  been installed.
+
+[0m
+gmake: *** [Makefile:226: cmake_check_build_system] Error 1

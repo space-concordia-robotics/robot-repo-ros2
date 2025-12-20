@@ -29,24 +29,10 @@
                 </state_interface>
                 <state_interface name="velocity"/>
             </joint>
-            <joint name="joint4">
-                <command_interface name="position"/>
-                <state_interface name="position">
-                  <param name="initial_value">${initial_positions['joint4']}</param>
-                </state_interface>
-                <state_interface name="velocity"/>
-            </joint>
             <joint name="joint5">
                 <command_interface name="position"/>
                 <state_interface name="position">
                   <param name="initial_value">${initial_positions['joint5']}</param>
-                </state_interface>
-                <state_interface name="velocity"/>
-            </joint>
-            <joint name="joint7">
-                <command_interface name="position"/>
-                <state_interface name="position">
-                  <param name="initial_value">${initial_positions['joint7']}</param>
                 </state_interface>
                 <state_interface name="velocity"/>
             </joint>

@@ -1,0 +1,33 @@
+[33mCMake Warning at CMakeLists.txt:17 (find_package):
+  By not providing "Findmoveit_move_group_interface.cmake" in
+  CMAKE_MODULE_PATH this project has asked CMake to find a package
+  configuration file provided by "moveit_move_group_interface", but CMake did
+  not find one.
+
+  Could not find a package configuration file provided by
+  "moveit_move_group_interface" with any of the following names:
+
+    moveit_move_group_interfaceConfig.cmake
+    moveit_move_group_interface-config.cmake
+
+  Add the installation prefix of "moveit_move_group_interface" to
+  CMAKE_PREFIX_PATH or set "moveit_move_group_interface_DIR" to a directory
+  containing one of the above files.  If "moveit_move_group_interface"
+  provides a separate development package or SDK, be sure it has been
+  installed.
+
+[0m
+[01m[K/home/liliana/ros2_ws/robot-repo-ros2/src/object_recognition/src/move_group.cpp:[m[K In function ‘[01m[Kint main(int, char**)[m[K’:
+[01m[K/home/liliana/ros2_ws/robot-repo-ros2/src/object_recognition/src/move_group.cpp:15:61:[m[K [01;31m[Kerror: [m[K‘[01m[Kmove_group_node[m[K’ was not declared in this scope; did you mean ‘[01m[Kmove_group[m[K’?
+   15 |   moveit::planning_interface::MoveGroupInterface move_group([01;31m[Kmove_group_node[m[K, PLANNING_GROUP);
+      |                                                             [01;31m[K^~~~~~~~~~~~~~~[m[K
+      |                                                             [32m[Kmove_group[m[K
+[01m[K/home/liliana/ros2_ws/robot-repo-ros2/src/object_recognition/src/move_group.cpp:15:78:[m[K [01;31m[Kerror: [m[K‘[01m[KPLANNING_GROUP[m[K’ was not declared in this scope
+   15 |   moveit::planning_interface::MoveGroupInterface move_group(move_group_node, [01;31m[KPLANNING_GROUP[m[K);
+      |                                                                              [01;31m[K^~~~~~~~~~~~~~[m[K
+[01m[K/home/liliana/ros2_ws/robot-repo-ros2/src/object_recognition/src/move_group.cpp:16:31:[m[K [01;31m[Kerror: [m[K‘[01m[KPlanningSceneInterface[m[K’ is not a member of ‘[01m[Kmoveit::planning_interface[m[K’
+   16 |   moveit::planning_interface::[01;31m[KPlanningSceneInterface[m[K planning_scene_interface;
+      |                               [01;31m[K^~~~~~~~~~~~~~~~~~~~~~[m[K
+gmake[2]: *** [CMakeFiles/move_group_node.dir/build.make:76: CMakeFiles/move_group_node.dir/src/move_group.cpp.o] Error 1
+gmake[1]: *** [CMakeFiles/Makefile2:137: CMakeFiles/move_group_node.dir/all] Error 2
+gmake: *** [Makefile:146: all] Error 2

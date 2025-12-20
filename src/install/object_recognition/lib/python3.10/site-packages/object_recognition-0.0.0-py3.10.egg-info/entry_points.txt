@@ -1,2 +1,0 @@
-[console_scripts]
-keymap_node = object_recognition.keymap_node:main
