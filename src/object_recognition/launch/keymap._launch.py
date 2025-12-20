@@ -21,7 +21,7 @@ def generate_launch_description():
             executable='static_transform_publisher',
             name='static_transform_publisher',
             arguments=['0.5', '0', '0.5', '0', '0', '1.5708', 'base_structure_link', 'keyboard']
-        )
+        ),
 
         Node(
             package='object_recognition',

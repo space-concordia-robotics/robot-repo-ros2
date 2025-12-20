@@ -1,0 +1,10 @@
+[0.000000] (-) TimerEvent: {}
+[0.000460] (-) JobUnselected: {'identifier': 'arm_hardware'}
+[0.000585] (-) JobUnselected: {'identifier': 'ik_mux_controller'}
+[0.000639] (-) JobUnselected: {'identifier': 'rover_arm_bringup'}
+[0.000695] (-) JobUnselected: {'identifier': 'rover_arm_description'}
+[0.000765] (rover_arm_moveit_config) JobQueued: {'identifier': 'rover_arm_moveit_config', 'dependencies': OrderedDict([('rover_arm_description', '/home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_description')])}
+[0.000933] (rover_arm_moveit_config) JobStarted: {'identifier': 'rover_arm_moveit_config'}
+[0.096009] (-) TimerEvent: {}
+[0.110022] (rover_arm_moveit_config) JobEnded: {'identifier': 'rover_arm_moveit_config', 'rc': 1}
+[0.121236] (-) EventReactorShutdown: {}

@@ -1,0 +1,62 @@
+[0.066s] Invoking command in '/home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/build/rover_arm_moveit_config': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/liliana/ws_moveit/install/moveit_configs_utils:/home/liliana/ros2_ws/install/my_py_pkg:/home/liliana/ros2_ws/install/joy_mux_controller:/home/liliana/install/my_py_pkg:/opt/ros/humble /usr/bin/cmake /home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/rover_arm_moveit_config -DCMAKE_INSTALL_PREFIX=/home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_moveit_config
+[0.285s] -- The C compiler identification is GNU 11.4.0
+[0.495s] -- The CXX compiler identification is GNU 11.4.0
+[0.520s] -- Detecting C compiler ABI info
+[0.797s] -- Detecting C compiler ABI info - done
+[0.826s] -- Check for working C compiler: /usr/bin/cc - skipped
+[0.827s] -- Detecting C compile features
+[0.828s] -- Detecting C compile features - done
+[0.841s] -- Detecting CXX compiler ABI info
+[1.169s] -- Detecting CXX compiler ABI info - done
+[1.201s] -- Check for working CXX compiler: /usr/bin/c++ - skipped
+[1.202s] -- Detecting CXX compile features
+[1.204s] -- Detecting CXX compile features - done
+[1.229s] -- Found ament_cmake: 1.3.12 (/opt/ros/humble/share/ament_cmake/cmake)
+[3.819s] -- Found Python3: /usr/bin/python3 (found version "3.10.12") found components: Interpreter 
+[4.610s] -- Configuring done
+[4.620s] -- Generating done
+[4.626s] -- Build files have been written to: /home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/build/rover_arm_moveit_config
+[4.646s] Invoked command in '/home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/build/rover_arm_moveit_config' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/liliana/ws_moveit/install/moveit_configs_utils:/home/liliana/ros2_ws/install/my_py_pkg:/home/liliana/ros2_ws/install/joy_mux_controller:/home/liliana/install/my_py_pkg:/opt/ros/humble /usr/bin/cmake /home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/rover_arm_moveit_config -DCMAKE_INSTALL_PREFIX=/home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_moveit_config
+[4.653s] Invoking command in '/home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/build/rover_arm_moveit_config': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/liliana/ws_moveit/install/moveit_configs_utils:/home/liliana/ros2_ws/install/my_py_pkg:/home/liliana/ros2_ws/install/joy_mux_controller:/home/liliana/install/my_py_pkg:/opt/ros/humble /usr/bin/cmake --build /home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/build/rover_arm_moveit_config -- -j6 -l6
+[4.818s] Invoked command in '/home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/build/rover_arm_moveit_config' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/liliana/ws_moveit/install/moveit_configs_utils:/home/liliana/ros2_ws/install/my_py_pkg:/home/liliana/ros2_ws/install/joy_mux_controller:/home/liliana/install/my_py_pkg:/opt/ros/humble /usr/bin/cmake --build /home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/build/rover_arm_moveit_config -- -j6 -l6
+[4.865s] Invoking command in '/home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/build/rover_arm_moveit_config': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/liliana/ws_moveit/install/moveit_configs_utils:/home/liliana/ros2_ws/install/my_py_pkg:/home/liliana/ros2_ws/install/joy_mux_controller:/home/liliana/install/my_py_pkg:/opt/ros/humble /usr/bin/cmake --install /home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/build/rover_arm_moveit_config
+[4.896s] -- Install configuration: ""
+[4.896s] -- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_moveit_config/share/ament_index/resource_index/package_run_dependencies/rover_arm_moveit_config
+[4.897s] -- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_moveit_config/share/ament_index/resource_index/parent_prefix_path/rover_arm_moveit_config
+[4.898s] -- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_moveit_config/share/rover_arm_moveit_config/environment/ament_prefix_path.sh
+[4.899s] -- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_moveit_config/share/rover_arm_moveit_config/environment/ament_prefix_path.dsv
+[4.900s] -- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_moveit_config/share/rover_arm_moveit_config/environment/path.sh
+[4.900s] -- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_moveit_config/share/rover_arm_moveit_config/environment/path.dsv
+[4.901s] -- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_moveit_config/share/rover_arm_moveit_config/local_setup.bash
+[4.902s] -- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_moveit_config/share/rover_arm_moveit_config/local_setup.sh
+[4.902s] -- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_moveit_config/share/rover_arm_moveit_config/local_setup.zsh
+[4.903s] -- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_moveit_config/share/rover_arm_moveit_config/local_setup.dsv
+[4.904s] -- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_moveit_config/share/rover_arm_moveit_config/package.dsv
+[4.904s] -- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_moveit_config/share/ament_index/resource_index/packages/rover_arm_moveit_config
+[4.905s] -- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_moveit_config/share/rover_arm_moveit_config/cmake/rover_arm_moveit_configConfig.cmake
+[4.906s] -- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_moveit_config/share/rover_arm_moveit_config/cmake/rover_arm_moveit_configConfig-version.cmake
+[4.906s] -- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_moveit_config/share/rover_arm_moveit_config/package.xml
+[4.907s] -- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_moveit_config/share/rover_arm_moveit_config/launch
+[4.908s] -- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_moveit_config/share/rover_arm_moveit_config/launch/spawn_controllers.launch.py
+[4.908s] -- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_moveit_config/share/rover_arm_moveit_config/launch/moveit_rviz.launch.py
+[4.909s] -- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_moveit_config/share/rover_arm_moveit_config/launch/setup_assistant.launch.py
+[4.909s] -- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_moveit_config/share/rover_arm_moveit_config/launch/warehouse_db.launch.py
+[4.910s] -- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_moveit_config/share/rover_arm_moveit_config/launch/move_group.launch.py
+[4.910s] -- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_moveit_config/share/rover_arm_moveit_config/launch/demo.launch.py
+[4.911s] -- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_moveit_config/share/rover_arm_moveit_config/launch/static_virtual_joint_tfs.launch.py
+[4.912s] -- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_moveit_config/share/rover_arm_moveit_config/launch/rsp.launch.py
+[4.912s] -- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_moveit_config/share/rover_arm_moveit_config/config
+[4.913s] -- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_moveit_config/share/rover_arm_moveit_config/config/kinematics.yaml
+[4.913s] -- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_moveit_config/share/rover_arm_moveit_config/config/ros2_controllers.yaml
+[4.914s] -- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_moveit_config/share/rover_arm_moveit_config/config/initial_positions.yaml
+[4.915s] -- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_moveit_config/share/rover_arm_moveit_config/config/pilz_cartesian_limits.yaml
+[4.915s] -- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_moveit_config/share/rover_arm_moveit_config/config/joint_limits.yaml
+[4.916s] -- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_moveit_config/share/rover_arm_moveit_config/config/moveit_controllers.yaml
+[4.916s] -- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_moveit_config/share/rover_arm_moveit_config/config/rover_arm.ros2_control.xacro
+[4.917s] -- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_moveit_config/share/rover_arm_moveit_config/config/servo_config.yaml
+[4.918s] -- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_moveit_config/share/rover_arm_moveit_config/config/rover_arm.urdf.xacro
+[4.918s] -- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_moveit_config/share/rover_arm_moveit_config/config/sensors_3d.yaml
+[4.919s] -- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_moveit_config/share/rover_arm_moveit_config/config/rover_arm.srdf
+[4.920s] -- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_moveit_config/share/rover_arm_moveit_config/config/moveit.rviz
+[4.920s] -- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_moveit_config/share/rover_arm_moveit_config/.setup_assistant
+[4.927s] Invoked command in '/home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/build/rover_arm_moveit_config' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/liliana/ws_moveit/install/moveit_configs_utils:/home/liliana/ros2_ws/install/my_py_pkg:/home/liliana/ros2_ws/install/joy_mux_controller:/home/liliana/install/my_py_pkg:/opt/ros/humble /usr/bin/cmake --install /home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/build/rover_arm_moveit_config
