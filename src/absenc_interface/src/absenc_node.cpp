@@ -82,7 +82,7 @@ void Absenc::absEncPollingCallback() {
 
     if (absenc_meas_1.status != 0 || absenc_meas_2.status != 0 || absenc_meas_3.status != 0 || absenc_meas_4.status != 0) {
         RCLCPP_ERROR(this->get_logger(),
-            "One of the absenc status returned an error. Here are the error codes: %d %d %d %d\n",
+            "One of the absenc status returned an error. Here are the error codes: 0x%04x 0x%04x 0x%04x 0x%04x\n",
             absenc_meas_1.status, absenc_meas_2.status, absenc_meas_3.status, absenc_meas_4.status);
         //return;
     }
@@ -97,11 +97,15 @@ void Absenc::absEncPollingCallback() {
     // Normalize angles to range [-180, 180) rn it's 0 to 360
     //////////////////////////////////////////////////
     angle_1 = angle_1 < 180 ? angle_1 : angle_1 - 360;
+<<<<<<< HEAD
     angle_2 = angle_2 > -180 ? angle_2 : angle_2 + 360; 
     
     
     //////////////////////////////////////////////////
     // fixing 1 to 4 ratio of angle 4
+=======
+    angle_2 = angle_2 > -180 ? angle_2 : angle_2 + 360;
+>>>>>>> main
 
  
     // update the old angle
@@ -119,7 +123,9 @@ void Absenc::absEncPollingCallback() {
     angles_publisher_->publish(joint_state_msg);
 
     // Print angles to the terminal
-    RCLCPP_INFO(this->get_logger(), "Angles: [%f, %f, %f, %f]",angle_4, angle_1, angle_2, angle_3);
+    if (absenc_meas_1.status == 0 || absenc_meas_2.status == 0 || absenc_meas_3.status == 0 || absenc_meas_4.status == 0){
+      RCLCPP_INFO(this->get_logger(), "Angles: [%f, %f, %f, %f]",angle_4, angle_1, angle_2, angle_3);
+    }
 }
 
 

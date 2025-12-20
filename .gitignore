@@ -36,3 +36,6 @@ __pycache__/
 *.old
 *.orig
 *.rej
+
+# LiDAR metadata
+os1-992005000098-metadata.json

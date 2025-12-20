@@ -1,0 +1,7 @@
+# Default initial positions for rover_arm's ros2_control fake system
+
+initial_positions:
+  joint1: 0
+  joint2: -0.357
+  joint3: -1.308
+  joint5: 0

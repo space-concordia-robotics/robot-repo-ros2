@@ -35,21 +35,10 @@ private:
     std::shared_ptr<rclcpp::Publisher<std_msgs::msg::String>> pub_;
 
     rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr twist_msg_callback;
+    std::shared_ptr<rclcpp::ParameterEventHandler> parameter_event_handler;
+    rclcpp::ParameterCallbackHandle::SharedPtr multiplier_callback_handle;
 
-    float old_linear_y;
-    float old_angular_z;
-
-    float linear_y;
-    float angular_z;
-    float max_speed = 0.5;
-    float sil_mode = 0;
-    float max_angular_speed = 1;
-    bool is_manual_control = false;
-    bool reached_goal = false;
-
-    std::string color;
-
-    int controller_type = -1;
+    int multiplier;
 };
 
 #endif

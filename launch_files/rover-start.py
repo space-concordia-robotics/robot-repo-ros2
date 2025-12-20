@@ -4,20 +4,19 @@ from launch_ros.actions import Node
 
 def generate_launch_description():
     return LaunchDescription([
-     
         # Launch the ublox_node ie the gps
         Node(
             package='ublox_gps',
             executable='ublox_gps_node',
             name='gps_node',
-            output='screen',       
+            output='screen',
         ),
-     
+
         # Launch the joy_mux_controller
         Node(
-            package='joy_mux_controller',
+            package='joy_mux_controller_py',
             executable='joy_mux_controller',
-            name='joy_mux_controller',
+            name='joy_mux',
             #output='screen',
         ),
 
@@ -40,7 +39,18 @@ def generate_launch_description():
             output='screen',
             parameters=[
                 {'can_path': 'can0'},  # Default CAN interface path
-                {'multiplier': 500}    # Default multiplier for RPM conversion
+                {'multiplier': 1000}    # Default multiplier for RPM conversion
+            ]
+        ),
+
+        # RTSP Cameras
+        Node(
+            package='rtsp_camera',
+            executable='rtsp_camera_node',
+            output='screen',
+            parameters=[
+                # Modify the camera parameters in rtsp_cameras.yaml
+                'rtsp_cameras.yaml'
             ]
         )
     ])

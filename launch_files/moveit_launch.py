@@ -10,15 +10,25 @@ from launch_ros.descriptions import ComposableNode
 
 def generate_launch_description():
     moveit_config = (
+<<<<<<< HEAD
         MoveItConfigsBuilder("ceres")
         .robot_description(file_path="config/ceres_rover.urdf.xacro")
+=======
+        MoveItConfigsBuilder("rover_arm")
+        .robot_description(file_path="config/rover_arm.urdf.xacro")
+>>>>>>> main
         .joint_limits(file_path="config/joint_limits.yaml")
         .to_moveit_configs()
     )
 
     servo_params = {
+<<<<<<< HEAD
         "moveit_servo": ParameterBuilder("ceres_moveit_config")
         .yaml("config/ceres_servo.yaml")
+=======
+        "moveit_servo": ParameterBuilder("rover_arm_moveit_config")
+        .yaml("config/servo_config.yaml")
+>>>>>>> main
         .to_dict()
     }
 
@@ -41,7 +51,11 @@ def generate_launch_description():
 
     # ros2_control using FakeSystem as hardware
     ros2_controllers_path = os.path.join(
+<<<<<<< HEAD
         get_package_share_directory("ceres_moveit_config"),
+=======
+        get_package_share_directory("rover_arm_moveit_config"),
+>>>>>>> main
         "config",
         "ros2_controllers.yaml",
     )
@@ -64,10 +78,17 @@ def generate_launch_description():
         ],
     )
 
+<<<<<<< HEAD
     ceres_arm_controller_spawner = Node(
         package="controller_manager",
         executable="spawner",
         arguments=["ceres_arm_controller", "-c", "/controller_manager"],
+=======
+    rover_arm_arm_controller_spawner = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["arm_controller", "-c", "/controller_manager"],
+>>>>>>> main
     )
 
         # Launch as much as possible in components
@@ -135,7 +156,11 @@ def generate_launch_description():
             rviz_node,
             ros2_control_node,
             joint_state_broadcaster_spawner,
+<<<<<<< HEAD
             ceres_arm_controller_spawner,
+=======
+            rover_arm_arm_controller_spawner,
+>>>>>>> main
             ik_mux_node,
             servo_node,
             container,

@@ -76,11 +76,15 @@ void RevMotorController::velocityControl(uint8_t deviceId, float velocity){
     //     return;
     // }
     
-    struct can_frame frame{};
+    auto frame = can_frame{
+        .can_id = (COMMAND_PREFIX_VELOCITY_CONTROL << 8) | (deviceId+0x80) | CAN_EFF_FLAG,
+        .can_dlc = 8,
+    };
     
-    frame.can_id = (COMMAND_PREFIX_VELOCITY_CONTROL << 8) | (deviceId+0x80);
-    frame.can_id |= CAN_EFF_FLAG;
-    frame.can_dlc = 8;
+    // frame.can_id = (COMMAND_PREFIX_VELOCITY_CONTROL << 8) | (deviceId+0x80);
+    // frame.can_id |= CAN_EFF_FLAG;
+    // frame.can_dlc = 8;
+    // frame.data = velocity
     memcpy(frame.data,&velocity,sizeof(float));
     
     CANController::sendBlockingFrame(frame);
