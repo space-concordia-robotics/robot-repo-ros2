@@ -24,6 +24,7 @@
 /home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_moveit_config/share/rover_arm_moveit_config/config/kinematics.yaml
 /home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_moveit_config/share/rover_arm_moveit_config/config/ros2_controllers.yaml
 /home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_moveit_config/share/rover_arm_moveit_config/config/initial_positions.yaml
+/home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_moveit_config/share/rover_arm_moveit_config/config/ceres_servo.yaml
 /home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_moveit_config/share/rover_arm_moveit_config/config/pilz_cartesian_limits.yaml
 /home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_moveit_config/share/rover_arm_moveit_config/config/joint_limits.yaml
 /home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_moveit_config/share/rover_arm_moveit_config/config/moveit_controllers.yaml

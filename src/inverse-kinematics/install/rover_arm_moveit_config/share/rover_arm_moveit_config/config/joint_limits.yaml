@@ -9,6 +9,25 @@ default_acceleration_scaling_factor: 0.1
 # Joint limits can be turned off with [has_velocity_limits, has_acceleration_limits]
 joint_limits:
   joint1:
+<<<<<<< HEAD:src/ceres_moveit_config/config/joint_limits.yaml
+    has_velocity_limits: true
+    max_velocity: 2
+    has_acceleration_limits: false
+    max_acceleration: 0
+  joint2:
+    has_velocity_limits: true
+    max_velocity: 2
+    has_acceleration_limits: false
+    max_acceleration: 0
+  joint3:
+    has_velocity_limits: true
+    max_velocity: 2
+    has_acceleration_limits: false
+    max_acceleration: 0
+  joint5:
+    has_velocity_limits: true
+    max_velocity: 2
+=======
     has_velocity_limits: false
     max_velocity: 0
     has_acceleration_limits: false
@@ -26,5 +45,6 @@ joint_limits:
   joint5:
     has_velocity_limits: false
     max_velocity: 0
+>>>>>>> main:src/inverse-kinematics/rover_arm_moveit_config/config/joint_limits.yaml
     has_acceleration_limits: false
     max_acceleration: 0

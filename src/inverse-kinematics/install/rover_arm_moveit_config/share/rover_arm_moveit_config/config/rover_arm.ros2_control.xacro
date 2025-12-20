@@ -8,11 +8,15 @@
                 <!-- By default, set up controllers for simulation. This won't work on real hardware -->
                 <plugin>mock_components/GenericSystem</plugin>
             </hardware>
+<<<<<<< HEAD:src/ceres_moveit_config/config/ceres_rover.ros2_control.xacro
+            <joint name="joint1">
+=======
 
             <!-- Note: RVIZ only takes positional command interfaces, so when using this interface on the real arm 
               one can simply comment out or remove the position command interfaces.-->
             <joint name="joint1">
                 <command_interface name="velocity"/>
+>>>>>>> main:src/inverse-kinematics/rover_arm_moveit_config/config/rover_arm.ros2_control.xacro
                 <command_interface name="position"/>
                 <state_interface name="position">
                   <param name="initial_value">${initial_positions['joint1']}</param>
@@ -20,7 +24,10 @@
                 <state_interface name="velocity"/>
             </joint>
             <joint name="joint2">
+<<<<<<< HEAD:src/ceres_moveit_config/config/ceres_rover.ros2_control.xacro
+=======
                 <command_interface name="velocity"/>
+>>>>>>> main:src/inverse-kinematics/rover_arm_moveit_config/config/rover_arm.ros2_control.xacro
                 <command_interface name="position"/>
                 <state_interface name="position">
                   <param name="initial_value">${initial_positions['joint2']}</param>
@@ -28,7 +35,10 @@
                 <state_interface name="velocity"/>
             </joint>
             <joint name="joint3">
+<<<<<<< HEAD:src/ceres_moveit_config/config/ceres_rover.ros2_control.xacro
+=======
                 <command_interface name="velocity"/>
+>>>>>>> main:src/inverse-kinematics/rover_arm_moveit_config/config/rover_arm.ros2_control.xacro
                 <command_interface name="position"/>
                 <state_interface name="position">
                   <param name="initial_value">${initial_positions['joint3']}</param>
@@ -36,7 +46,10 @@
                 <state_interface name="velocity"/>
             </joint>
             <joint name="joint5">
+<<<<<<< HEAD:src/ceres_moveit_config/config/ceres_rover.ros2_control.xacro
+=======
                 <command_interface name="velocity"/>
+>>>>>>> main:src/inverse-kinematics/rover_arm_moveit_config/config/rover_arm.ros2_control.xacro
                 <command_interface name="position"/>
                 <state_interface name="position">
                   <param name="initial_value">${initial_positions['joint5']}</param>

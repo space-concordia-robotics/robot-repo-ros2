@@ -1,0 +1,187 @@
+[0.338s] DEBUG:colcon:Command line arguments: ['/usr/bin/colcon', 'build', '--packages-select', 'rover_arm_description']
+[0.339s] DEBUG:colcon:Parsed command line arguments: Namespace(log_base=None, log_level=None, verb_name='build', build_base='build', install_base='install', merge_install=False, symlink_install=False, test_result_base=None, continue_on_error=False, executor='parallel', parallel_workers=6, event_handlers=None, ignore_user_meta=False, metas=['./colcon.meta'], base_paths=['.'], packages_ignore=None, packages_ignore_regex=None, paths=None, packages_up_to=None, packages_up_to_regex=None, packages_above=None, packages_above_and_dependencies=None, packages_above_depth=None, packages_select_by_dep=None, packages_skip_by_dep=None, packages_skip_up_to=None, packages_select_build_failed=False, packages_skip_build_finished=False, packages_select_test_failures=False, packages_skip_test_passed=False, packages_select=['rover_arm_description'], packages_skip=None, packages_select_regex=None, packages_skip_regex=None, packages_start=None, packages_end=None, allow_overriding=[], cmake_args=None, cmake_target=None, cmake_target_skip_unavailable=False, cmake_clean_cache=False, cmake_clean_first=False, cmake_force_configure=False, ament_cmake_args=None, catkin_cmake_args=None, catkin_skip_building_tests=False, mixin_files=None, mixin=None, verb_parser=<colcon_mixin.mixin.mixin_argument.MixinArgumentDecorator object at 0x715d7f4985e0>, verb_extension=<colcon_core.verb.build.BuildVerb object at 0x715d7f498100>, main=<bound method BuildVerb.main of <colcon_core.verb.build.BuildVerb object at 0x715d7f498100>>, mixin_verb=('build',))
+[1.113s] Level 1:colcon.colcon_core.package_discovery:discover_packages(colcon_meta) check parameters
+[1.113s] Level 1:colcon.colcon_core.package_discovery:discover_packages(recursive) check parameters
+[1.113s] Level 1:colcon.colcon_core.package_discovery:discover_packages(ignore) check parameters
+[1.113s] Level 1:colcon.colcon_core.package_discovery:discover_packages(path) check parameters
+[1.113s] Level 1:colcon.colcon_core.package_discovery:discover_packages(colcon_meta) discover
+[1.113s] Level 1:colcon.colcon_core.package_discovery:discover_packages(recursive) discover
+[1.113s] INFO:colcon.colcon_core.package_discovery:Crawling recursively for packages in '/home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics'
+[1.114s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['ignore', 'ignore_ament_install']
+[1.114s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'ignore'
+[1.114s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'ignore_ament_install'
+[1.114s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['colcon_pkg']
+[1.114s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'colcon_pkg'
+[1.114s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['colcon_meta']
+[1.115s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'colcon_meta'
+[1.115s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['ros']
+[1.115s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'ros'
+[1.152s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['cmake', 'python']
+[1.152s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'cmake'
+[1.152s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'python'
+[1.152s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['python_setup_py']
+[1.152s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'python_setup_py'
+[1.153s] Level 1:colcon.colcon_core.package_identification:_identify(arm_hardware) by extensions ['ignore', 'ignore_ament_install']
+[1.153s] Level 1:colcon.colcon_core.package_identification:_identify(arm_hardware) by extension 'ignore'
+[1.153s] Level 1:colcon.colcon_core.package_identification:_identify(arm_hardware) by extension 'ignore_ament_install'
+[1.154s] Level 1:colcon.colcon_core.package_identification:_identify(arm_hardware) by extensions ['colcon_pkg']
+[1.154s] Level 1:colcon.colcon_core.package_identification:_identify(arm_hardware) by extension 'colcon_pkg'
+[1.154s] Level 1:colcon.colcon_core.package_identification:_identify(arm_hardware) by extensions ['colcon_meta']
+[1.154s] Level 1:colcon.colcon_core.package_identification:_identify(arm_hardware) by extension 'colcon_meta'
+[1.154s] Level 1:colcon.colcon_core.package_identification:_identify(arm_hardware) by extensions ['ros']
+[1.154s] Level 1:colcon.colcon_core.package_identification:_identify(arm_hardware) by extension 'ros'
+[1.164s] DEBUG:colcon.colcon_core.package_identification:Package 'arm_hardware' with type 'ros.ament_cmake' and name 'arm_hardware'
+[1.164s] Level 1:colcon.colcon_core.package_identification:_identify(build) by extensions ['ignore', 'ignore_ament_install']
+[1.164s] Level 1:colcon.colcon_core.package_identification:_identify(build) by extension 'ignore'
+[1.164s] Level 1:colcon.colcon_core.package_identification:_identify(build) ignored
+[1.165s] Level 1:colcon.colcon_core.package_identification:_identify(ik_mux_controller) by extensions ['ignore', 'ignore_ament_install']
+[1.165s] Level 1:colcon.colcon_core.package_identification:_identify(ik_mux_controller) by extension 'ignore'
+[1.165s] Level 1:colcon.colcon_core.package_identification:_identify(ik_mux_controller) by extension 'ignore_ament_install'
+[1.165s] Level 1:colcon.colcon_core.package_identification:_identify(ik_mux_controller) by extensions ['colcon_pkg']
+[1.165s] Level 1:colcon.colcon_core.package_identification:_identify(ik_mux_controller) by extension 'colcon_pkg'
+[1.165s] Level 1:colcon.colcon_core.package_identification:_identify(ik_mux_controller) by extensions ['colcon_meta']
+[1.165s] Level 1:colcon.colcon_core.package_identification:_identify(ik_mux_controller) by extension 'colcon_meta'
+[1.166s] Level 1:colcon.colcon_core.package_identification:_identify(ik_mux_controller) by extensions ['ros']
+[1.166s] Level 1:colcon.colcon_core.package_identification:_identify(ik_mux_controller) by extension 'ros'
+[1.169s] DEBUG:colcon.colcon_core.package_identification:Package 'ik_mux_controller' with type 'ros.ament_cmake' and name 'ik_mux_controller'
+[1.169s] Level 1:colcon.colcon_core.package_identification:_identify(install) by extensions ['ignore', 'ignore_ament_install']
+[1.169s] Level 1:colcon.colcon_core.package_identification:_identify(install) by extension 'ignore'
+[1.169s] Level 1:colcon.colcon_core.package_identification:_identify(install) ignored
+[1.170s] Level 1:colcon.colcon_core.package_identification:_identify(log) by extensions ['ignore', 'ignore_ament_install']
+[1.170s] Level 1:colcon.colcon_core.package_identification:_identify(log) by extension 'ignore'
+[1.170s] Level 1:colcon.colcon_core.package_identification:_identify(log) ignored
+[1.170s] Level 1:colcon.colcon_core.package_identification:_identify(rover_arm_bringup) by extensions ['ignore', 'ignore_ament_install']
+[1.170s] Level 1:colcon.colcon_core.package_identification:_identify(rover_arm_bringup) by extension 'ignore'
+[1.170s] Level 1:colcon.colcon_core.package_identification:_identify(rover_arm_bringup) by extension 'ignore_ament_install'
+[1.170s] Level 1:colcon.colcon_core.package_identification:_identify(rover_arm_bringup) by extensions ['colcon_pkg']
+[1.171s] Level 1:colcon.colcon_core.package_identification:_identify(rover_arm_bringup) by extension 'colcon_pkg'
+[1.171s] Level 1:colcon.colcon_core.package_identification:_identify(rover_arm_bringup) by extensions ['colcon_meta']
+[1.171s] Level 1:colcon.colcon_core.package_identification:_identify(rover_arm_bringup) by extension 'colcon_meta'
+[1.171s] Level 1:colcon.colcon_core.package_identification:_identify(rover_arm_bringup) by extensions ['ros']
+[1.171s] Level 1:colcon.colcon_core.package_identification:_identify(rover_arm_bringup) by extension 'ros'
+[1.172s] DEBUG:colcon.colcon_core.package_identification:Package 'rover_arm_bringup' with type 'ros.ament_cmake' and name 'rover_arm_bringup'
+[1.173s] Level 1:colcon.colcon_core.package_identification:_identify(rover_arm_description) by extensions ['ignore', 'ignore_ament_install']
+[1.173s] Level 1:colcon.colcon_core.package_identification:_identify(rover_arm_description) by extension 'ignore'
+[1.173s] Level 1:colcon.colcon_core.package_identification:_identify(rover_arm_description) by extension 'ignore_ament_install'
+[1.173s] Level 1:colcon.colcon_core.package_identification:_identify(rover_arm_description) by extensions ['colcon_pkg']
+[1.173s] Level 1:colcon.colcon_core.package_identification:_identify(rover_arm_description) by extension 'colcon_pkg'
+[1.173s] Level 1:colcon.colcon_core.package_identification:_identify(rover_arm_description) by extensions ['colcon_meta']
+[1.173s] Level 1:colcon.colcon_core.package_identification:_identify(rover_arm_description) by extension 'colcon_meta'
+[1.173s] Level 1:colcon.colcon_core.package_identification:_identify(rover_arm_description) by extensions ['ros']
+[1.174s] Level 1:colcon.colcon_core.package_identification:_identify(rover_arm_description) by extension 'ros'
+[1.175s] DEBUG:colcon.colcon_core.package_identification:Package 'rover_arm_description' with type 'ros.ament_cmake' and name 'rover_arm_description'
+[1.175s] Level 1:colcon.colcon_core.package_identification:_identify(rover_arm_moveit_config) by extensions ['ignore', 'ignore_ament_install']
+[1.175s] Level 1:colcon.colcon_core.package_identification:_identify(rover_arm_moveit_config) by extension 'ignore'
+[1.176s] Level 1:colcon.colcon_core.package_identification:_identify(rover_arm_moveit_config) by extension 'ignore_ament_install'
+[1.176s] Level 1:colcon.colcon_core.package_identification:_identify(rover_arm_moveit_config) by extensions ['colcon_pkg']
+[1.176s] Level 1:colcon.colcon_core.package_identification:_identify(rover_arm_moveit_config) by extension 'colcon_pkg'
+[1.176s] Level 1:colcon.colcon_core.package_identification:_identify(rover_arm_moveit_config) by extensions ['colcon_meta']
+[1.176s] Level 1:colcon.colcon_core.package_identification:_identify(rover_arm_moveit_config) by extension 'colcon_meta'
+[1.176s] Level 1:colcon.colcon_core.package_identification:_identify(rover_arm_moveit_config) by extensions ['ros']
+[1.176s] Level 1:colcon.colcon_core.package_identification:_identify(rover_arm_moveit_config) by extension 'ros'
+[1.177s] DEBUG:colcon.colcon_core.package_identification:Failed to parse potential ROS package manifest in'rover_arm_moveit_config': Error(s) in package 'rover_arm_moveit_config/package.xml':
+The manifest contains invalid XML:
+not well-formed (invalid token): line 9, column 1
+[1.178s] Level 1:colcon.colcon_core.package_identification:_identify(rover_arm_moveit_config) by extensions ['cmake', 'python']
+[1.178s] Level 1:colcon.colcon_core.package_identification:_identify(rover_arm_moveit_config) by extension 'cmake'
+[1.181s] Level 1:colcon.colcon_core.package_identification:_identify(rover_arm_moveit_config) by extension 'python'
+[1.181s] DEBUG:colcon.colcon_core.package_identification:Package 'rover_arm_moveit_config' with type 'cmake' and name 'rover_arm_moveit_config'
+[1.182s] Level 1:colcon.colcon_core.package_discovery:discover_packages(recursive) using defaults
+[1.182s] Level 1:colcon.colcon_core.package_discovery:discover_packages(ignore) discover
+[1.182s] Level 1:colcon.colcon_core.package_discovery:discover_packages(ignore) using defaults
+[1.182s] Level 1:colcon.colcon_core.package_discovery:discover_packages(path) discover
+[1.182s] Level 1:colcon.colcon_core.package_discovery:discover_packages(path) using defaults
+[1.232s] INFO:colcon.colcon_core.package_selection:Skipping not selected package 'arm_hardware' in 'arm_hardware'
+[1.232s] INFO:colcon.colcon_core.package_selection:Skipping not selected package 'ik_mux_controller' in 'ik_mux_controller'
+[1.232s] INFO:colcon.colcon_core.package_selection:Skipping not selected package 'rover_arm_bringup' in 'rover_arm_bringup'
+[1.232s] INFO:colcon.colcon_core.package_selection:Skipping not selected package 'rover_arm_moveit_config' in 'rover_arm_moveit_config'
+[1.234s] Level 1:colcon.colcon_core.package_discovery:discover_packages(prefix_path) check parameters
+[1.234s] Level 1:colcon.colcon_core.package_discovery:discover_packages(prefix_path) discover
+[1.244s] DEBUG:colcon.colcon_installed_package_information.package_discovery:Found 2 installed packages in /home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install
+[1.246s] DEBUG:colcon.colcon_installed_package_information.package_discovery:Found 8 installed packages in /home/liliana/ros2_ws/install
+[1.250s] DEBUG:colcon.colcon_installed_package_information.package_discovery:Found 45 installed packages in /home/liliana/ws_moveit/install
+[1.253s] DEBUG:colcon.colcon_installed_package_information.package_discovery:Found 2 installed packages in /home/liliana/install
+[1.259s] DEBUG:colcon.colcon_installed_package_information.package_discovery:Found 419 installed packages in /opt/ros/humble
+[1.270s] Level 1:colcon.colcon_core.package_discovery:discover_packages(prefix_path) using defaults
+[1.439s] WARNING:colcon.colcon_core.package_selection:Some selected packages are already built in one or more underlay workspaces:
+	'rover_arm_description' is in: /home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_description
+If a package in a merged underlay workspace is overridden and it installs headers, then all packages in the overlay must sort their include directories by workspace order. Failure to do so may result in build failures or undefined behavior at run time.
+If the overridden package is used by another package in any underlay, then the overriding package in the overlay must be API and ABI compatible or undefined behavior at run time may occur.
+
+If you understand the risks and want to override a package anyways, add the following to the command line:
+	--allow-overriding rover_arm_description
+
+This may be promoted to an error in a future release of colcon-override-check.
+[1.442s] Level 5:colcon.colcon_core.verb:set package 'rover_arm_description' build argument 'cmake_args' from command line to 'None'
+[1.442s] Level 5:colcon.colcon_core.verb:set package 'rover_arm_description' build argument 'cmake_target' from command line to 'None'
+[1.442s] Level 5:colcon.colcon_core.verb:set package 'rover_arm_description' build argument 'cmake_target_skip_unavailable' from command line to 'False'
+[1.442s] Level 5:colcon.colcon_core.verb:set package 'rover_arm_description' build argument 'cmake_clean_cache' from command line to 'False'
+[1.442s] Level 5:colcon.colcon_core.verb:set package 'rover_arm_description' build argument 'cmake_clean_first' from command line to 'False'
+[1.442s] Level 5:colcon.colcon_core.verb:set package 'rover_arm_description' build argument 'cmake_force_configure' from command line to 'False'
+[1.442s] Level 5:colcon.colcon_core.verb:set package 'rover_arm_description' build argument 'ament_cmake_args' from command line to 'None'
+[1.442s] Level 5:colcon.colcon_core.verb:set package 'rover_arm_description' build argument 'catkin_cmake_args' from command line to 'None'
+[1.442s] Level 5:colcon.colcon_core.verb:set package 'rover_arm_description' build argument 'catkin_skip_building_tests' from command line to 'False'
+[1.442s] DEBUG:colcon.colcon_core.verb:Building package 'rover_arm_description' with the following arguments: {'ament_cmake_args': None, 'build_base': '/home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/build/rover_arm_description', 'catkin_cmake_args': None, 'catkin_skip_building_tests': False, 'cmake_args': None, 'cmake_clean_cache': False, 'cmake_clean_first': False, 'cmake_force_configure': False, 'cmake_target': None, 'cmake_target_skip_unavailable': False, 'install_base': '/home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_description', 'merge_install': False, 'path': '/home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/rover_arm_description', 'symlink_install': False, 'test_result_base': None}
+[1.443s] INFO:colcon.colcon_core.executor:Executing jobs using 'parallel' executor
+[1.446s] DEBUG:colcon.colcon_parallel_executor.executor.parallel:run_until_complete
+[1.446s] INFO:colcon.colcon_ros.task.ament_cmake.build:Building ROS package in '/home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/rover_arm_description' with build type 'ament_cmake'
+[1.447s] INFO:colcon.colcon_cmake.task.cmake.build:Building CMake package in '/home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/rover_arm_description'
+[1.453s] INFO:colcon.colcon_core.plugin_system:Skipping extension 'colcon_core.shell.bat': Not used on non-Windows systems
+[1.453s] INFO:colcon.colcon_core.shell:Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[1.453s] DEBUG:colcon.colcon_core.shell:Skip shell extension 'dsv' for command environment
+[1.503s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/build/rover_arm_description': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/liliana/ws_moveit/install/moveit_configs_utils:/home/liliana/ros2_ws/install/my_py_pkg:/home/liliana/ros2_ws/install/joy_mux_controller:/home/liliana/install/my_py_pkg:/opt/ros/humble /usr/bin/cmake --build /home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/build/rover_arm_description -- -j6 -l6
+[2.216s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/build/rover_arm_description' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/liliana/ws_moveit/install/moveit_configs_utils:/home/liliana/ros2_ws/install/my_py_pkg:/home/liliana/ros2_ws/install/joy_mux_controller:/home/liliana/install/my_py_pkg:/opt/ros/humble /usr/bin/cmake --build /home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/build/rover_arm_description -- -j6 -l6
+[2.253s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/build/rover_arm_description': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/liliana/ws_moveit/install/moveit_configs_utils:/home/liliana/ros2_ws/install/my_py_pkg:/home/liliana/ros2_ws/install/joy_mux_controller:/home/liliana/install/my_py_pkg:/opt/ros/humble /usr/bin/cmake --install /home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/build/rover_arm_description
+[2.297s] Level 1:colcon.colcon_core.environment:create_environment_scripts_only(rover_arm_description)
+[2.299s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/build/rover_arm_description' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/liliana/ws_moveit/install/moveit_configs_utils:/home/liliana/ros2_ws/install/my_py_pkg:/home/liliana/ros2_ws/install/joy_mux_controller:/home/liliana/install/my_py_pkg:/opt/ros/humble /usr/bin/cmake --install /home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/build/rover_arm_description
+[2.306s] Level 1:colcon.colcon_core.environment:checking '/home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_description' for CMake module files
+[2.307s] Level 1:colcon.colcon_core.environment:checking '/home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_description' for CMake config files
+[2.308s] Level 1:colcon.colcon_core.shell:create_environment_hook('rover_arm_description', 'cmake_prefix_path')
+[2.309s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_description/share/rover_arm_description/hook/cmake_prefix_path.ps1'
+[2.311s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_description/share/rover_arm_description/hook/cmake_prefix_path.dsv'
+[2.312s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_description/share/rover_arm_description/hook/cmake_prefix_path.sh'
+[2.315s] Level 1:colcon.colcon_core.environment:checking '/home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_description/bin'
+[2.315s] Level 1:colcon.colcon_core.environment:checking '/home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_description/lib/pkgconfig/rover_arm_description.pc'
+[2.316s] Level 1:colcon.colcon_core.environment:checking '/home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_description/lib/python3.10/site-packages'
+[2.317s] Level 1:colcon.colcon_core.environment:checking '/home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_description/bin'
+[2.317s] INFO:colcon.colcon_core.shell:Creating package script '/home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_description/share/rover_arm_description/package.ps1'
+[2.320s] INFO:colcon.colcon_core.shell:Creating package descriptor '/home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_description/share/rover_arm_description/package.dsv'
+[2.321s] INFO:colcon.colcon_core.shell:Creating package script '/home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_description/share/rover_arm_description/package.sh'
+[2.323s] INFO:colcon.colcon_core.shell:Creating package script '/home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_description/share/rover_arm_description/package.bash'
+[2.325s] INFO:colcon.colcon_core.shell:Creating package script '/home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_description/share/rover_arm_description/package.zsh'
+[2.328s] Level 1:colcon.colcon_core.environment:create_file_with_runtime_dependencies(/home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_description/share/colcon-core/packages/rover_arm_description)
+[2.330s] Level 1:colcon.colcon_core.environment:create_environment_scripts_only(rover_arm_description)
+[2.330s] Level 1:colcon.colcon_core.environment:checking '/home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_description' for CMake module files
+[2.331s] Level 1:colcon.colcon_core.environment:checking '/home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_description' for CMake config files
+[2.332s] Level 1:colcon.colcon_core.shell:create_environment_hook('rover_arm_description', 'cmake_prefix_path')
+[2.333s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_description/share/rover_arm_description/hook/cmake_prefix_path.ps1'
+[2.334s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_description/share/rover_arm_description/hook/cmake_prefix_path.dsv'
+[2.335s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_description/share/rover_arm_description/hook/cmake_prefix_path.sh'
+[2.337s] Level 1:colcon.colcon_core.environment:checking '/home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_description/bin'
+[2.337s] Level 1:colcon.colcon_core.environment:checking '/home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_description/lib/pkgconfig/rover_arm_description.pc'
+[2.338s] Level 1:colcon.colcon_core.environment:checking '/home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_description/lib/python3.10/site-packages'
+[2.339s] Level 1:colcon.colcon_core.environment:checking '/home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_description/bin'
+[2.340s] INFO:colcon.colcon_core.shell:Creating package script '/home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_description/share/rover_arm_description/package.ps1'
+[2.341s] INFO:colcon.colcon_core.shell:Creating package descriptor '/home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_description/share/rover_arm_description/package.dsv'
+[2.343s] INFO:colcon.colcon_core.shell:Creating package script '/home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_description/share/rover_arm_description/package.sh'
+[2.345s] INFO:colcon.colcon_core.shell:Creating package script '/home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_description/share/rover_arm_description/package.bash'
+[2.346s] INFO:colcon.colcon_core.shell:Creating package script '/home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_description/share/rover_arm_description/package.zsh'
+[2.348s] Level 1:colcon.colcon_core.environment:create_file_with_runtime_dependencies(/home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_description/share/colcon-core/packages/rover_arm_description)
+[2.348s] DEBUG:colcon.colcon_parallel_executor.executor.parallel:closing loop
+[2.349s] DEBUG:colcon.colcon_parallel_executor.executor.parallel:loop closed
+[2.349s] DEBUG:colcon.colcon_parallel_executor.executor.parallel:run_until_complete finished with '0'
+[2.350s] DEBUG:colcon.colcon_core.event_reactor:joining thread
+[2.365s] INFO:colcon.colcon_core.plugin_system:Skipping extension 'colcon_notification.desktop_notification.terminal_notifier': Not used on non-Darwin systems
+[2.365s] INFO:colcon.colcon_core.plugin_system:Skipping extension 'colcon_notification.desktop_notification.win32': Not used on non-Windows systems
+[2.365s] INFO:colcon.colcon_notification.desktop_notification:Sending desktop notification using 'notify2'
+[2.397s] DEBUG:colcon.colcon_core.event_reactor:joined thread
+[2.398s] INFO:colcon.colcon_core.shell:Creating prefix script '/home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/local_setup.ps1'
+[2.401s] INFO:colcon.colcon_core.shell:Creating prefix util module '/home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/_local_setup_util_ps1.py'
+[2.406s] INFO:colcon.colcon_core.shell:Creating prefix chain script '/home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/setup.ps1'
+[2.416s] INFO:colcon.colcon_core.shell:Creating prefix script '/home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/local_setup.sh'
+[2.418s] INFO:colcon.colcon_core.shell:Creating prefix util module '/home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/_local_setup_util_sh.py'
+[2.420s] INFO:colcon.colcon_core.shell:Creating prefix chain script '/home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/setup.sh'
+[2.429s] INFO:colcon.colcon_core.shell:Creating prefix script '/home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/local_setup.bash'
+[2.431s] INFO:colcon.colcon_core.shell:Creating prefix chain script '/home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/setup.bash'
+[2.440s] INFO:colcon.colcon_core.shell:Creating prefix script '/home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/local_setup.zsh'
+[2.442s] INFO:colcon.colcon_core.shell:Creating prefix chain script '/home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/setup.zsh'

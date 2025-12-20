@@ -3,9 +3,5 @@ from moveit_configs_utils.launches import generate_static_virtual_joint_tfs_laun
 
 
 def generate_launch_description():
-<<<<<<< HEAD:src/ceres_moveit_config/launch/static_virtual_joint_tfs.launch.py
-    moveit_config = MoveItConfigsBuilder("ceres_rover", package_name="ceres_moveit_config").to_moveit_configs()
-=======
     moveit_config = MoveItConfigsBuilder("rover_arm", package_name="rover_arm_moveit_config").to_moveit_configs()
->>>>>>> main:src/inverse-kinematics/rover_arm_moveit_config/launch/static_virtual_joint_tfs.launch.py
     return generate_static_virtual_joint_tfs_launch(moveit_config)

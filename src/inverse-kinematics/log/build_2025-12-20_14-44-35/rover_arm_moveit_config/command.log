@@ -1,0 +1,2 @@
+Invoking command in '/home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/build/rover_arm_moveit_config': /usr/bin/cmake --build /home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/build/rover_arm_moveit_config -- -j6 -l6
+Invoked command in '/home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/build/rover_arm_moveit_config' returned '2': /usr/bin/cmake --build /home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/build/rover_arm_moveit_config -- -j6 -l6

@@ -1,0 +1,44 @@
+[0.045s] Invoking command in '/home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/build/rover_arm_moveit_config': /usr/bin/cmake --build /home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/build/rover_arm_moveit_config -- -j6 -l6
+[0.126s] -- Found ament_cmake: 1.3.12 (/opt/ros/humble/share/ament_cmake/cmake)
+[0.639s] Error parsing '/home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/rover_arm_moveit_config/package.xml':
+[0.772s] Traceback (most recent call last):
+[0.772s]   File "/usr/lib/python3/dist-packages/catkin_pkg/package.py", line 610, in parse_package_string
+[0.774s]     root = dom.parseString(data)
+[0.774s]   File "/usr/lib/python3.10/xml/dom/minidom.py", line 2000, in parseString
+[0.776s]     return expatbuilder.parseString(string)
+[0.776s]   File "/usr/lib/python3.10/xml/dom/expatbuilder.py", line 925, in parseString
+[0.778s]     return builder.parseString(string)
+[0.778s]   File "/usr/lib/python3.10/xml/dom/expatbuilder.py", line 223, in parseString
+[0.778s]     parser.Parse(string, True)
+[0.778s] xml.parsers.expat.ExpatError: not well-formed (invalid token): line 9, column 1
+[0.778s] 
+[0.778s] During handling of the above exception, another exception occurred:
+[0.779s] 
+[0.779s] Traceback (most recent call last):
+[0.779s]   File "/opt/ros/humble/share/ament_cmake_core/cmake/core/package_xml_2_cmake.py", line 150, in <module>
+[0.779s]     main()
+[0.779s]   File "/opt/ros/humble/share/ament_cmake_core/cmake/core/package_xml_2_cmake.py", line 53, in main
+[0.779s]     raise e
+[0.780s]   File "/opt/ros/humble/share/ament_cmake_core/cmake/core/package_xml_2_cmake.py", line 49, in main
+[0.780s]     package = parse_package_string(
+[0.780s]   File "/usr/lib/python3/dist-packages/catkin_pkg/package.py", line 612, in parse_package_string
+[0.780s]     raise InvalidPackage('The manifest contains invalid XML:\n%s' % ex, filename)
+[0.780s] catkin_pkg.package.InvalidPackage: Error(s) in package '/home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/rover_arm_moveit_config/package.xml':
+[0.780s] The manifest contains invalid XML:
+[0.780s] not well-formed (invalid token): line 9, column 1
+[0.821s] [31mCMake Error at /opt/ros/humble/share/ament_cmake_core/cmake/core/ament_package_xml.cmake:95 (message):
+[0.821s]   execute_process(/usr/bin/python3
+[0.821s]   /opt/ros/humble/share/ament_cmake_core/cmake/core/package_xml_2_cmake.py
+[0.822s]   /home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/rover_arm_moveit_config/package.xml
+[0.822s]   /home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/build/rover_arm_moveit_config/ament_cmake_core/package.cmake)
+[0.822s]   returned error code 1
+[0.822s] Call Stack (most recent call first):
+[0.822s]   /opt/ros/humble/share/ament_cmake_core/cmake/core/ament_package_xml.cmake:49 (_ament_package_xml)
+[0.822s]   /opt/ros/humble/share/ament_cmake_core/cmake/core/ament_package.cmake:63 (ament_package_xml)
+[0.823s]   CMakeLists.txt:6 (ament_package)
+[0.823s] 
+[0.823s] [0m
+[0.823s] -- Configuring incomplete, errors occurred!
+[0.823s] See also "/home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/build/rover_arm_moveit_config/CMakeFiles/CMakeOutput.log".
+[0.828s] gmake: *** [Makefile:226: cmake_check_build_system] Error 1
+[0.834s] Invoked command in '/home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/build/rover_arm_moveit_config' returned '2': /usr/bin/cmake --build /home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/build/rover_arm_moveit_config -- -j6 -l6

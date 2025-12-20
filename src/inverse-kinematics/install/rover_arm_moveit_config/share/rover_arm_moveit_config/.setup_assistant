@@ -5,12 +5,21 @@ moveit_setup_assistant_config:
   srdf:
     relative_path: config/rover_arm.srdf
   package_settings:
+<<<<<<< HEAD:src/ceres_moveit_config/.setup_assistant
+    author_name: Michael Lythgod
+    author_email: michael.lythgoe@spaceconcordia.ca
+    generated_timestamp: 1759871466
+  control_xacro:
+    command:
+      - position
+=======
     author_name: MIchael Lythgoe
     author_email: michael.lythgoe@spaceconcordia.ca
     generated_timestamp: 1766096736
   control_xacro:
     command:
       - velocity
+>>>>>>> main:src/inverse-kinematics/rover_arm_moveit_config/.setup_assistant
     state:
       - position
       - velocity
@@ -19,7 +28,11 @@ moveit_setup_assistant_config:
       - control_xacro
   control_xacro:
     command:
+<<<<<<< HEAD:src/ceres_moveit_config/.setup_assistant
+      - position
+=======
       - velocity
+>>>>>>> main:src/inverse-kinematics/rover_arm_moveit_config/.setup_assistant
     state:
       - position
       - velocity

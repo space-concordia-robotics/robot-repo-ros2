@@ -6,11 +6,7 @@
   <description>
      An automatically generated package with all the configuration and launch files for using the rover_arm with the MoveIt Motion Planning Framework
   </description>
-<<<<<<< HEAD:src/ceres_moveit_config/package.xml
-  <maintainer email="michael.lythgoe@spaceconcordia.ca">Michael Lythgod</maintainer>
-=======
   <maintainer email="michael.lythgoe@spaceconcordia.ca">MIchael Lythgoe</maintainer>
->>>>>>> main:src/inverse-kinematics/rover_arm_moveit_config/package.xml
 
   <license>BSD</license>
 
@@ -18,11 +14,7 @@
   <url type="bugtracker">https://github.com/ros-planning/moveit2/issues</url>
   <url type="repository">https://github.com/ros-planning/moveit2</url>
 
-<<<<<<< HEAD:src/ceres_moveit_config/package.xml
-  <author email="michael.lythgoe@spaceconcordia.ca">Michael Lythgod</author>
-=======
   <author email="michael.lythgoe@spaceconcordia.ca">MIchael Lythgoe</author>
->>>>>>> main:src/inverse-kinematics/rover_arm_moveit_config/package.xml
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
