@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>ceres_urdf</name>
+  <name>rover_arm_description</name>
   <version>0.0.0</version>
   <description>TODO: Package description</description>
-  <maintainer email="mike@todo.todo">mike</maintainer>
+  <maintainer email="michael.lythgoe@spaceconcordia.ca">mike</maintainer>
   <license>TODO: License declaration</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>

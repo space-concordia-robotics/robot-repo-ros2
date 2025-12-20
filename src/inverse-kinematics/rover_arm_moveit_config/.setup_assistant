@@ -1,0 +1,25 @@
+moveit_setup_assistant_config:
+  urdf:
+    package: rover_arm_description
+    relative_path: urdf/arm.urdf.xacro
+  srdf:
+    relative_path: config/rover_arm.srdf
+  package_settings:
+    author_name: MIchael Lythgoe
+    author_email: michael.lythgoe@spaceconcordia.ca
+    generated_timestamp: 1766096736
+  control_xacro:
+    command:
+      - velocity
+    state:
+      - position
+      - velocity
+  modified_urdf:
+    xacros:
+      - control_xacro
+  control_xacro:
+    command:
+      - velocity
+    state:
+      - position
+      - velocity
