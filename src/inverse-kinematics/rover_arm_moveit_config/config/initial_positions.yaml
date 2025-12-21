@@ -2,6 +2,6 @@
 
 initial_positions:
   joint1: 0
-  joint2: -0.357
-  joint3: -1.308
+  joint2: 0
+  joint3: 0
   joint5: 0

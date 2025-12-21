@@ -2,11 +2,9 @@ import os
 from ament_index_python.packages import get_package_share_directory
 
 from launch import LaunchDescription
-from launch.actions import IncludeLaunchDescription, TimerAction, DeclareLaunchArgument
+from launch.actions import TimerAction
 from launch.actions import RegisterEventHandler
 from launch.event_handlers import OnProcessStart
-from launch.substitutions import LaunchConfiguration
-from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch_ros.actions import Node
 from launch.substitutions import Command
 from launch_ros.parameter_descriptions import ParameterValue
@@ -47,7 +45,7 @@ def generate_launch_description():
     jsb_spawner = Node( 
         package="controller_manager",
         executable="spawner",
-        arguments=["joint_state_broadcaster"],
+        arguments=["joint_state_broadcaster", "--controller-manager", "/controller_manager"],
         output="screen",
     )
 
@@ -56,7 +54,7 @@ def generate_launch_description():
     arm_controller_spawner = Node(
         package="controller_manager",
         executable="spawner",
-        arguments=["arm_controller"], # <-- Fixed controller name
+        arguments=["arm_controller", "--controller-manager", "/controller_manager"], # <-- Fixed controller name
         output="screen",
     )
 

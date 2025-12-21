@@ -51,8 +51,6 @@ public:
   std::vector<hardware_interface::CommandInterface> export_command_interfaces() override;
 
 private:
-    // Hardware info
-    hardware_interface::HardwareInfo info_;
    
     int serial_fd_{-1}; //for encoder port
     int motor_serial_fd_{-1}; //for arm motor port
