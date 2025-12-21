@@ -212,10 +212,10 @@ hardware_interface::CallbackReturn ArmInterface::on_configure(const rclcpp_lifec
         }
     }
 
-    // 4) Final verification: ensure every joint has exactly one velocity command interface (as required)
+    // 4) Final verification: ensure every joint has exactly one position command interface (as required)
     for (const auto &joint : info_.joints) {
         if (joint.command_interfaces.size() != 1 ||
-            joint.command_interfaces[0].name != hardware_interface::HW_IF_VELOCITY) {
+            joint.command_interfaces[0].name != hardware_interface::HW_IF_POSITION) {
             RCLCPP_FATAL(rclcpp::get_logger("ArmInterface"),
                          "Joint '%s' must expose exactly one position command interface (found %zu).",
                          joint.name.c_str(), joint.command_interfaces.size());
