@@ -212,11 +212,7 @@ hardware_interface::CallbackReturn ArmInterface::on_configure(const rclcpp_lifec
         }
     }
 
-<<<<<<< HEAD
     // 4) Final verification: ensure every joint has exactly one position command interface (as required)
-=======
-    // 4) Final verification: ensure every joint has exactly one velocity command interface (as required)
->>>>>>> origin/main
     for (const auto &joint : info_.joints) {
         if (joint.command_interfaces.size() != 1 ||
             joint.command_interfaces[0].name != hardware_interface::HW_IF_POSITION) {
@@ -251,11 +247,7 @@ hardware_interface::CallbackReturn ArmInterface::on_activate(const rclcpp_lifecy
         if (!std::isnan(hw_states_position_[i])) {
             hw_commands_position_[i] = hw_states_position_[i];
         } else {
-<<<<<<< HEAD
             // If state is NaN for some reason, set to zero and warno
-=======
-            // If state is NaN for some reason, set to zero and warn
->>>>>>> origin/main
             hw_states_position_[i] = 0.0;
             hw_commands_position_[i] = 0.0;
             RCLCPP_WARN(rclcpp::get_logger("ArmInterface"),
@@ -361,14 +353,9 @@ hardware_interface::return_type ArmInterface::read(const rclcpp::Time & time, co
 
     if (absenc_meas_1.status == 0 || absenc_meas_2.status == 0 || absenc_meas_3.status == 0 || absenc_meas_4.status == 0)
     {
-<<<<<<< HEAD
         RCLCPP_INFO_THROTTLE(rclcpp::get_logger("ArmInterface"), steady_clock_, 5000,
             "Read Pos (rad): [%.3f, %.3f, %.3f, %.3f]",
             hw_states_position_[0], hw_states_position_[1], hw_states_position_[2], hw_states_position_[3]);
-=======
-    RCLCPP_INFO_THROTTLE(rclcpp::get_logger("ArmInterface"), *rclcpp::Clock::make_shared(), 5000, "Read Pos (rad): [%.3f, %.3f, %.3f, %.3f]",
-        hw_states_position_[0], hw_states_position_[1], hw_states_position_[2], hw_states_position_[3]);
->>>>>>> origin/main
     }
 
    return return_type::OK;

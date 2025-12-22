@@ -1,11 +1,7 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-<<<<<<<< HEAD:src/inverse-kinematics/rover_arm_description/package.xml
   <name>rover_arm_description</name>
-========
-  <name>rover_arm_bringup</name>
->>>>>>>> origin/main:src/inverse-kinematics/rover_arm_bringup/package.xml
   <version>0.0.0</version>
   <description>TODO: Package description</description>
   <maintainer email="michael.lythgoe@spaceconcordia.ca">mike</maintainer>
