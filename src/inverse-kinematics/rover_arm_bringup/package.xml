@@ -1,7 +1,15 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
+<<<<<<< HEAD
   <name>rover_arm_bringup</name>
+=======
+<<<<<<<< HEAD:src/inverse-kinematics/rover_arm_description/package.xml
+  <name>rover_arm_description</name>
+========
+  <name>rover_arm_bringup</name>
+>>>>>>>> origin/main:src/inverse-kinematics/rover_arm_bringup/package.xml
+>>>>>>> origin/main
   <version>0.0.0</version>
   <description>TODO: Package description</description>
   <maintainer email="michael.lythgoe@spaceconcordia.ca">mike</maintainer>
@@ -9,6 +17,15 @@
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
+<<<<<<< HEAD
+  <exec_depend>rover_arm_description</exec_depend>
+  <exec_depend>rover_arm_moveit_config</exec_depend>
+  <exec_depend>robot_state_publisher</exec_depend>
+  <exec_depend>controller_manager</exec_depend>
+  <exec_depend>rviz2</exec_depend>
+
+=======
+>>>>>>> origin/main
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>
 

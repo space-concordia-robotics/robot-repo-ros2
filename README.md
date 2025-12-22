@@ -1,4 +1,10 @@
+<<<<<<< HEAD
+<<<<<<< HEAD
 # Inverse Kinematics Hardware_interface 
+=======
+=======
+# Inverse Kinematics Hardware_interface 
+>>>>>>> origin/main
 # Space Concordia Robotics - Ceres Rover ROS2 Workspace
 
 This repository contains the ROS2 workspace for the Ceres rover developed by Space Concordia Robotics. The rover is designed for autonomous navigation, manipulation, and data collection using various sensors and actuators.
@@ -253,3 +259,4 @@ For questions, issues, or contributions:
 ---
 
 **Space Concordia Robotics** - Building the future of space exploration, one rover at a time.
+>>>>>>> main
