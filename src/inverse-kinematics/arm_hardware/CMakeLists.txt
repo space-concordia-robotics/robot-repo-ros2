@@ -65,7 +65,6 @@ install(
   DESTINATION include
 )
 
-<<<<<<< HEAD
 install(
   EXPORT export_${PROJECT_NAME}
   DESTINATION share/${PROJECT_NAME}/cmake
@@ -75,6 +74,4 @@ ament_export_include_directories(include)
 ament_export_libraries(arm_interface)
 ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
 
-=======
->>>>>>> origin/main
 ament_package()
