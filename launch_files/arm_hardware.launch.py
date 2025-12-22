@@ -8,12 +8,25 @@ from launch.event_handlers import OnProcessStart
 from launch_ros.actions import Node
 from launch.substitutions import Command
 from launch_ros.parameter_descriptions import ParameterValue
+from launch_param_builder import ParameterBuilder
+
 
 def generate_launch_description(): 
     
     urdf_path = os.path.join(get_package_share_directory('rover_arm_description'), 'urdf', 'arm.urdf.xacro')
 
+    srdf_path = os.path.join(get_package_share_directory('rover_arm_bringup'), 'config', 'rover_arm.srdf')
+    kin_path = os.path.join(get_package_share_directory('rover_arm_bringup'), 'config', 'kinematics.yaml')
+    servo_config_path = os.path.join (get_package_share_directory('rover_arm_bringup'), 'config', 'servo_config.yaml')
+
+    with open(srdf_path, 'r') as f:
+        semantic_content = f.read()
+
+
+
     robot_description = ParameterValue(Command(['xacro ', urdf_path]), value_type=str)
+
+    
 
     controller_config = os.path.join(
         get_package_share_directory('rover_arm_bringup'), 'config', 'ros2_controllers.yaml'
@@ -67,6 +80,23 @@ def generate_launch_description():
         )
     )
 
+    #spawining in moveit servo
+
+    servo_node = Node(
+        package="moveit_servo",
+        executable="servo_node_main",
+        parameters=[
+            servo_config_path,
+            kin_path,
+            {
+                'robot_description': robot_description,
+                'robot_description_semantic': semantic_content,
+            },
+        ],
+
+        output="screen",
+    )
+
     # Temporarily commented out ik_mux_node due to build issues
     # ik_mux_node = Node(
     #     package="ik_mux_controller",
@@ -80,5 +110,6 @@ def generate_launch_description():
         rsp_launch,
         delayed_controller_manager,
         delayed_spawners,
+        servo_node,
         # ik_mux_node,  # Temporarily commented out
     ])
