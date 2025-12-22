@@ -353,8 +353,9 @@ hardware_interface::return_type ArmInterface::read(const rclcpp::Time & time, co
 
     if (absenc_meas_1.status == 0 || absenc_meas_2.status == 0 || absenc_meas_3.status == 0 || absenc_meas_4.status == 0)
     {
-    RCLCPP_INFO_THROTTLE(rclcpp::get_logger("ArmInterface"), *rclcpp::Clock::make_shared(), 5000, "Read Pos (rad): [%.3f, %.3f, %.3f, %.3f]",
-        hw_states_position_[0], hw_states_position_[1], hw_states_position_[2], hw_states_position_[3]);
+        RCLCPP_INFO_THROTTLE(rclcpp::get_logger("ArmInterface"), steady_clock_, 5000,
+            "Read Pos (rad): [%.3f, %.3f, %.3f, %.3f]",
+            hw_states_position_[0], hw_states_position_[1], hw_states_position_[2], hw_states_position_[3]);
     }
 
    return return_type::OK;

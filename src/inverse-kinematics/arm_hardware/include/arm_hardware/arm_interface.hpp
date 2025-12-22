@@ -64,6 +64,9 @@ private:
     float old_angle_4 = 0;
     int8_t angle_4_zone = 0;
 
+
+  rclcpp::Clock steady_clock_{RCL_STEADY_TIME};
+
 };
 
 }  // namespace arm_interface
