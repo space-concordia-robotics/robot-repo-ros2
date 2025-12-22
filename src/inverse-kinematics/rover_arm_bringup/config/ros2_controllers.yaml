@@ -18,6 +18,10 @@ arm_controller:
       - joint3
       - joint5
     command_interfaces:
+<<<<<<< HEAD
+=======
+      - velocity
+>>>>>>> origin/main
       - position
     state_interfaces:
       - position

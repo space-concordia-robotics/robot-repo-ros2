@@ -51,6 +51,11 @@ public:
   std::vector<hardware_interface::CommandInterface> export_command_interfaces() override;
 
 private:
+<<<<<<< HEAD
+=======
+    // Hardware info
+    hardware_interface::HardwareInfo info_;
+>>>>>>> origin/main
    
     int serial_fd_{-1}; //for encoder port
     int motor_serial_fd_{-1}; //for arm motor port
@@ -64,9 +69,12 @@ private:
     float old_angle_4 = 0;
     int8_t angle_4_zone = 0;
 
+<<<<<<< HEAD
 
   rclcpp::Clock steady_clock_{RCL_STEADY_TIME};
 
+=======
+>>>>>>> origin/main
 };
 
 }  // namespace arm_interface
