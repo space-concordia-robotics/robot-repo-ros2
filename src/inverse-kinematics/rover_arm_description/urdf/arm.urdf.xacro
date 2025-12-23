@@ -4,7 +4,7 @@
     <xacro:include filename="arm.xacro"/>
     <xacro:include filename="gripper.xacro"/>
     <xacro:include filename="common_properties.xacro"/>
-    <xacro:include filename="rover_arm.ros2_control.xacro"/>
+    <!-- <xacro:include filename="rover_arm.ros2_control.xacro"/> -->
 
     <joint name="joint7" type="fixed">
         <parent link="gripper_base_link"/>
