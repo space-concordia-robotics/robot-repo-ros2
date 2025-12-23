@@ -194,6 +194,7 @@ public:
         // publish the JointJog
         joint_msg->header.stamp = this->now();
         joint_msg->header.frame_id = "base_structure_link";
+        joint_msg->duration = 1.0;
         joint_pub_->publish(std::move(joint_msg));
       }
     }
