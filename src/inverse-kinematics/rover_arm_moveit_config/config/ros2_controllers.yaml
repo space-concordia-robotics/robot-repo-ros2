@@ -19,7 +19,6 @@ arm_controller:
       - joint5
     command_interfaces:
       - velocity
-      - position
     state_interfaces:
       - position
       - velocity

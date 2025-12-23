@@ -103,7 +103,7 @@ hardware_interface::CallbackReturn ArmInterface::on_init(const hardware_interfac
     }
 
     //Initializing state and commands storage
-    hw_commands_position_.resize(info_.joints.size(), 0.0);
+    hw_commands_velocity_.resize(info_.joints.size(), 0.0);
     hw_states_position_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
     hw_states_velocity_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
 
@@ -161,13 +161,13 @@ hardware_interface::CallbackReturn ArmInterface::on_configure(const rclcpp_lifec
 
     //Ensure our internal vectors match the number of joints
     const size_t nj = info_.joints.size();
-    hw_commands_position_.resize(nj);
+    hw_commands_velocity_.resize(nj);
     hw_states_position_.resize(nj);
     hw_states_velocity_.resize(nj);
 
     // Initialize values (no NaNs left behind)
     for (size_t i = 0; i < nj; i++) {
-        hw_commands_position_[i] = 0.0;
+        hw_commands_velocity_[i] = 0.0;
         hw_states_position_[i] = 0.0;
         hw_states_velocity_[i] = 0.0;
     }
@@ -212,12 +212,12 @@ hardware_interface::CallbackReturn ArmInterface::on_configure(const rclcpp_lifec
         }
     }
 
-    // 4) Final verification: ensure every joint has exactly one position command interface (as required)
+    // 4) Final verification: ensure every joint has exactly one velocity command interface (as required)
     for (const auto &joint : info_.joints) {
         if (joint.command_interfaces.size() != 1 ||
-            joint.command_interfaces[0].name != hardware_interface::HW_IF_POSITION) {
+            joint.command_interfaces[0].name != hardware_interface::HW_IF_VELOCITY) {
             RCLCPP_FATAL(rclcpp::get_logger("ArmInterface"),
-                         "Joint '%s' must expose exactly one position command interface (found %zu).",
+                         "Joint '%s' must expose exactly one velocity command interface (found %zu).",
                          joint.name.c_str(), joint.command_interfaces.size());
             return hardware_interface::CallbackReturn::ERROR;
         }
@@ -235,21 +235,21 @@ hardware_interface::CallbackReturn ArmInterface::on_activate(const rclcpp_lifecy
      (void)previous_state;
 
     const size_t nj = info_.joints.size();
-    if (hw_states_position_.size() != nj || hw_commands_position_.size() != nj) {
+    if (hw_states_position_.size() != nj || hw_commands_velocity_.size() != nj) {
         RCLCPP_FATAL(rclcpp::get_logger("ArmInterface"),
                      "Size mismatch in on_activate(): info_.joints=%zu states=%zu cmds=%zu",
-                     nj, hw_states_position_.size(), hw_commands_position_.size());
+                     nj, hw_states_position_.size(), hw_commands_velocity_.size());
         return hardware_interface::CallbackReturn::ERROR;
     }
 
     // Copy current state into command buffer to avoid sudden jumps when controller starts
     for (size_t i = 0; i < nj; ++i) {
         if (!std::isnan(hw_states_position_[i])) {
-            hw_commands_position_[i] = hw_states_position_[i];
+            hw_commands_velocity_[i] = hw_states_position_[i];
         } else {
             // If state is NaN for some reason, set to zero and warno
             hw_states_position_[i] = 0.0;
-            hw_commands_position_[i] = 0.0;
+            hw_commands_velocity_[i] = 0.0;
             RCLCPP_WARN(rclcpp::get_logger("ArmInterface"),
                         "hw_states_position_[%zu] was NaN on activate; resetting to 0.", i);
         }
@@ -267,9 +267,9 @@ hardware_interface::CallbackReturn ArmInterface::on_deactivate(const rclcpp_life
     (void)previous_state;
 
     //setting joint state commands back to 0
-    for(size_t i = 0; i< hw_commands_position_.size(); i++)
+    for(size_t i = 0; i< hw_commands_velocity_.size(); i++)
     {
-        hw_commands_position_[i] = 0.0;
+        hw_commands_velocity_[i] = 0.0;
     }
 
 
@@ -385,7 +385,7 @@ hardware_interface::return_type ArmInterface::write(const rclcpp::Time & time, c
     
     for (size_t i = 0; i < num_motors; i++) {
         //Calculate p-control velocity command: 
-        double positional_error = hw_commands_position_[i] - hw_states_position_[i];
+        double positional_error = hw_commands_velocity_[i] - hw_states_position_[i];
         double velocity_commands_ = std::clamp(positional_error * KP_GAIN, -1.0, 1.0); 
         float speed_to_send = static_cast<float>(velocity_commands_) * MAX_MOTOR_SPEED;
         memcpy(&out_buf[(i * sizeof(float)) + 2], &speed_to_send, sizeof(float));
@@ -435,7 +435,7 @@ std::vector<hardware_interface::CommandInterface> ArmInterface::export_command_i
    for(auto i = 0u; i < info_.joints.size(); i++)
    {
         command_interfaces.emplace_back(hardware_interface::CommandInterface(
-            info_.joints[i].name, hardware_interface::HW_IF_POSITION, &hw_commands_position_[i]));
+            info_.joints[i].name, hardware_interface::HW_IF_VELOCITY, &hw_commands_velocity_[i]));
    }
 
    RCLCPP_INFO(rclcpp::get_logger("ArmInterface"), "Exported %zu command interfaces", command_interfaces.size());
