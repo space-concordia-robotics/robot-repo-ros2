@@ -93,8 +93,9 @@ def generate_launch_description():
                 'robot_description_semantic': semantic_content,
             },
         ],
-
         output="screen",
+        # arguments=['--ros-args'],
+        # extra_arguments=[{'use_intra_process_comms': True}]
     )
 
     # Temporarily commented out ik_mux_node due to build issues
