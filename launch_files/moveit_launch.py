@@ -26,7 +26,7 @@ def generate_launch_description():
     }
 
 
-    # ros2_control using FakeSystem as hardware
+
     ros2_controllers_path = os.path.join(
         get_package_share_directory("rover_arm_moveit_config"),
         "config",
