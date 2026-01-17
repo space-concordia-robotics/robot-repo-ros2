@@ -9,7 +9,7 @@ endif ()
 find_package(ament_cmake REQUIRED)
 
 install(
-        DIRECTORY behaviour_trees config launch maps models worlds
+        DIRECTORY config launch maps worlds
         DESTINATION share/${PROJECT_NAME}
 )
 
