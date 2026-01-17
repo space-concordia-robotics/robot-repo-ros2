@@ -41,7 +41,7 @@
     <!-- </xacro:if> -->
 
     <xacro:if value="${simulation}">
-        <ros2_control name="GazeboSystem" type="system">
+        <ros2_control name="GazeboSimSystem" type="system">
             <xacro:macro name="wheel_joint" params="name">
                 <joint name="${name}">
                     <command_interface name="velocity">
@@ -69,18 +69,25 @@
             </xacro:macro>
 
             <hardware>
-                <plugin>gazebo_ros2_control/GazeboSystem</plugin>
+                <plugin>gz_ros2_control/GazeboSimSystem</plugin>
             </hardware>
 
             <xacro:front_wheels side="left"/>
             <xacro:front_wheels side="right"/>
             <xacro:back_wheels/>
         </ros2_control>
-    </xacro:if>
 
-    <gazebo>
-        <plugin name="gazebo_ros2_control" filename="libgazebo_ros2_control.so">
-            <parameters>$(find ceres_urdf)/config/controllers.yaml</parameters>
-        </plugin>
-    </gazebo>
+        <gazebo>
+            <plugin name="gz_ros2_control::GazeboSimROS2ControlPlugin" filename="libgz_ros2_control-system.so">
+                <parameters>$(find ceres_urdf)/config/controllers.yaml</parameters>
+
+                <publish_odom>true</publish_odom>
+                <publish_odom_tf>true</publish_odom_tf>
+                <publish_wheel_tf>true</publish_wheel_tf>
+
+                <odometry_frame>odom</odometry_frame>
+                <robot_base_frame>base_link</robot_base_frame>
+            </plugin>
+        </gazebo>
+    </xacro:if>
 </robot>
