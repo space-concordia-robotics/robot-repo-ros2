@@ -29,18 +29,25 @@
     </link>
 
     <xacro:if value="${simulation}">
+        <gazebo>
+            <!-- IMU -->
+            <plugin filename="gz-sim-imu-system" name="gz::sim::systems::Imu"/>
+
+            <!-- LiDAR -->
+            <plugin filename="gz-sim-sensors-system" name="gz::sim::systems::Sensors">
+                <render_engine>ogre2</render_engine>
+            </plugin>
+        </gazebo>
+    </xacro:if>
+
+    <xacro:if value="${simulation}">
         <gazebo reference="imu_link">
-            <sensor name="imu_sensor" type="imu">
-                <plugin filename="libgazebo_ros_imu_sensor.so" name="imu_plugin">
-                    <ros>
-                        <namespace>/demo</namespace>
-                        <remapping>~/out:=imu</remapping>
-                    </ros>
-                    <initial_orientation_as_reference>false</initial_orientation_as_reference>
-                </plugin>
-                <always_on>true</always_on>
-                <update_rate>100</update_rate>
+            <sensor name="imu" type="imu">
+                <always_on>1</always_on>
+                <update_rate>1000</update_rate>
                 <visualize>true</visualize>
+                <topic>ceres/imu</topic>
+                <gz_frame_id>imu_link</gz_frame_id>
 
                 <!-- TODO 2025-09-19 (Will Free): Get the correct values for this -->
                 <imu>
@@ -48,25 +55,16 @@
                         <x>
                             <noise type="gaussian">
                                 <mean>0.0</mean>
-                                <stddev>2e-4</stddev>
-                                <bias_mean>0.0000075</bias_mean>
-                                <bias_stddev>0.0000008</bias_stddev>
                             </noise>
                         </x>
                         <y>
                             <noise type="gaussian">
                                 <mean>0.0</mean>
-                                <stddev>2e-4</stddev>
-                                <bias_mean>0.0000075</bias_mean>
-                                <bias_stddev>0.0000008</bias_stddev>
                             </noise>
                         </y>
                         <z>
                             <noise type="gaussian">
                                 <mean>0.0</mean>
-                                <stddev>2e-4</stddev>
-                                <bias_mean>0.0000075</bias_mean>
-                                <bias_stddev>0.0000008</bias_stddev>
                             </noise>
                         </z>
                     </angular_velocity>
@@ -75,25 +73,16 @@
                         <x>
                             <noise type="gaussian">
                                 <mean>0.0</mean>
-                                <stddev>1.7e-2</stddev>
-                                <bias_mean>0.1</bias_mean>
-                                <bias_stddev>0.001</bias_stddev>
                             </noise>
                         </x>
                         <y>
                             <noise type="gaussian">
                                 <mean>0.0</mean>
-                                <stddev>1.7e-2</stddev>
-                                <bias_mean>0.1</bias_mean>
-                                <bias_stddev>0.001</bias_stddev>
                             </noise>
                         </y>
                         <z>
                             <noise type="gaussian">
                                 <mean>0.0</mean>
-                                <stddev>1.7e-2</stddev>
-                                <bias_mean>0.1</bias_mean>
-                                <bias_stddev>0.001</bias_stddev>
                             </noise>
                         </z>
                     </linear_acceleration>
@@ -109,6 +98,12 @@
     <xacro:property name="lidar_height" value="0.2"/>
     <xacro:property name="lidar_radius" value="0.1"/>
 
+    <joint name="lidar_joint" type="fixed">
+        <parent link="base_link"/>
+        <child link="lidar_link"/>
+        <origin xyz="${body_length/2} 0 ${lidar_height/2}"/>
+    </joint>
+
     <link name="lidar_link">
         <visual>
             <geometry>
@@ -118,24 +113,15 @@
         </visual>
     </link>
 
-    <joint name="lidar_joint" type="fixed">
-        <parent link="base_link"/>
-        <child link="lidar_link"/>
-        <origin xyz="${body_length/2} 0 ${lidar_height/2}"/>
-    </joint>
-
     <xacro:if value="${simulation}">
         <gazebo reference="lidar_link">
-            <material>Gazebo/Red</material>
-
-            <sensor name="lidar" type="ray">
-                <!-- <pose>0 0 0 0 0 0</pose> -->
-                <!-- <always_on>true</always_on> -->
-                <!-- <visualize>true</visualize> -->
-                <!-- <update_rate>10</update_rate> -->
-                <pose>0 0 0 0 0 0</pose>
+            <sensor name="lidar" type="gpu_lidar">
+                <pose relative_to="lidar_link">0 0 0 0 0 0</pose>
+                <always_on>true</always_on>
                 <visualize>false</visualize>
-                <update_rate>10</update_rate>
+                <update_rate>10</update_rate> <!-- 10 or 20 -->
+                <topic>ceres/scan</topic>
+                <gz_frame_id>lidar_link</gz_frame_id>
 
                 <!-- <ray> -->
                 <!--     <scan> -->
@@ -160,41 +146,103 @@
                 <!--     </noise> -->
                 <!-- </ray> -->
 
-                <ray>
+                <lidar>
                     <scan>
                         <horizontal>
-                            <samples>360</samples>
+                            <!-- <samples>256</samples> &lt;!&ndash; 512, 1024, or 2048 &ndash;&gt; -->
+                            <samples>128</samples> <!-- 512, 1024, or 2048 -->
                             <min_angle>-3.14</min_angle>
                             <max_angle>3.14</max_angle>
                         </horizontal>
                         <vertical>
-                            <samples>32</samples>
-                            <min_angle>-0.535</min_angle>
-                            <max_angle>0.186</max_angle>
+                            <samples>16</samples>
+                            <min_angle>-0.2897</min_angle> <!-- -16.6° is about 0.2897 radians -->
+                            <max_angle>0.2897</max_angle> <!-- +16.6° is about 0.2897 radians -->
                         </vertical>
                     </scan>
+
                     <range>
-                        <min>0.3</min>
-                        <max>24</max>
+                        <min>0.8</min>
+                        <max>50</max>
+                        <resolution>0.1</resolution>
                     </range>
 
-                    <noise>
-                        <type>gaussian</type>
-                        <mean>0.01</mean>
-                        <stddev>0.01</stddev>
-                    </noise>
-                </ray>
-
-                <plugin name="laser_controller" filename="libgazebo_ros_ray_sensor.so">
-                    <ros>
-                        <remapping>~/out:=scan</remapping>
-                    </ros>
-
-                    <output_type>sensor_msgs/LaserScan</output_type>
-                    <frame_name>lidar_link</frame_name>
-                </plugin>
+                    <!-- <noise> -->
+                    <!--     <type>gaussian</type> -->
+                    <!--     <mean>0.0</mean> -->
+                    <!--     <stddev>0.01</stddev> &lt;!&ndash; from my reading of the datasheet, I think this should be like 0.02? see: range precision &ndash;&gt; -->
+                    <!-- </noise> -->
+                </lidar>
+                <!-- <plugin filename="RosGzPointCloud" name="ros_gz_point_cloud::PointCloud"> -->
+                <!--     <topic>points</topic> -->
+                <!--     <frame_id>lidar_link</frame_id> -->
+                <!-- </plugin> -->
             </sensor>
 
+            <sensor name="lidar_imu" type="imu">
+                <always_on>1</always_on>
+                <update_rate>1000</update_rate>
+                <visualize>true</visualize>
+                <topic>ceres/lidar_imu</topic>
+                <gz_frame_id>lidar_link</gz_frame_id>
+
+                <!-- TODO 2025-09-19 (Will Free): Get the correct values for this -->
+                <imu>
+                    <angular_velocity>
+                        <x>
+                            <noise type="gaussian">
+                                <mean>0.0</mean>
+                                <!-- <stddev>2e-4</stddev> -->
+                                <!-- <bias_mean>0.0000075</bias_mean> -->
+                                <!-- <bias_stddev>0.0000008</bias_stddev> -->
+                            </noise>
+                        </x>
+                        <y>
+                            <noise type="gaussian">
+                                <mean>0.0</mean>
+                                <!-- <stddev>2e-4</stddev> -->
+                                <!-- <bias_mean>0.0000075</bias_mean> -->
+                                <!-- <bias_stddev>0.0000008</bias_stddev> -->
+                            </noise>
+                        </y>
+                        <z>
+                            <noise type="gaussian">
+                                <mean>0.0</mean>
+                                <!-- <stddev>2e-4</stddev> -->
+                                <!-- <bias_mean>0.0000075</bias_mean> -->
+                                <!-- <bias_stddev>0.0000008</bias_stddev> -->
+                            </noise>
+                        </z>
+                    </angular_velocity>
+
+                    <linear_acceleration>
+                        <x>
+                            <noise type="gaussian">
+                                <mean>0.0</mean>
+                                <!-- <stddev>1e-4</stddev> -->
+                                <!-- <bias_mean>1e-4</bias_mean> -->
+                                <!-- <bias_stddev>1e-4</bias_stddev> -->
+                            </noise>
+                        </x>
+                        <y>
+                            <noise type="gaussian">
+                                <mean>0.0</mean>
+                                <!-- <stddev>1e-4</stddev> -->
+                                <!-- <bias_mean>1e-4</bias_mean> -->
+                                <!-- <bias_stddev>1e-4</bias_stddev> -->
+                            </noise>
+                        </y>
+                        <z>
+                            <noise type="gaussian">
+                                <mean>0.0</mean>
+                                <!-- <stddev>1e-4</stddev> -->
+                                <!-- <bias_mean>1e-4</bias_mean> -->
+                                <!-- <bias_stddev>1e-4</bias_stddev> -->
+                            </noise>
+                        </z>
+                    </linear_acceleration>
+                </imu>
+            </sensor>
         </gazebo>
     </xacro:if>
     <!-- endregion -->

@@ -56,7 +56,7 @@ def robot_state_publisher_node(context: LaunchContext, *args: object, **kwargs: 
 
     remove_comments(robot_description)
 
-    print(robot_description.toprettyxml()) # this print statement is load bearing, do not remove. it will break.
+    print(robot_description.toprettyxml())  # this print statement is load bearing, do not remove. it will break.
 
     robot_description_param = {"robot_description": robot_description.toxml()}
 
@@ -64,7 +64,7 @@ def robot_state_publisher_node(context: LaunchContext, *args: object, **kwargs: 
         package='robot_state_publisher',
         executable='robot_state_publisher',
         output='screen',
-        parameters=[robot_description_param, {'use_sim_time': sim_time_parameter}]
+        parameters=[robot_description_param, {'use_sim_time': sim_time_parameter}],
     )
 
     return [

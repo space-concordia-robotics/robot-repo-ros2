@@ -9,6 +9,12 @@
 
   -->
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="https://www.ros.org">
+    <!-- <xs:include schemaLocation='http://sdformat.org/schemas/types.xsd'/> -->
+    <!-- <xs:include schemaLocation='http://sdformat.org/schemas/world.xsd'/> -->
+    <!-- <xs:include schemaLocation='http://sdformat.org/schemas/model.xsd'/> -->
+    <!-- <xs:include schemaLocation='http://sdformat.org/schemas/actor.xsd'/> -->
+    <!-- <xs:include schemaLocation='http://sdformat.org/schemas/light.xsd'/> -->
+
     <!-- data type definitions -->
     <xs:simpleType name="JointType">
         <xs:annotation>
@@ -913,7 +919,7 @@
     </xs:complexType>
 
     <!-- sensor node type -->
-    <xs:complexType name="sensor">
+    <xs:complexType name="urdf_sensor">
         <xs:annotation>
             <xs:documentation>
                 The sensor element describes basic properties of a visual sensor (i.e. camera/ray sensor).
@@ -965,6 +971,14 @@
         <xs:sequence>
             <xs:any minOccurs="0" maxOccurs="unbounded" processContents="lax"/>
         </xs:sequence>
+        <!-- <xs:choice maxOccurs='unbounded'> -->
+        <!--     &lt;!&ndash; <xs:element ref="sensor"/> &ndash;&gt; -->
+        <!--     &lt;!&ndash; <xs:element ref='plugin'/> &ndash;&gt; -->
+        <!--     &lt;!&ndash; <xs:element ref='world'/> &ndash;&gt; -->
+        <!--     &lt;!&ndash; <xs:element ref='model'/> &ndash;&gt; -->
+        <!--     &lt;!&ndash; <xs:element ref='actor'/> &ndash;&gt; -->
+        <!--     &lt;!&ndash; <xs:element ref='light'/> &ndash;&gt; -->
+        <!-- </xs:choice> -->
 
         <xs:attribute name="reference" type="xs:string" use="optional">
             <xs:annotation>
@@ -1033,7 +1047,7 @@
                 <!-- FIXME: gazebo extension not supported -->
                 <xs:element name="gazebo" type="gazebo" minOccurs="0" maxOccurs="unbounded"/>
 
-                <xs:element name="sensor" type="sensor" minOccurs="0" maxOccurs="unbounded"/>
+                <xs:element name="sensor" type="urdf_sensor" minOccurs="0" maxOccurs="unbounded"/>
 
                 <xs:any minOccurs="0" maxOccurs="unbounded" processContents="lax"/>
             </xs:sequence>

@@ -32,14 +32,14 @@ def generate_launch_description():
         )
     )
 
-    # ld.add_action(
-    #     Node(
-    #         package='twist_stamper',
-    #         executable='twist_stamper',
-    #         parameters=[{'use_sim_time': sim_time_parameter}],
-    #         remappings=[('/cmd_vel_in', '/diff_cont/cmd_vel_unstamped'),
-    #                     ('/cmd_vel_out', '/diff_cont/cmd_vel')]
-    #     )
-    # )
+    ld.add_action(
+        Node(
+            package='twist_stamper',
+            executable='twist_stamper',
+            parameters=[{'use_sim_time': sim_time_parameter}],
+            remappings=[('/cmd_vel_in', '/diff_drive_base_controller/cmd_vel_unstamped'),
+                        ('/cmd_vel_out', '/diff_drive_base_controller/cmd_vel')]
+        )
+    )
 
     return ld

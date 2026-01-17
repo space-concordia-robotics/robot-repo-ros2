@@ -16,7 +16,11 @@ setup(
     maintainer_email='will.free@spaceconcordia.ca',
     description='Utilities for python launch files',
     license='TODO',
-    tests_require=['pytest'],
+    extras_require={
+        'test': [
+            'pytest',
+        ],
+    },
     entry_points={
         'console_scripts': [
         ],
