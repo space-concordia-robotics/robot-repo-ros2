@@ -1,44 +1,44 @@
 /rtsp_camera_node:
   ros__parameters:
-    port: 8445
+    port: 8445  # Network port for RTSP streaming
 
     templates:
-      v4l2: "v4l2src do-timestamp=1"
+      v4l2: "v4l2src do-timestamp=1"  # GStreamer v4l2 source with timestamping enabled
       appsrc:
         pipeline: "appsrc name=imagesrc do-timestamp=true min-latency=0 max-latency=0 max-bytes=1000 is-live=true"
-        name: "imagesrc"
-      test: "videotestsrc"
+        name: "imagesrc"  # Custom appsrc pipeline for live streaming
+      test: "videotestsrc"  # Test video source for debugging or testing
       encode:
         encoders:
-          - h264
-          - av1
+          - h264  # Supported video encoder: H264
+          - av1   # Supported video encoder: AV1
         h264:
           encoder: "nvvidconv ! video/x-raw(memory:NVMM),format=(string)NV12 ! nvv4l2h264enc preset-level=3"
-          bitrate_param: "bitrate"
-          pipeline: "video/x-h264, profile=baseline"
-          rtph_pay: "rtph264pay name=pay0 pt=96"
+          bitrate_param: "bitrate"  # Parameter controlling bitrate for H264 encoder
+          pipeline: "video/x-h264, profile=baseline"  # Output pipeline format for H264
+          rtph_pay: "rtph264pay name=pay0 pt=96"  # RTP payload configuration for H264
         av1:
           encoder: "nvvidconv ! video/x-raw(memory:NVMM),format=(string)NV12 ! nvv4l2av1enc preset-level=2"
-          bitrate_param: "bitrate"
-          pipeline: "video/x-av1"
-          rtph_pay: "rtpav1pay name=pay0"
+          bitrate_param: "bitrate"  # Bitrate parameter for AV1 encoder
+          pipeline: "video/x-av1"  # Output pipeline format for AV1
+          rtph_pay: "rtpav1pay name=pay0"  # RTP payload configuration for AV1
 
     enabled_streams:
-      - front
-      - antena
-      - arm
-      - test
+      - front   # Enable front camera stream
+      - antena  # Enable antena camera stream
+      - arm     # Enable arm camera stream (from topic source)
+      - test    # Enable test video stream
 
     streams:
       front:
-        type: camera
-        source: /dev/video2
-        mountpoint: /front
-        encoder: h264
-        bitrate: 2000000
-        fps: 50
-        width: 1920
-        height: 1200
+        type: camera  # Stream type: physical camera device
+        source: /dev/video2  # Device file for front camera
+        mountpoint: /front  # RTSP mount point for this stream
+        encoder: h264  # Encoder to use for this stream
+        bitrate: 2000000  # Bitrate in bits per second (2 Mbps)
+        fps: 50  # Frames per second
+        width: 1920  # Frame width in pixels
+        height: 1200  # Frame height in pixels
       # camera1:
       #   type: camera
       #   source: /dev/video2
@@ -49,17 +49,17 @@
       #   width: 2560
       #   height: 720
       antena:
-        type: camera
-        source: /dev/video0
-        mountpoint: /antena
-        encoder: h264
-        bitrate: 4000000
-        fps: 30
+        type: camera  # Physical camera device
+        source: /dev/video0  # Device file for antena camera
+        mountpoint: /antena  # RTSP mount point
+        encoder: h264  # Encoder used
+        bitrate: 4000000  # Bitrate (4 Mbps)
+        fps: 30  # Frame rate
         width: 1920
         height: 1080
       arm:
-        type: topic
-        source: /usb_cam/image_raw
+        type: topic  # Source is a ROS topic instead of device file
+        source: /usb_cam/image_raw  # ROS image topic to get frames from
         #type: camera
         #source: /dev/video4
         mountpoint: /arm
@@ -69,11 +69,15 @@
         width: 1920
         height: 1080
       test:
-        type: test
-        source: ""
-        mountpoint: /test
-        encoder: h264 # av1 is currently not supported
+        type: test  # Test source for debugging (generates synthetic video)
+        source: ""  # No real source device
+        mountpoint: /test  # RTSP mount point for test stream
+        encoder: h264  # Using H264 encoder here, AV1 not supported for test stream
         bitrate: 2000000
         fps: 30
         width: 1920
         height: 1080
+<<<<<<< HEAD
+=======
+
+>>>>>>> df199d5 (Aruco Tracker)
