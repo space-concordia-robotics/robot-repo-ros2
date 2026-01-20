@@ -124,7 +124,6 @@ public:
 
     twist_pub_ = this->create_publisher<geometry_msgs::msg::TwistStamped>(TWIST_TOPIC, rclcpp::SystemDefaultsQoS());
     joint_pub_ = this->create_publisher<control_msgs::msg::JointJog>(JOINT_TOPIC, rclcpp::SystemDefaultsQoS());
-    wheel_pub_ = this->create_publisher<geometry_msgs::msg::Twist>(WHEEL_VEL_TOPIC, rclcpp::SystemDefaultsQoS());
     collision_pub_ =
         this->create_publisher<moveit_msgs::msg::PlanningScene>("/planning_scene", rclcpp::SystemDefaultsQoS());
 
@@ -132,6 +131,7 @@ public:
     servo_start_client_ = this->create_client<std_srvs::srv::Trigger>("/servo_node/start_servo");
     servo_start_client_->wait_for_service(std::chrono::seconds(1));
     servo_start_client_->async_send_request(std::make_shared<std_srvs::srv::Trigger::Request>());
+    RCLCPP_INFO(this->get_logger(), "Ik mux node publishing topic data");
 
   }
 
@@ -173,8 +173,6 @@ private:
   rclcpp::Publisher<moveit_msgs::msg::PlanningScene>::SharedPtr collision_pub_;
   rclcpp::Client<std_srvs::srv::Trigger>::SharedPtr servo_start_client_;
   rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr wheel_pub_; 
-  bool rover_mode = true;
-
   std::string frame_to_publish_;
 
   std::thread collision_pub_thread_;
