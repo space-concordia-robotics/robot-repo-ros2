@@ -391,7 +391,10 @@ hardware_interface::return_type ArmInterface::write(const rclcpp::Time & time, c
         if(i < hw_commands_velocity_.size()){
             joint_velocity = hw_commands_velocity_[i];
         }
-
+        //Calculate p-control velocity command: 
+        //double positional_error = hw_commands_velocity_[i] - hw_states_position_[i];
+        //double velocity_commands_ = std::clamp(positional_error * KP_GAIN, -1.0, 1.0); 
+        
         double normalized_velocity = std::clamp(joint_velocity / MAX_JOINT_VELOCITY, -1.0, 1.0);
         float speed_to_send = static_cast<float>(normalized_velocity) * MAX_MOTOR_SPEED;
         memcpy(&out_buf[(i * sizeof(float)) + 2], &speed_to_send, sizeof(float));
