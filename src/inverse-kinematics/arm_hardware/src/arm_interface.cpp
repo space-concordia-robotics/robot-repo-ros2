@@ -78,7 +78,7 @@ BACKGROUND:
 #include "rclcpp/logger.hpp"
 
 #define KP_GAIN 5.0 //tunable constant. 
-#define MAX_JOINT_VELOCITY = 1.0
+#define MAX_JOINT_VELOCITY 1.0
 
 namespace arm_interface
 {
@@ -420,7 +420,7 @@ hardware_interface::return_type ArmInterface::write(const rclcpp::Time & time, c
     for (size_t i = 0; i < hw_commands_velocity_.size() && i < 4; i++) {
         const double joint_velocities = hw_commands_velocity_[i]; //in rad/s
         //Fun fact: std::clamp limits a given value to a specific range between a minimum and maximum boundary!
-        const double normalization = std::clamp(joint_velocities / MAX_JOINT_VELOCITY ,-1.0, 1.0)
+        const double normalization = std::clamp(joint_velocities / MAX_JOINT_VELOCITY ,-1.0, 1.0);
         float speed = static_cast<float>(normalization) * MAX_MOTOR_SPEED;
         memcpy(&out_buf[(i * sizeof(float)) + 2], &speed, sizeof(float));
     }
