@@ -385,12 +385,6 @@ hardware_interface::return_type ArmInterface::write(const rclcpp::Time & time, c
     
     for (size_t i = 0; i < num_motors; i++) {
         
-
-        double joint_velocity = 0.0;
-
-        if(i < hw_commands_velocity_.size()){
-            joint_velocity = hw_commands_velocity_[i];
-        }
         //Calculate p-control velocity command: 
         double positional_error = hw_commands_velocity_[i] - hw_states_position_[i];
         double velocity_commands_ = std::clamp(positional_error * KP_GAIN, -1.0, 1.0); 
