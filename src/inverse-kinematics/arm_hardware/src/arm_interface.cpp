@@ -353,7 +353,7 @@ hardware_interface::return_type ArmInterface::read(const rclcpp::Time & time, co
 
     if (absenc_meas_1.status == 0 || absenc_meas_2.status == 0 || absenc_meas_3.status == 0 || absenc_meas_4.status == 0)
     {
-        RCLCPP_INFO_THROTTLE(rclcpp::get_logger("ArmInterface"), steady_clock_, 5000,
+        RCLCPP_INFO_THROTTLE(rclcpp::get_logger("ArmInterface"), steady_clock_, 10,
             "Read Pos (rad): [%.3f, %.3f, %.3f, %.3f]",
             hw_states_position_[0], hw_states_position_[1], hw_states_position_[2], hw_states_position_[3]);
     }
@@ -418,10 +418,13 @@ hardware_interface::return_type ArmInterface::write(const rclcpp::Time & time, c
 
     // Map command velocities to motor speeds
     for (size_t i = 0; i < hw_commands_velocity_.size() && i < 4; i++) {
-        float speed = static_cast<float>(hw_commands_velocity_[i]) * MAX_MOTOR_SPEED;
+        const double joint_velocities = hw_commands_velocity_[i]; //in rad/s
+        //Fun fact: std::clamp limits a given value to a specific range between a minimum and maximum boundary!
+        const double normalization = std::clamp(joint_velocities / MAX_JOINT_VELOCITY ,-1.0, 1.0)
+        float speed = static_cast<float>(normalization) * MAX_MOTOR_SPEED;
         memcpy(&out_buf[(i * sizeof(float)) + 2], &speed, sizeof(float));
     }
-    out_buf[14] = 0x0A; // End of message
+    out_buf[18] = 0x0A; // End of message
 
     // Send the motor commands via the motor serial port
     int status = ::write(motor_serial_fd_, out_buf, sizeof(out_buf));
@@ -429,11 +432,6 @@ hardware_interface::return_type ArmInterface::write(const rclcpp::Time & time, c
         RCLCPP_ERROR(rclcpp::get_logger("ArmInterface"), "Error writing to device: %s", strerror(errno));
         return return_type::ERROR;
     }
-
-    RCLCPP_INFO_THROTTLE(rclcpp::get_logger("ArmInterface"), steady_clock_, 5000,
-                "Sent motor velocities: [%.2f, %.2f, %.2f, %.2f]",
-                hw_commands_velocity_[0], hw_commands_velocity_[1],
-                hw_commands_velocity_[2], hw_commands_velocity_[3]);
 
    return return_type::OK; 
 }
