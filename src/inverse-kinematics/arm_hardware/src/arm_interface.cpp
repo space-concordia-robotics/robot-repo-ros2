@@ -426,6 +426,9 @@ hardware_interface::return_type ArmInterface::write(const rclcpp::Time & time, c
     }
     out_buf[18] = 0x0A; // End of message
 
+    RCLCPP_INFO_THROTTLE(rclcpp::get_logger("ArmInterfac"), steady_clock_, 10, "Writing joint velocity commands [%.2f, %.2f, %.2f, %.2f]",
+        hw_commands_velocity_[0], hw_commands_velocity_[1], hw_commands_velocity_[2], hw_commands_velocity_[3]);
+
     // Send the motor commands via the motor serial port
     int status = ::write(motor_serial_fd_, out_buf, sizeof(out_buf));
     if (status == -1) {
