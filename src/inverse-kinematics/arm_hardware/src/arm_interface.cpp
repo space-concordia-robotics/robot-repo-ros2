@@ -75,7 +75,6 @@ BACKGROUND:
 #include <limits>
 #include <algorithm>
 #include "rclcpp/logger.hpp"
-#include "arm_controller/arm_controller_node.h"
 
 #define KP_GAIN 5.0 // tunable constant.
 #define MAX_JOINT_VELOCITY 1.0
