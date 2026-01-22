@@ -431,8 +431,8 @@ hardware_interface::return_type ArmInterface::write(const rclcpp::Time & time, c
 
     // Send the motor commands via the motor serial port
     int status = ::write(motor_serial_fd_, out_buf, sizeof(out_buf));
-    if (status == -1) {
-        RCLCPP_ERROR(rclcpp::get_logger("ArmInterface"), "Error writing to device: %s", strerror(errno));
+    if (status != (int)sizeof(out_buf)) {
+        RCLCPP_ERROR(rclcpp::get_logger("ArmInterface"), "SHORT WRITE: %d/%zu (%s)", status, sizeof(out_buf), strerror(errno));
         return return_type::ERROR;
     }
 
