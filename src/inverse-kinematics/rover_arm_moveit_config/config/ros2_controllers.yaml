@@ -17,8 +17,9 @@ arm_controller:
       - joint2
       - joint3
       - joint5
-    command_interfaces:
-      - velocity
-    state_interfaces:
-      - position
-      - velocity
+    interface_name: velocity
+    # command_interfaces:
+    #   - velocity
+    # state_interfaces:
+    #   - position
+    #   - velocity
