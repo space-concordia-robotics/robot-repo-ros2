@@ -415,7 +415,8 @@ namespace arm_interface
             return return_type::ERROR;
         }
 
-        RCLCPP_INFO_THROTTLE(rclcpp::get_logger("ArmInterfac"), steady_clock_, 10, "Got status %d", status);
+        RCLCPP_INFO_THROTTLE(rclcpp::get_logger("ArmInterface"), steady_clock_, 10, "status: %d, sizeof out buf: %zu (errno: %s)", status, sizeof(out_buf), strerror(errno));
+        // RCLCPP_INFO_THROTTLE(rclcpp::get_logger("ArmInterface"), steady_clock_, 10, "Got status: %d", status);
 
         return return_type::OK;
     }
