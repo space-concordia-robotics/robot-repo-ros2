@@ -385,13 +385,13 @@ namespace arm_interface
         }
 
         // Create a buffer to send motor commands
-        uint8_t out_buf[1 + 1 + sizeof(float) * 4 + 1] = {}; // 19 bytes total: 1+1+16+1
+        uint8_t out_buf[1 + 1 + sizeof(float) * 6 + 1] = {}; // 19 bytes total: 1+1+16+1
         out_buf[0] = SET_MOTOR_SPEED;
-        out_buf[1] = sizeof(float) * 4; // 16 bytes of data
+        out_buf[0] = 0x4E;
+        out_buf[1] = sizeof(float) * 6; // 16 bytes of data
 
-        const auto joint_state = sensor_msgs::msg::JointState::SharedPtr();
-
-        joint_state->velocity = hw_commands_velocity_;
+        // const auto joint_state = sensor_msgs::msg::JointState::SharedPtr();
+        // joint_state->velocity = hw_commands_velocity_;
 
         // Map command velocities to motor speeds
         for (size_t i = 0; i < hw_commands_velocity_.size() && i < 4; i++)
@@ -409,7 +409,7 @@ namespace arm_interface
 
         // Send the motor commands via the motor serial port
         int status = ::write(motor_serial_fd_, out_buf, sizeof(out_buf));
-        if (status != -1)
+        if (status == -1)
         {
             RCLCPP_ERROR(rclcpp::get_logger("ArmInterface"), "SHORT WRITE: %d/%zu (%s)", status, sizeof(out_buf), strerror(errno));
             return return_type::ERROR;
