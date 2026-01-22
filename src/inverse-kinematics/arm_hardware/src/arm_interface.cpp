@@ -380,42 +380,6 @@ hardware_interface::return_type ArmInterface::write(const rclcpp::Time & time, c
     out_buf[0] = SET_MOTOR_SPEED;
     out_buf[1] = sizeof(float) * 4;  // 16 bytes of data
 
-    // Map JointState positions to motor speeds (4 motors)
-    // size_t num_motors = std::min(static_cast<size_t>(4), info_.joints.size());
-    
-    // for (size_t i = 0; i < num_motors; i++) {
-        
-
-    //     double joint_velocity = 0.0;
-
-    //     if(i < hw_commands_velocity_.size()){
-    //         joint_velocity = hw_commands_velocity_[i];
-    //     }
-    //     //Calculate p-control velocity command: 
-    //     //double positional_error = hw_commands_velocity_[i] - hw_states_position_[i];
-    //     //double velocity_commands_ = std::clamp(positional_error * KP_GAIN, -1.0, 1.0); 
-        
-    //     double normalized_velocity = std::clamp(joint_velocity / MAX_JOINT_VELOCITY, -1.0, 1.0);
-    //     float speed_to_send = static_cast<float>(normalized_velocity) * MAX_MOTOR_SPEED;
-    //     memcpy(&out_buf[(i * sizeof(float)) + 2], &speed_to_send, sizeof(float));
-    // }
-    
-    // // Fill remaining motor slots with zero if we have fewer than 4 joints
-    // for (size_t i = num_motors; i < 4; i++) {
-    //     float zero_speed = 0.0f;
-    //     memcpy(&out_buf[(i * sizeof(float)) + 2], &zero_speed, sizeof(float));
-    // }
-    
-    // out_buf[18] = 0x0A; // End of message (correct index: 1+1+16 = 18)
-
-    //  // 4. Send the command buffer via the motor serial port
-    // int status = ::write(motor_serial_fd_, out_buf, sizeof(out_buf));
-
-    // if (status == -1) {
-    //     RCLCPP_ERROR(rclcpp::get_logger("ArmInterface"), "Error writing command to device: %s", strerror(errno));
-    //     return return_type::ERROR;
-    // }
-
     // Map command velocities to motor speeds
     for (size_t i = 0; i < hw_commands_velocity_.size() && i < 4; i++) {
         const double joint_velocities = hw_commands_velocity_[i]; //in rad/s
