@@ -387,7 +387,7 @@ namespace arm_interface
         // Create a buffer to send motor commands
         uint8_t out_buf[1 + 1 + sizeof(float) * 6 + 1] = {}; // 19 bytes total: 1+1+16+1
         out_buf[0] = SET_MOTOR_SPEED;
-        out_buf[0] = 0x4E;
+        //out_buf[0] = 0x4E;
         out_buf[1] = sizeof(float) * 6; // 16 bytes of data
 
         // const auto joint_state = sensor_msgs::msg::JointState::SharedPtr();
@@ -397,8 +397,6 @@ namespace arm_interface
         for (size_t i = 0; i < hw_commands_velocity_.size() && i < 4; i++)
         {
             const double joint_velocities = hw_commands_velocity_[i]; // in rad/s
-            // Fun fact: std::clamp limits a given value to a specific range between a minimum and maximum boundary!
-            // const double normalization = std::clamp(joint_velocities / MAX_JOINT_VELOCITY ,-1.0, 1.0);
             float speed = static_cast<float>(joint_velocities) * MAX_MOTOR_SPEED;
             memcpy(&out_buf[(i * sizeof(float)) + 2], &speed, sizeof(float));
         }
