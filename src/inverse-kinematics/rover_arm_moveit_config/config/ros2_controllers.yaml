@@ -4,7 +4,7 @@ controller_manager:
     update_rate: 100  # Hz
 
     arm_controller:
-      type: joint_trajectory_controller/JointTrajectoryController
+      type: forward_command_controller/ForwardCommandController
 
 
     joint_state_broadcaster:
@@ -17,8 +17,9 @@ arm_controller:
       - joint2
       - joint3
       - joint5
-    command_interfaces:
-      - velocity
-    state_interfaces:
-      - position
-      - velocity
+    interface_name: velocity
+    # command_interfaces:
+    #   - velocity
+    # state_interfaces:
+    #   - position
+    #   - velocity

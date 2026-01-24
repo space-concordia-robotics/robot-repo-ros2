@@ -16,14 +16,14 @@ scale:
 # override_velocity_scaling_factor = 0.0 # valid range [0.0:1.0]
 
 ## Properties of outgoing commands
-publish_period: 0.055  # 1/Nominal publish rate [seconds]
+publish_period: 0.01  # 1/Nominal publish rate [seconds]
 low_latency_mode: false  # Set this to true to publish as soon as an incoming Twist command is received (publish_period is ignored)
 
 # What type of topic does your robot driver expect?
 # Currently supported are std_msgs/Float64MultiArray or trajectory_msgs/JointTrajectory
-command_out_type: trajectory_msgs/JointTrajectory
+command_out_type: std_msgs/Float64MultiArray
 
-publish_joint_positions: true
+publish_joint_positions: false
 publish_joint_velocities: true
 publish_joint_accelerations: false
 
@@ -55,7 +55,7 @@ num_outgoing_halt_msgs_to_publish: 4
 ## Configure handling of singularities and joint limits
 lower_singularity_threshold:  25.0  # Start decelerating when the condition number hits this (close to singularity)
 hard_stop_singularity_threshold: 50.0 # Stop when the condition number hits this
-joint_limit_margin: 0.1 # added as a buffer to joint limits [radians]. If moving quickly, make this larger.
+joint_limit_margin: 0.05 # added as a buffer to joint limits [radians]. If moving quickly, make this larger.
 leaving_singularity_threshold_multiplier: 2.0 # Multiply the hard stop limit by this when leaving singularity (see https://github.com/ros-planning/moveit2/pull/620)
 
 ## Topic names
@@ -63,7 +63,7 @@ cartesian_command_in_topic: ~/delta_twist_cmds  # Topic for incoming Cartesian t
 joint_command_in_topic: ~/delta_joint_cmds # Topic for incoming joint angle commands
 joint_topic: /joint_states
 status_topic: ~/status # Publish status to this topic
-command_out_topic: /arm_controller/joint_trajectory # Publish outgoing commands here
+command_out_topic: /arm_controller/commands # Publish outgoing commands here
 
 ## Collision checking for the entire robot body
 check_collisions: true # Check collisions?

@@ -108,17 +108,6 @@ bool convertJoyToCmd(const std::vector<float>& axes, const std::vector<int>& but
   return true;
 }
 
-/** \brief // This should update the frame_to_publish_ as needed for changing command frame via controller
- * @param frame_name Set the command frame to this
- * @param buttons The vector of discrete controller button values
- */
-void updateCmdFrame(std::string& frame_name, const std::vector<int>& buttons)
-{
-  if (buttons[CHANGE_VIEW] && frame_name == EEF_FRAME_ID)
-    frame_name = BASE_FRAME_ID;
-  else if (buttons[SHARE] && frame_name == BASE_FRAME_ID)
-    frame_name = EEF_FRAME_ID;
-}
 
 namespace moveit_servo
 {
@@ -135,7 +124,6 @@ public:
 
     twist_pub_ = this->create_publisher<geometry_msgs::msg::TwistStamped>(TWIST_TOPIC, rclcpp::SystemDefaultsQoS());
     joint_pub_ = this->create_publisher<control_msgs::msg::JointJog>(JOINT_TOPIC, rclcpp::SystemDefaultsQoS());
-    wheel_pub_ = this->create_publisher<geometry_msgs::msg::Twist>(WHEEL_VEL_TOPIC, rclcpp::SystemDefaultsQoS());
     collision_pub_ =
         this->create_publisher<moveit_msgs::msg::PlanningScene>("/planning_scene", rclcpp::SystemDefaultsQoS());
 
@@ -143,6 +131,7 @@ public:
     servo_start_client_ = this->create_client<std_srvs::srv::Trigger>("/servo_node/start_servo");
     servo_start_client_->wait_for_service(std::chrono::seconds(1));
     servo_start_client_->async_send_request(std::make_shared<std_srvs::srv::Trigger::Request>());
+    RCLCPP_INFO(this->get_logger(), "Ik mux node publishing topic data");
 
   }
 
@@ -157,29 +146,6 @@ public:
     // Create the messages we might publish
     auto twist_msg = std::make_unique<geometry_msgs::msg::TwistStamped>();
     auto joint_msg = std::make_unique<control_msgs::msg::JointJog>();
-    static bool last_deadman_state = false;
-    bool current_deadman_state = msg->buttons[HOME];
-
-    if(current_deadman_state && !last_deadman_state)
-    {
-      rover_mode = !rover_mode;
-      RCLCPP_INFO(this->get_logger(), "Rover mode switched to %s", rover_mode? "Rover" : "Arm");
-    }
-    last_deadman_state = current_deadman_state;
-
-    if(rover_mode)
-    {
-      //publish the Twist commands for the wheel speeds
-      auto twist_msgs = geometry_msgs::msg::Twist();
-      twist_msgs.linear.x = msg->axes[LEFT_STICK_X];
-      twist_msgs.linear.y = msg->axes[LEFT_STICK_Y];
-      twist_msgs.angular.z = msg->axes[RIGHT_STICK_Y];
-      twist_msgs.linear.z = msg->axes[RIGHT_STICK_X];
-      wheel_pub_->publish(twist_msgs);
-    }
-    else{
-      // This call updates the frame for twist commands
-      updateCmdFrame(frame_to_publish_, msg->buttons);
 
       // Convert the joystick message to Twist or JointJog and publish
       if (convertJoyToCmd(msg->axes, msg->buttons, twist_msg, joint_msg))
@@ -197,7 +163,6 @@ public:
         joint_msg->duration = 1.0;
         joint_pub_->publish(std::move(joint_msg));
       }
-    }
     
   }
 
@@ -208,8 +173,6 @@ private:
   rclcpp::Publisher<moveit_msgs::msg::PlanningScene>::SharedPtr collision_pub_;
   rclcpp::Client<std_srvs::srv::Trigger>::SharedPtr servo_start_client_;
   rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr wheel_pub_; 
-  bool rover_mode = true;
-
   std::string frame_to_publish_;
 
   std::thread collision_pub_thread_;

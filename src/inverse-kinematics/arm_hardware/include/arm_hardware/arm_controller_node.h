@@ -28,7 +28,6 @@ public:
 private:
     rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr arm_joint_sub; // Updated subscription type
 
-    int fd;
     int controller_type = -1;
 };
 

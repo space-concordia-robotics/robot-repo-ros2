@@ -57,9 +57,9 @@ private:
 
     std::string port_ = "/dev/ttyUSB0";
 
-    std::vector<double> hw_states_position_;
-    std::vector<double> hw_states_velocity_;
-    std::vector<double> hw_commands_velocity_;
+    std::vector<double> hw_states_position_ = {};
+    std::vector<double> hw_states_velocity_ = {};
+    std::vector<double> hw_commands_velocity_ = {};
 
     float old_angle_4 = 0;
     int8_t angle_4_zone = 0;
