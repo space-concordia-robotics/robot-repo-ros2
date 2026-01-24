@@ -40,13 +40,13 @@ void WheelsControllerNode::TwistMessageCallback(const geometry_msgs::msg::Twist:
     auto angular_z = twist_msg->angular.z;
 
     // multiply them for exponential control
-    linear_y *= linear_y;
-    angular_z *= angular_z;
+    linear_y *= linear_y * linear_y;
+    angular_z *= angular_z * angular_z;
 
     // Calculate wheel velocities
     auto slip_track = 1.2f; // Distance between wheels
-    auto right_wheels_velocity = linear_y - (-angular_z * slip_track * 0.5f);
-    auto left_wheels_velocity = linear_y + (-angular_z * slip_track * 0.5f);
+    auto right_wheels_velocity = -(linear_y - (-angular_z * slip_track * 0.5f));
+    auto left_wheels_velocity = -(linear_y + (-angular_z * slip_track * 0.5f));
 
     // Convert to RPM using the multiplier parameter
     auto right_wheels_vel_rpm = right_wheels_velocity * this->multiplier;
@@ -61,9 +61,9 @@ void WheelsControllerNode::TwistMessageCallback(const geometry_msgs::msg::Twist:
     RevMotorController::velocityControl(5, left_wheels_vel_rpm);
     RevMotorController::velocityControl(6, left_wheels_vel_rpm);
 
-    // // Start the motors
-    // uint64_t mask = 0x7E;
-    // RevMotorController::startMotor(mask);
+    // Start the motors
+    uint64_t mask = 0x7E;
+    RevMotorController::startMotor(mask);
 
     RCLCPP_INFO(this->get_logger(), "Motor commands sent: Right RPM = %.2f, Left RPM = %.2f", right_wheels_vel_rpm, left_wheels_vel_rpm);
 }
