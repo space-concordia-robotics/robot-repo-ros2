@@ -25,10 +25,20 @@ ament_target_dependencies(ik_mux
   std_srvs
 )
 
+add_executable(ik_nxt src/ik_mux_nxt.cpp)
+ament_target_dependencies(ik_nxt 
+  rclcpp 
+  control_msgs 
+  moveit_msgs 
+  geometry_msgs  
+  sensor_msgs 
+  std_srvs
+)
 
 install(TARGETS
 
   ik_mux
+  ik_nxt
   DESTINATION lib/${PROJECT_NAME}
 )
 
