@@ -63,7 +63,7 @@ void ArmControllerNode::ArmJointCallback(const sensor_msgs::msg::JointState::Sha
         float speed = static_cast<float>(msg->velocity[i]) * MAX_MOTOR_SPEED;
         memcpy(&out_buf[(i * sizeof(float)) + 2], &speed, sizeof(float));
     }
-    out_buf[14] = 0x0A; // End of message
+    out_buf[27]] = 0x0A; // End of message
 
     // Send the motor commands if not in local mode
     if (!this->get_parameter("local_mode").as_bool()) {
