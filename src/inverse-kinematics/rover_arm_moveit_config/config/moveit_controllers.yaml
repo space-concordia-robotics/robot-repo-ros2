@@ -13,3 +13,9 @@ moveit_simple_controller_manager:
       - joint2
       - joint3
       - joint5
+      - joint7
+
+  gripper_controller:
+    type: FollowJointTrajectory
+    joints:
+      - right_finger
