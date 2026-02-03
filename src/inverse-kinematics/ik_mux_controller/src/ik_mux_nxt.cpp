@@ -30,7 +30,8 @@ enum Axis
 {
    X = 0,
    Y = 1,
-   Z = 4,
+   Z = 5, 
+  //twisting left with the left hand produces a positive value and twisting right with the left hand produces a negative value
    A1_UP = 9,
    A1_SIDE = 8
 
@@ -52,6 +53,8 @@ enum Button
   A4_LEFT = 13,
   A4_RIGHT = 11,
   A4_BCK = 12,
+  BLACK_TRIGGER_UP = 20,
+  BLACK_TRIGGER_DOWN = 21,
 };
 
 // To change controls or setup a new controller, all you should to do is change the above enums and the follow 2
@@ -83,12 +86,11 @@ bool convertJoyToCmd(const std::vector<float>& axes, const std::vector<int>& but
     joint->joint_names.push_back("joint5");
     joint->velocities.push_back(buttons[A4_RIGHT] - buttons[A4_LEFT]);
     joint->joint_names.push_back("joint7");
-    joint->velocities.push_back(buttons[LEFT_STICK_CLICK] - buttons[RIGHT_STICK_CLICK]);
+    joint->velocities.push_back(buttons[A3_LEFT] - buttons[A3_RIGHT]);
     joint->joint_names.push_back("right_finger");
-    joint->velocities.push_back(buttons[PINKY_BUTTON] - buttons[A2]);
+    joint->velocities.push_back(buttons[BLACK_TRIGGER_UP] - buttons[BLACK_TRIGGER_DOWN]);
     return false;
   }
-
   // The bread and butter: map buttons to twist commands
   twist->twist.linear.x = axes[X];
   twist->twist.linear.y = axes[Y];
