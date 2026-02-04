@@ -74,7 +74,7 @@ bool convertJoyToCmd(const std::vector<float>& axes, const std::vector<int>& but
   // If any joint jog command is requested, we are only publishing joint commands
   if (buttons[THMB_HAT_FWD] || buttons[THMB_HAT_LEFT] || buttons[THMB_HAT_RIGHT] || buttons[THMB_HAT_BCK] ||
       buttons[A3_FWD] || buttons[A3_LEFT] || buttons[A3_RIGHT] || buttons[A3_BCK] ||
-      buttons[A4_FWD] || buttons[A4_LEFT] || buttons[A4_RIGHT] || buttons[A4_BCK])
+      buttons[A4_FWD] || buttons[A4_LEFT] || buttons[A4_RIGHT] || buttons[A4_BCK] || buttons[BLACK_TRIGGER_UP] || buttons[BLACK_TRIGGER_DOWN])
   {
     joint->joint_names.push_back("joint1");
     joint->velocities.push_back(buttons[THMB_HAT_BCK] - buttons[THMB_HAT_FWD]);
