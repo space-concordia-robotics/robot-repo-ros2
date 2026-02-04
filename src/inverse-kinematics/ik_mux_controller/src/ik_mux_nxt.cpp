@@ -140,30 +140,35 @@ public:
     auto twist_msg = std::make_unique<geometry_msgs::msg::TwistStamped>();
     auto joint_msg = std::make_unique<control_msgs::msg::JointJog>();
    
-    // Check deadman button state
-    deadman_ = msg->buttons[DEADMAN];
-
-    deadman_ ? RCLCPP_INFO(this->get_logger(), "Deadman is active") : RCLCPP_INFO(this->get_logger(), "Deadman is inactive");
-
-    if(deadman_){
-      
-      // Convert the joystick message to Twist or JointJog and publish
-      if (convertJoyToCmd(msg->axes, msg->buttons, twist_msg, joint_msg))
-      {
-      // publish the TwistStamped
-      twist_msg->header.frame_id = frame_to_publish_;
-      twist_msg->header.stamp = this->now();
-      twist_pub_->publish(std::move(twist_msg));
-      }
-      else
-      {
-      // publish the JointJog
-      joint_msg->header.stamp = this->now();
-      joint_msg->header.frame_id = "base_structure_link";
-      joint_msg->duration = 1.0;
-      joint_pub_->publish(std::move(joint_msg));
-      }
+    bool deadman_pressed = msg->buttons[DEADMAN];
+    if (deadman_pressed != deadman_)
+    {
+        deadman_ = deadman_pressed;
+        RCLCPP_INFO(this->get_logger(), deadman_ ? "Deadman Active" : "Deadman Released");
     }
+
+    if (!deadman_)
+    {
+      return;
+    }
+
+    // Convert the joystick message to Twist or JointJog and publish
+    if (convertJoyToCmd(msg->axes, msg->buttons, twist_msg, joint_msg))
+    {
+    // publish the TwistStamped
+    twist_msg->header.frame_id = frame_to_publish_;
+    twist_msg->header.stamp = this->now();
+    twist_pub_->publish(std::move(twist_msg));
+    }
+    else
+    {
+    // publish the JointJog
+    joint_msg->header.stamp = this->now();
+    joint_msg->header.frame_id = "base_structure_link";
+    joint_msg->duration = 1.0;
+    joint_pub_->publish(std::move(joint_msg));
+    }
+    
 
   }
 
