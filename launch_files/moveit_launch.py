@@ -26,7 +26,7 @@ def generate_launch_description():
     }
 
     rviz_config_file = (
-        get_package_share_directory("rover_arm") + "/config/moveit.rviz"
+        get_package_share_directory("rover_arm_moveit_config") + "/config/moveit.rviz"
     )
     rviz_node = Node(
         package="rviz2",
