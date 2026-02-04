@@ -143,9 +143,10 @@ public:
     // Check deadman button state
     deadman_ = msg->buttons[DEADMAN];
 
+    deadman_ ? RCLCPP_INFO(this->get_logger(), "Deadman is active") : RCLCPP_INFO(this->get_logger(), "Deadman is inactive");
+
     if(deadman_){
       
-      RCLCPP_INFO(this->get_logger(), "Deadman is active");
       // Convert the joystick message to Twist or JointJog and publish
       if (convertJoyToCmd(msg->axes, msg->buttons, twist_msg, joint_msg))
       {
