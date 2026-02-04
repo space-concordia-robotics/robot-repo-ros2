@@ -25,6 +25,20 @@ def generate_launch_description():
         .to_dict()
     }
 
+    rviz_config_file = (
+        get_package_share_directory("rover_arm") + "/config/moveit.rviz"
+    )
+    rviz_node = Node(
+        package="rviz2",
+        executable="rviz2",
+        name="rviz2",
+        output="log",
+        arguments=["-d", rviz_config_file],
+        parameters=[
+            moveit_config.robot_description,
+            moveit_config.robot_description_semantic,
+        ],
+    )
 
 
     ros2_controllers_path = os.path.join(
