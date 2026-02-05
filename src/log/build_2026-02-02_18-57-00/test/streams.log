@@ -1,0 +1,75 @@
+[0.063s] Invoking command in '/home/liliana/ros2_ws/robot-repo-ros2/src/build/test': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/liliana/ws_moveit/install/moveit_configs_utils:/home/liliana/ros2_ws/install/my_py_pkg:/home/liliana/ros2_ws/install/joy_mux_controller:/home/liliana/install/my_py_pkg:/opt/ros/humble /usr/bin/cmake /home/liliana/ros2_ws/robot-repo-ros2/src/test -DCMAKE_INSTALL_PREFIX=/home/liliana/ros2_ws/robot-repo-ros2/src/install/test
+[0.298s] -- The C compiler identification is GNU 11.4.0
+[0.591s] -- The CXX compiler identification is GNU 11.4.0
+[0.618s] -- Detecting C compiler ABI info
+[0.862s] -- Detecting C compiler ABI info - done
+[0.888s] -- Check for working C compiler: /usr/bin/cc - skipped
+[0.890s] -- Detecting C compile features
+[0.892s] -- Detecting C compile features - done
+[0.901s] -- Detecting CXX compiler ABI info
+[1.203s] -- Detecting CXX compiler ABI info - done
+[1.229s] -- Check for working CXX compiler: /usr/bin/c++ - skipped
+[1.230s] -- Detecting CXX compile features
+[1.231s] -- Detecting CXX compile features - done
+[1.278s] -- Found ament_cmake: 1.3.12 (/opt/ros/humble/share/ament_cmake/cmake)
+[3.396s] -- Found Python3: /usr/bin/python3 (found version "3.10.12") found components: Interpreter 
+[3.895s] -- Found rclpy: 3.3.17 (/opt/ros/humble/share/rclpy/cmake)
+[3.915s] -- Found visualization_msgs: 4.9.0 (/opt/ros/humble/share/visualization_msgs/cmake)
+[4.155s] -- Found rosidl_generator_c: 3.1.7 (/opt/ros/humble/share/rosidl_generator_c/cmake)
+[4.201s] -- Found rosidl_adapter: 3.1.7 (/opt/ros/humble/share/rosidl_adapter/cmake)
+[4.255s] -- Found rosidl_generator_cpp: 3.1.7 (/opt/ros/humble/share/rosidl_generator_cpp/cmake)
+[4.329s] -- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c
+[4.433s] -- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp
+[4.808s] -- Found rclcpp: 16.0.15 (/opt/ros/humble/share/rclcpp/cmake)
+[5.077s] -- Found rmw_implementation_cmake: 6.1.2 (/opt/ros/humble/share/rmw_implementation_cmake/cmake)
+[5.107s] -- Found rmw_cyclonedds_cpp: 1.3.4 (/opt/ros/humble/share/rmw_cyclonedds_cpp/cmake)
+[5.270s] -- Using RMW implementation 'rmw_cyclonedds_cpp' as default
+[5.339s] -- Looking for pthread.h
+[5.580s] -- Looking for pthread.h - found
+[5.581s] -- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+[5.830s] -- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
+[5.832s] -- Found Threads: TRUE  
+[6.017s] -- Found moveit_msgs: 2.2.1 (/home/liliana/ws_moveit/install/moveit_msgs/share/moveit_msgs/cmake)
+[6.572s] -- Found moveit_core: 2.5.9 (/home/liliana/ws_moveit/install/moveit_core/share/moveit_core/cmake)
+[6.842s] -- Found Boost: /usr/lib/x86_64-linux-gnu/cmake/Boost-1.74.0/BoostConfig.cmake (found version "1.74.0") found components: chrono date_time filesystem iostreams program_options regex serialization system thread 
+[7.156s] -- Found parameter_traits: 0.5.0 (/opt/ros/humble/share/parameter_traits/cmake)
+[7.252s] -- Found rclcpp_lifecycle: 16.0.15 (/opt/ros/humble/share/rclcpp_lifecycle/cmake)
+[7.374s] -- Found Boost: /usr/lib/x86_64-linux-gnu/cmake/Boost-1.74.0/BoostConfig.cmake (found version "1.74.0") found components: filesystem 
+[7.817s] -- library: /usr/lib/x86_64-linux-gnu/libcurl.so
+[7.900s] -- Found Eigen3: TRUE (found version "3.4.0") 
+[7.901s] -- Ensuring Eigen3 include directory is part of orocos-kdl CMake target
+[8.667s] -- Found moveit_ros_planning_interface: 2.5.9 (/home/liliana/ws_moveit/install/moveit_ros_planning_interface/share/moveit_ros_planning_interface/cmake)
+[8.682s] -- Found Boost: /usr/lib/x86_64-linux-gnu/cmake/Boost-1.74.0/BoostConfig.cmake (found version "1.74.0") found components: date_time filesystem program_options system thread 
+[8.730s] -- Found Boost: /usr/lib/x86_64-linux-gnu/cmake/Boost-1.74.0/BoostConfig.cmake (found version "1.74.0") found components: system filesystem date_time program_options thread chrono 
+[8.856s] -- Found Boost: /usr/lib/x86_64-linux-gnu/cmake/Boost-1.74.0/BoostConfig.cmake (found version "1.74.0") found components: thread system filesystem regex date_time program_options 
+[9.196s] -- Found Boost: /usr/lib/x86_64-linux-gnu/cmake/Boost-1.74.0/BoostConfig.cmake (found version "1.74.0") found components: system filesystem date_time program_options thread 
+[9.396s] -- Found ament_lint_auto: 0.12.14 (/opt/ros/humble/share/ament_lint_auto/cmake)
+[9.768s] -- Configuring done
+[9.903s] -- Generating done
+[9.928s] -- Build files have been written to: /home/liliana/ros2_ws/robot-repo-ros2/src/build/test
+[9.966s] Invoked command in '/home/liliana/ros2_ws/robot-repo-ros2/src/build/test' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/liliana/ws_moveit/install/moveit_configs_utils:/home/liliana/ros2_ws/install/my_py_pkg:/home/liliana/ros2_ws/install/joy_mux_controller:/home/liliana/install/my_py_pkg:/opt/ros/humble /usr/bin/cmake /home/liliana/ros2_ws/robot-repo-ros2/src/test -DCMAKE_INSTALL_PREFIX=/home/liliana/ros2_ws/robot-repo-ros2/src/install/test
+[9.972s] Invoking command in '/home/liliana/ros2_ws/robot-repo-ros2/src/build/test': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/liliana/ws_moveit/install/moveit_configs_utils:/home/liliana/ros2_ws/install/my_py_pkg:/home/liliana/ros2_ws/install/joy_mux_controller:/home/liliana/install/my_py_pkg:/opt/ros/humble /usr/bin/cmake --build /home/liliana/ros2_ws/robot-repo-ros2/src/build/test -- -j6 -l6
+[10.168s] [ 50%] [32mBuilding CXX object CMakeFiles/move_group_node.dir/src/move_group.cpp.o[0m
+[28.384s] [100%] [32m[1mLinking CXX executable move_group_node[0m
+[29.997s] [100%] Built target move_group_node
+[30.038s] Invoked command in '/home/liliana/ros2_ws/robot-repo-ros2/src/build/test' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/liliana/ws_moveit/install/moveit_configs_utils:/home/liliana/ros2_ws/install/my_py_pkg:/home/liliana/ros2_ws/install/joy_mux_controller:/home/liliana/install/my_py_pkg:/opt/ros/humble /usr/bin/cmake --build /home/liliana/ros2_ws/robot-repo-ros2/src/build/test -- -j6 -l6
+[30.076s] Invoking command in '/home/liliana/ros2_ws/robot-repo-ros2/src/build/test': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/liliana/ws_moveit/install/moveit_configs_utils:/home/liliana/ros2_ws/install/my_py_pkg:/home/liliana/ros2_ws/install/joy_mux_controller:/home/liliana/install/my_py_pkg:/opt/ros/humble /usr/bin/cmake --install /home/liliana/ros2_ws/robot-repo-ros2/src/build/test
+[30.099s] -- Install configuration: ""
+[30.100s] -- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/install/test/lib/test/move_group_node
+[30.101s] -- Set runtime path of "/home/liliana/ros2_ws/robot-repo-ros2/src/install/test/lib/test/move_group_node" to ""
+[30.102s] -- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/install/test/share/ament_index/resource_index/package_run_dependencies/test
+[30.102s] -- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/install/test/share/ament_index/resource_index/parent_prefix_path/test
+[30.103s] -- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/install/test/share/test/environment/ament_prefix_path.sh
+[30.104s] -- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/install/test/share/test/environment/ament_prefix_path.dsv
+[30.104s] -- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/install/test/share/test/environment/path.sh
+[30.104s] -- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/install/test/share/test/environment/path.dsv
+[30.105s] -- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/install/test/share/test/local_setup.bash
+[30.105s] -- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/install/test/share/test/local_setup.sh
+[30.106s] -- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/install/test/share/test/local_setup.zsh
+[30.106s] -- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/install/test/share/test/local_setup.dsv
+[30.106s] -- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/install/test/share/test/package.dsv
+[30.107s] -- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/install/test/share/ament_index/resource_index/packages/test
+[30.108s] -- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/install/test/share/test/cmake/testConfig.cmake
+[30.108s] -- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/install/test/share/test/cmake/testConfig-version.cmake
+[30.108s] -- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/install/test/share/test/package.xml
+[30.115s] Invoked command in '/home/liliana/ros2_ws/robot-repo-ros2/src/build/test' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/liliana/ws_moveit/install/moveit_configs_utils:/home/liliana/ros2_ws/install/my_py_pkg:/home/liliana/ros2_ws/install/joy_mux_controller:/home/liliana/install/my_py_pkg:/opt/ros/humble /usr/bin/cmake --install /home/liliana/ros2_ws/robot-repo-ros2/src/build/test

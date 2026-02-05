@@ -1,0 +1,29 @@
+[0.055s] Invoking command in '/home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/build/rover_arm_description': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/liliana/ws_moveit/install/moveit_configs_utils:/home/liliana/ros2_ws/install/my_py_pkg:/home/liliana/ros2_ws/install/joy_mux_controller:/home/liliana/install/my_py_pkg:/opt/ros/humble /usr/bin/cmake --build /home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/build/rover_arm_description -- -j6 -l6
+[0.193s] Invoked command in '/home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/build/rover_arm_description' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/liliana/ws_moveit/install/moveit_configs_utils:/home/liliana/ros2_ws/install/my_py_pkg:/home/liliana/ros2_ws/install/joy_mux_controller:/home/liliana/install/my_py_pkg:/opt/ros/humble /usr/bin/cmake --build /home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/build/rover_arm_description -- -j6 -l6
+[0.330s] Invoking command in '/home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/build/rover_arm_description': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/liliana/ws_moveit/install/moveit_configs_utils:/home/liliana/ros2_ws/install/my_py_pkg:/home/liliana/ros2_ws/install/joy_mux_controller:/home/liliana/install/my_py_pkg:/opt/ros/humble /usr/bin/cmake --install /home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/build/rover_arm_description
+[0.357s] -- Install configuration: ""
+[0.358s] -- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_description/share/rover_arm_description//urdf
+[0.358s] -- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_description/share/rover_arm_description//urdf/arm.xacro
+[0.359s] -- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_description/share/rover_arm_description//urdf/common_properties.xacro
+[0.359s] -- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_description/share/rover_arm_description//urdf/arm.urdf.xacro
+[0.359s] -- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_description/share/rover_arm_description//urdf/gripper.xacro
+[0.359s] -- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_description/share/rover_arm_description//launch
+[0.360s] -- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_description/share/rover_arm_description//launch/arm.launch.xml
+[0.360s] -- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_description/share/rover_arm_description//rviz
+[0.360s] -- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_description/share/rover_arm_description//rviz/urdf_config.rviz
+[0.360s] -- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_description/share/ament_index/resource_index/package_run_dependencies/rover_arm_description
+[0.360s] -- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_description/share/ament_index/resource_index/parent_prefix_path/rover_arm_description
+[0.361s] -- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_description/share/rover_arm_description/environment/ament_prefix_path.sh
+[0.361s] -- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_description/share/rover_arm_description/environment/ament_prefix_path.dsv
+[0.361s] -- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_description/share/rover_arm_description/environment/path.sh
+[0.361s] -- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_description/share/rover_arm_description/environment/path.dsv
+[0.361s] -- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_description/share/rover_arm_description/local_setup.bash
+[0.362s] -- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_description/share/rover_arm_description/local_setup.sh
+[0.362s] -- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_description/share/rover_arm_description/local_setup.zsh
+[0.362s] -- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_description/share/rover_arm_description/local_setup.dsv
+[0.362s] -- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_description/share/rover_arm_description/package.dsv
+[0.362s] -- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_description/share/ament_index/resource_index/packages/rover_arm_description
+[0.362s] -- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_description/share/rover_arm_description/cmake/rover_arm_descriptionConfig.cmake
+[0.363s] -- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_description/share/rover_arm_description/cmake/rover_arm_descriptionConfig-version.cmake
+[0.364s] -- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/install/rover_arm_description/share/rover_arm_description/package.xml
+[0.366s] Invoked command in '/home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/build/rover_arm_description' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/liliana/ws_moveit/install/moveit_configs_utils:/home/liliana/ros2_ws/install/my_py_pkg:/home/liliana/ros2_ws/install/joy_mux_controller:/home/liliana/install/my_py_pkg:/opt/ros/humble /usr/bin/cmake --install /home/liliana/ros2_ws/robot-repo-ros2/src/inverse-kinematics/build/rover_arm_description

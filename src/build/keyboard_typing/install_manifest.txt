@@ -1,0 +1,16 @@
+/home/liliana/ros2_ws/robot-repo-ros2/src/install/keyboard_typing/lib/keyboard_typing/move_group_node
+/home/liliana/ros2_ws/robot-repo-ros2/src/install/keyboard_typing/share/ament_index/resource_index/package_run_dependencies/keyboard_typing
+/home/liliana/ros2_ws/robot-repo-ros2/src/install/keyboard_typing/share/ament_index/resource_index/parent_prefix_path/keyboard_typing
+/home/liliana/ros2_ws/robot-repo-ros2/src/install/keyboard_typing/share/keyboard_typing/environment/ament_prefix_path.sh
+/home/liliana/ros2_ws/robot-repo-ros2/src/install/keyboard_typing/share/keyboard_typing/environment/ament_prefix_path.dsv
+/home/liliana/ros2_ws/robot-repo-ros2/src/install/keyboard_typing/share/keyboard_typing/environment/path.sh
+/home/liliana/ros2_ws/robot-repo-ros2/src/install/keyboard_typing/share/keyboard_typing/environment/path.dsv
+/home/liliana/ros2_ws/robot-repo-ros2/src/install/keyboard_typing/share/keyboard_typing/local_setup.bash
+/home/liliana/ros2_ws/robot-repo-ros2/src/install/keyboard_typing/share/keyboard_typing/local_setup.sh
+/home/liliana/ros2_ws/robot-repo-ros2/src/install/keyboard_typing/share/keyboard_typing/local_setup.zsh
+/home/liliana/ros2_ws/robot-repo-ros2/src/install/keyboard_typing/share/keyboard_typing/local_setup.dsv
+/home/liliana/ros2_ws/robot-repo-ros2/src/install/keyboard_typing/share/keyboard_typing/package.dsv
+/home/liliana/ros2_ws/robot-repo-ros2/src/install/keyboard_typing/share/ament_index/resource_index/packages/keyboard_typing
+/home/liliana/ros2_ws/robot-repo-ros2/src/install/keyboard_typing/share/keyboard_typing/cmake/keyboard_typingConfig.cmake
+/home/liliana/ros2_ws/robot-repo-ros2/src/install/keyboard_typing/share/keyboard_typing/cmake/keyboard_typingConfig-version.cmake
+/home/liliana/ros2_ws/robot-repo-ros2/src/install/keyboard_typing/share/keyboard_typing/package.xml

@@ -1,0 +1,36 @@
+[0.061s] Invoking command in '/home/liliana/ros2_ws/robot-repo-ros2/src/build/test': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/liliana/ws_moveit/install/moveit_configs_utils:/home/liliana/ros2_ws/install/my_py_pkg:/home/liliana/ros2_ws/install/joy_mux_controller:/home/liliana/install/my_py_pkg:/opt/ros/humble /usr/bin/cmake --build /home/liliana/ros2_ws/robot-repo-ros2/src/build/test -- -j6 -l6
+[0.241s] [35m[1mConsolidate compiler generated dependencies of target move_group_node[0m
+[0.331s] [ 50%] [32mBuilding CXX object CMakeFiles/move_group_node.dir/src/move_group.cpp.o[0m
+[16.689s] [01m[K/home/liliana/ros2_ws/robot-repo-ros2/src/test/src/move_group.cpp:[m[K In function ‘[01m[Kvoid goTarget(double, double, double, moveit::planning_interface::MoveGroupInterface&, rclcpp::Node::SharedPtr)[m[K’:
+[16.690s] [01m[K/home/liliana/ros2_ws/robot-repo-ros2/src/test/src/move_group.cpp:10:22:[m[K [01;35m[Kwarning: [m[Kunused parameter ‘[01m[Kx[m[K’ [[01;35m[K]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wunused-parameter-Wunused-parameter]8;;[m[K]
+[16.690s]    10 | void goTarget([01;35m[Kdouble x[m[K, double y, double z,
+[16.690s]       |               [01;35m[K~~~~~~~^[m[K
+[16.690s] [01m[K/home/liliana/ros2_ws/robot-repo-ros2/src/test/src/move_group.cpp:10:32:[m[K [01;35m[Kwarning: [m[Kunused parameter ‘[01m[Ky[m[K’ [[01;35m[K]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wunused-parameter-Wunused-parameter]8;;[m[K]
+[16.691s]    10 | void goTarget(double x, [01;35m[Kdouble y[m[K, double z,
+[16.691s]       |                         [01;35m[K~~~~~~~^[m[K
+[16.691s] [01m[K/home/liliana/ros2_ws/robot-repo-ros2/src/test/src/move_group.cpp:10:42:[m[K [01;35m[Kwarning: [m[Kunused parameter ‘[01m[Kz[m[K’ [[01;35m[K]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wunused-parameter-Wunused-parameter]8;;[m[K]
+[16.692s]    10 | void goTarget(double x, double y, [01;35m[Kdouble z[m[K,
+[16.692s]       |                                   [01;35m[K~~~~~~~^[m[K
+[26.107s] [100%] [32m[1mLinking CXX executable move_group_node[0m
+[27.648s] [100%] Built target move_group_node
+[27.699s] Invoked command in '/home/liliana/ros2_ws/robot-repo-ros2/src/build/test' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/liliana/ws_moveit/install/moveit_configs_utils:/home/liliana/ros2_ws/install/my_py_pkg:/home/liliana/ros2_ws/install/joy_mux_controller:/home/liliana/install/my_py_pkg:/opt/ros/humble /usr/bin/cmake --build /home/liliana/ros2_ws/robot-repo-ros2/src/build/test -- -j6 -l6
+[27.740s] Invoking command in '/home/liliana/ros2_ws/robot-repo-ros2/src/build/test': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/liliana/ws_moveit/install/moveit_configs_utils:/home/liliana/ros2_ws/install/my_py_pkg:/home/liliana/ros2_ws/install/joy_mux_controller:/home/liliana/install/my_py_pkg:/opt/ros/humble /usr/bin/cmake --install /home/liliana/ros2_ws/robot-repo-ros2/src/build/test
+[27.769s] -- Install configuration: ""
+[27.770s] -- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/install/test/lib/test/move_group_node
+[27.772s] -- Set runtime path of "/home/liliana/ros2_ws/robot-repo-ros2/src/install/test/lib/test/move_group_node" to ""
+[27.773s] -- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/install/test/share/ament_index/resource_index/package_run_dependencies/test
+[27.775s] -- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/install/test/share/ament_index/resource_index/parent_prefix_path/test
+[27.775s] -- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/install/test/share/test/environment/ament_prefix_path.sh
+[27.775s] -- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/install/test/share/test/environment/ament_prefix_path.dsv
+[27.776s] -- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/install/test/share/test/environment/path.sh
+[27.776s] -- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/install/test/share/test/environment/path.dsv
+[27.776s] -- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/install/test/share/test/local_setup.bash
+[27.777s] -- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/install/test/share/test/local_setup.sh
+[27.777s] -- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/install/test/share/test/local_setup.zsh
+[27.777s] -- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/install/test/share/test/local_setup.dsv
+[27.777s] -- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/install/test/share/test/package.dsv
+[27.777s] -- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/install/test/share/ament_index/resource_index/packages/test
+[27.778s] -- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/install/test/share/test/cmake/testConfig.cmake
+[27.778s] -- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/install/test/share/test/cmake/testConfig-version.cmake
+[27.778s] -- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/install/test/share/test/package.xml
+[27.782s] Invoked command in '/home/liliana/ros2_ws/robot-repo-ros2/src/build/test' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/liliana/ws_moveit/install/moveit_configs_utils:/home/liliana/ros2_ws/install/my_py_pkg:/home/liliana/ros2_ws/install/joy_mux_controller:/home/liliana/install/my_py_pkg:/opt/ros/humble /usr/bin/cmake --install /home/liliana/ros2_ws/robot-repo-ros2/src/build/test

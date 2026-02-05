@@ -1,0 +1,369 @@
+[0.447s] DEBUG:colcon:Command line arguments: ['/usr/bin/colcon', 'build', '--packages-select', 'keyboard_typing']
+[0.447s] DEBUG:colcon:Parsed command line arguments: Namespace(log_base=None, log_level=None, verb_name='build', build_base='build', install_base='install', merge_install=False, symlink_install=False, test_result_base=None, continue_on_error=False, executor='parallel', parallel_workers=6, event_handlers=None, ignore_user_meta=False, metas=['./colcon.meta'], base_paths=['.'], packages_ignore=None, packages_ignore_regex=None, paths=None, packages_up_to=None, packages_up_to_regex=None, packages_above=None, packages_above_and_dependencies=None, packages_above_depth=None, packages_select_by_dep=None, packages_skip_by_dep=None, packages_skip_up_to=None, packages_select_build_failed=False, packages_skip_build_finished=False, packages_select_test_failures=False, packages_skip_test_passed=False, packages_select=['keyboard_typing'], packages_skip=None, packages_select_regex=None, packages_skip_regex=None, packages_start=None, packages_end=None, allow_overriding=[], cmake_args=None, cmake_target=None, cmake_target_skip_unavailable=False, cmake_clean_cache=False, cmake_clean_first=False, cmake_force_configure=False, ament_cmake_args=None, catkin_cmake_args=None, catkin_skip_building_tests=False, mixin_files=None, mixin=None, verb_parser=<colcon_mixin.mixin.mixin_argument.MixinArgumentDecorator object at 0x7b2ec77945e0>, verb_extension=<colcon_core.verb.build.BuildVerb object at 0x7b2ec7794100>, main=<bound method BuildVerb.main of <colcon_core.verb.build.BuildVerb object at 0x7b2ec7794100>>, mixin_verb=('build',))
+[1.390s] Level 1:colcon.colcon_core.package_discovery:discover_packages(colcon_meta) check parameters
+[1.391s] Level 1:colcon.colcon_core.package_discovery:discover_packages(recursive) check parameters
+[1.391s] Level 1:colcon.colcon_core.package_discovery:discover_packages(ignore) check parameters
+[1.391s] Level 1:colcon.colcon_core.package_discovery:discover_packages(path) check parameters
+[1.391s] Level 1:colcon.colcon_core.package_discovery:discover_packages(colcon_meta) discover
+[1.391s] Level 1:colcon.colcon_core.package_discovery:discover_packages(recursive) discover
+[1.391s] INFO:colcon.colcon_core.package_discovery:Crawling recursively for packages in '/home/liliana/ros2_ws/robot-repo-ros2/src'
+[1.392s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['ignore', 'ignore_ament_install']
+[1.392s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'ignore'
+[1.392s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'ignore_ament_install'
+[1.392s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['colcon_pkg']
+[1.392s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'colcon_pkg'
+[1.392s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['colcon_meta']
+[1.392s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'colcon_meta'
+[1.392s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['ros']
+[1.392s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'ros'
+[1.443s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['cmake', 'python']
+[1.443s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'cmake'
+[1.443s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'python'
+[1.443s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['python_setup_py']
+[1.443s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'python_setup_py'
+[1.444s] Level 1:colcon.colcon_core.package_identification:_identify(absenc_interface) by extensions ['ignore', 'ignore_ament_install']
+[1.444s] Level 1:colcon.colcon_core.package_identification:_identify(absenc_interface) by extension 'ignore'
+[1.444s] Level 1:colcon.colcon_core.package_identification:_identify(absenc_interface) by extension 'ignore_ament_install'
+[1.444s] Level 1:colcon.colcon_core.package_identification:_identify(absenc_interface) by extensions ['colcon_pkg']
+[1.444s] Level 1:colcon.colcon_core.package_identification:_identify(absenc_interface) by extension 'colcon_pkg'
+[1.444s] Level 1:colcon.colcon_core.package_identification:_identify(absenc_interface) by extensions ['colcon_meta']
+[1.444s] Level 1:colcon.colcon_core.package_identification:_identify(absenc_interface) by extension 'colcon_meta'
+[1.445s] Level 1:colcon.colcon_core.package_identification:_identify(absenc_interface) by extensions ['ros']
+[1.445s] Level 1:colcon.colcon_core.package_identification:_identify(absenc_interface) by extension 'ros'
+[1.454s] DEBUG:colcon.colcon_core.package_identification:Package 'absenc_interface' with type 'ros.ament_cmake' and name 'absenc_interface'
+[1.454s] Level 1:colcon.colcon_core.package_identification:_identify(arm_controller) by extensions ['ignore', 'ignore_ament_install']
+[1.455s] Level 1:colcon.colcon_core.package_identification:_identify(arm_controller) by extension 'ignore'
+[1.455s] Level 1:colcon.colcon_core.package_identification:_identify(arm_controller) by extension 'ignore_ament_install'
+[1.455s] Level 1:colcon.colcon_core.package_identification:_identify(arm_controller) by extensions ['colcon_pkg']
+[1.455s] Level 1:colcon.colcon_core.package_identification:_identify(arm_controller) by extension 'colcon_pkg'
+[1.455s] Level 1:colcon.colcon_core.package_identification:_identify(arm_controller) by extensions ['colcon_meta']
+[1.455s] Level 1:colcon.colcon_core.package_identification:_identify(arm_controller) by extension 'colcon_meta'
+[1.455s] Level 1:colcon.colcon_core.package_identification:_identify(arm_controller) by extensions ['ros']
+[1.455s] Level 1:colcon.colcon_core.package_identification:_identify(arm_controller) by extension 'ros'
+[1.457s] DEBUG:colcon.colcon_core.package_identification:Package 'arm_controller' with type 'ros.ament_cmake' and name 'arm_controller'
+[1.457s] Level 1:colcon.colcon_core.package_identification:_identify(build) by extensions ['ignore', 'ignore_ament_install']
+[1.457s] Level 1:colcon.colcon_core.package_identification:_identify(build) by extension 'ignore'
+[1.458s] Level 1:colcon.colcon_core.package_identification:_identify(build) ignored
+[1.458s] Level 1:colcon.colcon_core.package_identification:_identify(gps_py) by extensions ['ignore', 'ignore_ament_install']
+[1.458s] Level 1:colcon.colcon_core.package_identification:_identify(gps_py) by extension 'ignore'
+[1.458s] Level 1:colcon.colcon_core.package_identification:_identify(gps_py) by extension 'ignore_ament_install'
+[1.458s] Level 1:colcon.colcon_core.package_identification:_identify(gps_py) by extensions ['colcon_pkg']
+[1.458s] Level 1:colcon.colcon_core.package_identification:_identify(gps_py) by extension 'colcon_pkg'
+[1.458s] Level 1:colcon.colcon_core.package_identification:_identify(gps_py) by extensions ['colcon_meta']
+[1.459s] Level 1:colcon.colcon_core.package_identification:_identify(gps_py) by extension 'colcon_meta'
+[1.459s] Level 1:colcon.colcon_core.package_identification:_identify(gps_py) by extensions ['ros']
+[1.459s] Level 1:colcon.colcon_core.package_identification:_identify(gps_py) by extension 'ros'
+[1.460s] DEBUG:colcon.colcon_core.package_identification:Package 'gps_py' with type 'ros.ament_python' and name 'gps_py'
+[1.461s] Level 1:colcon.colcon_core.package_identification:_identify(install) by extensions ['ignore', 'ignore_ament_install']
+[1.461s] Level 1:colcon.colcon_core.package_identification:_identify(install) by extension 'ignore'
+[1.461s] Level 1:colcon.colcon_core.package_identification:_identify(install) ignored
+[1.461s] Level 1:colcon.colcon_core.package_identification:_identify(inverse-kinematics) by extensions ['ignore', 'ignore_ament_install']
+[1.462s] Level 1:colcon.colcon_core.package_identification:_identify(inverse-kinematics) by extension 'ignore'
+[1.462s] Level 1:colcon.colcon_core.package_identification:_identify(inverse-kinematics) by extension 'ignore_ament_install'
+[1.462s] Level 1:colcon.colcon_core.package_identification:_identify(inverse-kinematics) by extensions ['colcon_pkg']
+[1.462s] Level 1:colcon.colcon_core.package_identification:_identify(inverse-kinematics) by extension 'colcon_pkg'
+[1.462s] Level 1:colcon.colcon_core.package_identification:_identify(inverse-kinematics) by extensions ['colcon_meta']
+[1.462s] Level 1:colcon.colcon_core.package_identification:_identify(inverse-kinematics) by extension 'colcon_meta'
+[1.462s] Level 1:colcon.colcon_core.package_identification:_identify(inverse-kinematics) by extensions ['ros']
+[1.462s] Level 1:colcon.colcon_core.package_identification:_identify(inverse-kinematics) by extension 'ros'
+[1.463s] Level 1:colcon.colcon_core.package_identification:_identify(inverse-kinematics) by extensions ['cmake', 'python']
+[1.463s] Level 1:colcon.colcon_core.package_identification:_identify(inverse-kinematics) by extension 'cmake'
+[1.463s] Level 1:colcon.colcon_core.package_identification:_identify(inverse-kinematics) by extension 'python'
+[1.463s] Level 1:colcon.colcon_core.package_identification:_identify(inverse-kinematics) by extensions ['python_setup_py']
+[1.463s] Level 1:colcon.colcon_core.package_identification:_identify(inverse-kinematics) by extension 'python_setup_py'
+[1.463s] Level 1:colcon.colcon_core.package_identification:_identify(inverse-kinematics/arm_hardware) by extensions ['ignore', 'ignore_ament_install']
+[1.464s] Level 1:colcon.colcon_core.package_identification:_identify(inverse-kinematics/arm_hardware) by extension 'ignore'
+[1.464s] Level 1:colcon.colcon_core.package_identification:_identify(inverse-kinematics/arm_hardware) by extension 'ignore_ament_install'
+[1.464s] Level 1:colcon.colcon_core.package_identification:_identify(inverse-kinematics/arm_hardware) by extensions ['colcon_pkg']
+[1.464s] Level 1:colcon.colcon_core.package_identification:_identify(inverse-kinematics/arm_hardware) by extension 'colcon_pkg'
+[1.464s] Level 1:colcon.colcon_core.package_identification:_identify(inverse-kinematics/arm_hardware) by extensions ['colcon_meta']
+[1.464s] Level 1:colcon.colcon_core.package_identification:_identify(inverse-kinematics/arm_hardware) by extension 'colcon_meta'
+[1.464s] Level 1:colcon.colcon_core.package_identification:_identify(inverse-kinematics/arm_hardware) by extensions ['ros']
+[1.464s] Level 1:colcon.colcon_core.package_identification:_identify(inverse-kinematics/arm_hardware) by extension 'ros'
+[1.467s] DEBUG:colcon.colcon_core.package_identification:Package 'inverse-kinematics/arm_hardware' with type 'ros.ament_cmake' and name 'arm_hardware'
+[1.468s] Level 1:colcon.colcon_core.package_identification:_identify(inverse-kinematics/build) by extensions ['ignore', 'ignore_ament_install']
+[1.468s] Level 1:colcon.colcon_core.package_identification:_identify(inverse-kinematics/build) by extension 'ignore'
+[1.468s] Level 1:colcon.colcon_core.package_identification:_identify(inverse-kinematics/build) ignored
+[1.468s] Level 1:colcon.colcon_core.package_identification:_identify(inverse-kinematics/ik_mux_controller) by extensions ['ignore', 'ignore_ament_install']
+[1.469s] Level 1:colcon.colcon_core.package_identification:_identify(inverse-kinematics/ik_mux_controller) by extension 'ignore'
+[1.469s] Level 1:colcon.colcon_core.package_identification:_identify(inverse-kinematics/ik_mux_controller) by extension 'ignore_ament_install'
+[1.469s] Level 1:colcon.colcon_core.package_identification:_identify(inverse-kinematics/ik_mux_controller) by extensions ['colcon_pkg']
+[1.469s] Level 1:colcon.colcon_core.package_identification:_identify(inverse-kinematics/ik_mux_controller) by extension 'colcon_pkg'
+[1.469s] Level 1:colcon.colcon_core.package_identification:_identify(inverse-kinematics/ik_mux_controller) by extensions ['colcon_meta']
+[1.469s] Level 1:colcon.colcon_core.package_identification:_identify(inverse-kinematics/ik_mux_controller) by extension 'colcon_meta'
+[1.469s] Level 1:colcon.colcon_core.package_identification:_identify(inverse-kinematics/ik_mux_controller) by extensions ['ros']
+[1.469s] Level 1:colcon.colcon_core.package_identification:_identify(inverse-kinematics/ik_mux_controller) by extension 'ros'
+[1.473s] DEBUG:colcon.colcon_core.package_identification:Package 'inverse-kinematics/ik_mux_controller' with type 'ros.ament_cmake' and name 'ik_mux_controller'
+[1.474s] Level 1:colcon.colcon_core.package_identification:_identify(inverse-kinematics/install) by extensions ['ignore', 'ignore_ament_install']
+[1.474s] Level 1:colcon.colcon_core.package_identification:_identify(inverse-kinematics/install) by extension 'ignore'
+[1.474s] Level 1:colcon.colcon_core.package_identification:_identify(inverse-kinematics/install) ignored
+[1.474s] Level 1:colcon.colcon_core.package_identification:_identify(inverse-kinematics/log) by extensions ['ignore', 'ignore_ament_install']
+[1.475s] Level 1:colcon.colcon_core.package_identification:_identify(inverse-kinematics/log) by extension 'ignore'
+[1.475s] Level 1:colcon.colcon_core.package_identification:_identify(inverse-kinematics/log) ignored
+[1.475s] Level 1:colcon.colcon_core.package_identification:_identify(inverse-kinematics/rover_arm_description) by extensions ['ignore', 'ignore_ament_install']
+[1.475s] Level 1:colcon.colcon_core.package_identification:_identify(inverse-kinematics/rover_arm_description) by extension 'ignore'
+[1.475s] Level 1:colcon.colcon_core.package_identification:_identify(inverse-kinematics/rover_arm_description) by extension 'ignore_ament_install'
+[1.475s] Level 1:colcon.colcon_core.package_identification:_identify(inverse-kinematics/rover_arm_description) by extensions ['colcon_pkg']
+[1.476s] Level 1:colcon.colcon_core.package_identification:_identify(inverse-kinematics/rover_arm_description) by extension 'colcon_pkg'
+[1.476s] Level 1:colcon.colcon_core.package_identification:_identify(inverse-kinematics/rover_arm_description) by extensions ['colcon_meta']
+[1.476s] Level 1:colcon.colcon_core.package_identification:_identify(inverse-kinematics/rover_arm_description) by extension 'colcon_meta'
+[1.476s] Level 1:colcon.colcon_core.package_identification:_identify(inverse-kinematics/rover_arm_description) by extensions ['ros']
+[1.476s] Level 1:colcon.colcon_core.package_identification:_identify(inverse-kinematics/rover_arm_description) by extension 'ros'
+[1.477s] DEBUG:colcon.colcon_core.package_identification:Package 'inverse-kinematics/rover_arm_description' with type 'ros.ament_cmake' and name 'rover_arm_description'
+[1.478s] Level 1:colcon.colcon_core.package_identification:_identify(inverse-kinematics/rover_arm_moveit_config) by extensions ['ignore', 'ignore_ament_install']
+[1.478s] Level 1:colcon.colcon_core.package_identification:_identify(inverse-kinematics/rover_arm_moveit_config) by extension 'ignore'
+[1.478s] Level 1:colcon.colcon_core.package_identification:_identify(inverse-kinematics/rover_arm_moveit_config) by extension 'ignore_ament_install'
+[1.478s] Level 1:colcon.colcon_core.package_identification:_identify(inverse-kinematics/rover_arm_moveit_config) by extensions ['colcon_pkg']
+[1.479s] Level 1:colcon.colcon_core.package_identification:_identify(inverse-kinematics/rover_arm_moveit_config) by extension 'colcon_pkg'
+[1.479s] Level 1:colcon.colcon_core.package_identification:_identify(inverse-kinematics/rover_arm_moveit_config) by extensions ['colcon_meta']
+[1.479s] Level 1:colcon.colcon_core.package_identification:_identify(inverse-kinematics/rover_arm_moveit_config) by extension 'colcon_meta'
+[1.479s] Level 1:colcon.colcon_core.package_identification:_identify(inverse-kinematics/rover_arm_moveit_config) by extensions ['ros']
+[1.479s] Level 1:colcon.colcon_core.package_identification:_identify(inverse-kinematics/rover_arm_moveit_config) by extension 'ros'
+[1.482s] DEBUG:colcon.colcon_core.package_identification:Package 'inverse-kinematics/rover_arm_moveit_config' with type 'ros.ament_cmake' and name 'rover_arm_moveit_config'
+[1.482s] Level 1:colcon.colcon_core.package_identification:_identify(joy_mux_controller) by extensions ['ignore', 'ignore_ament_install']
+[1.482s] Level 1:colcon.colcon_core.package_identification:_identify(joy_mux_controller) by extension 'ignore'
+[1.482s] Level 1:colcon.colcon_core.package_identification:_identify(joy_mux_controller) by extension 'ignore_ament_install'
+[1.482s] Level 1:colcon.colcon_core.package_identification:_identify(joy_mux_controller) by extensions ['colcon_pkg']
+[1.483s] Level 1:colcon.colcon_core.package_identification:_identify(joy_mux_controller) by extension 'colcon_pkg'
+[1.483s] Level 1:colcon.colcon_core.package_identification:_identify(joy_mux_controller) by extensions ['colcon_meta']
+[1.483s] Level 1:colcon.colcon_core.package_identification:_identify(joy_mux_controller) by extension 'colcon_meta'
+[1.483s] Level 1:colcon.colcon_core.package_identification:_identify(joy_mux_controller) by extensions ['ros']
+[1.483s] Level 1:colcon.colcon_core.package_identification:_identify(joy_mux_controller) by extension 'ros'
+[1.483s] Level 1:colcon.colcon_core.package_identification:_identify(joy_mux_controller) by extensions ['cmake', 'python']
+[1.483s] Level 1:colcon.colcon_core.package_identification:_identify(joy_mux_controller) by extension 'cmake'
+[1.483s] Level 1:colcon.colcon_core.package_identification:_identify(joy_mux_controller) by extension 'python'
+[1.483s] Level 1:colcon.colcon_core.package_identification:_identify(joy_mux_controller) by extensions ['python_setup_py']
+[1.483s] Level 1:colcon.colcon_core.package_identification:_identify(joy_mux_controller) by extension 'python_setup_py'
+[2.570s] DEBUG:colcon.colcon_core.package_identification:Package 'joy_mux_controller' with type 'python' and name 'joy_mux_controller'
+[2.572s] Level 1:colcon.colcon_core.package_identification:_identify(joy_mux_controller_cpp) by extensions ['ignore', 'ignore_ament_install']
+[2.573s] Level 1:colcon.colcon_core.package_identification:_identify(joy_mux_controller_cpp) by extension 'ignore'
+[2.574s] Level 1:colcon.colcon_core.package_identification:_identify(joy_mux_controller_cpp) by extension 'ignore_ament_install'
+[2.574s] Level 1:colcon.colcon_core.package_identification:_identify(joy_mux_controller_cpp) by extensions ['colcon_pkg']
+[2.574s] Level 1:colcon.colcon_core.package_identification:_identify(joy_mux_controller_cpp) by extension 'colcon_pkg'
+[2.574s] Level 1:colcon.colcon_core.package_identification:_identify(joy_mux_controller_cpp) by extensions ['colcon_meta']
+[2.574s] Level 1:colcon.colcon_core.package_identification:_identify(joy_mux_controller_cpp) by extension 'colcon_meta'
+[2.574s] Level 1:colcon.colcon_core.package_identification:_identify(joy_mux_controller_cpp) by extensions ['ros']
+[2.574s] Level 1:colcon.colcon_core.package_identification:_identify(joy_mux_controller_cpp) by extension 'ros'
+[2.577s] DEBUG:colcon.colcon_core.package_identification:Package 'joy_mux_controller_cpp' with type 'ros.ament_cmake' and name 'joy_mux_controller_cpp'
+[2.578s] Level 1:colcon.colcon_core.package_identification:_identify(joy_mux_controller_py) by extensions ['ignore', 'ignore_ament_install']
+[2.578s] Level 1:colcon.colcon_core.package_identification:_identify(joy_mux_controller_py) by extension 'ignore'
+[2.578s] Level 1:colcon.colcon_core.package_identification:_identify(joy_mux_controller_py) by extension 'ignore_ament_install'
+[2.578s] Level 1:colcon.colcon_core.package_identification:_identify(joy_mux_controller_py) by extensions ['colcon_pkg']
+[2.578s] Level 1:colcon.colcon_core.package_identification:_identify(joy_mux_controller_py) by extension 'colcon_pkg'
+[2.578s] Level 1:colcon.colcon_core.package_identification:_identify(joy_mux_controller_py) by extensions ['colcon_meta']
+[2.579s] Level 1:colcon.colcon_core.package_identification:_identify(joy_mux_controller_py) by extension 'colcon_meta'
+[2.579s] Level 1:colcon.colcon_core.package_identification:_identify(joy_mux_controller_py) by extensions ['ros']
+[2.579s] Level 1:colcon.colcon_core.package_identification:_identify(joy_mux_controller_py) by extension 'ros'
+[2.581s] DEBUG:colcon.colcon_core.package_identification:Package 'joy_mux_controller_py' with type 'ros.ament_python' and name 'joy_mux_controller_py'
+[2.581s] Level 1:colcon.colcon_core.package_identification:_identify(keyboard_typing) by extensions ['ignore', 'ignore_ament_install']
+[2.582s] Level 1:colcon.colcon_core.package_identification:_identify(keyboard_typing) by extension 'ignore'
+[2.582s] Level 1:colcon.colcon_core.package_identification:_identify(keyboard_typing) by extension 'ignore_ament_install'
+[2.582s] Level 1:colcon.colcon_core.package_identification:_identify(keyboard_typing) by extensions ['colcon_pkg']
+[2.582s] Level 1:colcon.colcon_core.package_identification:_identify(keyboard_typing) by extension 'colcon_pkg'
+[2.582s] Level 1:colcon.colcon_core.package_identification:_identify(keyboard_typing) by extensions ['colcon_meta']
+[2.582s] Level 1:colcon.colcon_core.package_identification:_identify(keyboard_typing) by extension 'colcon_meta'
+[2.582s] Level 1:colcon.colcon_core.package_identification:_identify(keyboard_typing) by extensions ['ros']
+[2.582s] Level 1:colcon.colcon_core.package_identification:_identify(keyboard_typing) by extension 'ros'
+[2.585s] DEBUG:colcon.colcon_core.package_identification:Package 'keyboard_typing' with type 'ros.ament_cmake' and name 'keyboard_typing'
+[2.586s] Level 1:colcon.colcon_core.package_identification:_identify(log) by extensions ['ignore', 'ignore_ament_install']
+[2.586s] Level 1:colcon.colcon_core.package_identification:_identify(log) by extension 'ignore'
+[2.586s] Level 1:colcon.colcon_core.package_identification:_identify(log) ignored
+[2.586s] Level 1:colcon.colcon_core.package_identification:_identify(ouster-ros) by extensions ['ignore', 'ignore_ament_install']
+[2.586s] Level 1:colcon.colcon_core.package_identification:_identify(ouster-ros) by extension 'ignore'
+[2.587s] Level 1:colcon.colcon_core.package_identification:_identify(ouster-ros) by extension 'ignore_ament_install'
+[2.587s] Level 1:colcon.colcon_core.package_identification:_identify(ouster-ros) by extensions ['colcon_pkg']
+[2.587s] Level 1:colcon.colcon_core.package_identification:_identify(ouster-ros) by extension 'colcon_pkg'
+[2.587s] Level 1:colcon.colcon_core.package_identification:_identify(ouster-ros) by extensions ['colcon_meta']
+[2.587s] Level 1:colcon.colcon_core.package_identification:_identify(ouster-ros) by extension 'colcon_meta'
+[2.587s] Level 1:colcon.colcon_core.package_identification:_identify(ouster-ros) by extensions ['ros']
+[2.587s] Level 1:colcon.colcon_core.package_identification:_identify(ouster-ros) by extension 'ros'
+[2.587s] Level 1:colcon.colcon_core.package_identification:_identify(ouster-ros) by extensions ['cmake', 'python']
+[2.587s] Level 1:colcon.colcon_core.package_identification:_identify(ouster-ros) by extension 'cmake'
+[2.587s] Level 1:colcon.colcon_core.package_identification:_identify(ouster-ros) by extension 'python'
+[2.588s] Level 1:colcon.colcon_core.package_identification:_identify(ouster-ros) by extensions ['python_setup_py']
+[2.588s] Level 1:colcon.colcon_core.package_identification:_identify(ouster-ros) by extension 'python_setup_py'
+[2.588s] Level 1:colcon.colcon_core.package_identification:_identify(ouster-ros/docs) by extensions ['ignore', 'ignore_ament_install']
+[2.588s] Level 1:colcon.colcon_core.package_identification:_identify(ouster-ros/docs) by extension 'ignore'
+[2.588s] Level 1:colcon.colcon_core.package_identification:_identify(ouster-ros/docs) by extension 'ignore_ament_install'
+[2.588s] Level 1:colcon.colcon_core.package_identification:_identify(ouster-ros/docs) by extensions ['colcon_pkg']
+[2.588s] Level 1:colcon.colcon_core.package_identification:_identify(ouster-ros/docs) by extension 'colcon_pkg'
+[2.588s] Level 1:colcon.colcon_core.package_identification:_identify(ouster-ros/docs) by extensions ['colcon_meta']
+[2.588s] Level 1:colcon.colcon_core.package_identification:_identify(ouster-ros/docs) by extension 'colcon_meta'
+[2.589s] Level 1:colcon.colcon_core.package_identification:_identify(ouster-ros/docs) by extensions ['ros']
+[2.589s] Level 1:colcon.colcon_core.package_identification:_identify(ouster-ros/docs) by extension 'ros'
+[2.589s] Level 1:colcon.colcon_core.package_identification:_identify(ouster-ros/docs) by extensions ['cmake', 'python']
+[2.589s] Level 1:colcon.colcon_core.package_identification:_identify(ouster-ros/docs) by extension 'cmake'
+[2.589s] Level 1:colcon.colcon_core.package_identification:_identify(ouster-ros/docs) by extension 'python'
+[2.589s] Level 1:colcon.colcon_core.package_identification:_identify(ouster-ros/docs) by extensions ['python_setup_py']
+[2.589s] Level 1:colcon.colcon_core.package_identification:_identify(ouster-ros/docs) by extension 'python_setup_py'
+[2.589s] Level 1:colcon.colcon_core.package_identification:_identify(ouster-ros/docs/images) by extensions ['ignore', 'ignore_ament_install']
+[2.590s] Level 1:colcon.colcon_core.package_identification:_identify(ouster-ros/docs/images) by extension 'ignore'
+[2.590s] Level 1:colcon.colcon_core.package_identification:_identify(ouster-ros/docs/images) by extension 'ignore_ament_install'
+[2.590s] Level 1:colcon.colcon_core.package_identification:_identify(ouster-ros/docs/images) by extensions ['colcon_pkg']
+[2.590s] Level 1:colcon.colcon_core.package_identification:_identify(ouster-ros/docs/images) by extension 'colcon_pkg'
+[2.590s] Level 1:colcon.colcon_core.package_identification:_identify(ouster-ros/docs/images) by extensions ['colcon_meta']
+[2.590s] Level 1:colcon.colcon_core.package_identification:_identify(ouster-ros/docs/images) by extension 'colcon_meta'
+[2.590s] Level 1:colcon.colcon_core.package_identification:_identify(ouster-ros/docs/images) by extensions ['ros']
+[2.591s] Level 1:colcon.colcon_core.package_identification:_identify(ouster-ros/docs/images) by extension 'ros'
+[2.591s] Level 1:colcon.colcon_core.package_identification:_identify(ouster-ros/docs/images) by extensions ['cmake', 'python']
+[2.591s] Level 1:colcon.colcon_core.package_identification:_identify(ouster-ros/docs/images) by extension 'cmake'
+[2.591s] Level 1:colcon.colcon_core.package_identification:_identify(ouster-ros/docs/images) by extension 'python'
+[2.591s] Level 1:colcon.colcon_core.package_identification:_identify(ouster-ros/docs/images) by extensions ['python_setup_py']
+[2.591s] Level 1:colcon.colcon_core.package_identification:_identify(ouster-ros/docs/images) by extension 'python_setup_py'
+[2.591s] Level 1:colcon.colcon_core.package_identification:_identify(ouster-ros/ouster-ros) by extensions ['ignore', 'ignore_ament_install']
+[2.591s] Level 1:colcon.colcon_core.package_identification:_identify(ouster-ros/ouster-ros) by extension 'ignore'
+[2.592s] Level 1:colcon.colcon_core.package_identification:_identify(ouster-ros/ouster-ros) by extension 'ignore_ament_install'
+[2.592s] Level 1:colcon.colcon_core.package_identification:_identify(ouster-ros/ouster-ros) by extensions ['colcon_pkg']
+[2.592s] Level 1:colcon.colcon_core.package_identification:_identify(ouster-ros/ouster-ros) by extension 'colcon_pkg'
+[2.592s] Level 1:colcon.colcon_core.package_identification:_identify(ouster-ros/ouster-ros) by extensions ['colcon_meta']
+[2.592s] Level 1:colcon.colcon_core.package_identification:_identify(ouster-ros/ouster-ros) by extension 'colcon_meta'
+[2.592s] Level 1:colcon.colcon_core.package_identification:_identify(ouster-ros/ouster-ros) by extensions ['ros']
+[2.592s] Level 1:colcon.colcon_core.package_identification:_identify(ouster-ros/ouster-ros) by extension 'ros'
+[2.599s] DEBUG:colcon.colcon_core.package_identification:Package 'ouster-ros/ouster-ros' with type 'ros.ament_cmake' and name 'ouster_ros'
+[2.599s] Level 1:colcon.colcon_core.package_identification:_identify(ouster-ros/ouster-sensor-msgs) by extensions ['ignore', 'ignore_ament_install']
+[2.600s] Level 1:colcon.colcon_core.package_identification:_identify(ouster-ros/ouster-sensor-msgs) by extension 'ignore'
+[2.600s] Level 1:colcon.colcon_core.package_identification:_identify(ouster-ros/ouster-sensor-msgs) by extension 'ignore_ament_install'
+[2.600s] Level 1:colcon.colcon_core.package_identification:_identify(ouster-ros/ouster-sensor-msgs) by extensions ['colcon_pkg']
+[2.600s] Level 1:colcon.colcon_core.package_identification:_identify(ouster-ros/ouster-sensor-msgs) by extension 'colcon_pkg'
+[2.600s] Level 1:colcon.colcon_core.package_identification:_identify(ouster-ros/ouster-sensor-msgs) by extensions ['colcon_meta']
+[2.600s] Level 1:colcon.colcon_core.package_identification:_identify(ouster-ros/ouster-sensor-msgs) by extension 'colcon_meta'
+[2.600s] Level 1:colcon.colcon_core.package_identification:_identify(ouster-ros/ouster-sensor-msgs) by extensions ['ros']
+[2.600s] Level 1:colcon.colcon_core.package_identification:_identify(ouster-ros/ouster-sensor-msgs) by extension 'ros'
+[2.602s] DEBUG:colcon.colcon_core.package_identification:Package 'ouster-ros/ouster-sensor-msgs' with type 'ros.ament_cmake' and name 'ouster_sensor_msgs'
+[2.603s] Level 1:colcon.colcon_core.package_identification:_identify(test-autonomous-typing) by extensions ['ignore', 'ignore_ament_install']
+[2.603s] Level 1:colcon.colcon_core.package_identification:_identify(test-autonomous-typing) by extension 'ignore'
+[2.603s] Level 1:colcon.colcon_core.package_identification:_identify(test-autonomous-typing) by extension 'ignore_ament_install'
+[2.603s] Level 1:colcon.colcon_core.package_identification:_identify(test-autonomous-typing) by extensions ['colcon_pkg']
+[2.603s] Level 1:colcon.colcon_core.package_identification:_identify(test-autonomous-typing) by extension 'colcon_pkg'
+[2.603s] Level 1:colcon.colcon_core.package_identification:_identify(test-autonomous-typing) by extensions ['colcon_meta']
+[2.603s] Level 1:colcon.colcon_core.package_identification:_identify(test-autonomous-typing) by extension 'colcon_meta'
+[2.604s] Level 1:colcon.colcon_core.package_identification:_identify(test-autonomous-typing) by extensions ['ros']
+[2.604s] Level 1:colcon.colcon_core.package_identification:_identify(test-autonomous-typing) by extension 'ros'
+[2.604s] Level 1:colcon.colcon_core.package_identification:_identify(test-autonomous-typing) by extensions ['cmake', 'python']
+[2.604s] Level 1:colcon.colcon_core.package_identification:_identify(test-autonomous-typing) by extension 'cmake'
+[2.604s] Level 1:colcon.colcon_core.package_identification:_identify(test-autonomous-typing) by extension 'python'
+[2.604s] Level 1:colcon.colcon_core.package_identification:_identify(test-autonomous-typing) by extensions ['python_setup_py']
+[2.605s] Level 1:colcon.colcon_core.package_identification:_identify(test-autonomous-typing) by extension 'python_setup_py'
+[2.605s] Level 1:colcon.colcon_core.package_identification:_identify(usb_cam) by extensions ['ignore', 'ignore_ament_install']
+[2.605s] Level 1:colcon.colcon_core.package_identification:_identify(usb_cam) by extension 'ignore'
+[2.605s] Level 1:colcon.colcon_core.package_identification:_identify(usb_cam) by extension 'ignore_ament_install'
+[2.605s] Level 1:colcon.colcon_core.package_identification:_identify(usb_cam) by extensions ['colcon_pkg']
+[2.605s] Level 1:colcon.colcon_core.package_identification:_identify(usb_cam) by extension 'colcon_pkg'
+[2.606s] Level 1:colcon.colcon_core.package_identification:_identify(usb_cam) by extensions ['colcon_meta']
+[2.606s] Level 1:colcon.colcon_core.package_identification:_identify(usb_cam) by extension 'colcon_meta'
+[2.606s] Level 1:colcon.colcon_core.package_identification:_identify(usb_cam) by extensions ['ros']
+[2.606s] Level 1:colcon.colcon_core.package_identification:_identify(usb_cam) by extension 'ros'
+[2.624s] DEBUG:colcon.colcon_core.package_identification:Package 'usb_cam' with type 'ros.ament_cmake' and name 'usb_cam'
+[2.626s] Level 1:colcon.colcon_core.package_identification:_identify(wheels_controller) by extensions ['ignore', 'ignore_ament_install']
+[2.627s] Level 1:colcon.colcon_core.package_identification:_identify(wheels_controller) by extension 'ignore'
+[2.628s] Level 1:colcon.colcon_core.package_identification:_identify(wheels_controller) by extension 'ignore_ament_install'
+[2.628s] Level 1:colcon.colcon_core.package_identification:_identify(wheels_controller) by extensions ['colcon_pkg']
+[2.628s] Level 1:colcon.colcon_core.package_identification:_identify(wheels_controller) by extension 'colcon_pkg'
+[2.628s] Level 1:colcon.colcon_core.package_identification:_identify(wheels_controller) by extensions ['colcon_meta']
+[2.628s] Level 1:colcon.colcon_core.package_identification:_identify(wheels_controller) by extension 'colcon_meta'
+[2.628s] Level 1:colcon.colcon_core.package_identification:_identify(wheels_controller) by extensions ['ros']
+[2.629s] Level 1:colcon.colcon_core.package_identification:_identify(wheels_controller) by extension 'ros'
+[2.630s] DEBUG:colcon.colcon_core.package_identification:Package 'wheels_controller' with type 'ros.ament_cmake' and name 'wheels_controller'
+[2.631s] Level 1:colcon.colcon_core.package_discovery:discover_packages(recursive) using defaults
+[2.631s] Level 1:colcon.colcon_core.package_discovery:discover_packages(ignore) discover
+[2.631s] Level 1:colcon.colcon_core.package_discovery:discover_packages(ignore) using defaults
+[2.631s] Level 1:colcon.colcon_core.package_discovery:discover_packages(path) discover
+[2.631s] Level 1:colcon.colcon_core.package_discovery:discover_packages(path) using defaults
+[2.695s] INFO:colcon.colcon_core.package_selection:Skipping not selected package 'absenc_interface' in 'absenc_interface'
+[2.695s] INFO:colcon.colcon_core.package_selection:Skipping not selected package 'arm_controller' in 'arm_controller'
+[2.696s] INFO:colcon.colcon_core.package_selection:Skipping not selected package 'arm_hardware' in 'inverse-kinematics/arm_hardware'
+[2.696s] INFO:colcon.colcon_core.package_selection:Skipping not selected package 'gps_py' in 'gps_py'
+[2.696s] INFO:colcon.colcon_core.package_selection:Skipping not selected package 'ik_mux_controller' in 'inverse-kinematics/ik_mux_controller'
+[2.696s] INFO:colcon.colcon_core.package_selection:Skipping not selected package 'joy_mux_controller' in 'joy_mux_controller'
+[2.696s] INFO:colcon.colcon_core.package_selection:Skipping not selected package 'joy_mux_controller_cpp' in 'joy_mux_controller_cpp'
+[2.696s] INFO:colcon.colcon_core.package_selection:Skipping not selected package 'joy_mux_controller_py' in 'joy_mux_controller_py'
+[2.696s] INFO:colcon.colcon_core.package_selection:Skipping not selected package 'ouster_sensor_msgs' in 'ouster-ros/ouster-sensor-msgs'
+[2.696s] INFO:colcon.colcon_core.package_selection:Skipping not selected package 'rover_arm_description' in 'inverse-kinematics/rover_arm_description'
+[2.696s] INFO:colcon.colcon_core.package_selection:Skipping not selected package 'usb_cam' in 'usb_cam'
+[2.696s] INFO:colcon.colcon_core.package_selection:Skipping not selected package 'wheels_controller' in 'wheels_controller'
+[2.696s] INFO:colcon.colcon_core.package_selection:Skipping not selected package 'ouster_ros' in 'ouster-ros/ouster-ros'
+[2.696s] INFO:colcon.colcon_core.package_selection:Skipping not selected package 'rover_arm_moveit_config' in 'inverse-kinematics/rover_arm_moveit_config'
+[2.699s] Level 1:colcon.colcon_core.package_discovery:discover_packages(prefix_path) check parameters
+[2.699s] Level 1:colcon.colcon_core.package_discovery:discover_packages(prefix_path) discover
+[2.735s] DEBUG:colcon.colcon_installed_package_information.package_discovery:Found 8 installed packages in /home/liliana/ros2_ws/install
+[2.740s] DEBUG:colcon.colcon_installed_package_information.package_discovery:Found 45 installed packages in /home/liliana/ws_moveit/install
+[2.742s] DEBUG:colcon.colcon_installed_package_information.package_discovery:Found 3 installed packages in /home/liliana/install
+[2.748s] DEBUG:colcon.colcon_installed_package_information.package_discovery:Found 419 installed packages in /opt/ros/humble
+[2.758s] Level 1:colcon.colcon_core.package_discovery:discover_packages(prefix_path) using defaults
+[3.076s] Level 5:colcon.colcon_core.verb:set package 'keyboard_typing' build argument 'cmake_args' from command line to 'None'
+[3.077s] Level 5:colcon.colcon_core.verb:set package 'keyboard_typing' build argument 'cmake_target' from command line to 'None'
+[3.077s] Level 5:colcon.colcon_core.verb:set package 'keyboard_typing' build argument 'cmake_target_skip_unavailable' from command line to 'False'
+[3.077s] Level 5:colcon.colcon_core.verb:set package 'keyboard_typing' build argument 'cmake_clean_cache' from command line to 'False'
+[3.077s] Level 5:colcon.colcon_core.verb:set package 'keyboard_typing' build argument 'cmake_clean_first' from command line to 'False'
+[3.077s] Level 5:colcon.colcon_core.verb:set package 'keyboard_typing' build argument 'cmake_force_configure' from command line to 'False'
+[3.077s] Level 5:colcon.colcon_core.verb:set package 'keyboard_typing' build argument 'ament_cmake_args' from command line to 'None'
+[3.077s] Level 5:colcon.colcon_core.verb:set package 'keyboard_typing' build argument 'catkin_cmake_args' from command line to 'None'
+[3.077s] Level 5:colcon.colcon_core.verb:set package 'keyboard_typing' build argument 'catkin_skip_building_tests' from command line to 'False'
+[3.077s] DEBUG:colcon.colcon_core.verb:Building package 'keyboard_typing' with the following arguments: {'ament_cmake_args': None, 'build_base': '/home/liliana/ros2_ws/robot-repo-ros2/src/build/keyboard_typing', 'catkin_cmake_args': None, 'catkin_skip_building_tests': False, 'cmake_args': None, 'cmake_clean_cache': False, 'cmake_clean_first': False, 'cmake_force_configure': False, 'cmake_target': None, 'cmake_target_skip_unavailable': False, 'install_base': '/home/liliana/ros2_ws/robot-repo-ros2/src/install/keyboard_typing', 'merge_install': False, 'path': '/home/liliana/ros2_ws/robot-repo-ros2/src/keyboard_typing', 'symlink_install': False, 'test_result_base': None}
+[3.078s] INFO:colcon.colcon_core.executor:Executing jobs using 'parallel' executor
+[3.081s] DEBUG:colcon.colcon_parallel_executor.executor.parallel:run_until_complete
+[3.081s] INFO:colcon.colcon_ros.task.ament_cmake.build:Building ROS package in '/home/liliana/ros2_ws/robot-repo-ros2/src/keyboard_typing' with build type 'ament_cmake'
+[3.084s] INFO:colcon.colcon_cmake.task.cmake.build:Building CMake package in '/home/liliana/ros2_ws/robot-repo-ros2/src/keyboard_typing'
+[3.097s] INFO:colcon.colcon_core.plugin_system:Skipping extension 'colcon_core.shell.bat': Not used on non-Windows systems
+[3.098s] INFO:colcon.colcon_core.shell:Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[3.098s] DEBUG:colcon.colcon_core.shell:Skip shell extension 'dsv' for command environment
+[3.146s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/home/liliana/ros2_ws/robot-repo-ros2/src/build/keyboard_typing': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/liliana/ws_moveit/install/moveit_configs_utils:/home/liliana/ros2_ws/install/my_py_pkg:/home/liliana/ros2_ws/install/joy_mux_controller:/home/liliana/install/my_py_pkg:/opt/ros/humble /usr/bin/cmake /home/liliana/ros2_ws/robot-repo-ros2/src/keyboard_typing -DCMAKE_INSTALL_PREFIX=/home/liliana/ros2_ws/robot-repo-ros2/src/install/keyboard_typing
+[14.527s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/home/liliana/ros2_ws/robot-repo-ros2/src/build/keyboard_typing' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/liliana/ws_moveit/install/moveit_configs_utils:/home/liliana/ros2_ws/install/my_py_pkg:/home/liliana/ros2_ws/install/joy_mux_controller:/home/liliana/install/my_py_pkg:/opt/ros/humble /usr/bin/cmake /home/liliana/ros2_ws/robot-repo-ros2/src/keyboard_typing -DCMAKE_INSTALL_PREFIX=/home/liliana/ros2_ws/robot-repo-ros2/src/install/keyboard_typing
+[14.530s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/home/liliana/ros2_ws/robot-repo-ros2/src/build/keyboard_typing': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/liliana/ws_moveit/install/moveit_configs_utils:/home/liliana/ros2_ws/install/my_py_pkg:/home/liliana/ros2_ws/install/joy_mux_controller:/home/liliana/install/my_py_pkg:/opt/ros/humble /usr/bin/cmake --build /home/liliana/ros2_ws/robot-repo-ros2/src/build/keyboard_typing -- -j6 -l6
+[36.858s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/home/liliana/ros2_ws/robot-repo-ros2/src/build/keyboard_typing' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/liliana/ws_moveit/install/moveit_configs_utils:/home/liliana/ros2_ws/install/my_py_pkg:/home/liliana/ros2_ws/install/joy_mux_controller:/home/liliana/install/my_py_pkg:/opt/ros/humble /usr/bin/cmake --build /home/liliana/ros2_ws/robot-repo-ros2/src/build/keyboard_typing -- -j6 -l6
+[36.895s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/home/liliana/ros2_ws/robot-repo-ros2/src/build/keyboard_typing': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/liliana/ws_moveit/install/moveit_configs_utils:/home/liliana/ros2_ws/install/my_py_pkg:/home/liliana/ros2_ws/install/joy_mux_controller:/home/liliana/install/my_py_pkg:/opt/ros/humble /usr/bin/cmake --install /home/liliana/ros2_ws/robot-repo-ros2/src/build/keyboard_typing
+[36.934s] Level 1:colcon.colcon_core.environment:create_environment_scripts_only(keyboard_typing)
+[36.936s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/home/liliana/ros2_ws/robot-repo-ros2/src/build/keyboard_typing' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/liliana/ws_moveit/install/moveit_configs_utils:/home/liliana/ros2_ws/install/my_py_pkg:/home/liliana/ros2_ws/install/joy_mux_controller:/home/liliana/install/my_py_pkg:/opt/ros/humble /usr/bin/cmake --install /home/liliana/ros2_ws/robot-repo-ros2/src/build/keyboard_typing
+[36.967s] Level 1:colcon.colcon_core.environment:checking '/home/liliana/ros2_ws/robot-repo-ros2/src/install/keyboard_typing' for CMake module files
+[36.968s] Level 1:colcon.colcon_core.environment:checking '/home/liliana/ros2_ws/robot-repo-ros2/src/install/keyboard_typing' for CMake config files
+[36.969s] Level 1:colcon.colcon_core.shell:create_environment_hook('keyboard_typing', 'cmake_prefix_path')
+[36.970s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/liliana/ros2_ws/robot-repo-ros2/src/install/keyboard_typing/share/keyboard_typing/hook/cmake_prefix_path.ps1'
+[36.972s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/home/liliana/ros2_ws/robot-repo-ros2/src/install/keyboard_typing/share/keyboard_typing/hook/cmake_prefix_path.dsv'
+[36.974s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/liliana/ros2_ws/robot-repo-ros2/src/install/keyboard_typing/share/keyboard_typing/hook/cmake_prefix_path.sh'
+[36.979s] Level 1:colcon.colcon_core.environment:checking '/home/liliana/ros2_ws/robot-repo-ros2/src/install/keyboard_typing/lib'
+[36.980s] Level 1:colcon.colcon_core.environment:checking '/home/liliana/ros2_ws/robot-repo-ros2/src/install/keyboard_typing/bin'
+[36.980s] Level 1:colcon.colcon_core.environment:checking '/home/liliana/ros2_ws/robot-repo-ros2/src/install/keyboard_typing/lib/pkgconfig/keyboard_typing.pc'
+[36.981s] Level 1:colcon.colcon_core.environment:checking '/home/liliana/ros2_ws/robot-repo-ros2/src/install/keyboard_typing/lib/python3.10/site-packages'
+[36.983s] Level 1:colcon.colcon_core.environment:checking '/home/liliana/ros2_ws/robot-repo-ros2/src/install/keyboard_typing/bin'
+[36.984s] INFO:colcon.colcon_core.shell:Creating package script '/home/liliana/ros2_ws/robot-repo-ros2/src/install/keyboard_typing/share/keyboard_typing/package.ps1'
+[36.988s] INFO:colcon.colcon_core.shell:Creating package descriptor '/home/liliana/ros2_ws/robot-repo-ros2/src/install/keyboard_typing/share/keyboard_typing/package.dsv'
+[36.992s] INFO:colcon.colcon_core.shell:Creating package script '/home/liliana/ros2_ws/robot-repo-ros2/src/install/keyboard_typing/share/keyboard_typing/package.sh'
+[36.995s] INFO:colcon.colcon_core.shell:Creating package script '/home/liliana/ros2_ws/robot-repo-ros2/src/install/keyboard_typing/share/keyboard_typing/package.bash'
+[36.999s] INFO:colcon.colcon_core.shell:Creating package script '/home/liliana/ros2_ws/robot-repo-ros2/src/install/keyboard_typing/share/keyboard_typing/package.zsh'
+[37.002s] Level 1:colcon.colcon_core.environment:create_file_with_runtime_dependencies(/home/liliana/ros2_ws/robot-repo-ros2/src/install/keyboard_typing/share/colcon-core/packages/keyboard_typing)
+[37.004s] Level 1:colcon.colcon_core.environment:create_environment_scripts_only(keyboard_typing)
+[37.006s] Level 1:colcon.colcon_core.environment:checking '/home/liliana/ros2_ws/robot-repo-ros2/src/install/keyboard_typing' for CMake module files
+[37.007s] Level 1:colcon.colcon_core.environment:checking '/home/liliana/ros2_ws/robot-repo-ros2/src/install/keyboard_typing' for CMake config files
+[37.008s] Level 1:colcon.colcon_core.shell:create_environment_hook('keyboard_typing', 'cmake_prefix_path')
+[37.009s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/liliana/ros2_ws/robot-repo-ros2/src/install/keyboard_typing/share/keyboard_typing/hook/cmake_prefix_path.ps1'
+[37.012s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/home/liliana/ros2_ws/robot-repo-ros2/src/install/keyboard_typing/share/keyboard_typing/hook/cmake_prefix_path.dsv'
+[37.013s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/liliana/ros2_ws/robot-repo-ros2/src/install/keyboard_typing/share/keyboard_typing/hook/cmake_prefix_path.sh'
+[37.014s] Level 1:colcon.colcon_core.environment:checking '/home/liliana/ros2_ws/robot-repo-ros2/src/install/keyboard_typing/lib'
+[37.015s] Level 1:colcon.colcon_core.environment:checking '/home/liliana/ros2_ws/robot-repo-ros2/src/install/keyboard_typing/bin'
+[37.015s] Level 1:colcon.colcon_core.environment:checking '/home/liliana/ros2_ws/robot-repo-ros2/src/install/keyboard_typing/lib/pkgconfig/keyboard_typing.pc'
+[37.016s] Level 1:colcon.colcon_core.environment:checking '/home/liliana/ros2_ws/robot-repo-ros2/src/install/keyboard_typing/lib/python3.10/site-packages'
+[37.017s] Level 1:colcon.colcon_core.environment:checking '/home/liliana/ros2_ws/robot-repo-ros2/src/install/keyboard_typing/bin'
+[37.018s] INFO:colcon.colcon_core.shell:Creating package script '/home/liliana/ros2_ws/robot-repo-ros2/src/install/keyboard_typing/share/keyboard_typing/package.ps1'
+[37.020s] INFO:colcon.colcon_core.shell:Creating package descriptor '/home/liliana/ros2_ws/robot-repo-ros2/src/install/keyboard_typing/share/keyboard_typing/package.dsv'
+[37.022s] INFO:colcon.colcon_core.shell:Creating package script '/home/liliana/ros2_ws/robot-repo-ros2/src/install/keyboard_typing/share/keyboard_typing/package.sh'
+[37.025s] INFO:colcon.colcon_core.shell:Creating package script '/home/liliana/ros2_ws/robot-repo-ros2/src/install/keyboard_typing/share/keyboard_typing/package.bash'
+[37.027s] INFO:colcon.colcon_core.shell:Creating package script '/home/liliana/ros2_ws/robot-repo-ros2/src/install/keyboard_typing/share/keyboard_typing/package.zsh'
+[37.029s] Level 1:colcon.colcon_core.environment:create_file_with_runtime_dependencies(/home/liliana/ros2_ws/robot-repo-ros2/src/install/keyboard_typing/share/colcon-core/packages/keyboard_typing)
+[37.031s] DEBUG:colcon.colcon_parallel_executor.executor.parallel:closing loop
+[37.032s] DEBUG:colcon.colcon_parallel_executor.executor.parallel:loop closed
+[37.033s] DEBUG:colcon.colcon_parallel_executor.executor.parallel:run_until_complete finished with '0'
+[37.033s] DEBUG:colcon.colcon_core.event_reactor:joining thread
+[37.068s] INFO:colcon.colcon_core.plugin_system:Skipping extension 'colcon_notification.desktop_notification.terminal_notifier': Not used on non-Darwin systems
+[37.069s] INFO:colcon.colcon_core.plugin_system:Skipping extension 'colcon_notification.desktop_notification.win32': Not used on non-Windows systems
+[37.069s] INFO:colcon.colcon_notification.desktop_notification:Sending desktop notification using 'notify2'
+[37.510s] DEBUG:colcon.colcon_core.event_reactor:joined thread
+[37.511s] INFO:colcon.colcon_core.shell:Creating prefix script '/home/liliana/ros2_ws/robot-repo-ros2/src/install/local_setup.ps1'
+[37.515s] INFO:colcon.colcon_core.shell:Creating prefix util module '/home/liliana/ros2_ws/robot-repo-ros2/src/install/_local_setup_util_ps1.py'
+[37.521s] INFO:colcon.colcon_core.shell:Creating prefix chain script '/home/liliana/ros2_ws/robot-repo-ros2/src/install/setup.ps1'
+[37.532s] INFO:colcon.colcon_core.shell:Creating prefix script '/home/liliana/ros2_ws/robot-repo-ros2/src/install/local_setup.sh'
+[37.537s] INFO:colcon.colcon_core.shell:Creating prefix util module '/home/liliana/ros2_ws/robot-repo-ros2/src/install/_local_setup_util_sh.py'
+[37.539s] INFO:colcon.colcon_core.shell:Creating prefix chain script '/home/liliana/ros2_ws/robot-repo-ros2/src/install/setup.sh'
+[37.550s] INFO:colcon.colcon_core.shell:Creating prefix script '/home/liliana/ros2_ws/robot-repo-ros2/src/install/local_setup.bash'
+[37.552s] INFO:colcon.colcon_core.shell:Creating prefix chain script '/home/liliana/ros2_ws/robot-repo-ros2/src/install/setup.bash'
+[37.562s] INFO:colcon.colcon_core.shell:Creating prefix script '/home/liliana/ros2_ws/robot-repo-ros2/src/install/local_setup.zsh'
+[37.564s] INFO:colcon.colcon_core.shell:Creating prefix chain script '/home/liliana/ros2_ws/robot-repo-ros2/src/install/setup.zsh'

@@ -1,0 +1,10 @@
+[01m[K/home/liliana/ros2_ws/robot-repo-ros2/src/test/src/move_group.cpp:[m[K In function ‘[01m[Kvoid goTarget(double, double, double, moveit::planning_interface::MoveGroupInterface&, rclcpp::Node::SharedPtr)[m[K’:
+[01m[K/home/liliana/ros2_ws/robot-repo-ros2/src/test/src/move_group.cpp:10:22:[m[K [01;35m[Kwarning: [m[Kunused parameter ‘[01m[Kx[m[K’ [[01;35m[K]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wunused-parameter-Wunused-parameter]8;;[m[K]
+   10 | void goTarget([01;35m[Kdouble x[m[K, double y, double z,
+      |               [01;35m[K~~~~~~~^[m[K
+[01m[K/home/liliana/ros2_ws/robot-repo-ros2/src/test/src/move_group.cpp:10:32:[m[K [01;35m[Kwarning: [m[Kunused parameter ‘[01m[Ky[m[K’ [[01;35m[K]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wunused-parameter-Wunused-parameter]8;;[m[K]
+   10 | void goTarget(double x, [01;35m[Kdouble y[m[K, double z,
+      |                         [01;35m[K~~~~~~~^[m[K
+[01m[K/home/liliana/ros2_ws/robot-repo-ros2/src/test/src/move_group.cpp:10:42:[m[K [01;35m[Kwarning: [m[Kunused parameter ‘[01m[Kz[m[K’ [[01;35m[K]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wunused-parameter-Wunused-parameter]8;;[m[K]
+   10 | void goTarget(double x, double y, [01;35m[Kdouble z[m[K,
+      |                                   [01;35m[K~~~~~~~^[m[K

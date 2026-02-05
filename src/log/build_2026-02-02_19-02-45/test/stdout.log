@@ -1,0 +1,19 @@
+[35m[1mConsolidate compiler generated dependencies of target move_group_node[0m
+[100%] Built target move_group_node
+-- Install configuration: ""
+-- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/install/test/lib/test/move_group_node
+-- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/install/test/share/ament_index/resource_index/package_run_dependencies/test
+-- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/install/test/share/ament_index/resource_index/parent_prefix_path/test
+-- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/install/test/share/test/environment/ament_prefix_path.sh
+-- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/install/test/share/test/environment/ament_prefix_path.dsv
+-- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/install/test/share/test/environment/path.sh
+-- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/install/test/share/test/environment/path.dsv
+-- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/install/test/share/test/local_setup.bash
+-- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/install/test/share/test/local_setup.sh
+-- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/install/test/share/test/local_setup.zsh
+-- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/install/test/share/test/local_setup.dsv
+-- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/install/test/share/test/package.dsv
+-- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/install/test/share/ament_index/resource_index/packages/test
+-- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/install/test/share/test/cmake/testConfig.cmake
+-- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/install/test/share/test/cmake/testConfig-version.cmake
+-- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/install/test/share/test/package.xml

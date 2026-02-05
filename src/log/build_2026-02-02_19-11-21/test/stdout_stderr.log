@@ -1,0 +1,32 @@
+[35m[1mConsolidate compiler generated dependencies of target move_group_node[0m
+[ 50%] [32mBuilding CXX object CMakeFiles/move_group_node.dir/src/move_group.cpp.o[0m
+[01m[K/home/liliana/ros2_ws/robot-repo-ros2/src/test/src/move_group.cpp:[m[K In function ‘[01m[Kvoid goTarget(double, double, double, moveit::planning_interface::MoveGroupInterface&, rclcpp::Node::SharedPtr)[m[K’:
+[01m[K/home/liliana/ros2_ws/robot-repo-ros2/src/test/src/move_group.cpp:10:22:[m[K [01;35m[Kwarning: [m[Kunused parameter ‘[01m[Kx[m[K’ [[01;35m[K]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wunused-parameter-Wunused-parameter]8;;[m[K]
+   10 | void goTarget([01;35m[Kdouble x[m[K, double y, double z,
+      |               [01;35m[K~~~~~~~^[m[K
+[01m[K/home/liliana/ros2_ws/robot-repo-ros2/src/test/src/move_group.cpp:10:32:[m[K [01;35m[Kwarning: [m[Kunused parameter ‘[01m[Ky[m[K’ [[01;35m[K]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wunused-parameter-Wunused-parameter]8;;[m[K]
+   10 | void goTarget(double x, [01;35m[Kdouble y[m[K, double z,
+      |                         [01;35m[K~~~~~~~^[m[K
+[01m[K/home/liliana/ros2_ws/robot-repo-ros2/src/test/src/move_group.cpp:10:42:[m[K [01;35m[Kwarning: [m[Kunused parameter ‘[01m[Kz[m[K’ [[01;35m[K]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wunused-parameter-Wunused-parameter]8;;[m[K]
+   10 | void goTarget(double x, double y, [01;35m[Kdouble z[m[K,
+      |                                   [01;35m[K~~~~~~~^[m[K
+[100%] [32m[1mLinking CXX executable move_group_node[0m
+[100%] Built target move_group_node
+-- Install configuration: ""
+-- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/install/test/lib/test/move_group_node
+-- Set runtime path of "/home/liliana/ros2_ws/robot-repo-ros2/src/install/test/lib/test/move_group_node" to ""
+-- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/install/test/share/ament_index/resource_index/package_run_dependencies/test
+-- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/install/test/share/ament_index/resource_index/parent_prefix_path/test
+-- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/install/test/share/test/environment/ament_prefix_path.sh
+-- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/install/test/share/test/environment/ament_prefix_path.dsv
+-- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/install/test/share/test/environment/path.sh
+-- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/install/test/share/test/environment/path.dsv
+-- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/install/test/share/test/local_setup.bash
+-- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/install/test/share/test/local_setup.sh
+-- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/install/test/share/test/local_setup.zsh
+-- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/install/test/share/test/local_setup.dsv
+-- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/install/test/share/test/package.dsv
+-- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/install/test/share/ament_index/resource_index/packages/test
+-- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/install/test/share/test/cmake/testConfig.cmake
+-- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/install/test/share/test/cmake/testConfig-version.cmake
+-- Up-to-date: /home/liliana/ros2_ws/robot-repo-ros2/src/install/test/share/test/package.xml

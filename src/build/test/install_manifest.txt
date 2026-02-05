@@ -1,0 +1,16 @@
+/home/liliana/ros2_ws/robot-repo-ros2/src/install/test/lib/test/move_group_node
+/home/liliana/ros2_ws/robot-repo-ros2/src/install/test/share/ament_index/resource_index/package_run_dependencies/test
+/home/liliana/ros2_ws/robot-repo-ros2/src/install/test/share/ament_index/resource_index/parent_prefix_path/test
+/home/liliana/ros2_ws/robot-repo-ros2/src/install/test/share/test/environment/ament_prefix_path.sh
+/home/liliana/ros2_ws/robot-repo-ros2/src/install/test/share/test/environment/ament_prefix_path.dsv
+/home/liliana/ros2_ws/robot-repo-ros2/src/install/test/share/test/environment/path.sh
+/home/liliana/ros2_ws/robot-repo-ros2/src/install/test/share/test/environment/path.dsv
+/home/liliana/ros2_ws/robot-repo-ros2/src/install/test/share/test/local_setup.bash
+/home/liliana/ros2_ws/robot-repo-ros2/src/install/test/share/test/local_setup.sh
+/home/liliana/ros2_ws/robot-repo-ros2/src/install/test/share/test/local_setup.zsh
+/home/liliana/ros2_ws/robot-repo-ros2/src/install/test/share/test/local_setup.dsv
+/home/liliana/ros2_ws/robot-repo-ros2/src/install/test/share/test/package.dsv
+/home/liliana/ros2_ws/robot-repo-ros2/src/install/test/share/ament_index/resource_index/packages/test
+/home/liliana/ros2_ws/robot-repo-ros2/src/install/test/share/test/cmake/testConfig.cmake
+/home/liliana/ros2_ws/robot-repo-ros2/src/install/test/share/test/cmake/testConfig-version.cmake
+/home/liliana/ros2_ws/robot-repo-ros2/src/install/test/share/test/package.xml

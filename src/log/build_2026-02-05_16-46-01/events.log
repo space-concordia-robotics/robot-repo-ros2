@@ -1,0 +1,412 @@
+[0.000000] (-) TimerEvent: {}
+[0.001675] (-) JobUnselected: {'identifier': 'absenc_interface'}
+[0.002142] (-) JobUnselected: {'identifier': 'arm_controller'}
+[0.002511] (-) JobUnselected: {'identifier': 'arm_hardware'}
+[0.002589] (-) JobUnselected: {'identifier': 'gps_py'}
+[0.002628] (-) JobUnselected: {'identifier': 'ik_mux_controller'}
+[0.002664] (-) JobUnselected: {'identifier': 'joy_mux_controller'}
+[0.002698] (-) JobUnselected: {'identifier': 'joy_mux_controller_cpp'}
+[0.002729] (-) JobUnselected: {'identifier': 'joy_mux_controller_py'}
+[0.002826] (-) JobUnselected: {'identifier': 'ouster_ros'}
+[0.002884] (-) JobUnselected: {'identifier': 'ouster_sensor_msgs'}
+[0.002935] (-) JobUnselected: {'identifier': 'rover_arm_description'}
+[0.002987] (-) JobUnselected: {'identifier': 'rover_arm_moveit_config'}
+[0.003037] (-) JobUnselected: {'identifier': 'usb_cam'}
+[0.003089] (-) JobUnselected: {'identifier': 'wheels_controller'}
+[0.003148] (keyboard_typing) JobQueued: {'identifier': 'keyboard_typing', 'dependencies': OrderedDict()}
+[0.003325] (keyboard_typing) JobStarted: {'identifier': 'keyboard_typing'}
+[0.057648] (keyboard_typing) JobProgress: {'identifier': 'keyboard_typing', 'progress': 'cmake'}
+[0.060116] (keyboard_typing) Command: {'cmd': ['/usr/bin/cmake', '/home/liliana/ros2_ws/robot-repo-ros2/src/keyboard_typing', '-DCMAKE_INSTALL_PREFIX=/home/liliana/ros2_ws/robot-repo-ros2/src/install/keyboard_typing'], 'cwd': '/home/liliana/ros2_ws/robot-repo-ros2/src/build/keyboard_typing', 'env': OrderedDict([('LESSOPEN', '| /usr/bin/lesspipe %s'), ('LANGUAGE', 'en_CA:en'), ('USER', 'liliana'), ('XDG_SESSION_TYPE', 'wayland'), ('SHLVL', '1'), ('LD_LIBRARY_PATH', '/home/liliana/ws_moveit/install/pilz_industrial_motion_planner_testutils/lib:/home/liliana/ws_moveit/install/pilz_industrial_motion_planner/lib:/home/liliana/ws_moveit/install/moveit_ros_control_interface/lib:/home/liliana/ws_moveit/install/moveit_simple_controller_manager/lib:/home/liliana/ws_moveit/install/moveit_setup_assistant/lib:/home/liliana/ws_moveit/install/moveit_setup_srdf_plugins/lib:/home/liliana/ws_moveit/install/moveit_setup_core_plugins/lib:/home/liliana/ws_moveit/install/moveit_setup_controllers/lib:/home/liliana/ws_moveit/install/moveit_setup_app_plugins/lib:/home/liliana/ws_moveit/install/moveit_setup_framework/lib:/home/liliana/ws_moveit/install/moveit_servo/lib:/home/liliana/ws_moveit/install/moveit_ros_visualization/lib:/home/liliana/ws_moveit/install/moveit_hybrid_planning/lib:/home/liliana/ws_moveit/install/moveit_ros_planning_interface/lib:/home/liliana/ws_moveit/install/moveit_ros_benchmarks/lib:/home/liliana/ws_moveit/install/moveit_ros_warehouse/lib:/home/liliana/ws_moveit/install/moveit_ros_robot_interaction/lib:/home/liliana/ws_moveit/install/moveit_ros_perception/lib:/home/liliana/ws_moveit/install/moveit_ros_move_group/lib:/home/liliana/ws_moveit/install/moveit_planners_ompl/lib:/home/liliana/ws_moveit/install/moveit_ros_planning/lib:/home/liliana/ws_moveit/install/moveit_ros_occupancy_map_monitor/lib:/home/liliana/ws_moveit/install/moveit_resources_prbt_ikfast_manipulator_plugin/lib:/home/liliana/ws_moveit/install/moveit_planners_chomp/lib:/home/liliana/ws_moveit/install/moveit_kinematics/lib:/home/liliana/ws_moveit/install/moveit_chomp_optimizer_adapter/lib:/home/liliana/ws_moveit/install/chomp_motion_planner/lib:/home/liliana/ws_moveit/install/moveit_core/lib:/home/liliana/ws_moveit/install/moveit_msgs/lib:/home/liliana/ros2_ws/install/arm_hardware/lib:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib'), ('HOME', '/home/liliana'), ('OLDPWD', '/home/liliana'), ('DESKTOP_SESSION', 'ubuntu'), ('ROS_PYTHON_VERSION', '3'), ('GNOME_SHELL_SESSION_MODE', 'ubuntu'), ('GTK_MODULES', 'gail:atk-bridge'), ('SYSTEMD_EXEC_PID', '2966'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('COLORTERM', 'truecolor'), ('IM_CONFIG_PHASE', '1'), ('WAYLAND_DISPLAY', 'wayland-0'), ('COLCON_PREFIX_PATH', '/home/liliana/ros2_ws/install:/home/liliana/ws_moveit/install:/home/liliana/install'), ('ROS_DISTRO', 'humble'), ('LOGNAME', 'liliana'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('XDG_SESSION_CLASS', 'user'), ('USERNAME', 'liliana'), ('TERM', 'xterm-256color'), ('GNOME_DESKTOP_SESSION_ID', 'this-is-deprecated'), ('ROS_LOCALHOST_ONLY', '0'), ('PATH', '/home/liliana/ws_moveit/install/moveit_core/bin:/opt/ros/humble/bin:/home/liliana/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/snap/bin:/home/liliana/.local/share/JetBrains/Toolbox/scripts'), ('SESSION_MANAGER', 'local/liliana-VirtualBox:@/tmp/.ICE-unix/2941,unix/liliana-VirtualBox:/tmp/.ICE-unix/2941'), ('XDG_MENU_PREFIX', 'gnome-'), ('GNOME_TERMINAL_SCREEN', '/org/gnome/Terminal/screen/c68688b9_de3c_40a3_b941_f47864fcdf95'), ('GNOME_SETUP_DISPLAY', ':1'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('DISPLAY', ':0'), ('LANG', 'en_US.UTF-8'), ('XDG_CURRENT_DESKTOP', 'ubuntu:GNOME'), ('RMW_IMPLEMENTATION', 'rmw_cyclonedds_cpp'), ('XMODIFIERS', '@im=ibus'), ('XDG_SESSION_DESKTOP', 'ubuntu'), ('XAUTHORITY', '/run/user/1000/.mutter-Xwaylandauth.SNY6J3'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('GNOME_TERMINAL_SERVICE', ':1.101'), ('SSH_AGENT_LAUNCHER', 'gnome-keyring'), ('SSH_AUTH_SOCK', '/run/user/1000/keyring/ssh'), ('AMENT_PREFIX_PATH', '/home/liliana/ws_moveit/install/pilz_industrial_motion_planner_testutils:/home/liliana/ws_moveit/install/moveit_runtime:/home/liliana/ws_moveit/install/moveit:/home/liliana/ws_moveit/install/moveit_planners:/home/liliana/ws_moveit/install/pilz_industrial_motion_planner:/home/liliana/ws_moveit/install/moveit_ros_control_interface:/home/liliana/ws_moveit/install/moveit_plugins:/home/liliana/ws_moveit/install/moveit_simple_controller_manager:/home/liliana/ws_moveit/install/moveit_setup_assistant:/home/liliana/ws_moveit/install/moveit_setup_srdf_plugins:/home/liliana/ws_moveit/install/moveit_setup_core_plugins:/home/liliana/ws_moveit/install/moveit_setup_controllers:/home/liliana/ws_moveit/install/moveit_setup_app_plugins:/home/liliana/ws_moveit/install/moveit_setup_framework:/home/liliana/ws_moveit/install/moveit_servo:/home/liliana/ws_moveit/install/moveit_ros:/home/liliana/ws_moveit/install/moveit_ros_visualization:/home/liliana/ws_moveit/install/moveit_hybrid_planning:/home/liliana/ws_moveit/install/moveit_ros_planning_interface:/home/liliana/ws_moveit/install/moveit_ros_benchmarks:/home/liliana/ws_moveit/install/moveit_ros_warehouse:/home/liliana/ws_moveit/install/moveit_ros_robot_interaction:/home/liliana/ws_moveit/install/moveit_ros_perception:/home/liliana/ws_moveit/install/moveit_resources_prbt_pg70_support:/home/liliana/ws_moveit/install/moveit_resources_prbt_moveit_config:/home/liliana/ws_moveit/install/moveit_ros_move_group:/home/liliana/ws_moveit/install/moveit_planners_ompl:/home/liliana/ws_moveit/install/moveit_ros_planning:/home/liliana/ws_moveit/install/moveit_ros_occupancy_map_monitor:/home/liliana/ws_moveit/install/moveit_resources_prbt_support:/home/liliana/ws_moveit/install/moveit_resources_prbt_ikfast_manipulator_plugin:/home/liliana/ws_moveit/install/moveit_resources:/home/liliana/ws_moveit/install/moveit_resources_pr2_description:/home/liliana/ws_moveit/install/moveit_resources_panda_moveit_config:/home/liliana/ws_moveit/install/moveit_resources_panda_description:/home/liliana/ws_moveit/install/moveit_resources_fanuc_moveit_config:/home/liliana/ws_moveit/install/moveit_resources_fanuc_description:/home/liliana/ws_moveit/install/moveit_planners_chomp:/home/liliana/ws_moveit/install/moveit_kinematics:/home/liliana/ws_moveit/install/moveit_chomp_optimizer_adapter:/home/liliana/ws_moveit/install/chomp_motion_planner:/home/liliana/ws_moveit/install/moveit_core:/home/liliana/ws_moveit/install/moveit_msgs:/home/liliana/ws_moveit/install/moveit_configs_utils:/home/liliana/ws_moveit/install/moveit_common:/home/liliana/ros2_ws/install/my_py_pkg:/home/liliana/ros2_ws/install/my_cpp_pkg:/home/liliana/ros2_ws/install/joy_mux_controller:/home/liliana/ros2_ws/install/ceres_urdf:/home/liliana/ros2_ws/install/arm_hardware:/home/liliana/ros2_ws/install/arm_controller:/home/liliana/ros2_ws/install/absenc_interface:/home/liliana/install/my_py_pkg:/home/liliana/install/my_cpp_pkg:/opt/ros/humble'), ('SHELL', '/bin/bash'), ('QT_ACCESSIBILITY', '1'), ('GDMSESSION', 'ubuntu'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('QT_IM_MODULE', 'ibus'), ('PWD', '/home/liliana/ros2_ws/robot-repo-ros2/src/build/keyboard_typing'), ('LC_ALL', 'en_US.UTF-8'), ('XDG_CONFIG_DIRS', '/etc/xdg/xdg-ubuntu:/etc/xdg'), ('XDG_DATA_DIRS', '/usr/share/ubuntu:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop'), ('PYTHONPATH', '/home/liliana/ws_moveit/install/moveit_msgs/local/lib/python3.10/dist-packages:/home/liliana/ws_moveit/install/moveit_configs_utils/lib/python3.10/site-packages:/home/liliana/ros2_ws/install/my_py_pkg/lib/python3.10/site-packages:/home/liliana/ros2_ws/install/joy_mux_controller/lib/python3.10/site-packages:/home/liliana/install/my_py_pkg/lib/python3.10/site-packages:/opt/ros/humble/lib/python3.10/site-packages:/opt/ros/humble/local/lib/python3.10/dist-packages'), ('COLCON', '1'), ('VTE_VERSION', '6800'), ('CMAKE_PREFIX_PATH', '/home/liliana/ws_moveit/install/pilz_industrial_motion_planner_testutils:/home/liliana/ws_moveit/install/moveit_runtime:/home/liliana/ws_moveit/install/moveit:/home/liliana/ws_moveit/install/moveit_planners:/home/liliana/ws_moveit/install/pilz_industrial_motion_planner:/home/liliana/ws_moveit/install/moveit_ros_control_interface:/home/liliana/ws_moveit/install/moveit_plugins:/home/liliana/ws_moveit/install/moveit_simple_controller_manager:/home/liliana/ws_moveit/install/moveit_setup_assistant:/home/liliana/ws_moveit/install/moveit_setup_srdf_plugins:/home/liliana/ws_moveit/install/moveit_setup_core_plugins:/home/liliana/ws_moveit/install/moveit_setup_controllers:/home/liliana/ws_moveit/install/moveit_setup_app_plugins:/home/liliana/ws_moveit/install/moveit_setup_framework:/home/liliana/ws_moveit/install/moveit_servo:/home/liliana/ws_moveit/install/moveit_ros:/home/liliana/ws_moveit/install/moveit_ros_visualization:/home/liliana/ws_moveit/install/moveit_hybrid_planning:/home/liliana/ws_moveit/install/moveit_ros_planning_interface:/home/liliana/ws_moveit/install/moveit_ros_benchmarks:/home/liliana/ws_moveit/install/moveit_ros_warehouse:/home/liliana/ws_moveit/install/moveit_ros_robot_interaction:/home/liliana/ws_moveit/install/moveit_ros_perception:/home/liliana/ws_moveit/install/moveit_resources_prbt_pg70_support:/home/liliana/ws_moveit/install/moveit_resources_prbt_moveit_config:/home/liliana/ws_moveit/install/moveit_ros_move_group:/home/liliana/ws_moveit/install/moveit_planners_ompl:/home/liliana/ws_moveit/install/moveit_ros_planning:/home/liliana/ws_moveit/install/moveit_ros_occupancy_map_monitor:/home/liliana/ws_moveit/install/moveit_resources_prbt_support:/home/liliana/ws_moveit/install/moveit_resources_prbt_ikfast_manipulator_plugin:/home/liliana/ws_moveit/install/moveit_resources:/home/liliana/ws_moveit/install/moveit_resources_pr2_description:/home/liliana/ws_moveit/install/moveit_resources_panda_moveit_config:/home/liliana/ws_moveit/install/moveit_resources_panda_description:/home/liliana/ws_moveit/install/moveit_resources_fanuc_moveit_config:/home/liliana/ws_moveit/install/moveit_resources_fanuc_description:/home/liliana/ws_moveit/install/moveit_planners_chomp:/home/liliana/ws_moveit/install/moveit_kinematics:/home/liliana/ws_moveit/install/moveit_chomp_optimizer_adapter:/home/liliana/ws_moveit/install/chomp_motion_planner:/home/liliana/ws_moveit/install/moveit_core:/home/liliana/ws_moveit/install/moveit_msgs:/home/liliana/ws_moveit/install/moveit_common:/home/liliana/ros2_ws/install/my_cpp_pkg:/home/liliana/ros2_ws/install/ceres_urdf:/home/liliana/ros2_ws/install/arm_hardware:/home/liliana/ros2_ws/install/arm_controller:/home/liliana/ros2_ws/install/absenc_interface:/home/liliana/install/my_cpp_pkg:/home/liliana/ws_moveit/install/moveit_configs_utils:/home/liliana/ros2_ws/install/my_py_pkg:/home/liliana/ros2_ws/install/joy_mux_controller:/home/liliana/install/my_py_pkg:/opt/ros/humble')]), 'shell': False}
+[0.110309] (-) TimerEvent: {}
+[0.211169] (-) TimerEvent: {}
+[0.313686] (-) TimerEvent: {}
+[0.404645] (keyboard_typing) StdoutLine: {'line': b'-- The C compiler identification is GNU 11.4.0\n'}
+[0.421500] (-) TimerEvent: {}
+[0.524087] (-) TimerEvent: {}
+[0.627391] (-) TimerEvent: {}
+[0.696866] (keyboard_typing) StdoutLine: {'line': b'-- The CXX compiler identification is GNU 11.4.0\n'}
+[0.728519] (-) TimerEvent: {}
+[0.758769] (keyboard_typing) StdoutLine: {'line': b'-- Detecting C compiler ABI info\n'}
+[0.831037] (-) TimerEvent: {}
+[0.932372] (-) TimerEvent: {}
+[1.034789] (-) TimerEvent: {}
+[1.113620] (keyboard_typing) StdoutLine: {'line': b'-- Detecting C compiler ABI info - done\n'}
+[1.138384] (-) TimerEvent: {}
+[1.139373] (keyboard_typing) StdoutLine: {'line': b'-- Check for working C compiler: /usr/bin/cc - skipped\n'}
+[1.140608] (keyboard_typing) StdoutLine: {'line': b'-- Detecting C compile features\n'}
+[1.142790] (keyboard_typing) StdoutLine: {'line': b'-- Detecting C compile features - done\n'}
+[1.153855] (keyboard_typing) StdoutLine: {'line': b'-- Detecting CXX compiler ABI info\n'}
+[1.238703] (-) TimerEvent: {}
+[1.339814] (-) TimerEvent: {}
+[1.428500] (keyboard_typing) StdoutLine: {'line': b'-- Detecting CXX compiler ABI info - done\n'}
+[1.440309] (-) TimerEvent: {}
+[1.455368] (keyboard_typing) StdoutLine: {'line': b'-- Check for working CXX compiler: /usr/bin/c++ - skipped\n'}
+[1.456758] (keyboard_typing) StdoutLine: {'line': b'-- Detecting CXX compile features\n'}
+[1.457990] (keyboard_typing) StdoutLine: {'line': b'-- Detecting CXX compile features - done\n'}
+[1.506641] (keyboard_typing) StdoutLine: {'line': b'-- Found ament_cmake: 1.3.12 (/opt/ros/humble/share/ament_cmake/cmake)\n'}
+[1.540476] (-) TimerEvent: {}
+[1.659269] (-) TimerEvent: {}
+[1.760388] (-) TimerEvent: {}
+[1.868950] (-) TimerEvent: {}
+[1.970475] (-) TimerEvent: {}
+[2.079635] (-) TimerEvent: {}
+[2.181403] (-) TimerEvent: {}
+[2.283210] (-) TimerEvent: {}
+[2.393561] (-) TimerEvent: {}
+[2.494614] (-) TimerEvent: {}
+[2.600443] (-) TimerEvent: {}
+[2.702609] (-) TimerEvent: {}
+[2.803709] (-) TimerEvent: {}
+[2.906805] (-) TimerEvent: {}
+[3.010461] (-) TimerEvent: {}
+[3.123243] (-) TimerEvent: {}
+[3.243345] (-) TimerEvent: {}
+[3.344249] (-) TimerEvent: {}
+[3.450817] (-) TimerEvent: {}
+[3.553427] (-) TimerEvent: {}
+[3.586812] (keyboard_typing) StdoutLine: {'line': b'-- Found Python3: /usr/bin/python3 (found version "3.10.12") found components: Interpreter \n'}
+[3.665516] (-) TimerEvent: {}
+[3.767848] (-) TimerEvent: {}
+[3.869749] (-) TimerEvent: {}
+[3.935244] (keyboard_typing) StdoutLine: {'line': b'-- Found rclpy: 3.3.17 (/opt/ros/humble/share/rclpy/cmake)\n'}
+[3.958353] (keyboard_typing) StdoutLine: {'line': b'-- Found visualization_msgs: 4.9.0 (/opt/ros/humble/share/visualization_msgs/cmake)\n'}
+[3.969893] (-) TimerEvent: {}
+[4.149325] (-) TimerEvent: {}
+[4.252375] (-) TimerEvent: {}
+[4.299856] (keyboard_typing) StdoutLine: {'line': b'-- Found rosidl_generator_c: 3.1.7 (/opt/ros/humble/share/rosidl_generator_c/cmake)\n'}
+[4.353623] (keyboard_typing) StdoutLine: {'line': b'-- Found rosidl_adapter: 3.1.7 (/opt/ros/humble/share/rosidl_adapter/cmake)\n'}
+[4.354293] (-) TimerEvent: {}
+[4.437041] (keyboard_typing) StdoutLine: {'line': b'-- Found rosidl_generator_cpp: 3.1.7 (/opt/ros/humble/share/rosidl_generator_cpp/cmake)\n'}
+[4.461687] (-) TimerEvent: {}
+[4.544537] (keyboard_typing) StdoutLine: {'line': b'-- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c\n'}
+[4.563962] (-) TimerEvent: {}
+[4.665826] (-) TimerEvent: {}
+[4.684626] (keyboard_typing) StdoutLine: {'line': b'-- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp\n'}
+[4.765950] (-) TimerEvent: {}
+[4.876089] (-) TimerEvent: {}
+[4.979448] (-) TimerEvent: {}
+[5.080064] (-) TimerEvent: {}
+[5.183079] (-) TimerEvent: {}
+[5.208996] (keyboard_typing) StdoutLine: {'line': b'-- Found rclcpp: 16.0.15 (/opt/ros/humble/share/rclcpp/cmake)\n'}
+[5.284927] (-) TimerEvent: {}
+[5.386156] (-) TimerEvent: {}
+[5.493449] (-) TimerEvent: {}
+[5.575462] (keyboard_typing) StdoutLine: {'line': b'-- Found rmw_implementation_cmake: 6.1.2 (/opt/ros/humble/share/rmw_implementation_cmake/cmake)\n'}
+[5.594351] (-) TimerEvent: {}
+[5.615811] (keyboard_typing) StdoutLine: {'line': b'-- Found rmw_cyclonedds_cpp: 1.3.4 (/opt/ros/humble/share/rmw_cyclonedds_cpp/cmake)\n'}
+[5.701516] (-) TimerEvent: {}
+[5.803061] (-) TimerEvent: {}
+[5.847370] (keyboard_typing) StdoutLine: {'line': b"-- Using RMW implementation 'rmw_cyclonedds_cpp' as default\n"}
+[5.903937] (-) TimerEvent: {}
+[5.945907] (keyboard_typing) StdoutLine: {'line': b'-- Looking for pthread.h\n'}
+[6.005667] (-) TimerEvent: {}
+[6.109649] (-) TimerEvent: {}
+[6.210779] (-) TimerEvent: {}
+[6.212244] (keyboard_typing) StdoutLine: {'line': b'-- Looking for pthread.h - found\n'}
+[6.213802] (keyboard_typing) StdoutLine: {'line': b'-- Performing Test CMAKE_HAVE_LIBC_PTHREAD\n'}
+[6.313738] (-) TimerEvent: {}
+[6.417832] (-) TimerEvent: {}
+[6.478347] (keyboard_typing) StdoutLine: {'line': b'-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success\n'}
+[6.481680] (keyboard_typing) StdoutLine: {'line': b'-- Found Threads: TRUE  \n'}
+[6.519847] (-) TimerEvent: {}
+[6.625239] (-) TimerEvent: {}
+[6.725969] (-) TimerEvent: {}
+[6.734241] (keyboard_typing) StdoutLine: {'line': b'-- Found moveit_msgs: 2.2.1 (/home/liliana/ws_moveit/install/moveit_msgs/share/moveit_msgs/cmake)\n'}
+[6.857888] (-) TimerEvent: {}
+[6.959691] (-) TimerEvent: {}
+[7.075940] (-) TimerEvent: {}
+[7.181987] (-) TimerEvent: {}
+[7.295685] (-) TimerEvent: {}
+[7.397628] (-) TimerEvent: {}
+[7.434829] (keyboard_typing) StdoutLine: {'line': b'-- Found moveit_core: 2.5.9 (/home/liliana/ws_moveit/install/moveit_core/share/moveit_core/cmake)\n'}
+[7.499482] (-) TimerEvent: {}
+[7.626777] (-) TimerEvent: {}
+[7.729288] (-) TimerEvent: {}
+[7.762497] (keyboard_typing) StdoutLine: {'line': b'-- Found Boost: /usr/lib/x86_64-linux-gnu/cmake/Boost-1.74.0/BoostConfig.cmake (found version "1.74.0") found components: chrono date_time filesystem iostreams program_options regex serialization system thread \n'}
+[7.829977] (-) TimerEvent: {}
+[7.930720] (-) TimerEvent: {}
+[8.041481] (-) TimerEvent: {}
+[8.144950] (keyboard_typing) StdoutLine: {'line': b'-- Found parameter_traits: 0.5.0 (/opt/ros/humble/share/parameter_traits/cmake)\n'}
+[8.145746] (-) TimerEvent: {}
+[8.256140] (keyboard_typing) StdoutLine: {'line': b'-- Found rclcpp_lifecycle: 16.0.15 (/opt/ros/humble/share/rclcpp_lifecycle/cmake)\n'}
+[8.256594] (-) TimerEvent: {}
+[8.360372] (-) TimerEvent: {}
+[8.425243] (keyboard_typing) StdoutLine: {'line': b'-- Found Boost: /usr/lib/x86_64-linux-gnu/cmake/Boost-1.74.0/BoostConfig.cmake (found version "1.74.0") found components: filesystem \n'}
+[8.465311] (-) TimerEvent: {}
+[8.577385] (-) TimerEvent: {}
+[8.678740] (-) TimerEvent: {}
+[8.781296] (-) TimerEvent: {}
+[8.882527] (-) TimerEvent: {}
+[8.920737] (keyboard_typing) StdoutLine: {'line': b'-- library: /usr/lib/x86_64-linux-gnu/libcurl.so\n'}
+[8.985909] (-) TimerEvent: {}
+[9.013745] (keyboard_typing) StdoutLine: {'line': b'-- Found Eigen3: TRUE (found version "3.4.0") \n'}
+[9.014623] (keyboard_typing) StdoutLine: {'line': b'-- Ensuring Eigen3 include directory is part of orocos-kdl CMake target\n'}
+[9.086263] (-) TimerEvent: {}
+[9.186873] (-) TimerEvent: {}
+[9.287722] (-) TimerEvent: {}
+[9.401423] (-) TimerEvent: {}
+[9.531203] (-) TimerEvent: {}
+[9.633662] (-) TimerEvent: {}
+[9.734852] (-) TimerEvent: {}
+[9.840485] (-) TimerEvent: {}
+[9.941466] (-) TimerEvent: {}
+[9.968675] (keyboard_typing) StdoutLine: {'line': b'-- Found moveit_ros_planning_interface: 2.5.9 (/home/liliana/ws_moveit/install/moveit_ros_planning_interface/share/moveit_ros_planning_interface/cmake)\n'}
+[9.983647] (keyboard_typing) StdoutLine: {'line': b'-- Found Boost: /usr/lib/x86_64-linux-gnu/cmake/Boost-1.74.0/BoostConfig.cmake (found version "1.74.0") found components: date_time filesystem program_options system thread \n'}
+[10.039348] (keyboard_typing) StdoutLine: {'line': b'-- Found Boost: /usr/lib/x86_64-linux-gnu/cmake/Boost-1.74.0/BoostConfig.cmake (found version "1.74.0") found components: system filesystem date_time program_options thread chrono \n'}
+[10.042366] (-) TimerEvent: {}
+[10.142956] (-) TimerEvent: {}
+[10.180757] (keyboard_typing) StdoutLine: {'line': b'-- Found Boost: /usr/lib/x86_64-linux-gnu/cmake/Boost-1.74.0/BoostConfig.cmake (found version "1.74.0") found components: thread system filesystem regex date_time program_options \n'}
+[10.247336] (-) TimerEvent: {}
+[10.367407] (-) TimerEvent: {}
+[10.477959] (-) TimerEvent: {}
+[10.566214] (keyboard_typing) StdoutLine: {'line': b'-- Found Boost: /usr/lib/x86_64-linux-gnu/cmake/Boost-1.74.0/BoostConfig.cmake (found version "1.74.0") found components: system filesystem date_time program_options thread \n'}
+[10.578290] (-) TimerEvent: {}
+[10.715584] (-) TimerEvent: {}
+[10.801926] (keyboard_typing) StdoutLine: {'line': b'-- Found ament_lint_auto: 0.12.14 (/opt/ros/humble/share/ament_lint_auto/cmake)\n'}
+[10.831564] (-) TimerEvent: {}
+[10.932307] (-) TimerEvent: {}
+[11.033281] (-) TimerEvent: {}
+[11.136247] (-) TimerEvent: {}
+[11.208511] (keyboard_typing) StdoutLine: {'line': b'-- Configuring done\n'}
+[11.237430] (-) TimerEvent: {}
+[11.359714] (-) TimerEvent: {}
+[11.369505] (keyboard_typing) StdoutLine: {'line': b'-- Generating done\n'}
+[11.396034] (keyboard_typing) StdoutLine: {'line': b'-- Build files have been written to: /home/liliana/ros2_ws/robot-repo-ros2/src/build/keyboard_typing\n'}
+[11.438836] (keyboard_typing) CommandEnded: {'returncode': 0}
+[11.445130] (keyboard_typing) JobProgress: {'identifier': 'keyboard_typing', 'progress': 'build'}
+[11.445418] (keyboard_typing) Command: {'cmd': ['/usr/bin/cmake', '--build', '/home/liliana/ros2_ws/robot-repo-ros2/src/build/keyboard_typing', '--', '-j6', '-l6'], 'cwd': '/home/liliana/ros2_ws/robot-repo-ros2/src/build/keyboard_typing', 'env': OrderedDict([('LESSOPEN', '| /usr/bin/lesspipe %s'), ('LANGUAGE', 'en_CA:en'), ('USER', 'liliana'), ('XDG_SESSION_TYPE', 'wayland'), ('SHLVL', '1'), ('LD_LIBRARY_PATH', '/home/liliana/ws_moveit/install/pilz_industrial_motion_planner_testutils/lib:/home/liliana/ws_moveit/install/pilz_industrial_motion_planner/lib:/home/liliana/ws_moveit/install/moveit_ros_control_interface/lib:/home/liliana/ws_moveit/install/moveit_simple_controller_manager/lib:/home/liliana/ws_moveit/install/moveit_setup_assistant/lib:/home/liliana/ws_moveit/install/moveit_setup_srdf_plugins/lib:/home/liliana/ws_moveit/install/moveit_setup_core_plugins/lib:/home/liliana/ws_moveit/install/moveit_setup_controllers/lib:/home/liliana/ws_moveit/install/moveit_setup_app_plugins/lib:/home/liliana/ws_moveit/install/moveit_setup_framework/lib:/home/liliana/ws_moveit/install/moveit_servo/lib:/home/liliana/ws_moveit/install/moveit_ros_visualization/lib:/home/liliana/ws_moveit/install/moveit_hybrid_planning/lib:/home/liliana/ws_moveit/install/moveit_ros_planning_interface/lib:/home/liliana/ws_moveit/install/moveit_ros_benchmarks/lib:/home/liliana/ws_moveit/install/moveit_ros_warehouse/lib:/home/liliana/ws_moveit/install/moveit_ros_robot_interaction/lib:/home/liliana/ws_moveit/install/moveit_ros_perception/lib:/home/liliana/ws_moveit/install/moveit_ros_move_group/lib:/home/liliana/ws_moveit/install/moveit_planners_ompl/lib:/home/liliana/ws_moveit/install/moveit_ros_planning/lib:/home/liliana/ws_moveit/install/moveit_ros_occupancy_map_monitor/lib:/home/liliana/ws_moveit/install/moveit_resources_prbt_ikfast_manipulator_plugin/lib:/home/liliana/ws_moveit/install/moveit_planners_chomp/lib:/home/liliana/ws_moveit/install/moveit_kinematics/lib:/home/liliana/ws_moveit/install/moveit_chomp_optimizer_adapter/lib:/home/liliana/ws_moveit/install/chomp_motion_planner/lib:/home/liliana/ws_moveit/install/moveit_core/lib:/home/liliana/ws_moveit/install/moveit_msgs/lib:/home/liliana/ros2_ws/install/arm_hardware/lib:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib'), ('HOME', '/home/liliana'), ('OLDPWD', '/home/liliana'), ('DESKTOP_SESSION', 'ubuntu'), ('ROS_PYTHON_VERSION', '3'), ('GNOME_SHELL_SESSION_MODE', 'ubuntu'), ('GTK_MODULES', 'gail:atk-bridge'), ('SYSTEMD_EXEC_PID', '2966'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('COLORTERM', 'truecolor'), ('IM_CONFIG_PHASE', '1'), ('WAYLAND_DISPLAY', 'wayland-0'), ('COLCON_PREFIX_PATH', '/home/liliana/ros2_ws/install:/home/liliana/ws_moveit/install:/home/liliana/install'), ('ROS_DISTRO', 'humble'), ('LOGNAME', 'liliana'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('XDG_SESSION_CLASS', 'user'), ('USERNAME', 'liliana'), ('TERM', 'xterm-256color'), ('GNOME_DESKTOP_SESSION_ID', 'this-is-deprecated'), ('ROS_LOCALHOST_ONLY', '0'), ('PATH', '/home/liliana/ws_moveit/install/moveit_core/bin:/opt/ros/humble/bin:/home/liliana/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/snap/bin:/home/liliana/.local/share/JetBrains/Toolbox/scripts'), ('SESSION_MANAGER', 'local/liliana-VirtualBox:@/tmp/.ICE-unix/2941,unix/liliana-VirtualBox:/tmp/.ICE-unix/2941'), ('XDG_MENU_PREFIX', 'gnome-'), ('GNOME_TERMINAL_SCREEN', '/org/gnome/Terminal/screen/c68688b9_de3c_40a3_b941_f47864fcdf95'), ('GNOME_SETUP_DISPLAY', ':1'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('DISPLAY', ':0'), ('LANG', 'en_US.UTF-8'), ('XDG_CURRENT_DESKTOP', 'ubuntu:GNOME'), ('RMW_IMPLEMENTATION', 'rmw_cyclonedds_cpp'), ('XMODIFIERS', '@im=ibus'), ('XDG_SESSION_DESKTOP', 'ubuntu'), ('XAUTHORITY', '/run/user/1000/.mutter-Xwaylandauth.SNY6J3'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('GNOME_TERMINAL_SERVICE', ':1.101'), ('SSH_AGENT_LAUNCHER', 'gnome-keyring'), ('SSH_AUTH_SOCK', '/run/user/1000/keyring/ssh'), ('AMENT_PREFIX_PATH', '/home/liliana/ws_moveit/install/pilz_industrial_motion_planner_testutils:/home/liliana/ws_moveit/install/moveit_runtime:/home/liliana/ws_moveit/install/moveit:/home/liliana/ws_moveit/install/moveit_planners:/home/liliana/ws_moveit/install/pilz_industrial_motion_planner:/home/liliana/ws_moveit/install/moveit_ros_control_interface:/home/liliana/ws_moveit/install/moveit_plugins:/home/liliana/ws_moveit/install/moveit_simple_controller_manager:/home/liliana/ws_moveit/install/moveit_setup_assistant:/home/liliana/ws_moveit/install/moveit_setup_srdf_plugins:/home/liliana/ws_moveit/install/moveit_setup_core_plugins:/home/liliana/ws_moveit/install/moveit_setup_controllers:/home/liliana/ws_moveit/install/moveit_setup_app_plugins:/home/liliana/ws_moveit/install/moveit_setup_framework:/home/liliana/ws_moveit/install/moveit_servo:/home/liliana/ws_moveit/install/moveit_ros:/home/liliana/ws_moveit/install/moveit_ros_visualization:/home/liliana/ws_moveit/install/moveit_hybrid_planning:/home/liliana/ws_moveit/install/moveit_ros_planning_interface:/home/liliana/ws_moveit/install/moveit_ros_benchmarks:/home/liliana/ws_moveit/install/moveit_ros_warehouse:/home/liliana/ws_moveit/install/moveit_ros_robot_interaction:/home/liliana/ws_moveit/install/moveit_ros_perception:/home/liliana/ws_moveit/install/moveit_resources_prbt_pg70_support:/home/liliana/ws_moveit/install/moveit_resources_prbt_moveit_config:/home/liliana/ws_moveit/install/moveit_ros_move_group:/home/liliana/ws_moveit/install/moveit_planners_ompl:/home/liliana/ws_moveit/install/moveit_ros_planning:/home/liliana/ws_moveit/install/moveit_ros_occupancy_map_monitor:/home/liliana/ws_moveit/install/moveit_resources_prbt_support:/home/liliana/ws_moveit/install/moveit_resources_prbt_ikfast_manipulator_plugin:/home/liliana/ws_moveit/install/moveit_resources:/home/liliana/ws_moveit/install/moveit_resources_pr2_description:/home/liliana/ws_moveit/install/moveit_resources_panda_moveit_config:/home/liliana/ws_moveit/install/moveit_resources_panda_description:/home/liliana/ws_moveit/install/moveit_resources_fanuc_moveit_config:/home/liliana/ws_moveit/install/moveit_resources_fanuc_description:/home/liliana/ws_moveit/install/moveit_planners_chomp:/home/liliana/ws_moveit/install/moveit_kinematics:/home/liliana/ws_moveit/install/moveit_chomp_optimizer_adapter:/home/liliana/ws_moveit/install/chomp_motion_planner:/home/liliana/ws_moveit/install/moveit_core:/home/liliana/ws_moveit/install/moveit_msgs:/home/liliana/ws_moveit/install/moveit_configs_utils:/home/liliana/ws_moveit/install/moveit_common:/home/liliana/ros2_ws/install/my_py_pkg:/home/liliana/ros2_ws/install/my_cpp_pkg:/home/liliana/ros2_ws/install/joy_mux_controller:/home/liliana/ros2_ws/install/ceres_urdf:/home/liliana/ros2_ws/install/arm_hardware:/home/liliana/ros2_ws/install/arm_controller:/home/liliana/ros2_ws/install/absenc_interface:/home/liliana/install/my_py_pkg:/home/liliana/install/my_cpp_pkg:/opt/ros/humble'), ('SHELL', '/bin/bash'), ('QT_ACCESSIBILITY', '1'), ('GDMSESSION', 'ubuntu'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('QT_IM_MODULE', 'ibus'), ('PWD', '/home/liliana/ros2_ws/robot-repo-ros2/src/build/keyboard_typing'), ('LC_ALL', 'en_US.UTF-8'), ('XDG_CONFIG_DIRS', '/etc/xdg/xdg-ubuntu:/etc/xdg'), ('XDG_DATA_DIRS', '/usr/share/ubuntu:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop'), ('PYTHONPATH', '/home/liliana/ws_moveit/install/moveit_msgs/local/lib/python3.10/dist-packages:/home/liliana/ws_moveit/install/moveit_configs_utils/lib/python3.10/site-packages:/home/liliana/ros2_ws/install/my_py_pkg/lib/python3.10/site-packages:/home/liliana/ros2_ws/install/joy_mux_controller/lib/python3.10/site-packages:/home/liliana/install/my_py_pkg/lib/python3.10/site-packages:/opt/ros/humble/lib/python3.10/site-packages:/opt/ros/humble/local/lib/python3.10/dist-packages'), ('COLCON', '1'), ('VTE_VERSION', '6800'), ('CMAKE_PREFIX_PATH', '/home/liliana/ws_moveit/install/pilz_industrial_motion_planner_testutils:/home/liliana/ws_moveit/install/moveit_runtime:/home/liliana/ws_moveit/install/moveit:/home/liliana/ws_moveit/install/moveit_planners:/home/liliana/ws_moveit/install/pilz_industrial_motion_planner:/home/liliana/ws_moveit/install/moveit_ros_control_interface:/home/liliana/ws_moveit/install/moveit_plugins:/home/liliana/ws_moveit/install/moveit_simple_controller_manager:/home/liliana/ws_moveit/install/moveit_setup_assistant:/home/liliana/ws_moveit/install/moveit_setup_srdf_plugins:/home/liliana/ws_moveit/install/moveit_setup_core_plugins:/home/liliana/ws_moveit/install/moveit_setup_controllers:/home/liliana/ws_moveit/install/moveit_setup_app_plugins:/home/liliana/ws_moveit/install/moveit_setup_framework:/home/liliana/ws_moveit/install/moveit_servo:/home/liliana/ws_moveit/install/moveit_ros:/home/liliana/ws_moveit/install/moveit_ros_visualization:/home/liliana/ws_moveit/install/moveit_hybrid_planning:/home/liliana/ws_moveit/install/moveit_ros_planning_interface:/home/liliana/ws_moveit/install/moveit_ros_benchmarks:/home/liliana/ws_moveit/install/moveit_ros_warehouse:/home/liliana/ws_moveit/install/moveit_ros_robot_interaction:/home/liliana/ws_moveit/install/moveit_ros_perception:/home/liliana/ws_moveit/install/moveit_resources_prbt_pg70_support:/home/liliana/ws_moveit/install/moveit_resources_prbt_moveit_config:/home/liliana/ws_moveit/install/moveit_ros_move_group:/home/liliana/ws_moveit/install/moveit_planners_ompl:/home/liliana/ws_moveit/install/moveit_ros_planning:/home/liliana/ws_moveit/install/moveit_ros_occupancy_map_monitor:/home/liliana/ws_moveit/install/moveit_resources_prbt_support:/home/liliana/ws_moveit/install/moveit_resources_prbt_ikfast_manipulator_plugin:/home/liliana/ws_moveit/install/moveit_resources:/home/liliana/ws_moveit/install/moveit_resources_pr2_description:/home/liliana/ws_moveit/install/moveit_resources_panda_moveit_config:/home/liliana/ws_moveit/install/moveit_resources_panda_description:/home/liliana/ws_moveit/install/moveit_resources_fanuc_moveit_config:/home/liliana/ws_moveit/install/moveit_resources_fanuc_description:/home/liliana/ws_moveit/install/moveit_planners_chomp:/home/liliana/ws_moveit/install/moveit_kinematics:/home/liliana/ws_moveit/install/moveit_chomp_optimizer_adapter:/home/liliana/ws_moveit/install/chomp_motion_planner:/home/liliana/ws_moveit/install/moveit_core:/home/liliana/ws_moveit/install/moveit_msgs:/home/liliana/ws_moveit/install/moveit_common:/home/liliana/ros2_ws/install/my_cpp_pkg:/home/liliana/ros2_ws/install/ceres_urdf:/home/liliana/ros2_ws/install/arm_hardware:/home/liliana/ros2_ws/install/arm_controller:/home/liliana/ros2_ws/install/absenc_interface:/home/liliana/install/my_cpp_pkg:/home/liliana/ws_moveit/install/moveit_configs_utils:/home/liliana/ros2_ws/install/my_py_pkg:/home/liliana/ros2_ws/install/joy_mux_controller:/home/liliana/install/my_py_pkg:/opt/ros/humble')]), 'shell': False}
+[11.459946] (-) TimerEvent: {}
+[11.563241] (-) TimerEvent: {}
+[11.645400] (keyboard_typing) StdoutLine: {'line': b'[ 50%] \x1b[32mBuilding CXX object CMakeFiles/move_group_node.dir/src/move_group.cpp.o\x1b[0m\n'}
+[11.663431] (-) TimerEvent: {}
+[11.874031] (-) TimerEvent: {}
+[12.068793] (-) TimerEvent: {}
+[12.181873] (-) TimerEvent: {}
+[12.292966] (-) TimerEvent: {}
+[12.405938] (-) TimerEvent: {}
+[12.507384] (-) TimerEvent: {}
+[12.611365] (-) TimerEvent: {}
+[12.712434] (-) TimerEvent: {}
+[12.822623] (-) TimerEvent: {}
+[12.928252] (-) TimerEvent: {}
+[13.033983] (-) TimerEvent: {}
+[13.135747] (-) TimerEvent: {}
+[13.245005] (-) TimerEvent: {}
+[13.349973] (-) TimerEvent: {}
+[13.452112] (-) TimerEvent: {}
+[13.554120] (-) TimerEvent: {}
+[13.655422] (-) TimerEvent: {}
+[13.774406] (-) TimerEvent: {}
+[13.876332] (-) TimerEvent: {}
+[13.979358] (-) TimerEvent: {}
+[14.082353] (-) TimerEvent: {}
+[14.191349] (-) TimerEvent: {}
+[14.292172] (-) TimerEvent: {}
+[14.398252] (-) TimerEvent: {}
+[14.583689] (-) TimerEvent: {}
+[14.694545] (-) TimerEvent: {}
+[14.797539] (-) TimerEvent: {}
+[14.898356] (-) TimerEvent: {}
+[15.044619] (-) TimerEvent: {}
+[15.161206] (-) TimerEvent: {}
+[15.262763] (-) TimerEvent: {}
+[15.387664] (-) TimerEvent: {}
+[15.494616] (-) TimerEvent: {}
+[15.630218] (-) TimerEvent: {}
+[15.782685] (-) TimerEvent: {}
+[15.885506] (-) TimerEvent: {}
+[15.987164] (-) TimerEvent: {}
+[16.088525] (-) TimerEvent: {}
+[16.203499] (-) TimerEvent: {}
+[16.308403] (-) TimerEvent: {}
+[16.411411] (-) TimerEvent: {}
+[16.552413] (-) TimerEvent: {}
+[16.656523] (-) TimerEvent: {}
+[16.773361] (-) TimerEvent: {}
+[16.874884] (-) TimerEvent: {}
+[17.002537] (-) TimerEvent: {}
+[17.112666] (-) TimerEvent: {}
+[17.214610] (-) TimerEvent: {}
+[17.315643] (-) TimerEvent: {}
+[17.416985] (-) TimerEvent: {}
+[17.524571] (-) TimerEvent: {}
+[17.665504] (-) TimerEvent: {}
+[17.768489] (-) TimerEvent: {}
+[17.964459] (-) TimerEvent: {}
+[18.069472] (-) TimerEvent: {}
+[18.181097] (-) TimerEvent: {}
+[18.282272] (-) TimerEvent: {}
+[18.425677] (-) TimerEvent: {}
+[18.534944] (-) TimerEvent: {}
+[18.638550] (-) TimerEvent: {}
+[18.759346] (-) TimerEvent: {}
+[18.867472] (-) TimerEvent: {}
+[18.976361] (-) TimerEvent: {}
+[19.084478] (-) TimerEvent: {}
+[19.188171] (-) TimerEvent: {}
+[19.289515] (-) TimerEvent: {}
+[19.400366] (-) TimerEvent: {}
+[19.505364] (-) TimerEvent: {}
+[19.609034] (-) TimerEvent: {}
+[19.716119] (-) TimerEvent: {}
+[19.816876] (-) TimerEvent: {}
+[19.918185] (-) TimerEvent: {}
+[20.020486] (-) TimerEvent: {}
+[20.123687] (-) TimerEvent: {}
+[20.310955] (-) TimerEvent: {}
+[20.413223] (-) TimerEvent: {}
+[20.521734] (-) TimerEvent: {}
+[20.757612] (-) TimerEvent: {}
+[21.001854] (-) TimerEvent: {}
+[21.121047] (-) TimerEvent: {}
+[21.246588] (-) TimerEvent: {}
+[21.348118] (-) TimerEvent: {}
+[21.452234] (-) TimerEvent: {}
+[21.555599] (-) TimerEvent: {}
+[21.659904] (-) TimerEvent: {}
+[21.840320] (-) TimerEvent: {}
+[21.994461] (-) TimerEvent: {}
+[22.103498] (-) TimerEvent: {}
+[22.270074] (-) TimerEvent: {}
+[22.397916] (-) TimerEvent: {}
+[22.504641] (-) TimerEvent: {}
+[22.606428] (-) TimerEvent: {}
+[22.709364] (-) TimerEvent: {}
+[22.830001] (-) TimerEvent: {}
+[22.973308] (-) TimerEvent: {}
+[23.079492] (-) TimerEvent: {}
+[23.281154] (-) TimerEvent: {}
+[23.382536] (-) TimerEvent: {}
+[23.484963] (-) TimerEvent: {}
+[23.592297] (-) TimerEvent: {}
+[23.697916] (-) TimerEvent: {}
+[23.830516] (-) TimerEvent: {}
+[23.936529] (-) TimerEvent: {}
+[24.077118] (-) TimerEvent: {}
+[24.179895] (-) TimerEvent: {}
+[24.216243] (keyboard_typing) StderrLine: {'line': b'\x1b[01m\x1b[K/home/liliana/ros2_ws/robot-repo-ros2/src/keyboard_typing/src/move_group.cpp:\x1b[m\x1b[K In function \xe2\x80\x98\x1b[01m\x1b[Kvoid goTarget(double, double, double, moveit::planning_interface::MoveGroupInterface&, rclcpp::Node::SharedPtr)\x1b[m\x1b[K\xe2\x80\x99:\n'}
+[24.216972] (keyboard_typing) StderrLine: {'line': b'\x1b[01m\x1b[K/home/liliana/ros2_ws/robot-repo-ros2/src/keyboard_typing/src/move_group.cpp:10:22:\x1b[m\x1b[K \x1b[01;35m\x1b[Kwarning: \x1b[m\x1b[Kunused parameter \xe2\x80\x98\x1b[01m\x1b[Kx\x1b[m\x1b[K\xe2\x80\x99 [\x1b[01;35m\x1b[K\x1b]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wunused-parameter\x07-Wunused-parameter\x1b]8;;\x07\x1b[m\x1b[K]\n'}
+[24.217547] (keyboard_typing) StderrLine: {'line': b'   10 | void goTarget(\x1b[01;35m\x1b[Kdouble x\x1b[m\x1b[K, double y, double z,\n'}
+[24.217867] (keyboard_typing) StderrLine: {'line': b'      |               \x1b[01;35m\x1b[K~~~~~~~^\x1b[m\x1b[K\n'}
+[24.218392] (keyboard_typing) StderrLine: {'line': b'\x1b[01m\x1b[K/home/liliana/ros2_ws/robot-repo-ros2/src/keyboard_typing/src/move_group.cpp:10:32:\x1b[m\x1b[K \x1b[01;35m\x1b[Kwarning: \x1b[m\x1b[Kunused parameter \xe2\x80\x98\x1b[01m\x1b[Ky\x1b[m\x1b[K\xe2\x80\x99 [\x1b[01;35m\x1b[K\x1b]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wunused-parameter\x07-Wunused-parameter\x1b]8;;\x07\x1b[m\x1b[K]\n'}
+[24.218867] (keyboard_typing) StderrLine: {'line': b'   10 | void goTarget(double x, \x1b[01;35m\x1b[Kdouble y\x1b[m\x1b[K, double z,\n'}
+[24.219259] (keyboard_typing) StderrLine: {'line': b'      |                         \x1b[01;35m\x1b[K~~~~~~~^\x1b[m\x1b[K\n'}
+[24.219841] (keyboard_typing) StderrLine: {'line': b'\x1b[01m\x1b[K/home/liliana/ros2_ws/robot-repo-ros2/src/keyboard_typing/src/move_group.cpp:10:42:\x1b[m\x1b[K \x1b[01;35m\x1b[Kwarning: \x1b[m\x1b[Kunused parameter \xe2\x80\x98\x1b[01m\x1b[Kz\x1b[m\x1b[K\xe2\x80\x99 [\x1b[01;35m\x1b[K\x1b]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wunused-parameter\x07-Wunused-parameter\x1b]8;;\x07\x1b[m\x1b[K]\n'}
+[24.220432] (keyboard_typing) StderrLine: {'line': b'   10 | void goTarget(double x, double y, \x1b[01;35m\x1b[Kdouble z\x1b[m\x1b[K,\n'}
+[24.220828] (keyboard_typing) StderrLine: {'line': b'      |                                   \x1b[01;35m\x1b[K~~~~~~~^\x1b[m\x1b[K\n'}
+[24.293609] (-) TimerEvent: {}
+[24.463938] (-) TimerEvent: {}
+[24.582677] (-) TimerEvent: {}
+[24.683413] (-) TimerEvent: {}
+[24.784575] (-) TimerEvent: {}
+[24.886360] (-) TimerEvent: {}
+[24.988380] (-) TimerEvent: {}
+[25.094002] (-) TimerEvent: {}
+[25.198631] (-) TimerEvent: {}
+[25.301158] (-) TimerEvent: {}
+[25.401815] (-) TimerEvent: {}
+[25.503259] (-) TimerEvent: {}
+[25.604501] (-) TimerEvent: {}
+[25.704945] (-) TimerEvent: {}
+[25.805651] (-) TimerEvent: {}
+[25.909412] (-) TimerEvent: {}
+[26.010631] (-) TimerEvent: {}
+[26.111443] (-) TimerEvent: {}
+[26.218782] (-) TimerEvent: {}
+[26.320274] (-) TimerEvent: {}
+[26.424752] (-) TimerEvent: {}
+[26.526713] (-) TimerEvent: {}
+[26.628578] (-) TimerEvent: {}
+[26.729648] (-) TimerEvent: {}
+[26.831201] (-) TimerEvent: {}
+[26.932788] (-) TimerEvent: {}
+[27.033904] (-) TimerEvent: {}
+[27.169663] (-) TimerEvent: {}
+[27.276304] (-) TimerEvent: {}
+[27.377667] (-) TimerEvent: {}
+[27.495291] (-) TimerEvent: {}
+[27.668342] (-) TimerEvent: {}
+[27.772565] (-) TimerEvent: {}
+[27.874000] (-) TimerEvent: {}
+[27.975276] (-) TimerEvent: {}
+[28.084949] (-) TimerEvent: {}
+[28.197543] (-) TimerEvent: {}
+[28.299725] (-) TimerEvent: {}
+[28.400477] (-) TimerEvent: {}
+[28.501613] (-) TimerEvent: {}
+[28.602320] (-) TimerEvent: {}
+[28.705528] (-) TimerEvent: {}
+[28.811481] (-) TimerEvent: {}
+[28.912793] (-) TimerEvent: {}
+[29.015285] (-) TimerEvent: {}
+[29.116318] (-) TimerEvent: {}
+[29.218883] (-) TimerEvent: {}
+[29.321273] (-) TimerEvent: {}
+[29.423988] (-) TimerEvent: {}
+[29.526758] (-) TimerEvent: {}
+[29.641533] (-) TimerEvent: {}
+[29.750285] (-) TimerEvent: {}
+[29.853542] (-) TimerEvent: {}
+[29.955213] (-) TimerEvent: {}
+[30.056403] (-) TimerEvent: {}
+[30.158333] (-) TimerEvent: {}
+[30.260988] (-) TimerEvent: {}
+[30.362364] (-) TimerEvent: {}
+[30.463423] (-) TimerEvent: {}
+[30.564337] (-) TimerEvent: {}
+[30.671582] (-) TimerEvent: {}
+[30.774300] (-) TimerEvent: {}
+[30.874894] (-) TimerEvent: {}
+[30.976382] (-) TimerEvent: {}
+[31.086720] (-) TimerEvent: {}
+[31.191392] (-) TimerEvent: {}
+[31.295366] (-) TimerEvent: {}
+[31.403452] (-) TimerEvent: {}
+[31.538350] (-) TimerEvent: {}
+[31.640386] (-) TimerEvent: {}
+[31.766875] (-) TimerEvent: {}
+[31.773165] (keyboard_typing) StdoutLine: {'line': b'[100%] \x1b[32m\x1b[1mLinking CXX executable move_group_node\x1b[0m\n'}
+[31.866488] (-) TimerEvent: {}
+[31.968317] (-) TimerEvent: {}
+[32.069839] (-) TimerEvent: {}
+[32.174630] (-) TimerEvent: {}
+[32.277537] (-) TimerEvent: {}
+[32.378302] (-) TimerEvent: {}
+[32.479271] (-) TimerEvent: {}
+[32.580942] (-) TimerEvent: {}
+[32.681966] (-) TimerEvent: {}
+[32.783002] (-) TimerEvent: {}
+[32.883654] (-) TimerEvent: {}
+[32.984645] (-) TimerEvent: {}
+[33.095282] (-) TimerEvent: {}
+[33.235676] (-) TimerEvent: {}
+[33.338281] (-) TimerEvent: {}
+[33.446940] (-) TimerEvent: {}
+[33.649210] (-) TimerEvent: {}
+[33.732502] (keyboard_typing) StdoutLine: {'line': b'[100%] Built target move_group_node\n'}
+[33.750237] (-) TimerEvent: {}
+[33.773889] (keyboard_typing) CommandEnded: {'returncode': 0}
+[33.775957] (keyboard_typing) JobProgress: {'identifier': 'keyboard_typing', 'progress': 'install'}
+[33.809216] (keyboard_typing) Command: {'cmd': ['/usr/bin/cmake', '--install', '/home/liliana/ros2_ws/robot-repo-ros2/src/build/keyboard_typing'], 'cwd': '/home/liliana/ros2_ws/robot-repo-ros2/src/build/keyboard_typing', 'env': OrderedDict([('LESSOPEN', '| /usr/bin/lesspipe %s'), ('LANGUAGE', 'en_CA:en'), ('USER', 'liliana'), ('XDG_SESSION_TYPE', 'wayland'), ('SHLVL', '1'), ('LD_LIBRARY_PATH', '/home/liliana/ws_moveit/install/pilz_industrial_motion_planner_testutils/lib:/home/liliana/ws_moveit/install/pilz_industrial_motion_planner/lib:/home/liliana/ws_moveit/install/moveit_ros_control_interface/lib:/home/liliana/ws_moveit/install/moveit_simple_controller_manager/lib:/home/liliana/ws_moveit/install/moveit_setup_assistant/lib:/home/liliana/ws_moveit/install/moveit_setup_srdf_plugins/lib:/home/liliana/ws_moveit/install/moveit_setup_core_plugins/lib:/home/liliana/ws_moveit/install/moveit_setup_controllers/lib:/home/liliana/ws_moveit/install/moveit_setup_app_plugins/lib:/home/liliana/ws_moveit/install/moveit_setup_framework/lib:/home/liliana/ws_moveit/install/moveit_servo/lib:/home/liliana/ws_moveit/install/moveit_ros_visualization/lib:/home/liliana/ws_moveit/install/moveit_hybrid_planning/lib:/home/liliana/ws_moveit/install/moveit_ros_planning_interface/lib:/home/liliana/ws_moveit/install/moveit_ros_benchmarks/lib:/home/liliana/ws_moveit/install/moveit_ros_warehouse/lib:/home/liliana/ws_moveit/install/moveit_ros_robot_interaction/lib:/home/liliana/ws_moveit/install/moveit_ros_perception/lib:/home/liliana/ws_moveit/install/moveit_ros_move_group/lib:/home/liliana/ws_moveit/install/moveit_planners_ompl/lib:/home/liliana/ws_moveit/install/moveit_ros_planning/lib:/home/liliana/ws_moveit/install/moveit_ros_occupancy_map_monitor/lib:/home/liliana/ws_moveit/install/moveit_resources_prbt_ikfast_manipulator_plugin/lib:/home/liliana/ws_moveit/install/moveit_planners_chomp/lib:/home/liliana/ws_moveit/install/moveit_kinematics/lib:/home/liliana/ws_moveit/install/moveit_chomp_optimizer_adapter/lib:/home/liliana/ws_moveit/install/chomp_motion_planner/lib:/home/liliana/ws_moveit/install/moveit_core/lib:/home/liliana/ws_moveit/install/moveit_msgs/lib:/home/liliana/ros2_ws/install/arm_hardware/lib:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib'), ('HOME', '/home/liliana'), ('OLDPWD', '/home/liliana'), ('DESKTOP_SESSION', 'ubuntu'), ('ROS_PYTHON_VERSION', '3'), ('GNOME_SHELL_SESSION_MODE', 'ubuntu'), ('GTK_MODULES', 'gail:atk-bridge'), ('SYSTEMD_EXEC_PID', '2966'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('COLORTERM', 'truecolor'), ('IM_CONFIG_PHASE', '1'), ('WAYLAND_DISPLAY', 'wayland-0'), ('COLCON_PREFIX_PATH', '/home/liliana/ros2_ws/install:/home/liliana/ws_moveit/install:/home/liliana/install'), ('ROS_DISTRO', 'humble'), ('LOGNAME', 'liliana'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('XDG_SESSION_CLASS', 'user'), ('USERNAME', 'liliana'), ('TERM', 'xterm-256color'), ('GNOME_DESKTOP_SESSION_ID', 'this-is-deprecated'), ('ROS_LOCALHOST_ONLY', '0'), ('PATH', '/home/liliana/ws_moveit/install/moveit_core/bin:/opt/ros/humble/bin:/home/liliana/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/snap/bin:/home/liliana/.local/share/JetBrains/Toolbox/scripts'), ('SESSION_MANAGER', 'local/liliana-VirtualBox:@/tmp/.ICE-unix/2941,unix/liliana-VirtualBox:/tmp/.ICE-unix/2941'), ('XDG_MENU_PREFIX', 'gnome-'), ('GNOME_TERMINAL_SCREEN', '/org/gnome/Terminal/screen/c68688b9_de3c_40a3_b941_f47864fcdf95'), ('GNOME_SETUP_DISPLAY', ':1'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('DISPLAY', ':0'), ('LANG', 'en_US.UTF-8'), ('XDG_CURRENT_DESKTOP', 'ubuntu:GNOME'), ('RMW_IMPLEMENTATION', 'rmw_cyclonedds_cpp'), ('XMODIFIERS', '@im=ibus'), ('XDG_SESSION_DESKTOP', 'ubuntu'), ('XAUTHORITY', '/run/user/1000/.mutter-Xwaylandauth.SNY6J3'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('GNOME_TERMINAL_SERVICE', ':1.101'), ('SSH_AGENT_LAUNCHER', 'gnome-keyring'), ('SSH_AUTH_SOCK', '/run/user/1000/keyring/ssh'), ('AMENT_PREFIX_PATH', '/home/liliana/ws_moveit/install/pilz_industrial_motion_planner_testutils:/home/liliana/ws_moveit/install/moveit_runtime:/home/liliana/ws_moveit/install/moveit:/home/liliana/ws_moveit/install/moveit_planners:/home/liliana/ws_moveit/install/pilz_industrial_motion_planner:/home/liliana/ws_moveit/install/moveit_ros_control_interface:/home/liliana/ws_moveit/install/moveit_plugins:/home/liliana/ws_moveit/install/moveit_simple_controller_manager:/home/liliana/ws_moveit/install/moveit_setup_assistant:/home/liliana/ws_moveit/install/moveit_setup_srdf_plugins:/home/liliana/ws_moveit/install/moveit_setup_core_plugins:/home/liliana/ws_moveit/install/moveit_setup_controllers:/home/liliana/ws_moveit/install/moveit_setup_app_plugins:/home/liliana/ws_moveit/install/moveit_setup_framework:/home/liliana/ws_moveit/install/moveit_servo:/home/liliana/ws_moveit/install/moveit_ros:/home/liliana/ws_moveit/install/moveit_ros_visualization:/home/liliana/ws_moveit/install/moveit_hybrid_planning:/home/liliana/ws_moveit/install/moveit_ros_planning_interface:/home/liliana/ws_moveit/install/moveit_ros_benchmarks:/home/liliana/ws_moveit/install/moveit_ros_warehouse:/home/liliana/ws_moveit/install/moveit_ros_robot_interaction:/home/liliana/ws_moveit/install/moveit_ros_perception:/home/liliana/ws_moveit/install/moveit_resources_prbt_pg70_support:/home/liliana/ws_moveit/install/moveit_resources_prbt_moveit_config:/home/liliana/ws_moveit/install/moveit_ros_move_group:/home/liliana/ws_moveit/install/moveit_planners_ompl:/home/liliana/ws_moveit/install/moveit_ros_planning:/home/liliana/ws_moveit/install/moveit_ros_occupancy_map_monitor:/home/liliana/ws_moveit/install/moveit_resources_prbt_support:/home/liliana/ws_moveit/install/moveit_resources_prbt_ikfast_manipulator_plugin:/home/liliana/ws_moveit/install/moveit_resources:/home/liliana/ws_moveit/install/moveit_resources_pr2_description:/home/liliana/ws_moveit/install/moveit_resources_panda_moveit_config:/home/liliana/ws_moveit/install/moveit_resources_panda_description:/home/liliana/ws_moveit/install/moveit_resources_fanuc_moveit_config:/home/liliana/ws_moveit/install/moveit_resources_fanuc_description:/home/liliana/ws_moveit/install/moveit_planners_chomp:/home/liliana/ws_moveit/install/moveit_kinematics:/home/liliana/ws_moveit/install/moveit_chomp_optimizer_adapter:/home/liliana/ws_moveit/install/chomp_motion_planner:/home/liliana/ws_moveit/install/moveit_core:/home/liliana/ws_moveit/install/moveit_msgs:/home/liliana/ws_moveit/install/moveit_configs_utils:/home/liliana/ws_moveit/install/moveit_common:/home/liliana/ros2_ws/install/my_py_pkg:/home/liliana/ros2_ws/install/my_cpp_pkg:/home/liliana/ros2_ws/install/joy_mux_controller:/home/liliana/ros2_ws/install/ceres_urdf:/home/liliana/ros2_ws/install/arm_hardware:/home/liliana/ros2_ws/install/arm_controller:/home/liliana/ros2_ws/install/absenc_interface:/home/liliana/install/my_py_pkg:/home/liliana/install/my_cpp_pkg:/opt/ros/humble'), ('SHELL', '/bin/bash'), ('QT_ACCESSIBILITY', '1'), ('GDMSESSION', 'ubuntu'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('QT_IM_MODULE', 'ibus'), ('PWD', '/home/liliana/ros2_ws/robot-repo-ros2/src/build/keyboard_typing'), ('LC_ALL', 'en_US.UTF-8'), ('XDG_CONFIG_DIRS', '/etc/xdg/xdg-ubuntu:/etc/xdg'), ('XDG_DATA_DIRS', '/usr/share/ubuntu:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop'), ('PYTHONPATH', '/home/liliana/ws_moveit/install/moveit_msgs/local/lib/python3.10/dist-packages:/home/liliana/ws_moveit/install/moveit_configs_utils/lib/python3.10/site-packages:/home/liliana/ros2_ws/install/my_py_pkg/lib/python3.10/site-packages:/home/liliana/ros2_ws/install/joy_mux_controller/lib/python3.10/site-packages:/home/liliana/install/my_py_pkg/lib/python3.10/site-packages:/opt/ros/humble/lib/python3.10/site-packages:/opt/ros/humble/local/lib/python3.10/dist-packages'), ('COLCON', '1'), ('VTE_VERSION', '6800'), ('CMAKE_PREFIX_PATH', '/home/liliana/ws_moveit/install/pilz_industrial_motion_planner_testutils:/home/liliana/ws_moveit/install/moveit_runtime:/home/liliana/ws_moveit/install/moveit:/home/liliana/ws_moveit/install/moveit_planners:/home/liliana/ws_moveit/install/pilz_industrial_motion_planner:/home/liliana/ws_moveit/install/moveit_ros_control_interface:/home/liliana/ws_moveit/install/moveit_plugins:/home/liliana/ws_moveit/install/moveit_simple_controller_manager:/home/liliana/ws_moveit/install/moveit_setup_assistant:/home/liliana/ws_moveit/install/moveit_setup_srdf_plugins:/home/liliana/ws_moveit/install/moveit_setup_core_plugins:/home/liliana/ws_moveit/install/moveit_setup_controllers:/home/liliana/ws_moveit/install/moveit_setup_app_plugins:/home/liliana/ws_moveit/install/moveit_setup_framework:/home/liliana/ws_moveit/install/moveit_servo:/home/liliana/ws_moveit/install/moveit_ros:/home/liliana/ws_moveit/install/moveit_ros_visualization:/home/liliana/ws_moveit/install/moveit_hybrid_planning:/home/liliana/ws_moveit/install/moveit_ros_planning_interface:/home/liliana/ws_moveit/install/moveit_ros_benchmarks:/home/liliana/ws_moveit/install/moveit_ros_warehouse:/home/liliana/ws_moveit/install/moveit_ros_robot_interaction:/home/liliana/ws_moveit/install/moveit_ros_perception:/home/liliana/ws_moveit/install/moveit_resources_prbt_pg70_support:/home/liliana/ws_moveit/install/moveit_resources_prbt_moveit_config:/home/liliana/ws_moveit/install/moveit_ros_move_group:/home/liliana/ws_moveit/install/moveit_planners_ompl:/home/liliana/ws_moveit/install/moveit_ros_planning:/home/liliana/ws_moveit/install/moveit_ros_occupancy_map_monitor:/home/liliana/ws_moveit/install/moveit_resources_prbt_support:/home/liliana/ws_moveit/install/moveit_resources_prbt_ikfast_manipulator_plugin:/home/liliana/ws_moveit/install/moveit_resources:/home/liliana/ws_moveit/install/moveit_resources_pr2_description:/home/liliana/ws_moveit/install/moveit_resources_panda_moveit_config:/home/liliana/ws_moveit/install/moveit_resources_panda_description:/home/liliana/ws_moveit/install/moveit_resources_fanuc_moveit_config:/home/liliana/ws_moveit/install/moveit_resources_fanuc_description:/home/liliana/ws_moveit/install/moveit_planners_chomp:/home/liliana/ws_moveit/install/moveit_kinematics:/home/liliana/ws_moveit/install/moveit_chomp_optimizer_adapter:/home/liliana/ws_moveit/install/chomp_motion_planner:/home/liliana/ws_moveit/install/moveit_core:/home/liliana/ws_moveit/install/moveit_msgs:/home/liliana/ws_moveit/install/moveit_common:/home/liliana/ros2_ws/install/my_cpp_pkg:/home/liliana/ros2_ws/install/ceres_urdf:/home/liliana/ros2_ws/install/arm_hardware:/home/liliana/ros2_ws/install/arm_controller:/home/liliana/ros2_ws/install/absenc_interface:/home/liliana/install/my_cpp_pkg:/home/liliana/ws_moveit/install/moveit_configs_utils:/home/liliana/ros2_ws/install/my_py_pkg:/home/liliana/ros2_ws/install/joy_mux_controller:/home/liliana/install/my_py_pkg:/opt/ros/humble')]), 'shell': False}
+[33.835844] (keyboard_typing) StdoutLine: {'line': b'-- Install configuration: ""\n'}
+[33.837006] (keyboard_typing) StdoutLine: {'line': b'-- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/install/keyboard_typing/lib/keyboard_typing/move_group_node\n'}
+[33.838322] (keyboard_typing) StdoutLine: {'line': b'-- Set runtime path of "/home/liliana/ros2_ws/robot-repo-ros2/src/install/keyboard_typing/lib/keyboard_typing/move_group_node" to ""\n'}
+[33.838762] (keyboard_typing) StdoutLine: {'line': b'-- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/install/keyboard_typing/share/ament_index/resource_index/package_run_dependencies/keyboard_typing\n'}
+[33.839317] (keyboard_typing) StdoutLine: {'line': b'-- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/install/keyboard_typing/share/ament_index/resource_index/parent_prefix_path/keyboard_typing\n'}
+[33.839891] (keyboard_typing) StdoutLine: {'line': b'-- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/install/keyboard_typing/share/keyboard_typing/environment/ament_prefix_path.sh\n'}
+[33.840400] (keyboard_typing) StdoutLine: {'line': b'-- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/install/keyboard_typing/share/keyboard_typing/environment/ament_prefix_path.dsv\n'}
+[33.840856] (keyboard_typing) StdoutLine: {'line': b'-- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/install/keyboard_typing/share/keyboard_typing/environment/path.sh\n'}
+[33.841321] (keyboard_typing) StdoutLine: {'line': b'-- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/install/keyboard_typing/share/keyboard_typing/environment/path.dsv\n'}
+[33.841712] (keyboard_typing) StdoutLine: {'line': b'-- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/install/keyboard_typing/share/keyboard_typing/local_setup.bash\n'}
+[33.842013] (keyboard_typing) StdoutLine: {'line': b'-- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/install/keyboard_typing/share/keyboard_typing/local_setup.sh\n'}
+[33.842449] (keyboard_typing) StdoutLine: {'line': b'-- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/install/keyboard_typing/share/keyboard_typing/local_setup.zsh\n'}
+[33.842809] (keyboard_typing) StdoutLine: {'line': b'-- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/install/keyboard_typing/share/keyboard_typing/local_setup.dsv\n'}
+[33.843289] (keyboard_typing) StdoutLine: {'line': b'-- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/install/keyboard_typing/share/keyboard_typing/package.dsv\n'}
+[33.843786] (keyboard_typing) StdoutLine: {'line': b'-- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/install/keyboard_typing/share/ament_index/resource_index/packages/keyboard_typing\n'}
+[33.844290] (keyboard_typing) StdoutLine: {'line': b'-- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/install/keyboard_typing/share/keyboard_typing/cmake/keyboard_typingConfig.cmake\n'}
+[33.844616] (keyboard_typing) StdoutLine: {'line': b'-- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/install/keyboard_typing/share/keyboard_typing/cmake/keyboard_typingConfig-version.cmake\n'}
+[33.844936] (keyboard_typing) StdoutLine: {'line': b'-- Installing: /home/liliana/ros2_ws/robot-repo-ros2/src/install/keyboard_typing/share/keyboard_typing/package.xml\n'}
+[33.850891] (keyboard_typing) CommandEnded: {'returncode': 0}
+[33.852540] (-) TimerEvent: {}
+[33.948110] (keyboard_typing) JobEnded: {'identifier': 'keyboard_typing', 'rc': 0}
+[33.950553] (-) EventReactorShutdown: {}
