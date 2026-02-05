@@ -92,7 +92,7 @@ void Absenc::absEncPollingCallback() {
     float angle_1 = absenc_meas_1.angval; //+ 25; //-355
     float angle_2 = absenc_meas_2.angval; // - 174; //-175
     float angle_3 = absenc_meas_3.angval; // * -1; 
-    float angle_4 = absenc_meas_4.angval; /// 4.0f;
+    float angle_4 = absenc_meas_4.angval / 4.0f;
 
     // Normalize angles to range [-180, 180) rn it's 0 to 360
     //////////////////////////////////////////////////
@@ -110,7 +110,7 @@ void Absenc::absEncPollingCallback() {
     auto joint_state_msg = sensor_msgs::msg::JointState();
     joint_state_msg.header.stamp = this->now();
     joint_state_msg.name = {"base", "shoulder", "bicep", "wrist"};
-    joint_state_msg.position = {absenc_meas_4.angval, absenc_meas_1.angval, absenc_meas_2.angval, absenc_meas_3.angval};
+    joint_state_msg.position = {angle_4, angle_1, angle_2, angle_3};
 
     angles_publisher_->publish(joint_state_msg);
 
