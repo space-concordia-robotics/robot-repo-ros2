@@ -89,10 +89,10 @@ void Absenc::absEncPollingCallback() {
 
 
     // Fix the Home
-    float angle_1 = absenc_meas_1.angval + 25; //-355
-    float angle_2 = absenc_meas_2.angval - 174; //-175
-    float angle_3 = absenc_meas_3.angval * -1; 
-    float angle_4 = absenc_meas_4.angval / 4.0f;
+    float angle_1 = absenc_meas_1.angval; //+ 25; //-355
+    float angle_2 = absenc_meas_2.angval; // - 174; //-175
+    float angle_3 = absenc_meas_3.angval; // * -1; 
+    float angle_4 = absenc_meas_4.angval; /// 4.0f;
 
     // Normalize angles to range [-180, 180) rn it's 0 to 360
     //////////////////////////////////////////////////
@@ -103,7 +103,7 @@ void Absenc::absEncPollingCallback() {
     // update the old angle
     this -> old_angle_4 = angle_4;
     
-    angle_4 = angle_4 + this -> angle_4_zone * 90 - 30;
+    angle_4 = angle_4 + this -> angle_4_zone * 90;// - 30;
     /////////////////////////////////////////////////
 
     // Publish angles
