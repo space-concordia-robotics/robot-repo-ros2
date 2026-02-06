@@ -5,7 +5,7 @@
 
        <ros2_control name="RoverArm" type="system">
           <hardware>
-            <plugin>arm_interface/ArmInterface</plugin>
+            <plugin>mock_components/GenericSystem</plugin>
           </hardware>
 
             <!-- Note: RVIZ only takes positional command interfaces, so when using this interface on the real arm 

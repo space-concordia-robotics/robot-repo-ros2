@@ -1,14 +1,36 @@
 import os
+import yaml
 from launch import LaunchDescription
-from launch_param_builder import ParameterBuilder
 from launch_ros.actions import Node
 from ament_index_python.packages import get_package_share_directory
+from launch_ros.actions import ComposableNodeContainer
+from launch_ros.descriptions import ComposableNode
+from launch.actions import ExecuteProcess
+from launch_param_builder import ParameterBuilder
+import xacro
 from moveit_configs_utils import MoveItConfigsBuilder
 
-from launch.actions import RegisterEventHandler
-from launch.event_handlers import OnProcessStart
 
-from launch.actions import TimerAction
+def load_file(package_name, file_path):
+    package_path = get_package_share_directory(package_name)
+    absolute_file_path = os.path.join(package_path, file_path)
+
+    try:
+        with open(absolute_file_path, "r") as file:
+            return file.read()
+    except EnvironmentError:  # parent of IOError, OSError *and* WindowsError where available
+        return None
+
+
+def load_yaml(package_name, file_path):
+    package_path = get_package_share_directory(package_name)
+    absolute_file_path = os.path.join(package_path, file_path)
+
+    try:
+        with open(absolute_file_path, "r") as file:
+            return yaml.safe_load(file)
+    except EnvironmentError:  # parent of IOError, OSError *and* WindowsError where available
+        return None
 
 
 def generate_launch_description():
@@ -25,22 +47,21 @@ def generate_launch_description():
         .to_dict()
     }
 
-    # rviz_config_file = (
-    #     get_package_share_directory("rover_arm_moveit_config") + "/config/moveit.rviz"
-    # )
-    # rviz_node = Node(
-    #     package="rviz2",
-    #     executable="rviz2",
-    #     name="rviz2",
-    #     output="log",
-    #     arguments=["-d", rviz_config_file],
-    #     parameters=[
-    #         moveit_config.robot_description,
-    #         moveit_config.robot_description_semantic,
-    #     ],
-    # )
+    # RViz
+    
+    rviz_node = Node(
+        package="rviz2",
+        executable="rviz2",
+        name="rviz2",
+        output="log",
+        
+        parameters=[
+            moveit_config.robot_description,
+            moveit_config.robot_description_semantic,
+        ],
+    )
 
-
+    # ros2_control using FakeSystem as hardware
     ros2_controllers_path = os.path.join(
         get_package_share_directory("rover_arm_moveit_config"),
         "config",
@@ -53,12 +74,7 @@ def generate_launch_description():
         output="screen",
     )
 
-    delayed_controller_manager = TimerAction(
-        period = 3.0,
-        actions=[ros2_control_node],
-    )
-
-    jsb_spawner = Node(
+    joint_state_broadcaster_spawner = Node(
         package="controller_manager",
         executable="spawner",
         arguments=[
@@ -70,20 +86,15 @@ def generate_launch_description():
         ],
     )
 
-    rover_arm_spawner = Node(
+    rover_arm_controller_spawner = Node(
         package="controller_manager",
         executable="spawner",
         arguments=["arm_controller", "gripper_controller", "-c", "/controller_manager"],
     )
 
-    delayed_spawners = RegisterEventHandler(
-        event_handler=OnProcessStart(
-            target_action=ros2_control_node,
-            on_start=[jsb_spawner, rover_arm_spawner], 
-        )
-    )
 
-
+    # Launch a standalone Servo node.
+    # As opposed to a node component, this may be necessary (for example) if Servo is running on a different PC
     servo_node = Node(
         package="moveit_servo",
         executable="servo_node_main",
@@ -98,8 +109,11 @@ def generate_launch_description():
 
     return LaunchDescription(
         [
-            delayed_controller_manager,
-            delayed_spawners,
-            servo_node,      
+            rviz_node,
+            ros2_control_node,
+            joint_state_broadcaster_spawner,
+            rover_arm_controller_spawner,
+            servo_node,
+            
         ]
     )
