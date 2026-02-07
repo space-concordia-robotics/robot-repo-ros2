@@ -115,7 +115,7 @@ public:
 
     twist_pub_ = this->create_publisher<geometry_msgs::msg::TwistStamped>(TWIST_TOPIC, rclcpp::SystemDefaultsQoS());
     joint_pub_ = this->create_publisher<control_msgs::msg::JointJog>(JOINT_TOPIC, rclcpp::SystemDefaultsQoS());
-    gripper_pub_ = this->create_publisher<control_msgs::msg::JointJog>("/gripper_close", rclcpp::SystemDefaultsQoS());
+    // gripper_pub_ = this->create_publisher<control_msgs::msg::JointJog>("/gripper_close", rclcpp::SystemDefaultsQoS());
     collision_pub_ =
         this->create_publisher<moveit_msgs::msg::PlanningScene>("/planning_scene", rclcpp::SystemDefaultsQoS());
 
@@ -169,12 +169,12 @@ public:
     joint_pub_->publish(std::move(joint_msg));
 
     
-    gripper_msg->joint_names.push_back("right_finger");
-    gripper_msg->velocities.push_back(msg->buttons[BLACK_TRIGGER_UP] - msg->buttons[BLACK_TRIGGER_DOWN]);
-    gripper_msg->header.stamp = this->now();
-    gripper_pub_->publish(std::move(gripper_msg));
+    // gripper_msg->joint_names.push_back("right_finger");
+    // gripper_msg->velocities.push_back(msg->buttons[BLACK_TRIGGER_UP] - msg->buttons[BLACK_TRIGGER_DOWN]);
+    // gripper_msg->header.stamp = this->now();
+    // gripper_pub_->publish(std::move(gripper_msg));
+    // }
     }
-    
 
   }
 
@@ -182,7 +182,7 @@ private:
   rclcpp::Subscription<sensor_msgs::msg::Joy>::SharedPtr joy_sub_;
   rclcpp::Publisher<geometry_msgs::msg::TwistStamped>::SharedPtr twist_pub_;
   rclcpp::Publisher<control_msgs::msg::JointJog>::SharedPtr joint_pub_;
-  rclcpp::Publisher<control_msgs::msg::JointJog>::SharedPtr gripper_pub_;
+  // rclcpp::Publisher<control_msgs::msg::JointJog>::SharedPtr gripper_pub_;
   rclcpp::Publisher<moveit_msgs::msg::PlanningScene>::SharedPtr collision_pub_;
   rclcpp::Client<std_srvs::srv::Trigger>::SharedPtr servo_start_client_;
   rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr wheel_pub_; 
