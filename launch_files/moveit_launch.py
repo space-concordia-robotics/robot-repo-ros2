@@ -25,11 +25,11 @@ def generate_launch_description():
         .to_dict()
     }
 
-    servo_params_gripper = {
-        "moveit_servo": ParameterBuilder("rover_arm_moveit_config")
-        .yaml("config/servo_config_gripper.yaml")
-        .to_dict()
-    }
+    # servo_params_gripper = {
+    #     "moveit_servo": ParameterBuilder("rover_arm_moveit_config")
+    #     .yaml("config/servo_config_gripper.yaml")
+    #     .to_dict()
+    # }
 
 
     ros2_controllers_path = os.path.join(
