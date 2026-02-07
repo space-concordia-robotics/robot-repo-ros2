@@ -57,7 +57,7 @@ joint_limit_margin: 0.005 # added as a buffer to joint limits [radians]. If movi
 leaving_singularity_threshold_multiplier: 2.0 # Multiply the hard stop limit by this when leaving singularity (see https://github.com/ros-planning/moveit2/pull/620)
 
 ## Topic names
-joint_command_in_topic: /servo_node_gripper/delta_joint_cmds # Topic for incoming joint angle commands
+joint_command_in_topic: /gripper_close # Topic for incoming joint angle commands
 joint_topic: /joint_states
 status_topic: ~/status # Publish status to this topic
 command_out_topic: /gripper_controller/joint_trajectory # Publish outgoing commands here

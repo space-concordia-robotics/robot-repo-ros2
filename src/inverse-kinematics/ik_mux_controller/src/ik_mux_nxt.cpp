@@ -115,7 +115,7 @@ public:
 
     twist_pub_ = this->create_publisher<geometry_msgs::msg::TwistStamped>(TWIST_TOPIC, rclcpp::SystemDefaultsQoS());
     joint_pub_ = this->create_publisher<control_msgs::msg::JointJog>(JOINT_TOPIC, rclcpp::SystemDefaultsQoS());
-    gripper_pub_ = this->create_publisher<control_msgs::msg::JointJog>("/servo_node_gripper/delta_joint_cmds", rclcpp::SystemDefaultsQoS());
+    gripper_pub_ = this->create_publisher<control_msgs::msg::JointJog>("/gripper_close", rclcpp::SystemDefaultsQoS());
     collision_pub_ =
         this->create_publisher<moveit_msgs::msg::PlanningScene>("/planning_scene", rclcpp::SystemDefaultsQoS());
 
