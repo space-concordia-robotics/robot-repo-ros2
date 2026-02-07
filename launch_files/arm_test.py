@@ -23,14 +23,14 @@ def generate_launch_description():
             shell=True
         ),
         #excute processof the nodes 
+        #Node(
+        #    package='joy',
+        #    executable='joy_node',
+        #    name='joy_node',
+        #    output='screen',
+        #),
         Node(
-            package='joy',
-            executable='joy_node',
-            name='joy_node',
-            output='screen',
-        ),
-        Node(
-            package='joy_mux_controller',
+            package='joy_mux_controller_py',
             executable='joy_mux_controller',
             name='joy_mux_controller',
             #output='screen',
