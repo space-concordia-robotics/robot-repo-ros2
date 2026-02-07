@@ -19,26 +19,17 @@ def generate_launch_description():
         .to_moveit_configs()
     )
 
-    servo_params = {
+    servo_params_arm = {
         "moveit_servo": ParameterBuilder("rover_arm_moveit_config")
         .yaml("config/servo_config.yaml")
         .to_dict()
     }
 
-    # rviz_config_file = (
-    #     get_package_share_directory("rover_arm_moveit_config") + "/config/moveit.rviz"
-    # )
-    # rviz_node = Node(
-    #     package="rviz2",
-    #     executable="rviz2",
-    #     name="rviz2",
-    #     output="log",
-    #     arguments=["-d", rviz_config_file],
-    #     parameters=[
-    #         moveit_config.robot_description,
-    #         moveit_config.robot_description_semantic,
-    #     ],
-    # )
+    servo_params_gripper = {
+        "moveit_servo": ParameterBuilder("rover_arm_moveit_config")
+        .yaml("config/servo_config_gripper.yaml")
+        .to_dict()
+    }
 
 
     ros2_controllers_path = os.path.join(
@@ -73,22 +64,39 @@ def generate_launch_description():
     rover_arm_spawner = Node(
         package="controller_manager",
         executable="spawner",
-        arguments=["arm_controller", "gripper_controller", "-c", "/controller_manager"],
+        arguments=["arm_controller", "-c", "/controller_manager"],
+    )
+
+    rover_gripper_spawner = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=[ "gripper_controller", "-c", "/controller_manager"],
     )
 
     delayed_spawners = RegisterEventHandler(
         event_handler=OnProcessStart(
             target_action=ros2_control_node,
-            on_start=[jsb_spawner, rover_arm_spawner], 
+            on_start=[jsb_spawner, rover_arm_spawner, rover_gripper_spawner], 
         )
     )
 
-
-    servo_node = Node(
+    servo_node_arm = Node(
         package="moveit_servo",
         executable="servo_node_main",
         parameters=[
-            servo_params,
+            servo_params_arm,
+            moveit_config.robot_description,
+            moveit_config.robot_description_semantic,
+            moveit_config.robot_description_kinematics,
+        ],
+        output="screen",
+    )
+
+    servo_node_gripper = Node(
+        package="moveit_servo",
+        executable="servo_node_main",
+        parameters=[
+            servo_params_gripper,
             moveit_config.robot_description,
             moveit_config.robot_description_semantic,
             moveit_config.robot_description_kinematics,
@@ -100,6 +108,7 @@ def generate_launch_description():
         [
             delayed_controller_manager,
             delayed_spawners,
-            servo_node,      
+            servo_node_arm,
+            servo_node_gripper,      
         ]
     )

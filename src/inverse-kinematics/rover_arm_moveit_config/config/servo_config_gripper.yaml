@@ -5,22 +5,24 @@ use_gazebo: false # Whether the robot is started in a Gazebo simulation environm
 
 ## Properties of incoming commands
 command_in_type: "unitless" # "unitless"> in the range [-1:1], as if from joystick. "speed_units"> cmds are in m/s and rad/s
+
+#Note: scale indicates the % of the motors intensity that will be used
 scale:
-  joint: 0.05
+  joint: 0.5
 
 # Optionally override Servo's internal velocity scaling when near singularity or collision (0.0 = use internal velocity scaling)
 # override_velocity_scaling_factor = 0.0 # valid range [0.0:1.0]
 
 ## Properties of outgoing commands
-publish_period: 0.04 # 1/Nominal publish rate [seconds]
+publish_period: 0.01 # 1/Nominal publish rate [seconds]
 low_latency_mode: false  # Set this to true to publish as soon as an incoming Twist command is received (publish_period is ignored)
 
 # What type of topic does your robot driver expect?
 # Currently supported are std_msgs/Float64MultiArray or trajectory_msgs/JointTrajectory
-command_out_type: trajectory_msgs/JointTrajectory
+command_out_type: std_msgs/Float64MultiArray
 
-publish_joint_positions: true
-publish_joint_velocities: false
+publish_joint_positions: false
+publish_joint_velocities: true
 publish_joint_accelerations: false
 
 publish_robot_description: true

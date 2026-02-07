@@ -1,9 +1,6 @@
 Panels:
   - Class: rviz_common/Displays
     Name: Displays
-    Property Tree Widget:
-      Expanded:
-        - /MotionPlanning1
   - Class: rviz_common/Help
     Name: Help
   - Class: rviz_common/Views
@@ -12,19 +9,6 @@ Visualization Manager:
   Displays:
     - Class: rviz_default_plugins/Grid
       Name: Grid
-      Value: true
-    - Class: moveit_rviz_plugin/MotionPlanning
-      Name: MotionPlanning
-      Planned Path:
-        Loop Animation: true
-        State Display Time: 0.05 s
-        Trajectory Topic: display_planned_path
-      Planning Scene Topic: monitored_planning_scene
-      Robot Description: robot_description
-      Scene Geometry:
-        Scene Alpha: 1
-      Scene Robot:
-        Robot Alpha: 0.5
       Value: true
   Global Options:
     Fixed Frame: base_structure_link
