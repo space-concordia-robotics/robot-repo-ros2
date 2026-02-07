@@ -19,20 +19,29 @@ def generate_launch_description():
         .to_moveit_configs()
     )
 
-    servo_params = {
+    servo_params_arm = {
         "moveit_servo": ParameterBuilder("rover_arm_moveit_config")
         .yaml("config/servo_config.yaml")
         .to_dict()
     }
 
-    # RViz
+    servo_params_gripper = {
+        "moveit_servo": ParameterBuilder("rover_arm_moveit_config")
+        .yaml("config/servo_config_gripper.yaml")
+        .to_dict()
+    }
     
+
+    # RViz
+    rviz_config_file = (
+        get_package_share_directory("rover_arm_moveit_config") + "/config/moveit.rviz"
+    )
     rviz_node = Node(
         package="rviz2",
         executable="rviz2",
         name="rviz2",
         output="log",
-        
+        arguments=["-d", rviz_config_file],
         parameters=[
             moveit_config.robot_description,
             moveit_config.robot_description_semantic,
@@ -52,6 +61,14 @@ def generate_launch_description():
         output="screen",
     )
 
+    robot_state_publisher = Node(
+        package="robot_state_publisher",
+        executable="robot_state_publisher",
+        output="screen",
+        parameters=[moveit_config.robot_description],
+    )
+
+
     joint_state_broadcaster_spawner = Node(
         package="controller_manager",
         executable="spawner",
@@ -67,17 +84,34 @@ def generate_launch_description():
     rover_arm_controller_spawner = Node(
         package="controller_manager",
         executable="spawner",
-        arguments=["arm_controller", "gripper_controller", "-c", "/controller_manager"],
+        arguments=["arm_controller", "-c", "/controller_manager"],
     )
 
+    rover_gripper_controller_spawner = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["gripper_controller", "-c", "/controller_manager"],
+    )
 
     # Launch a standalone Servo node.
     # As opposed to a node component, this may be necessary (for example) if Servo is running on a different PC
-    servo_node = Node(
+    servo_node_arm = Node(
         package="moveit_servo",
         executable="servo_node_main",
         parameters=[
-            servo_params,
+            servo_params_arm,
+            moveit_config.robot_description,
+            moveit_config.robot_description_semantic,
+            moveit_config.robot_description_kinematics,
+        ],
+        output="screen",
+    )
+
+    servo_node_gripper = Node(
+        package="moveit_servo",
+        executable="servo_node_main",
+        parameters=[
+            servo_params_gripper,
             moveit_config.robot_description,
             moveit_config.robot_description_semantic,
             moveit_config.robot_description_kinematics,
@@ -87,11 +121,14 @@ def generate_launch_description():
 
     return LaunchDescription(
         [
-            rviz_node,
             ros2_control_node,
+            robot_state_publisher,
+            rviz_node,
             joint_state_broadcaster_spawner,
             rover_arm_controller_spawner,
-            servo_node,
+            rover_gripper_controller_spawner,
+            servo_node_arm,
+            servo_node_gripper,
             
         ]
     )

@@ -74,7 +74,7 @@ bool convertJoyToCmd(const std::vector<float>& axes, const std::vector<int>& but
   // If any joint jog command is requested, we are only publishing joint commands
   if (buttons[THMB_HAT_FWD] || buttons[THMB_HAT_LEFT] || buttons[THMB_HAT_RIGHT] || buttons[THMB_HAT_BCK] ||
       buttons[A3_FWD] || buttons[A3_LEFT] || buttons[A3_RIGHT] || buttons[A3_BCK] ||
-      buttons[A4_FWD] || buttons[A4_LEFT] || buttons[A4_RIGHT] || buttons[A4_BCK] || buttons[BLACK_TRIGGER_UP] || buttons[BLACK_TRIGGER_DOWN])
+      buttons[A4_FWD] || buttons[A4_LEFT] || buttons[A4_RIGHT] || buttons[A4_BCK] ||  buttons[BLACK_TRIGGER_UP] || buttons[BLACK_TRIGGER_DOWN])
   {
     joint->joint_names.push_back("joint1");
     joint->velocities.push_back(buttons[THMB_HAT_BCK] - buttons[THMB_HAT_FWD]);
@@ -87,8 +87,6 @@ bool convertJoyToCmd(const std::vector<float>& axes, const std::vector<int>& but
     joint->velocities.push_back(buttons[A4_RIGHT] - buttons[A4_LEFT]);
     joint->joint_names.push_back("joint7");
     joint->velocities.push_back(buttons[A3_LEFT] - buttons[A3_RIGHT]);
-    joint->joint_names.push_back("right_finger");
-    joint->velocities.push_back(buttons[BLACK_TRIGGER_UP] - buttons[BLACK_TRIGGER_DOWN]);
     return false;
   }
   // The bread and butter: map buttons to twist commands
@@ -117,6 +115,7 @@ public:
 
     twist_pub_ = this->create_publisher<geometry_msgs::msg::TwistStamped>(TWIST_TOPIC, rclcpp::SystemDefaultsQoS());
     joint_pub_ = this->create_publisher<control_msgs::msg::JointJog>(JOINT_TOPIC, rclcpp::SystemDefaultsQoS());
+    gripper_pub_ = this->create_publisher<control_msgs::msg::JointJog>("/servo_node_gripper/delta_joint_cmds", rclcpp::SystemDefaultsQoS());
     collision_pub_ =
         this->create_publisher<moveit_msgs::msg::PlanningScene>("/planning_scene", rclcpp::SystemDefaultsQoS());
 
@@ -139,6 +138,7 @@ public:
     // Create the messages we might publish
     auto twist_msg = std::make_unique<geometry_msgs::msg::TwistStamped>();
     auto joint_msg = std::make_unique<control_msgs::msg::JointJog>();
+    auto gripper_msg = std::make_unique<control_msgs::msg::JointJog>();
    
     bool deadman_pressed = msg->buttons[DEADMAN];
     if (deadman_pressed != deadman_)
@@ -167,6 +167,12 @@ public:
     joint_msg->header.frame_id = "base_structure_link";
     joint_msg->duration = 1.0;
     joint_pub_->publish(std::move(joint_msg));
+
+    
+    gripper_msg->joint_names.push_back("right_finger");
+    gripper_msg->velocities.push_back(msg->buttons[BLACK_TRIGGER_UP] - msg->buttons[BLACK_TRIGGER_DOWN]);
+    gripper_msg->header.stamp = this->now();
+    gripper_pub_->publish(std::move(gripper_msg));
     }
     
 
@@ -176,6 +182,7 @@ private:
   rclcpp::Subscription<sensor_msgs::msg::Joy>::SharedPtr joy_sub_;
   rclcpp::Publisher<geometry_msgs::msg::TwistStamped>::SharedPtr twist_pub_;
   rclcpp::Publisher<control_msgs::msg::JointJog>::SharedPtr joint_pub_;
+  rclcpp::Publisher<control_msgs::msg::JointJog>::SharedPtr gripper_pub_;
   rclcpp::Publisher<moveit_msgs::msg::PlanningScene>::SharedPtr collision_pub_;
   rclcpp::Client<std_srvs::srv::Trigger>::SharedPtr servo_start_client_;
   rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr wheel_pub_; 
