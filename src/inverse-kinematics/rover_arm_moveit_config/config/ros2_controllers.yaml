@@ -7,7 +7,7 @@ controller_manager:
       type: forward_command_controller/ForwardCommandController
 
     gripper_controller:
-      type: forward_command_controller/ForwardCommandController
+      type: joint_trajectory_controller/JointTrajectoryController
 
 
     joint_state_broadcaster:
@@ -32,9 +32,8 @@ gripper_controller:
   ros__parameters:
     joints:
       - right_finger
-    interface_name: velocity
-    # command_interfaces:
-    #   - velocity
-    # state_interfaces:
-    #   - position
-    #   - velocity
+    command_interfaces:
+      - position
+    state_interfaces:
+      - position
+      - velocity
