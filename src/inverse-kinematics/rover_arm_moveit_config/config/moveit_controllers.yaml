@@ -16,7 +16,7 @@ moveit_simple_controller_manager:
       - joint5
       - joint7
 
-  gripper_controller:
-    type: forward_command_controller/ForwardCommandController
-    joints:
-      - right_finger
+  # gripper_controller:
+  #   type: forward_command_controller/ForwardCommandController
+  #   joints:
+  #     - right_finger

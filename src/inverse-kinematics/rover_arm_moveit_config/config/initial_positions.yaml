@@ -6,4 +6,4 @@ initial_positions:
   joint3: 0
   joint5: 0
   joint7: 0
-  right_finger: 0
+  # right_finger: 0
