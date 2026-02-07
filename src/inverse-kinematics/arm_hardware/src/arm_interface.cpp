@@ -238,28 +238,28 @@ namespace arm_interface
         (void)previous_state;
 
         const size_t nj = info_.joints.size();
-        if (hw_states_position_.size() != nj || hw_commands_velocity_.size() != nj)
+        if (hw_states_velocity_.size() != nj || hw_commands_velocity_.size() != nj) //changed hw_states_position_ to hw_states_velocity_ 
         {
             RCLCPP_FATAL(rclcpp::get_logger("ArmInterface"),
                          "Size mismatch in on_activate(): info_.joints=%zu states=%zu cmds=%zu",
-                         nj, hw_states_position_.size(), hw_commands_velocity_.size());
+                         nj, hw_states_velocity_.size(), hw_commands_velocity_.size());
             return hardware_interface::CallbackReturn::ERROR;
         }
 
         // Copy current state into command buffer to avoid sudden jumps when controller starts
         for (size_t i = 0; i < nj; ++i)
         {
-            if (!std::isnan(hw_states_position_[i]))
+            if (!std::isnan(hw_states_velocity_[i])) //switched from hw_states_position_ to hw_states_velocity_ 
             {
-                hw_commands_velocity_[i] = hw_states_position_[i];
+                hw_commands_velocity_[i] = hw_states_velocity_[i];
             }
             else
             {
                 // If state is NaN for some reason, set to zero and warno
-                hw_states_position_[i] = 0.0;
+                hw_states_velocity_[i] = 0.0;  // changed from hw_states_position_ to hw_states_velocity_ 
                 hw_commands_velocity_[i] = 0.0;
                 RCLCPP_WARN(rclcpp::get_logger("ArmInterface"),
-                            "hw_states_position_[%zu] was NaN on activate; resetting to 0.", i);
+                            "hw_states_velocity_[%zu] was NaN on activate; resetting to 0.", i);
             }
         }
 
@@ -385,10 +385,10 @@ namespace arm_interface
         }
 
         // Create a buffer to send motor commands
-        uint8_t out_buf[1 + 1 + sizeof(float) * 6 + 1] = {}; // 19 bytes total: 1+1+16+1
+        uint8_t out_buf[1 + 1 + sizeof(float) * 6 + 1] = {}; // 27 bytes total: 1+1+24+1
         out_buf[0] = SET_MOTOR_SPEED;
         //out_buf[0] = 0x4E;
-        out_buf[1] = sizeof(float) * 6; // 16 bytes of data
+        out_buf[1] = sizeof(float) * 6; // 24 bytes of data
 
         // const auto joint_state = sensor_msgs::msg::JointState::SharedPtr();
         // joint_state->velocity = hw_commands_velocity_;
@@ -400,10 +400,10 @@ namespace arm_interface
             float speed = static_cast<float>(joint_velocities) * MAX_MOTOR_SPEED;
             memcpy(&out_buf[(i * sizeof(float)) + 2], &speed, sizeof(float));
         }
-        out_buf[14] = 0x0A; // End of message
+        out_buf[27] = 0x0A; // End of message
 
-        RCLCPP_INFO_THROTTLE(rclcpp::get_logger("ArmInterfac"), steady_clock_, 10, "Writing joint velocity commands [%.2f, %.2f, %.2f, %.2f]",
-                             hw_commands_velocity_[0], hw_commands_velocity_[1], hw_commands_velocity_[2], hw_commands_velocity_[3]);
+        RCLCPP_INFO_THROTTLE(rclcpp::get_logger("ArmInterfac"), steady_clock_, 10, "Writing joint velocity commands [%.2f, %.2f, %.2f, %.2f, %.2f, %.2f]",
+                             hw_commands_velocity_[0], hw_commands_velocity_[1], hw_commands_velocity_[2], hw_commands_velocity_[3], hw_commands_velocity_[4], hw_commands_velocity_[5]);
 
         // Send the motor commands via the motor serial port
         int status = ::write(motor_serial_fd_, out_buf, sizeof(out_buf));
