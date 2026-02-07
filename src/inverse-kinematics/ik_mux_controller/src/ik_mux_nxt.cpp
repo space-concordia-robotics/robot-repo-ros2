@@ -30,7 +30,7 @@ enum Axis
 {
    X = 0,
    Y = 1,
-   Z = 4,
+   Z = 5,
    A1_UP = 9,
    A1_SIDE = 8
 
