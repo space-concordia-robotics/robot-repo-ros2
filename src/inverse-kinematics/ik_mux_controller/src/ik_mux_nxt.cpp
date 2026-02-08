@@ -38,7 +38,7 @@ enum Axis
 };
 enum Button
 {
-  DEADMAN = 0,
+  DEADMAN = 26,
   A2 = 2,
   PINKY_BUTTON = 4,
   THMB_HAT_FWD = 15, 
@@ -77,21 +77,21 @@ bool convertJoyToCmd(const std::vector<float>& axes, const std::vector<int>& but
       buttons[A4_FWD] || buttons[A4_LEFT] || buttons[A4_RIGHT] || buttons[A4_BCK] ||  buttons[BLACK_TRIGGER_UP] || buttons[BLACK_TRIGGER_DOWN])
   {
     joint->joint_names.push_back("joint1");
-    joint->velocities.push_back(buttons[THMB_HAT_BCK] - buttons[THMB_HAT_FWD]);
-    joint->joint_names.push_back("joint2");
     joint->velocities.push_back(buttons[THMB_HAT_LEFT] - buttons[THMB_HAT_RIGHT]);
+    joint->joint_names.push_back("joint2");
+    joint->velocities.push_back(buttons[THMB_HAT_FWD] - buttons[THMB_HAT_BCK]);
 
     joint->joint_names.push_back("joint3");
     joint->velocities.push_back(buttons[A3_BCK] - buttons[A3_FWD]);
     joint->joint_names.push_back("joint5");
-    joint->velocities.push_back(buttons[A4_RIGHT] - buttons[A4_LEFT]);
+    joint->velocities.push_back(buttons[A4_BCK] - buttons[A4_FWD]);
     joint->joint_names.push_back("joint7");
-    joint->velocities.push_back(buttons[A3_LEFT] - buttons[A3_RIGHT]);
+    joint->velocities.push_back(buttons[A3_RIGHT] - buttons[A3_LEFT]);
     return false;
   }
   // The bread and butter: map buttons to twist commands
   twist->twist.linear.x = axes[X];
-  twist->twist.linear.y = axes[Y];
+  twist->twist.linear.y = -1 * axes[Y];
   twist->twist.linear.z = axes[A1_UP];
   twist->twist.angular.z = axes[Z]; 
 
