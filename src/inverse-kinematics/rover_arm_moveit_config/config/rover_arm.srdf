@@ -16,7 +16,6 @@
         <joint name="joint3"/>
         <joint name="joint5"/>
         <joint name="joint6"/>
-        <joint name="joint7"/>
 
     </group>
     <group name="gripper">
