@@ -25,12 +25,6 @@ def generate_launch_description():
         .to_dict()
     }
 
-    # servo_params_gripper = {
-    #     "moveit_servo": ParameterBuilder("rover_arm_moveit_config")
-    #     .yaml("config/servo_config_gripper.yaml")
-    #     .to_dict()
-    # }
-
 
     ros2_controllers_path = os.path.join(
         get_package_share_directory("rover_arm_moveit_config"),
@@ -67,11 +61,6 @@ def generate_launch_description():
         arguments=["arm_controller", "-c", "/controller_manager"],
     )
 
-    # rover_gripper_spawner = Node(
-    #     package="controller_manager",
-    #     executable="spawner",
-    #     arguments=[ "gripper_controller", "-c", "/controller_manager"],
-    # )
 
     delayed_spawners = RegisterEventHandler(
         event_handler=OnProcessStart(
@@ -92,23 +81,10 @@ def generate_launch_description():
         output="screen",
     )
 
-    # servo_node_gripper = Node(
-    #     package="moveit_servo",
-    #     executable="servo_node_main",
-    #     parameters=[
-    #         servo_params_gripper,
-    #         moveit_config.robot_description,
-    #         moveit_config.robot_description_semantic,
-    #         moveit_config.robot_description_kinematics,
-    #     ],
-    #     output="screen",
-    # )
-
     return LaunchDescription(
         [
             delayed_controller_manager,
             delayed_spawners,
-            servo_node_arm,
-            # servo_node_gripper,      
+            servo_node_arm,    
         ]
     )
