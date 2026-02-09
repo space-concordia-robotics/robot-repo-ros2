@@ -348,16 +348,17 @@ namespace arm_interface
         const double deg_to_rad = M_PI / 180;
 
         // Map encoders to URDF joint order: joint1, joint2, joint3, joint5
-        hw_states_position_[0] = angle_1; // joint1 <- encoder 1
+        // NOTE: ROS expects joint positions in radians.
+        hw_states_position_[0] = angle_1 * deg_to_rad; // joint1 <- encoder 1
         hw_states_velocity_[0] = absenc_meas_1.angspd * deg_to_rad;
 
-        hw_states_position_[1] = angle_2; // joint2 <- encoder 2
+        hw_states_position_[1] = angle_2 * deg_to_rad; // joint2 <- encoder 2
         hw_states_velocity_[1] = absenc_meas_2.angspd * deg_to_rad;
 
-        hw_states_position_[2] = angle_3; // joint3 <- encoder 3
+        hw_states_position_[2] = angle_3 * deg_to_rad; // joint3 <- encoder 3
         hw_states_velocity_[2] = absenc_meas_3.angspd * deg_to_rad;
 
-        hw_states_position_[3] = angle_4; // joint5 <- encoder 4
+        hw_states_position_[3] = angle_4 * deg_to_rad; // joint5 <- encoder 4
         hw_states_velocity_[3] = absenc_meas_4.angspd * deg_to_rad;
 
         if (absenc_meas_1.status == 0 || absenc_meas_2.status == 0 || absenc_meas_3.status == 0 || absenc_meas_4.status == 0)
