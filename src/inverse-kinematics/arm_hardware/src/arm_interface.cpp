@@ -385,25 +385,25 @@ namespace arm_interface
         }
 
         // Create a buffer to send motor commands
-        uint8_t out_buf[1 + 1 + sizeof(float) * 5 + 1] = {}; // 23 bytes total: 1+1+24+1
+        uint8_t out_buf[1 + 1 + sizeof(float) * 4 + 1] = {}; // 23 bytes total: 1+1+24+1
         out_buf[0] = SET_MOTOR_SPEED;
         //out_buf[0] = 0x4E;
-        out_buf[1] = sizeof(float) * 5; // 20 bytes of data
+        out_buf[1] = sizeof(float) * 4; // 20 bytes of data
 
         // const auto joint_state = sensor_msgs::msg::JointState::SharedPtr();
         // joint_state->velocity = hw_commands_velocity_;
 
         // Map command velocities to motor speeds
-        for (size_t i = 0; i < hw_commands_velocity_.size() && i < 5; i++)
+        for (size_t i = 0; i < hw_commands_velocity_.size() && i < 4; i++)
         {
             const double joint_velocities = hw_commands_velocity_[i]; // in rad/s
             float speed = static_cast<float>(joint_velocities) * MAX_MOTOR_SPEED;
             memcpy(&out_buf[(i * sizeof(float)) + 2], &speed, sizeof(float));
         }
-        out_buf[23] = 0x0A; // End of message
+        out_buf[19] = 0x0A; // End of message
 
-        RCLCPP_INFO_THROTTLE(rclcpp::get_logger("ArmInterfac"), steady_clock_, 10, "Writing joint velocity commands [%.2f, %.2f, %.2f, %.2f, %.2f]",
-                             hw_commands_velocity_[0], hw_commands_velocity_[1], hw_commands_velocity_[2], hw_commands_velocity_[3], hw_commands_velocity_[4]);
+        RCLCPP_INFO_THROTTLE(rclcpp::get_logger("ArmInterfac"), steady_clock_, 10, "Writing joint velocity commands [%.2f, %.2f, %.2f, %.2f]",
+                             hw_commands_velocity_[0], hw_commands_velocity_[1], hw_commands_velocity_[2], hw_commands_velocity_[3]);
 
         // Send the motor commands via the motor serial port
         int status = ::write(motor_serial_fd_, out_buf, sizeof(out_buf));
