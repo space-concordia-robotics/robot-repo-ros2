@@ -37,14 +37,14 @@
     <link name="bicep_tube_link">
         <visual>
             <geometry>
-                <cylinder radius="0.0348" length="0.520"/>
+                <cylinder radius="0.0348" length="0.508"/>
             </geometry>
             <origin xyz="0 0 0.220" rpy="0 0 0"/>
             <material name="grey"/>
         </visual>
         <collision>
             <geometry>
-                <cylinder radius="0.0348" length="0.520"/>
+                <cylinder radius="0.0348" length="0.508"/>
             </geometry>
             <material name="grey"/>
         </collision>
@@ -69,14 +69,14 @@
    <link name="forearm_tube_link">
         <visual>
             <geometry>
-                <cylinder radius="0.03810" length="0.300"/>
+                <cylinder radius="0.03810" length="0.490"/>
             </geometry>
             <origin xyz="0 0 0.150" rpy="0 0 0"/>
             <material name="grey"/>
         </visual>
         <collision>
             <geometry>
-                <cylinder radius="0.03810" length="0.300"/>
+                <cylinder radius="0.03810" length="0.490"/>
             </geometry>
             <material name="grey"/>
         </collision>
