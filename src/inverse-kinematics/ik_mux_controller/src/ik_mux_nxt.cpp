@@ -85,8 +85,6 @@ bool convertJoyToCmd(const std::vector<float>& axes, const std::vector<int>& but
     joint->velocities.push_back(buttons[A3_BCK] - buttons[A3_FWD]);
     joint->joint_names.push_back("joint5");
     joint->velocities.push_back(buttons[A4_BCK] - buttons[A4_FWD]);
-    joint->joint_names.push_back("joint7");
-    joint->velocities.push_back(buttons[A3_RIGHT] - buttons[A3_LEFT]);
     return false;
   }
   // The bread and butter: map buttons to twist commands
