@@ -342,7 +342,7 @@ namespace arm_interface
         // update the old angl
         this->old_angle_4 = angle_4;
 
-        angle_4 = angle_4 + this->angle_4_zone * 90 - 30;
+        angle_4 = angle_4 + this->angle_4_zone * 90 //- 30;
         /////////////////////////////////////////////////
 
         const double deg_to_rad = M_PI / 180;
