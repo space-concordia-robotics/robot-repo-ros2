@@ -166,12 +166,6 @@ public:
     joint_msg->duration = 1.0;
     joint_pub_->publish(std::move(joint_msg));
 
-    
-    // gripper_msg->joint_names.push_back("right_finger");
-    // gripper_msg->velocities.push_back(msg->buttons[BLACK_TRIGGER_UP] - msg->buttons[BLACK_TRIGGER_DOWN]);
-    // gripper_msg->header.stamp = this->now();
-    // gripper_pub_->publish(std::move(gripper_msg));
-    // }
     }
 
   }
