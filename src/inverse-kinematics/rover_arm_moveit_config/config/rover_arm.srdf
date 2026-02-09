@@ -30,7 +30,7 @@
         <joint name="joint2" value="0"/>
         <joint name="joint3" value="0"/>
         <joint name="joint5" value="0"/>
-        <joint name="joint7" value="0"/>
+        <!-- <joint name="joint7" value="0"/> -->
     </group_state>
     <!--END EFFECTOR: Purpose: Represent information about an end effector.-->
     <end_effector name="hand" parent_link="gripper_claw_link" group="gripper" parent_group="arm"/>

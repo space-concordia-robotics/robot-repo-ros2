@@ -28,8 +28,8 @@ joint_limits:
     max_velocity: 0
     has_acceleration_limits: false
     max_acceleration: 0
-  joint7:
-    has_velocity_limits: false
-    max_velocity: 0
-    has_acceleration_limits: false
-    max_acceleration: 0
+  # joint7:
+  #   has_velocity_limits: false
+  #   max_velocity: 0
+  #   has_acceleration_limits: false
+  #   max_acceleration: 0
