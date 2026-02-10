@@ -78,6 +78,9 @@ BACKGROUND:
 
 #define KP_GAIN 5.0 // tunable constant.
 #define MAX_JOINT_VELOCITY 1.0
+#define MAX_MOTOR_SPEED 1024.f
+#define SET_MOTOR_SPEED 0x4E
+
 
 namespace arm_interface
 {

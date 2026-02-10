@@ -15,9 +15,6 @@
 #include <iostream>
 #include <fcntl.h>
 
-#define SET_MOTOR_SPEED 0x4E
-#define MAX_MOTOR_SPEED 1024.f
-
 class ArmControllerNode : public rclcpp::Node {
 public:
     ArmControllerNode();
