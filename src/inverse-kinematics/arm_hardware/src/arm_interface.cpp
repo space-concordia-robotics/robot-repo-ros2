@@ -238,11 +238,11 @@ namespace arm_interface
         (void)previous_state;
 
         const size_t nj = info_.joints.size();
-        if (hw_states_velocity_.size() != nj || hw_commands_velocity_.size() != nj) //changed hw_states_position_ to hw_states_velocity_ 
+        if (hw_states_position_.size() != nj || hw_commands_velocity_.size() != nj) //changed hw_states_position_ to hw_states_velocity_ 
         {
             RCLCPP_FATAL(rclcpp::get_logger("ArmInterface"),
                          "Size mismatch in on_activate(): info_.joints=%zu states=%zu cmds=%zu",
-                         nj, hw_states_velocity_.size(), hw_commands_velocity_.size());
+                         nj, hw_states_position_.size(), hw_commands_velocity_.size());
             return hardware_interface::CallbackReturn::ERROR;
         }
 
@@ -251,15 +251,15 @@ namespace arm_interface
         {
             if (!std::isnan(hw_states_velocity_[i])) //switched from hw_states_position_ to hw_states_velocity_ 
             {
-                hw_commands_velocity_[i] = hw_states_velocity_[i];
+                hw_commands_velocity_[i] = hw_states_position_[i];
             }
             else
             {
                 // If state is NaN for some reason, set to zero and warno
-                hw_states_velocity_[i] = 0.0;  // changed from hw_states_position_ to hw_states_velocity_ 
+                hw_states_position_[i] = 0.0;  // changed from hw_states_position_ to hw_states_velocity_ 
                 hw_commands_velocity_[i] = 0.0;
                 RCLCPP_WARN(rclcpp::get_logger("ArmInterface"),
-                            "hw_states_velocity_[%zu] was NaN on activate; resetting to 0.", i);
+                            "hw_states_position_[%zu] was NaN on activate; resetting to 0.", i);
             }
         }
 
@@ -395,7 +395,7 @@ namespace arm_interface
         // joint_state->velocity = hw_commands_velocity_;
 
         // Map command velocities to motor speeds
-        for (size_t i = 0; i < hw_commands_velocity_.size() && i < 4; i++)
+        for (size_t i = 0; i < hw_commands_velocity_.size(); i++)
         {
             const double joint_velocities = hw_commands_velocity_[i]; // in rad/s
             float speed = static_cast<float>(joint_velocities) * MAX_MOTOR_SPEED;
