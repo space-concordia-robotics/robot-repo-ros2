@@ -81,10 +81,16 @@ def generate_launch_description():
         output="screen",
     )
 
+    delayed_servo_node_spawner = TimerAction(
+        period=5.0,
+        actions=[servo_node_arm],
+    )
+    
+
     return LaunchDescription(
         [
             delayed_controller_manager,
             delayed_spawners,
-            servo_node_arm,    
+            delayed_servo_node_spawner,    
         ]
     )
