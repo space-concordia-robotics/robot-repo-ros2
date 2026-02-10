@@ -186,7 +186,7 @@ namespace arm_interface
 
         if (motor_serial_fd_ == -1)
         {
-            motor_serial_fd_ = open("/dev/ttyTHS1", O_RDWR);
+            motor_serial_fd_ = open("/dev/ttyTHS1", O_RDWR | O_NOCTTY | O_SYNC);
             if (motor_serial_fd_ < 0)
             {
                 RCLCPP_ERROR(rclcpp::get_logger("ArmInterface"),
