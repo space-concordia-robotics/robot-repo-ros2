@@ -62,13 +62,6 @@ def generate_launch_description():
     )
 
 
-    delayed_spawners = RegisterEventHandler(
-        event_handler=OnProcessStart(
-            target_action=ros2_control_node,
-            on_start=[jsb_spawner, rover_arm_spawner], 
-        )
-    )
-
     servo_node_arm = Node(
         package="moveit_servo",
         executable="servo_node_main",
@@ -81,16 +74,18 @@ def generate_launch_description():
         output="screen",
     )
 
-    delayed_servo_node_spawner = TimerAction(
-        period=5.0,
-        actions=[servo_node_arm],
+    delayed_spawners = RegisterEventHandler(
+        event_handler=OnProcessStart(
+            target_action=ros2_control_node,
+            on_start=[jsb_spawner, rover_arm_spawner, servo_node_arm], 
+        )
     )
-    
+
 
     return LaunchDescription(
         [
             delayed_controller_manager,
-            delayed_spawners,
-            delayed_servo_node_spawner,    
+            servo_node_arm,
+            delayed_spawners,    
         ]
     )
