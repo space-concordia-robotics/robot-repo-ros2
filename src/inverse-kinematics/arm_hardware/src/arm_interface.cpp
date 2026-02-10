@@ -386,10 +386,10 @@ namespace arm_interface
         }
 
         // Create a buffer to send motor commands
-        uint8_t out_buf[1 + 1 + sizeof(float) * 4 + 1] = {}; // 23 bytes total: 1+1+24+1
+        uint8_t out_buf[1 + 1 + sizeof(float) * 4 + 1] = {}; // 19 bytes total: 1+1+16+1
         out_buf[0] = SET_MOTOR_SPEED;
         //out_buf[0] = 0x4E;
-        out_buf[1] = sizeof(float) * 4; // 20 bytes of data
+        out_buf[1] = sizeof(float) * 4; //16 bytes of data
 
         // const auto joint_state = sensor_msgs::msg::JointState::SharedPtr();
         // joint_state->velocity = hw_commands_velocity_;
@@ -408,13 +408,13 @@ namespace arm_interface
 
         // Send the motor commands via the motor serial port
         int status = ::write(motor_serial_fd_, out_buf, sizeof(out_buf));
-        if (status == -1)
+        if (status != static_cast<int>(sizeof(out_buf)))
         {
-            RCLCPP_ERROR(rclcpp::get_logger("ArmInterface"), "SHORT WRITE: %d/%zu (%s)", status, sizeof(out_buf), strerror(errno));
+            RCLCPP_ERROR(rclcpp::get_logger("ArmInterface"), "FAILED WRITE: wrote %d/%zu bytes (%s)", status, sizeof(out_buf), strerror(errno));
             return return_type::ERROR;
         }
 
-        RCLCPP_INFO_THROTTLE(rclcpp::get_logger("ArmInterface"), steady_clock_, 10, "status: %d, sizeof out buf: %zu (errno: %s)", status, sizeof(out_buf), strerror(errno));
+        RCLCPP_INFO_THROTTLE(rclcpp::get_logger("ArmInterface"), steady_clock_, 10, "Successfully wrote %d/%zu bytes", status, sizeof(out_buf));
         // RCLCPP_INFO_THROTTLE(rclcpp::get_logger("ArmInterface"), steady_clock_, 10, "Got status: %d", status);
 
         return return_type::OK;
