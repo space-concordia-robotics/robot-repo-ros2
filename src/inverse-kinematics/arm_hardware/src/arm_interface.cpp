@@ -389,22 +389,22 @@ namespace arm_interface
         }
 
         // Create a buffer to send motor commands
-        uint8_t out_buf[1 + 1 + sizeof(float) * 4 + 1] = {}; // 19 bytes total: 1+1+16+1
+        uint8_t out_buf[1 + 1 + sizeof(float) * 6 + 1] = {}; // 27 bytes total: 1+1+16+1
         out_buf[0] = SET_MOTOR_SPEED;
         //out_buf[0] = 0x4E;
-        out_buf[1] = sizeof(float) * 4; //16 bytes of data
-
-        // const auto joint_state = sensor_msgs::msg::JointState::SharedPtr();
-        // joint_state->velocity = hw_commands_velocity_;
+        out_buf[1] = sizeof(float) * 6; //24 bytes of data
 
         // Map command velocities to motor speeds
-        for (size_t i = 0; i < hw_commands_velocity_.size(); i++)
+        for (size_t i = 0; i < 4; i++)
         {
             const double joint_velocities = hw_commands_velocity_[i]; // in rad/s
             float speed = static_cast<float>(joint_velocities) * MAX_MOTOR_SPEED;
             memcpy(&out_buf[(i * sizeof(float)) + 2], &speed, sizeof(float));
         }
-        out_buf[19] = 0x0A; // End of message
+
+        //Firmware might be rejecting previous 19 bites sent to the motors since it might've been expecting a total of 27 bites, hence it
+        //would cause the arm not to move. 
+        out_buf[27] = 0x0A; // End of message
 
         RCLCPP_INFO_THROTTLE(rclcpp::get_logger("ArmInterfac"), steady_clock_, 10, "Writing joint velocity commands [%.2f, %.2f, %.2f, %.2f]",
                              hw_commands_velocity_[0], hw_commands_velocity_[1], hw_commands_velocity_[2], hw_commands_velocity_[3]);
