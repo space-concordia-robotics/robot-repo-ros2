@@ -389,7 +389,7 @@ namespace arm_interface
         }
 
         //Creating a motor map:
-        const int motor_map[4] = {2, 3, 5, 1}; // Map joint indices to motor IDs 
+        const int motor_map[4] = {0, 1, 2, 3}; // Map joint indices to motor IDs 
         // Create a buffer to send motor commands
         uint8_t out_buf[1 + 1 + sizeof(float) * 6 + 1] = {}; // 27 bytes total: 1+1+16+1
         out_buf[0] = SET_MOTOR_SPEED;
@@ -407,6 +407,11 @@ namespace arm_interface
 
             memcpy(&out_buf[(target_motor_id * sizeof(float)) + 2], &speed, sizeof(float));
         }
+
+        // Adding a motor id to control da gripper
+        int gripper = 5; 
+        float gripper_speed = static_cast<float>(gripper)*MAX_MOTOR_SPEED; 
+        memcpy(&out_buf[(gripper*sizeof(float) + 2)], &gripper_speed, sizeof(float));
 
         //Firmware might be rejecting previous 19 bites sent to the motors since it might've been expecting a total of 27 bites, hence it
         //would cause the arm not to move. 
