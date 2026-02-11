@@ -388,6 +388,8 @@ namespace arm_interface
             return return_type::ERROR;
         }
 
+        //Creating a motor map:
+        const int motor_map[4] = {2, 3, 5, 1}; // Map joint indices to motor IDs (joint5 is motor 4)
         // Create a buffer to send motor commands
         uint8_t out_buf[1 + 1 + sizeof(float) * 6 + 1] = {}; // 27 bytes total: 1+1+16+1
         out_buf[0] = SET_MOTOR_SPEED;
@@ -398,8 +400,12 @@ namespace arm_interface
         for (size_t i = 0; i < 4; i++)
         {
             const double joint_velocities = hw_commands_velocity_[i]; // in rad/s
+
+            int target_motor_id = motor_map[i];
+
             float speed = static_cast<float>(joint_velocities) * MAX_MOTOR_SPEED;
-            memcpy(&out_buf[(i * sizeof(float)) + 2], &speed, sizeof(float));
+
+            memcpy(&out_buf[(target_motor_id * sizeof(float)) + 2], &speed, sizeof(float));
         }
 
         //Firmware might be rejecting previous 19 bites sent to the motors since it might've been expecting a total of 27 bites, hence it
