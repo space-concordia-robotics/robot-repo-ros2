@@ -126,6 +126,7 @@
         <parent link="base_pivot_link"/>
         <child link="bicep_tube_link"/>
         <origin xyz="0.11645 0 0" rpy="0 0 0"/>
+        <axis xyz="1 0 0"/>
     </joint>
 
     <joint name="joint3" type="continuous">
