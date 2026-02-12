@@ -6,7 +6,7 @@
             <geometry>
                 <box size="0.033 0.14759 0.070"/>
             </geometry>
-            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <origin xyz="0 0 0" rpy="0 0 -1.57"/>
             <material name="blue"/>
         </visual>
         <collision>
@@ -22,7 +22,7 @@
             <geometry>
                 <box size="0.033 0.073795 0.200"/>
             </geometry>
-            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <origin xyz="0 0 0" rpy="0 0 1.57"/>
             <material name="red"/>
         </visual>
         <collision>
@@ -38,7 +38,7 @@
             <geometry>
                 <box size="0.033 0.073795 0.200"/>
             </geometry>
-            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <origin xyz="0 0 0" rpy="0 0 1.57"/>
             <material name="red"/>
         </visual>
         <collision>
@@ -53,7 +53,7 @@
     <joint name="right_finger" type="fixed">
         <parent link="gripper_claw_link"/>
         <child link="right_claw_link"/>
-        <origin xyz="0 0.036895 0.135" rpy="0 0 0"/>
+        <origin xyz="0.036895 0 0.135" rpy="0 0 0"/>
         <axis xyz="0 1 0"/>
         <limit lower="0.0" upper="0.033" effort="100.0" velocity="1.0"/>
     </joint>
@@ -61,7 +61,7 @@
     <joint name="left_finger" type="fixed">
         <parent link="gripper_claw_link"/>
         <child link="left_claw_link"/>
-        <origin xyz="0 -0.036895 0.135" rpy="0 0 0"/>
+        <origin xyz="-0.036895 0 0.135" rpy="0 0 0"/>
         <axis xyz="0 1 0"/>
         <mimic joint="right_finger" multiplier="-1.0"/>
         <limit lower="-0.033" upper="0.0" effort="100.0" velocity="1.0"/>
