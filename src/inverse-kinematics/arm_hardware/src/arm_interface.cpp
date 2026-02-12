@@ -333,7 +333,7 @@ namespace arm_interface
 
         // Fix the Home
         float angle_1 = absenc_meas_1.angval; // + 25;  //-355
-        float angle_2 = absenc_meas_2.angval - 13.05; // - 174; //-175
+        float angle_2 = absenc_meas_2.angval; // - 174; //-175
         float angle_3 = absenc_meas_3.angval; //* -1;
         float angle_4 = absenc_meas_4.angval / 4.0f;
 
