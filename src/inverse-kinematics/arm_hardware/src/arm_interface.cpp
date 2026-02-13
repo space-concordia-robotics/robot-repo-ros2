@@ -399,6 +399,7 @@ namespace arm_interface
         int target_motor_id = -1; 
         for (size_t i = 0; i < info_.joints.size(); i++)
         {
+            RCLCPP_INFO(rclcpp::get_logger("ArmInterface"), "Checkig index %zu: Joint name is: %s", i, info_.joints[i].name.c_str());
             std::string joint_name = info_.joints[i].name;
             const double joint_velocities = hw_commands_velocity_[i]; // in rad/s
 
