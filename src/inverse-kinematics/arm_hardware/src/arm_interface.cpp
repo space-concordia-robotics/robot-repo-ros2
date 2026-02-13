@@ -388,7 +388,7 @@ namespace arm_interface
             return return_type::ERROR;
         }
 
-    
+        const int motorID[4] = {0, 1, 2, 3};
         // Create a buffer to send motor commands
         uint8_t out_buf[1 + 1 + sizeof(float) * 6 + 1] = {}; // 27 bytes total: 1+1+16+1
         out_buf[0] = SET_MOTOR_SPEED;
@@ -396,33 +396,31 @@ namespace arm_interface
         out_buf[1] = sizeof(float) * 6; //24 bytes of data
 
         // Map command velocities to motor speeds
-        int target_motor_id = -1; 
-        for (size_t i = 0; i < info_.joints.size(); i++)
+        for (size_t i = 0; i < 4; i++)
         {
-            RCLCPP_INFO(rclcpp::get_logger("ArmInterface"), "Checkig index %zu: Joint name is: %s", i, info_.joints[i].name.c_str());
-            std::string joint_name = info_.joints[i].name;
-            const double joint_velocities = hw_commands_velocity_[i]; // in rad/s
+            int target_motor_id = motorID[i];
+            // RCLCPP_INFO(rclcpp::get_logger("ArmInterface"), "Checkig index %zu: Joint name is: %s", i, info_.joints[i].name.c_str());
+            // std::string joint_name = info_.joints[i].name;
+            // const double joint_velocities = hw_commands_velocity_[i]; // in rad/s
 
-            if(joint_name == "joint1"){
-                target_motor_id= 0; 
-            }
-            if(joint_name == "joint2"){
-                target_motor_id= 1; 
-            }
-            if(joint_name == "joint3"){
-                target_motor_id= 2; 
-            }
-            if(joint_name == "joint5"){
-                target_motor_id= 3; 
-            }
+            // if(joint_name == "joint1"){
+            //     target_motor_id= 0; 
+            // }
+            // if(joint_name == "joint2"){
+            //     target_motor_id= 1; 
+            // }
+            // if(joint_name == "joint3"){
+            //     target_motor_id= 2; 
+            // }
+            // if(joint_name == "joint5"){
+            //     target_motor_id= 3; 
+            // }
+            float speed = static_cast<float>(joint_velocities) * MAX_MOTOR_SPEED;
 
-            if(target_motor_id != -1){
-                float speed = static_cast<float>(joint_velocities) * MAX_MOTOR_SPEED;
-
-                memcpy(&out_buf[(target_motor_id * sizeof(float)) + 2], &speed, sizeof(float));
+            memcpy(&out_buf[(target_motor_id * sizeof(float)) + 2], &speed, sizeof(float));
         
-            }
-            RCLCPP_INFO(rclcpp::get_logger("ArmInterface"), "Target motor id was -1 :c");
+            
+            // RCLCPP_INFO(rclcpp::get_logger("ArmInterface"), "Target motor id was -1 :c");
         }
 
         // Adding a motor id to control da gripper
