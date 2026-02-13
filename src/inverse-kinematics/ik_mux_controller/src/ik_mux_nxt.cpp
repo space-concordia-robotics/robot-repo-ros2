@@ -133,6 +133,7 @@ public:
 
   void joyCB(const sensor_msgs::msg::Joy::ConstSharedPtr& msg)
   {
+    RCLCPP_INFO(this->get_logger(),"Ik_mux in joyCB");
     // Create the messages we might publish
     auto twist_msg = std::make_unique<geometry_msgs::msg::TwistStamped>();
     auto joint_msg = std::make_unique<control_msgs::msg::JointJog>();
