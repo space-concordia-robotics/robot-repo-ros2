@@ -397,15 +397,31 @@ namespace arm_interface
         out_buf[1] = sizeof(float) * 6; //24 bytes of data
 
         // Map command velocities to motor speeds
-        for (size_t i = 0; i < 4; i++)
+        int target_motor_id = -1; 
+        for (size_t i = 0; i < info_.joints.size(); i++)
         {
+            std::string joint_name = info_.joints[i].name;
             const double joint_velocities = hw_commands_velocity_[i]; // in rad/s
 
-            int target_motor_id = motor_map[i];
+            if(joint_name == "joint1"){
+                target_motor_id= 0; 
+            }
+            if(joint_name == "joint2"){
+                target_motor_id= 1; 
+            }
+            if(joint_name == "joint3"){
+                target_motor_id= 2; 
+            }
+            if(joint_name == "joint5"){
+                target_motor_id= 3; 
+            }
 
-            float speed = static_cast<float>(joint_velocities) * MAX_MOTOR_SPEED;
+            if(target_motor_id != -1){
+                float speed = static_cast<float>(joint_velocities) * MAX_MOTOR_SPEED;
 
-            memcpy(&out_buf[(target_motor_id * sizeof(float)) + 2], &speed, sizeof(float));
+                memcpy(&out_buf[(target_motor_id * sizeof(float)) + 2], &speed, sizeof(float));
+        
+            }
         }
 
         // Adding a motor id to control da gripper
