@@ -421,6 +421,7 @@ namespace arm_interface
                 memcpy(&out_buf[(target_motor_id * sizeof(float)) + 2], &speed, sizeof(float));
         
             }
+            RCLCPP_INFO(rclcpp::get_logger("ArmInterface"), "Target motor id was -1 :c");
         }
 
         // Adding a motor id to control da gripper
