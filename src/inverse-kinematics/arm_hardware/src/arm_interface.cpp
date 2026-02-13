@@ -388,8 +388,7 @@ namespace arm_interface
             return return_type::ERROR;
         }
 
-        //Creating a motor map:
-        const int motor_map[4] = {0, 1, 2, 3}; // Map joint indices to motor IDs: joint1->motor4, joint2->motor0, joint3->motor1, joint5->motor2 
+    
         // Create a buffer to send motor commands
         uint8_t out_buf[1 + 1 + sizeof(float) * 6 + 1] = {}; // 27 bytes total: 1+1+16+1
         out_buf[0] = SET_MOTOR_SPEED;
