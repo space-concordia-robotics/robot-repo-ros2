@@ -387,9 +387,7 @@ namespace arm_interface
             RCLCPP_ERROR(rclcpp::get_logger("ArmInterface"), "Received JointState message with insufficient data.");
             return return_type::ERROR;
         }
-
-        //Creating a motor map:
-        const int motor_map[4] = {0, 1, 2, 3}; 
+ 
         // Create a buffer to send motor commands
         uint8_t out_buf[1 + 1 + sizeof(float) * 6 + 1] = {}; // 27 bytes total: 1+1+16+1
         out_buf[0] = SET_MOTOR_SPEED;
@@ -400,12 +398,11 @@ namespace arm_interface
         for (size_t i = 0; i < hw_commands_velocity_.size(); i++)
         {   
             
-            int target_motor_id = motor_map[i]; 
             const double joint_velocities = hw_commands_velocity_[i]; // in rad/s
 
             float speed = static_cast<float>(joint_velocities) * MAX_MOTOR_SPEED;
 
-            memcpy(&out_buf[(target_motor_id * sizeof(float)) + 2], &speed, sizeof(float)); 
+            memcpy(&out_buf[(i * sizeof(float)) + 2], &speed, sizeof(float)); 
         }
         out_buf[27] = 0x0A; // End of message
 
