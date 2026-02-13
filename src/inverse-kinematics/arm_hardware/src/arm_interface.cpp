@@ -352,17 +352,17 @@ namespace arm_interface
 
         // Map encoders to URDF joint order: joint1, joint2, joint3, joint5
         // NOTE: ROS expects joint positions in radians.
-        hw_states_position_[0] = angle_1 * deg_to_rad; // joint1 <- encoder 1
-        hw_states_velocity_[0] = absenc_meas_1.angspd * deg_to_rad;
+        hw_states_position_[1] = angle_1 * deg_to_rad; // joint1 <- encoder 1
+        hw_states_velocity_[1] = absenc_meas_1.angspd * deg_to_rad;
 
-        hw_states_position_[1] = angle_2 * deg_to_rad; // joint2 <- encoder 2
-        hw_states_velocity_[1] = absenc_meas_2.angspd * deg_to_rad;
+        hw_states_position_[2] = angle_2 * deg_to_rad; // joint2 <- encoder 2
+        hw_states_velocity_[2] = absenc_meas_2.angspd * deg_to_rad;
 
-        hw_states_position_[2] = angle_3 * deg_to_rad; // joint3 <- encoder 3
-        hw_states_velocity_[2] = absenc_meas_3.angspd * deg_to_rad;
+        hw_states_position_[3] = angle_3 * deg_to_rad; // joint3 <- encoder 3
+        hw_states_velocity_[3] = absenc_meas_3.angspd * deg_to_rad;
 
-        hw_states_position_[3] = angle_4 * deg_to_rad; // joint5 <- encoder 4
-        hw_states_velocity_[3] = absenc_meas_4.angspd * deg_to_rad;
+        hw_states_position_[0] = angle_4 * deg_to_rad; // joint5 <- encoder 4
+        hw_states_velocity_[0] = absenc_meas_4.angspd * deg_to_rad;
 
         if (absenc_meas_1.status == 0 || absenc_meas_2.status == 0 || absenc_meas_3.status == 0 || absenc_meas_4.status == 0)
         {
@@ -389,7 +389,7 @@ namespace arm_interface
         }
 
         //Creating a motor map:
-        const int motor_map[4] = {0, 1, 2, 3}; // Map joint indices to motor IDs: joint1->motor4, joint2->motor0, joint3->motor1, joint5->motor2 
+        const int motor_map[4] = {0, 1, 2, 3}; 
         // Create a buffer to send motor commands
         uint8_t out_buf[1 + 1 + sizeof(float) * 6 + 1] = {}; // 27 bytes total: 1+1+16+1
         out_buf[0] = SET_MOTOR_SPEED;
