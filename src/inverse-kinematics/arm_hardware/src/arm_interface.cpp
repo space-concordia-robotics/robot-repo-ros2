@@ -391,7 +391,7 @@ namespace arm_interface
         // Create a buffer to send motor commands
         uint8_t out_buf[1 + 1 + sizeof(float) * 6 + 1] = {}; // 27 bytes total: 1+1+16+1
         out_buf[0] = SET_MOTOR_SPEED;
-        int motor_ids[6] = {0, 1, 2, 3, 4, 5}; 
+        int gripper_ids[2] = {4, 5}; 
         //out_buf[0] = 0x4E;
         out_buf[1] = sizeof(float) * 6; //24 bytes of data
 
@@ -399,7 +399,7 @@ namespace arm_interface
         for (size_t i = 0; i < 6; i++)
         {   
             
-            const double joint_velocities = motor_ids[i]; // in rad/s
+            const double joint_velocities = hw_commands_velocity_[i]; // in rad/s
 
             float speed = static_cast<float>(joint_velocities) * MAX_MOTOR_SPEED;
 
@@ -407,6 +407,13 @@ namespace arm_interface
 
         }
         out_buf[27] = 0x0A; // End of message
+
+        float gripper_speed = gripper_power_ * MAX_MOTOR_SPEED; 
+
+        // ID 4 (Index 4 in buffer)
+        memcpy(&out_buf[(4 * sizeof(float)) + 2], &gripper_speed, sizeof(float)); 
+        // ID 5 (Index 5 in buffer)
+        memcpy(&out_buf[(5 * sizeof(float)) + 2], &gripper_speed, sizeof(float));
 
         RCLCPP_INFO_THROTTLE(rclcpp::get_logger("ArmInterfac"), steady_clock_, 10, "Writing joint velocity commands [%.2f, %.2f, %.2f, %.2f]",
                              hw_commands_velocity_[0], hw_commands_velocity_[1], hw_commands_velocity_[2], hw_commands_velocity_[3]);
