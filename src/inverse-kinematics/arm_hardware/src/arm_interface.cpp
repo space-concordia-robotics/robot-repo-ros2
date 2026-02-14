@@ -391,7 +391,6 @@ namespace arm_interface
         // Create a buffer to send motor commands
         uint8_t out_buf[1 + 1 + sizeof(float) * 6 + 1] = {}; // 27 bytes total: 1+1+16+1
         out_buf[0] = SET_MOTOR_SPEED;
-        int gripper_ids[2] = {4, 5}; 
         //out_buf[0] = 0x4E;
         out_buf[1] = sizeof(float) * 6; //24 bytes of data
 
