@@ -395,7 +395,7 @@ namespace arm_interface
         out_buf[1] = sizeof(float) * 6; //24 bytes of data
 
         // Map command velocities to motor speeds
-        for (size_t i = 0; i < hw_commands_velocity_.size(); i++)
+        for (size_t i = 0; i < 6; i++)
         {   
             
             const double joint_velocities = hw_commands_velocity_[i]; // in rad/s
@@ -403,6 +403,7 @@ namespace arm_interface
             float speed = static_cast<float>(joint_velocities) * MAX_MOTOR_SPEED;
 
             memcpy(&out_buf[(i * sizeof(float)) + 2], &speed, sizeof(float)); 
+
         }
         out_buf[27] = 0x0A; // End of message
 
