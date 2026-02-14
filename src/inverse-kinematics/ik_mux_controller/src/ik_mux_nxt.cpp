@@ -38,6 +38,7 @@ enum Axis
 };
 enum Button
 {
+  RED_TRIGGER = 0,
   DEADMAN = 26,
   A2 = 2,
   PINKY_BUTTON = 4,
@@ -72,19 +73,17 @@ bool convertJoyToCmd(const std::vector<float>& axes, const std::vector<int>& but
 {
   // Give joint jogging priority because it is only buttons
   // If any joint jog command is requested, we are only publishing joint commands
-  if (buttons[THMB_HAT_FWD] || buttons[THMB_HAT_LEFT] || buttons[THMB_HAT_RIGHT] || buttons[THMB_HAT_BCK] ||
-      buttons[A3_FWD] || buttons[A3_LEFT] || buttons[A3_RIGHT] || buttons[A3_BCK] ||
-      buttons[A4_FWD] || buttons[A4_LEFT] || buttons[A4_RIGHT] || buttons[A4_BCK] ||  buttons[BLACK_TRIGGER_UP] || buttons[BLACK_TRIGGER_DOWN])
+  if (buttons[RED_TRIGGER])
   {
     joint->joint_names.push_back("joint1");
-    joint->velocities.push_back(buttons[THMB_HAT_LEFT] - buttons[THMB_HAT_RIGHT]); //when pressed joint 3 moves
+    joint->velocities.push_back(axes[Z]); //when pressed joint 3 moves
     joint->joint_names.push_back("joint2");
-    joint->velocities.push_back(buttons[THMB_HAT_FWD] - buttons[THMB_HAT_BCK]); //when pressed joint 5 moves
+    joint->velocities.push_back(axes[Y]); //when pressed joint 5 moves
 
     joint->joint_names.push_back("joint3"); 
-    joint->velocities.push_back(buttons[A3_BCK] - buttons[A3_FWD]); //when pressed joint 2 moves
+    joint->velocities.push_back(axes[Z]); //when pressed joint 2 moves
     joint->joint_names.push_back("joint5");
-    joint->velocities.push_back(buttons[A4_BCK] - buttons[A4_FWD]); //when pressed joint 1 moves
+    joint->velocities.push_back(axes[A1_UP]); //when pressed joint 1 moves
     return false;
   }
   // The bread and butter: map buttons to twist commands
