@@ -164,6 +164,7 @@ namespace arm_interface
 
         // Ensure our internal vectors match the number of joints
         const size_t nj = info_.joints.size();
+        RCLCPP_INFO(rclcpp::get_logger("ArmInterface"), "Number of Joints: %zu", nj);
         hw_commands_velocity_.resize(nj, 0.0);
         hw_states_position_.resize(nj, 0.0);
         hw_states_velocity_.resize(nj, 0.0);
