@@ -407,6 +407,8 @@ namespace arm_interface
         }
         out_buf[27] = 0x0A; // End of message
 
+
+        int gripper_power_[2] = {4, 5};
         float gripper_speed = gripper_power_ * MAX_MOTOR_SPEED; 
 
         // ID 4 (Index 4 in buffer)
