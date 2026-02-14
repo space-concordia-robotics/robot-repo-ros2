@@ -81,7 +81,7 @@ bool convertJoyToCmd(const std::vector<float>& axes, const std::vector<int>& but
     joint->velocities.push_back(axes[Y]); //when pressed joint 5 moves
 
     joint->joint_names.push_back("joint3"); 
-    joint->velocities.push_back(axes[Z]); //when pressed joint 2 moves
+    joint->velocities.push_back(axes[X]); //when pressed joint 2 moves
     joint->joint_names.push_back("joint5");
     joint->velocities.push_back(axes[A1_UP]); //when pressed joint 1 moves
 
