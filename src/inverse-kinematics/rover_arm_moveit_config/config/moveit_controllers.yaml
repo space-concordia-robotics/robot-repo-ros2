@@ -6,7 +6,7 @@ moveit_simple_controller_manager:
   controller_names:
     - arm_controller
   arm_controller:
-    type: forward_command_controller/ForwardCommandController
+    type: velocity_controllers/JointGroupVelocityController
     joints:
       - joint1
       - joint2

@@ -1,11 +1,10 @@
 # This config file is used by ros2_control
 controller_manager:
   ros__parameters:
-    update_rate: 200  # Hz
+    update_rate: 100  # Hz
 
     arm_controller:
-      type: forward_command_controller/ForwardCommandController
-
+      type: velocity_controllers/JointGroupVelocityController
 
     joint_state_broadcaster:
       type: joint_state_broadcaster/JointStateBroadcaster
