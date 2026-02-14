@@ -16,6 +16,8 @@ arm_controller:
       - joint2
       - joint3
       - joint5
+      - joint7
+      - right_finger
     interface_name: velocity
     # command_interfaces:
     #   - velocity

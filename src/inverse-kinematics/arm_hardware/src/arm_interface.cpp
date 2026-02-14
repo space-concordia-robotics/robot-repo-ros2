@@ -407,17 +407,6 @@ namespace arm_interface
         }
         out_buf[27] = 0x0A; // End of message
 
-
-        int gripper_power_[2] = {4, 5};
-        for(size_t i = 0; i < 2; i++){
-            float gripper_speed = static_cast<float>(gripper_power_[i] * MAX_MOTOR_SPEED); 
-
-            // ID 4 (Index 4 in buffer)
-            memcpy(&out_buf[(4 * sizeof(float)) + 2], &gripper_speed, sizeof(float)); 
-            // ID 5 (Index 5 in buffer)
-            memcpy(&out_buf[(5 * sizeof(float)) + 2], &gripper_speed, sizeof(float));
-        }
-
         RCLCPP_INFO_THROTTLE(rclcpp::get_logger("ArmInterfac"), steady_clock_, 10, "Writing joint velocity commands [%.2f, %.2f, %.2f, %.2f]",
                              hw_commands_velocity_[0], hw_commands_velocity_[1], hw_commands_velocity_[2], hw_commands_velocity_[3]);
 
