@@ -17,6 +17,7 @@
         <joint name="joint5"/>
         <joint name="joint6"/>
         <joint name="joint7"/>
+        <joint name="right_finger"/>
 
     </group>
     <group name="gripper">
