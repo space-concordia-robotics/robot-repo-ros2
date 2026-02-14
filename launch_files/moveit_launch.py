@@ -60,12 +60,16 @@ def generate_launch_description():
         executable="spawner",
         arguments=["arm_controller", "-c", "/controller_manager"],
     )
-
+    rover_servo_spawner = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["motor_servo_controller", "-c", "/controller_manager"],
+    )
 
     delayed_spawners = RegisterEventHandler(
         event_handler=OnProcessStart(
             target_action=ros2_control_node,
-            on_start=[jsb_spawner, rover_arm_spawner], 
+            on_start=[jsb_spawner, rover_arm_spawner, rover_servo_spawner], 
         )
     )
 

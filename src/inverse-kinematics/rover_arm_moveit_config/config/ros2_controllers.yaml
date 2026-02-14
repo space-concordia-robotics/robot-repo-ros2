@@ -6,6 +6,9 @@ controller_manager:
     arm_controller:
       type: velocity_controllers/JointGroupVelocityController
 
+    motor_servo_controller:
+      type: velocity_controllers/JointGroupVelocityController
+
     joint_state_broadcaster:
       type: joint_state_broadcaster/JointStateBroadcaster
 
@@ -16,12 +19,12 @@ arm_controller:
       - joint2
       - joint3
       - joint5
+    interface_name: velocity
+
+motor_servo_controller:
+  ros__parameters:
+    joints:
       - joint7
       - right_finger
     interface_name: velocity
-    # command_interfaces:
-    #   - velocity
-    # state_interfaces:
-    #   - position
-    #   - velocity
   

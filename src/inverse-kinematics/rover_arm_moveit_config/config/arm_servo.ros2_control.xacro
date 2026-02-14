@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+    <xacro:macro name="rover_arm_ros2_control" params="name initial_positions_file">
+        <xacro:property name="initial_positions" value="${load_yaml(initial_positions_file)['initial_positions']}"/>
+
+       <ros2_control name="RoverArm" type="system">
+          <hardware>
+            <plugin>arm_interface/ArmInterface</plugin>
+          </hardware>
+
+            <!-- Note: RVIZ only takes positional command interfaces, so when using this interface on the real arm 
+              one can simply comment out or remove the position command interfaces.-->
+            <joint name="joint7">
+                <command_interface name="velocity"/>
+                <!-- <command_interface name="position"/> -->
+                <state_interface name="position">
+                  <param name="initial_value">${initial_positions['joint7']}</param>
+                </state_interface>
+                <state_interface name="velocity"/>
+            </joint>
+            <joint name="right_finger">
+                <command_interface name="velocity"/>
+                <!-- <command_interface name="position"/> -->
+                <state_interface name="position">
+                  <param name="initial_value">${initial_positions['right_finger']}</param>
+                </state_interface>
+                <state_interface name="velocity"/>
+            </joint>
+
+        </ros2_control>
+    </xacro:macro>
+</robot>

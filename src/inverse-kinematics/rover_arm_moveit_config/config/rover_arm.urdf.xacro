@@ -7,8 +7,11 @@
 
     <!-- Import control_xacro -->
     <xacro:include filename="rover_arm.ros2_control.xacro" />
+    <xacro:include filename="arm_servo.ros2_control.xacro" />
 
 
-    <xacro:rover_arm_ros2_control name="FakeSystem" initial_positions_file="$(arg initial_positions_file)"/>
+    <xacro:rover_arm_ros2_control name="RoverArm" initial_positions_file="$(arg initial_positions_file)"/>
+    <xacro:rover_servo_ros2_control name="RoverServo" initial_positions_file="$(arg initial_positions_file)"/>
+
 
 </robot>

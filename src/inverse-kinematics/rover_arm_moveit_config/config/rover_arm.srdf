@@ -16,10 +16,13 @@
         <joint name="joint3"/>
         <joint name="joint5"/>
         <joint name="joint6"/>
+    </group>
+    
+    <group name="arm_servos">
         <joint name="joint7"/>
         <joint name="right_finger"/>
-
     </group>
+    
     <group name="gripper">
         <link name="gripper_claw_link"/>
         <link name="right_claw_link"/>
