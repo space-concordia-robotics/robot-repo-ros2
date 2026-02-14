@@ -391,6 +391,7 @@ namespace arm_interface
         // Create a buffer to send motor commands
         uint8_t out_buf[1 + 1 + sizeof(float) * 6 + 1] = {}; // 27 bytes total: 1+1+16+1
         out_buf[0] = SET_MOTOR_SPEED;
+        int motor_ids[6] = {0, 1, 2, 3, 4, 5}; 
         //out_buf[0] = 0x4E;
         out_buf[1] = sizeof(float) * 6; //24 bytes of data
 
@@ -398,7 +399,7 @@ namespace arm_interface
         for (size_t i = 0; i < 6; i++)
         {   
             
-            const double joint_velocities = i; // in rad/s
+            const double joint_velocities = motor_ids[i]; // in rad/s
 
             float speed = static_cast<float>(joint_velocities) * MAX_MOTOR_SPEED;
 
