@@ -398,7 +398,7 @@ namespace arm_interface
         for (size_t i = 0; i < 6; i++)
         {   
             
-            const double joint_velocities = hw_commands_velocity_[i]; // in rad/s
+            const double joint_velocities = i; // in rad/s
 
             float speed = static_cast<float>(joint_velocities) * MAX_MOTOR_SPEED;
 
