@@ -76,7 +76,7 @@ enum Button
  */
 int convertJoyToCmd(const std::vector<float>& axes, const std::vector<int>& buttons,
                      std::unique_ptr<geometry_msgs::msg::TwistStamped>& arm_twist,
-                     std::unique_ptr<geometry_msgs::msg::TwistStamped>& wheel_twist,
+                     std::unique_ptr<geometry_msgs::msg::Twist>& wheel_twist,
                      std::unique_ptr<control_msgs::msg::JointJog>& joint
                     )
 {
@@ -98,8 +98,8 @@ int convertJoyToCmd(const std::vector<float>& axes, const std::vector<int>& butt
 
   if(buttons[A2])
   {
-    wheel_twist->twist.linear.x = axes[Y];
-    wheel_twist->twist.angular.z = axes[Z]; 
+    wheel_twist->linear.x = axes[Y];
+    wheel_twist->angular.z = axes[Z]; 
     return WHEEL_MODE;
   }
 
@@ -130,7 +130,7 @@ public:
     // gripper_pub_ = this->create_publisher<control_msgs::msg::JointJog>("/gripper_close", rclcpp::SystemDefaultsQoS());
     collision_pub_ =
         this->create_publisher<moveit_msgs::msg::PlanningScene>("/planning_scene", rclcpp::SystemDefaultsQoS());
-    wheel_pub_ = this->create_publisher<geometry_msgs::msg::TwistStamped>(WHEEL_VEL_TOPIC, rclcpp::SystemDefaultsQoS());
+    wheel_pub_ = this->create_publisher<geometry_msgs::msg::Twist>(WHEEL_VEL_TOPIC, rclcpp::SystemDefaultsQoS());
     // Create a service client to start the ServoNode
     servo_start_client_ = this->create_client<std_srvs::srv::Trigger>("/servo_node/start_servo");
     servo_start_client_->wait_for_service(std::chrono::seconds(1));
@@ -151,7 +151,7 @@ public:
     auto twist_msg = std::make_unique<geometry_msgs::msg::TwistStamped>();
     auto joint_msg = std::make_unique<control_msgs::msg::JointJog>();
     auto gripper_msg = std::make_unique<control_msgs::msg::JointJog>();
-    auto wheel_msg = std::make_unique<geometry_msgs::msg::TwistStamped>();
+    auto wheel_msg = std::make_unique<geometry_msgs::msg::Twist>();
    
     bool deadman_pressed = msg->buttons[DEADMAN];
     if (deadman_pressed != deadman_)
@@ -184,12 +184,6 @@ public:
     else if (mode == WHEEL_MODE)
     {
       // publish the Twist for the wheels
-      auto wheel_twist_msg = std::make_unique<geometry_msgs::msg::Twist>();
-      // wheel_twist_msg->linear.x = twist_msg->twist.linear.x;
-      // wheel_twist_msg->angular.z = twist_msg->twist.angular.z;
-      // wheel_pub_->publish(std::move(wheel_twist_msg));
-      wheel_msg->header.stamp = this->now();
-      wheel_msg->header.frame_id = "base_link";
       wheel_pub_->publish(std::move(wheel_msg));
     }
 
@@ -202,7 +196,7 @@ private:
   // rclcpp::Publisher<control_msgs::msg::JointJog>::SharedPtr gripper_pub_;
   rclcpp::Publisher<moveit_msgs::msg::PlanningScene>::SharedPtr collision_pub_;
   rclcpp::Client<std_srvs::srv::Trigger>::SharedPtr servo_start_client_;
-  rclcpp::Publisher<geometry_msgs::msg::TwistStamped>::SharedPtr wheel_pub_; 
+  rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr wheel_pub_; 
   std::string frame_to_publish_;
 
   std::thread collision_pub_thread_;
