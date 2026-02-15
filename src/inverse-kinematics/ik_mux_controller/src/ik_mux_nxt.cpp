@@ -130,7 +130,7 @@ public:
     // gripper_pub_ = this->create_publisher<control_msgs::msg::JointJog>("/gripper_close", rclcpp::SystemDefaultsQoS());
     collision_pub_ =
         this->create_publisher<moveit_msgs::msg::PlanningScene>("/planning_scene", rclcpp::SystemDefaultsQoS());
-    wheel_pub_ = this->create_publisher<geometry_msgs::msg::Twist>(WHEEL_VEL_TOPIC, rclcpp::SystemDefaultsQoS());
+    wheel_pub_ = this->create_publisher<geometry_msgs::msg::TwistStamped>(WHEEL_VEL_TOPIC, rclcpp::SystemDefaultsQoS());
     // Create a service client to start the ServoNode
     servo_start_client_ = this->create_client<std_srvs::srv::Trigger>("/servo_node/start_servo");
     servo_start_client_->wait_for_service(std::chrono::seconds(1));
