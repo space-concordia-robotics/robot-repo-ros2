@@ -151,6 +151,7 @@ public:
     auto twist_msg = std::make_unique<geometry_msgs::msg::TwistStamped>();
     auto joint_msg = std::make_unique<control_msgs::msg::JointJog>();
     auto gripper_msg = std::make_unique<control_msgs::msg::JointJog>();
+    auto wheel_msg = std::make_unique<geometry_msgs::msg::Twist>();
    
     bool deadman_pressed = msg->buttons[DEADMAN];
     if (deadman_pressed != deadman_)
@@ -163,7 +164,7 @@ public:
     {
       return;
     }
-    int mode = convertJoyToCmd(msg->axes, msg->buttons, twist_msg, joint_msg)
+    int mode = convertJoyToCmd(msg->axes, msg->buttons, twist_msg, wheel_msg, joint_msg);
     // Convert the joystick message to Twist or JointJog and publish
     if (mode == IK_MODE)
     {
