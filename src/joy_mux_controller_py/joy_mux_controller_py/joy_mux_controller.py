@@ -6,7 +6,7 @@ from geometry_msgs.msg import Twist
 class JoyMuxController(Node):
     def __init__(self):
         super().__init__('joy_mux_controller')
-        self.subscription = self.create_subscription(Joy, '/joy', self.joy_callback, 10)
+        self.subscription = self.create_subscription(Joy, '/joy_no_ik', self.joy_callback, 10)
         self.rover_pub = self.create_publisher(Twist, '/cmd_vel', 10)
         self.arm_pub = self.create_publisher(JointState, '/arm_xyz_cmd', 10)  # Changed to JointState
 
