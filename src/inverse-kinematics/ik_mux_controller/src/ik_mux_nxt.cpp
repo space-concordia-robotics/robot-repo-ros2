@@ -26,6 +26,13 @@ const std::string BASE_FRAME_ID = "base_structure_link";
 
 // Enums for button names -> axis/button array index
 // For XBOX 1 controller
+enum Mode
+{
+  IK_MODE = 0,
+  FK_MODE = 1,
+  WHEEL_MODE = 2
+};
+
 enum Axis
 {
    X = 0,
@@ -67,9 +74,11 @@ enum Button
  * @param joint A JointJog message to update in prep for publishing
  * @return return true if you want to publish a Twist, false if you want to publish a JointJog
  */
-bool convertJoyToCmd(const std::vector<float>& axes, const std::vector<int>& buttons,
-                     std::unique_ptr<geometry_msgs::msg::TwistStamped>& twist,
-                     std::unique_ptr<control_msgs::msg::JointJog>& joint)
+int convertJoyToCmd(const std::vector<float>& axes, const std::vector<int>& buttons,
+                     std::unique_ptr<geometry_msgs::msg::TwistStamped>& arm_twist,
+                     std::unique_ptr<geometry_msgs::msg::TwistStamped>& wheel_twist,
+                     std::unique_ptr<control_msgs::msg::JointJog>& joint
+                    )
 {
   // Give joint jogging priority because it is only buttons
   // If any joint jog command is requested, we are only publishing joint commands
@@ -84,16 +93,22 @@ bool convertJoyToCmd(const std::vector<float>& axes, const std::vector<int>& but
     joint->velocities.push_back(axes[X]); //when pressed joint 2 moves
     joint->joint_names.push_back("joint5");
     joint->velocities.push_back(axes[A1_UP]); //when pressed joint 1 moves
-    return false;
+    return FK_MODE;
   }
+
+  if(buttons[A2])
+  {
+    wheel_twist->twist.linear.x = axes[Y];
+    wheel_twist->twist.angular.z = axes[Z]; 
+    return WHEEL_MODE;
+  }
+
   // The bread and butter: map buttons to twist commands
-  twist->twist.linear.x = axes[Y];
-  twist->twist.linear.y = axes[X];
-  twist->twist.linear.z = axes[A1_UP];
-  twist->twist.angular.z = axes[Z]; 
-
-
-  return true;
+  arm_twist->twist.linear.x = axes[Y];
+  arm_twist->twist.linear.y = axes[X];
+  arm_twist->twist.linear.z = axes[A1_UP];
+  arm_twist->twist.angular.z = axes[Z]; 
+  return IK_MODE;
 }
 
 
@@ -115,7 +130,7 @@ public:
     // gripper_pub_ = this->create_publisher<control_msgs::msg::JointJog>("/gripper_close", rclcpp::SystemDefaultsQoS());
     collision_pub_ =
         this->create_publisher<moveit_msgs::msg::PlanningScene>("/planning_scene", rclcpp::SystemDefaultsQoS());
-
+    wheel_pub_ = this->create_publisher<geometry_msgs::msg::Twist>(WHEEL_VEL_TOPIC, rclcpp::SystemDefaultsQoS());
     // Create a service client to start the ServoNode
     servo_start_client_ = this->create_client<std_srvs::srv::Trigger>("/servo_node/start_servo");
     servo_start_client_->wait_for_service(std::chrono::seconds(1));
@@ -148,23 +163,30 @@ public:
     {
       return;
     }
-
+    int mode = convertJoyToCmd(msg->axes, msg->buttons, twist_msg, joint_msg)
     // Convert the joystick message to Twist or JointJog and publish
-    if (convertJoyToCmd(msg->axes, msg->buttons, twist_msg, joint_msg))
+    if (mode == IK_MODE)
     {
     // publish the TwistStamped
     twist_msg->header.frame_id = frame_to_publish_;
     twist_msg->header.stamp = this->now();
     twist_pub_->publish(std::move(twist_msg));
     }
-    else
+    else if (mode == FK_MODE)
     {
     // publish the JointJog
     joint_msg->header.stamp = this->now();
     joint_msg->header.frame_id = "base_structure_link";
     joint_msg->duration = 1.0;
     joint_pub_->publish(std::move(joint_msg));
-
+    }
+    else if (mode == WHEEL_MODE)
+    {
+      // publish the Twist for the wheels
+      auto wheel_twist_msg = std::make_unique<geometry_msgs::msg::Twist>();
+      wheel_twist_msg->linear.x = twist_msg->twist.linear.x;
+      wheel_twist_msg->angular.z = twist_msg->twist.angular.z;
+      wheel_pub_->publish(std::move(wheel_twist_msg));
     }
 
   }
