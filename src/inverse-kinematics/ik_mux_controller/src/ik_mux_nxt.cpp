@@ -24,8 +24,7 @@ const std::string WHEEL_VEL_TOPIC = "/cmd_vel";
 const std::string EEF_FRAME_ID = "gripper_claw_link";
 const std::string BASE_FRAME_ID = "base_structure_link";
 
-// Enums for button names -> axis/button array index
-// For XBOX 1 controller
+
 enum Mode
 {
   IK_MODE = 0,
