@@ -115,25 +115,28 @@
     </link>
 
 
-    <joint name="joint1" type="continuous">
+    <joint name="joint1" type="revolute">
         <parent link="base_structure_link"/>
         <child link="base_pivot_link"/>
         <origin xyz="0 0 0.1618" rpy="0 0 0"/>
         <axis xyz="0 0 1"/>
+        <limit effort="100.0" lower="-1.57" upper="1.57" velocity="1.0" />
     </joint>
 
-    <joint name="joint2" type="continuous">
+    <joint name="joint2" type="revolute">
         <parent link="base_pivot_link"/>
         <child link="bicep_tube_link"/>
         <origin xyz="0 0.11645 0" rpy="0 0 0"/>
         <axis xyz="0 1 0"/>
+        <limit effort="100.0" lower="-0.701" upper="1.09" velocity="1.0" />
     </joint>
 
-    <joint name="joint3" type="continuous">
+    <joint name="joint3" type="revolute">
         <parent link="bicep_tube_link"/>
         <child link="bicep_gearbox_link"/>
         <origin xyz="0 -0.092875 0.440" rpy="0 0 0"/>
         <axis xyz="0 1 0"/>
+        <limit effort="100.0" lower="0.0" upper="2.109" velocity="1.0" />
     </joint>
     
    <joint name="joint4" type="fixed">
@@ -143,11 +146,12 @@
         <axis xyz=" 0 0 1"/>
     </joint>
     
-    <joint name="joint5" type="continuous">
+    <joint name="joint5" type="revolute">
         <parent link="forearm_tube_link"/>
         <child link="bracket_connection_link"/>
         <origin xyz="0 -0.0421 0.35" rpy="0 0 0"/>
         <axis xyz=" 0 1 0"/>
+        <limit effort="100.0" lower="-1.09" upper="1.57" velocity="1.0" />
     </joint>
 
     <joint name="joint6" type="fixed">
