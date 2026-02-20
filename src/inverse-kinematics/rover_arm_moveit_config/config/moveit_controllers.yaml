@@ -6,9 +6,11 @@ moveit_simple_controller_manager:
   controller_names:
     - arm_controller
   arm_controller:
-    type: forward_command_controller/ForwardCommandController
+    type: FollowJointTrajectory
     joints:
       - joint1
       - joint2
       - joint3
       - joint5
+    action_ns: joint_trajectory_controller
+    default: true

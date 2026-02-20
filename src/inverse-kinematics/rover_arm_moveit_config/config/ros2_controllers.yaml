@@ -4,17 +4,21 @@ controller_manager:
     update_rate: 100  # Hz
 
     arm_controller:
-      type: forward_command_controller/ForwardCommandController
+      type: joint_trajectory_controller/JointTrajectoryController
 
     joint_state_broadcaster:
       type: joint_state_broadcaster/JointStateBroadcaster
 
 arm_controller:
   ros__parameters:
+    allow_integration_in_goal_trajectories: true
     joints:
       - joint1
       - joint2
       - joint3
       - joint5
-    interface_name: velocity
-  
+    command_interfaces:
+      - velocity
+    state_interfaces:
+      - position 
+      - velocity
