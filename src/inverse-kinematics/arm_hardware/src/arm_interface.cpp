@@ -388,13 +388,13 @@ namespace arm_interface
         }
  
         // Create a buffer to send motor commands
-        uint8_t out_buf[1 + 1 + sizeof(float) * 6 + 1] = {}; // 27 bytes total: 1+1+16+1
+        uint8_t out_buf[1 + 1 + sizeof(float) * 6 + 1] = {}; // 27 bytes total: 1+1+24+1
         out_buf[0] = SET_MOTOR_SPEED;
         //out_buf[0] = 0x4E;
         out_buf[1] = sizeof(float) * 6; //24 bytes of data
 
         // Map command velocities to motor speeds
-        for (size_t i = 0; i < hw_commands_velocity_.size(); i++)
+        for (size_t i = 0; i < 6; i++)
         {   
             
             const double joint_velocities = hw_commands_velocity_[i]; // in rad/s
