@@ -5,7 +5,7 @@
 
        <ros2_control name="RoverArm" type="system">
           <hardware>
-            <plugin>arm_hardware/ArmInterface</plugin>
+            <plugin>arm_interface/ArmInterface</plugin>
             <param name="calculate_dynamics">true</param>
           </hardware>
 
