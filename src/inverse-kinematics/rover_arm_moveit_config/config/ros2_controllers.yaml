@@ -22,3 +22,10 @@ arm_controller:
     state_interfaces:
       - position 
       - velocity
+
+    gains:
+
+      joint1: {p: 10.0, d: 0.5, i: 2.0, i_clamp: 1.0}
+      joint2: {p: 10.0, d: 0.5, i: 2.0, i_clamp: 1.0}
+      joint3: {p: 10.0, d: 0.5, i: 2.0, i_clamp: 1.0}
+      joint5: {p: 10.0, d: 0.5, i: 2.0, i_clamp: 1.0}
