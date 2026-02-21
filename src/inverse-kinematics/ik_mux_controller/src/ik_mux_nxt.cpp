@@ -83,6 +83,7 @@ int convertJoyToCmd(const std::vector<float>& axes, const std::vector<int>& butt
   // If any joint jog command is requested, we are only publishing joint commands
   if (buttons[RED_TRIGGER])
   {
+    RCLCPP_INFO(rclcpp::get_logger("JoyPub"), "Joint joggin mode engaged");
     joint->joint_names.push_back("joint1");
     joint->velocities.push_back(axes[Z]); //when pressed joint 3 moves
     joint->joint_names.push_back("joint2");
@@ -97,12 +98,14 @@ int convertJoyToCmd(const std::vector<float>& axes, const std::vector<int>& butt
 
   if(buttons[A2])
   {
+    RCLCPP_INFO(rclcpp::get_logger("JoyPub"), "Wheel control mode engaged");
     wheel_twist->linear.x = axes[Y];
     wheel_twist->angular.z = axes[Z]; 
     return WHEEL_MODE;
   }
 
   // The bread and butter: map buttons to twist commands
+  RCLCPP_INFO(rclcpp::get_logger("JoyPub"), "Inverse Kinematics control mode engaged");
   arm_twist->twist.linear.x = axes[Y];
   arm_twist->twist.linear.y = axes[X];
   arm_twist->twist.linear.z = axes[A1_UP];
