@@ -5,7 +5,7 @@
 
        <ros2_control name="RoverArm" type="system">
           <hardware>
-            <plugin>mock_components/GenericSystem</plugin>
+            <plugin>arm_hardware/ArmInterface</plugin>
             <param name="calculate_dynamics">true</param>
           </hardware>
 
