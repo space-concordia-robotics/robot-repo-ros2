@@ -6,7 +6,7 @@
 # Default values
 DEFAULT_DEVICE="/dev/video0"
 DEFAULT_DIR="$HOME/Videos"
-DEFAULT_FILENAME="output_$(date+'%Y-%m-%d_%H-%M-%S').avi"
+DEFAULT_FILENAME="output_$(date +'%Y-%m-%d_%Hh-%Mm-%Ss').avi"
 
 # Parse command-line arguments
 while getopts "d:v:o:" opt; do
