@@ -1,0 +1,8 @@
+tm_imu:
+  ros__parameters:
+    imu_baudrate : 115200
+    imu_port : "/dev/ttyUSB0"
+    imu_frame_id : 'imu'
+    parent_frame_id : 'base_link'
+    timer_period : 5
+    transform : [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
