@@ -58,6 +58,7 @@ void TMSerial::TimerCallback() {
     // Read the values from the Imu sensor
     if (const bool res = OnSerialRX(); !res) return;
     // Update the header stamp
+    // TODO 2026-03-02 (Will Free): use timestamp from the serial data
     imu_data_msg.header.stamp = this->get_clock()->now();
     imu_data_rpy_msg.header.stamp = this->get_clock()->now();
     imu_data_mag_msg.header.stamp = this->get_clock()->now();
@@ -94,6 +95,22 @@ char TMSerial::SerialportOpen() const {
     RCLCPP_INFO(this->get_logger(), "imu_port:%s imu_baudrate:%d", this->get_parameter("imu_port").as_string().c_str(), baudrate);
     return 1;
 }
+
+
+// TODO 2026-03-02 (Will Free): the datasheet says one number, and the code comment here says another number...
+// constexpr auto GRAVITY = 9.794;
+constexpr auto GRAVITY = 9.8158;
+
+//! the magnetic field in Odense, Denmark (as the company is headquartered in Odense)
+//!
+//! from the documentation:<br>
+//! (m1, m2, m3) represents the magnetic strength measured by TransducerM in its sensor frame.
+//! If norm(m1, m2, m3) equals to 1, this means the magnetic strength is equal to the magnetic
+//! strength measured during its factory calibration, which is the earth magnetic field
+//! itself in Denmark. As such, the absolute value of the magnetic strength is not accurate when
+//! TransducerM is moved to a different location, whereas the direction (m1, m2, m3) represents
+//! and the relative strengtheners counts for measuring the attitude or as a digital compass
+constexpr auto MAGNETIC_FACTORY_CALIBRATION = 50.5662 / std::nano::den;
 
 
 bool TMSerial::OnSerialRX() {
@@ -140,17 +157,17 @@ bool TMSerial::OnSerialRX() {
         case EP_CMD_Raw_GYRO_ACC_MAG_: {
             Ep_Raw_GyroAccMag ep_Raw_GyroAccMag;
             if (EP_SUCC_ == eOD.Read_Ep_Raw_GyroAccMag(&ep_Raw_GyroAccMag)) {
-                float gyro_x = ep_Raw_GyroAccMag.gyro[0];
-                float gyro_y = ep_Raw_GyroAccMag.gyro[1];
-                float gyro_z = ep_Raw_GyroAccMag.gyro[2];
+                const auto gyro_x = ep_Raw_GyroAccMag.gyro[0];
+                const auto gyro_y = ep_Raw_GyroAccMag.gyro[1];
+                const auto gyro_z = ep_Raw_GyroAccMag.gyro[2];
 
-                float acc_x = ep_Raw_GyroAccMag.acc[0];
-                float acc_y = ep_Raw_GyroAccMag.acc[1];
-                float acc_z = ep_Raw_GyroAccMag.acc[2];
+                const auto acc_x = ep_Raw_GyroAccMag.acc[0] * GRAVITY;
+                const auto acc_y = ep_Raw_GyroAccMag.acc[1] * GRAVITY;
+                const auto acc_z = ep_Raw_GyroAccMag.acc[2] * GRAVITY;
 
-                float mag_x = ep_Raw_GyroAccMag.mag[0];
-                float mag_y = ep_Raw_GyroAccMag.mag[1];
-                float mag_z = ep_Raw_GyroAccMag.mag[2];
+                const auto mag_x = ep_Raw_GyroAccMag.mag[0] * MAGNETIC_FACTORY_CALIBRATION;
+                const auto mag_y = ep_Raw_GyroAccMag.mag[1] * MAGNETIC_FACTORY_CALIBRATION;
+                const auto mag_z = ep_Raw_GyroAccMag.mag[2] * MAGNETIC_FACTORY_CALIBRATION;
 
                 imu_data_msg.angular_velocity.x = gyro_x;
                 imu_data_msg.angular_velocity.y = gyro_y;
@@ -171,7 +188,9 @@ bool TMSerial::OnSerialRX() {
         break;
         case EP_CMD_Q_S1_S_: {
             Ep_Q_s1_s ep_Q_s1_s;
-            if (EP_SUCC_ == eOD.Read_Ep_Q_s1_s(&ep_Q_s1_s)) {}
+            if (EP_SUCC_ == eOD.Read_Ep_Q_s1_s(&ep_Q_s1_s)) {
+                // TODO 2026-03-02 (Will Free): why are we not using the quat here? how is Ep_Q_s1_s different from Ep_Q_s1_e?
+            }
         }
         break;
         case EP_CMD_Q_S1_E_: {
@@ -179,13 +198,13 @@ bool TMSerial::OnSerialRX() {
             if (EP_SUCC_ == eOD.Read_Ep_Q_s1_e(&ep_Q_s1_e)) {
                 // Step 3.3: If we decided that the received Quaternion should be used,
                 //           Here is an example of how to access the Quaternion data.
-                float q1 = ep_Q_s1_e.q[0];
-                float q2 = ep_Q_s1_e.q[1];
-                float q3 = ep_Q_s1_e.q[2];
-                float q4 = ep_Q_s1_e.q[3];
+                const auto q1 = ep_Q_s1_e.q[0];
+                const auto q2 = ep_Q_s1_e.q[1];
+                const auto q3 = ep_Q_s1_e.q[2];
+                const auto q4 = ep_Q_s1_e.q[3];
                 // uint32 timeStamp = ep_Q_s1_e.timeStamp;  //TimeStamp indicates the time point (since the Module has been powered on),
                 //when this particular set of Quaternion was calculated. (Unit: uS)
-                //Note that overflow will occure when the uint32 type reaches its maximum value.
+                //Note that overflow will occured when the uint32 type reaches its maximum value.
                 //The ID indicates the device Short ID telling which Motion Module the data comes from.
                 // uint32 deviceId  = ep_Q_s1_e.header.fromId;
                 imu_data_msg.orientation.w = q1;
@@ -200,12 +219,16 @@ bool TMSerial::OnSerialRX() {
         break;
         case EP_CMD_EULER_S1_S_: {
             Ep_Euler_s1_s ep_Euler_s1_s;
-            if (EP_SUCC_ == eOD.Read_Ep_Euler_s1_s(&ep_Euler_s1_s)) {}
+            if (EP_SUCC_ == eOD.Read_Ep_Euler_s1_s(&ep_Euler_s1_s)) {
+                // TODO 2026-03-02 (Will Free): consider using/publishing these euler angles?
+            }
         }
         break;
         case EP_CMD_EULER_S1_E_: {
             Ep_Euler_s1_e ep_Euler_s1_e;
-            if (EP_SUCC_ == eOD.Read_Ep_Euler_s1_e(&ep_Euler_s1_e)) {}
+            if (EP_SUCC_ == eOD.Read_Ep_Euler_s1_e(&ep_Euler_s1_e)) {
+                // TODO 2026-03-02 (Will Free): consider using/publishing these euler angles?
+            }
         }
         break;
         case EP_CMD_RPY_: {
@@ -228,24 +251,29 @@ bool TMSerial::OnSerialRX() {
         break;
         case EP_CMD_GRAVITY_: {
             Ep_Gravity ep_Gravity;
-            if (EP_SUCC_ == eOD.Read_Ep_Gravity(&ep_Gravity)) {}
+            if (EP_SUCC_ == eOD.Read_Ep_Gravity(&ep_Gravity)) {
+                // TODO 2026-03-02 (Will Free): why is this just not being used?
+            }
         }
         break;
         case EP_CMD_COMBO_: {
             Ep_Combo ep_Combo;
             if (EP_SUCC_ == eOD.Read_Ep_Combo(&ep_Combo)) {
                 // Accelerometer:
-                float ax = ep_Combo.ax * 1e-5f; // Unit: 1g, 1g = 9.794m/(s^2)
-                float ay = ep_Combo.ay * 1e-5f;
-                float az = ep_Combo.az * 1e-5f;
+                float ax = ep_Combo.ax * 1e-5f * GRAVITY; // Unit: 1g, 1g = 9.794m/(s^2)
+                float ay = ep_Combo.ay * 1e-5f * GRAVITY;
+                float az = ep_Combo.az * 1e-5f * GRAVITY;
+
                 // Gyroscope:
                 float wx = ep_Combo.wx * 1e-5f; // Unit: rad/s
                 float wy = ep_Combo.wy * 1e-5f;
                 float wz = ep_Combo.wz * 1e-5f;
+
                 // Magnetometer:
-                float mx = ep_Combo.mx * 1e-3f; // Unit: one earth magnetic field
-                float my = ep_Combo.my * 1e-3f; // vector (mx, my, mz) is used as direction reference of the local magnetic field.
-                float mz = ep_Combo.mz * 1e-3f;
+                float mx = ep_Combo.mx * 1e-3f * MAGNETIC_FACTORY_CALIBRATION; // Unit: one earth magnetic field
+                float my = ep_Combo.my * 1e-3f * MAGNETIC_FACTORY_CALIBRATION; // vector (mx, my, mz) is used as direction reference of the local magnetic field
+                float mz = ep_Combo.mz * 1e-3f * MAGNETIC_FACTORY_CALIBRATION;
+
                 // Quaternion in (q1,q2,q3,q4)=(w,x,y,z) format
                 float q1 = ep_Combo.q1 * 1e-7f;
                 float q2 = ep_Combo.q2 * 1e-7f;
