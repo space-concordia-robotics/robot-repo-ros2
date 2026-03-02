@@ -40,7 +40,7 @@ class JoyMuxController(Node):
                     float((1 if msg.buttons[3] else 0) - (1 if msg.buttons[1] else 0)),   # Joint 4
                     float(msg.axes[3]),   # Joint 5
                     float(msg.axes[0]),  # Joint 6
-                    float((1 if msg.buttons[0] else 0) - (1 if msg.buttons[1] else 0))  # Joint 7: Positive (button 0) and negative (button 1)
+                    float((1 if msg.buttons[0] else 0) - (1 if msg.buttons[2] else 0))  # Joint 7: Positive (button 0) and negative (button 1)
                 ]
                 joint_state.position = []  # Empty position field
                 joint_state.effort = []    # Empty effort field

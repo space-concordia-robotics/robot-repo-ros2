@@ -39,7 +39,7 @@ def generate_launch_description():
             output='screen',
             parameters=[
                 {'can_path': 'can0'},  # Default CAN interface path
-                {'multiplier': 1000}    # Default multiplier for RPM conversion
+                {'multiplier': 2000}    # Default multiplier for RPM conversion
             ]
         ),
 
