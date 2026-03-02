@@ -4,8 +4,8 @@
     <name>autonomy</name>
     <version>0.0.0</version>
     <description>TODO: Package description</description>
-    <maintainer email="mike@todo.todo">mike</maintainer>
-    <license>TODO: License declaration</license>
+    <maintainer email="will.free@spaceconcordia.ca">Will Free</maintainer>
+    <license>MIT</license>
 
     <buildtool_depend>ament_cmake</buildtool_depend>
 
