@@ -9,7 +9,7 @@ EasyProfile eP(&eOD);
 
 TMSerial::TMSerial() : rclcpp::Node("tm_imu")
 {
-    // Declare node's parameters default value 
+    // Declare node's parameters default value
     // [NOT NECESSARY TO CHANGE THE FOLLOWING, USE ../config/params.yaml INSTEAD !]
     this->declare_parameter("imu_baudrate",    115200);
     this->declare_parameter("imu_port",        "/dev/ttyUSB0");
@@ -73,7 +73,7 @@ void TMSerial::TimerCallback()
 #ifdef DEBUG_MODE
 void TMSerial::TimerCallback2()
 {
-    RCLCPP_INFO(this->get_logger(), 
+    RCLCPP_INFO(this->get_logger(),
     "Rx byte cnt=%d, TrasnducerM pkg cnt = %d (%f Hz)", count2, count, 1000*((float)count)/(DEBUG_MODE_PRINT_TIMER_MS_));
     count = 0;
     count2 = 0;
@@ -116,16 +116,16 @@ bool TMSerial::OnSerialRX()
                                                             //         of a complete package, nor does it matter if the data is broken
                                                             //         during the transmission. On_RecvPkg() will only return EP_SUCC_
                                                             //         when a complete and correct package has arrived.
-        rxData = 0;                                         //         The while loop ensures no package is omitted. 
+        rxData = 0;                                         //         The while loop ensures no package is omitted.
     	rxSize = 0;
-    	
+
         // Example Reading of the Short ID of the device who send the data:
         uint32 fromId = header.fromId;                      // Step 3.1:  Now we are able to read the received payload data.
                                                             //            header.fromId tells us from which Motion Module the data comes.
-                                                            
+
         //Supress "parameter unused" complier warning:
         (void)fromId;
-        
+
         switch(header.cmd){                                 // Step 3.2: header.cmd tells what kind of data is inside the payload.
             case EP_CMD_ACK_:{                              //           We can use a switch() as demonstrated here to do different
                 Ep_Ack ep_Ack;                              //           tasks for different types of data.
@@ -154,7 +154,7 @@ bool TMSerial::OnSerialRX()
                     imu_data_msg.angular_velocity.y =  gyro_y;
                     imu_data_msg.angular_velocity.z =  gyro_z;
 
-                    imu_data_msg.linear_acceleration.x = acc_x; 
+                    imu_data_msg.linear_acceleration.x = acc_x;
                     imu_data_msg.linear_acceleration.y = acc_y;
                     imu_data_msg.linear_acceleration.z = acc_z;
 
@@ -249,7 +249,7 @@ bool TMSerial::OnSerialRX()
                     imu_data_msg.angular_velocity.y =  wy;
                     imu_data_msg.angular_velocity.z =  wz;
 
-                    imu_data_msg.linear_acceleration.x = ax; 
+                    imu_data_msg.linear_acceleration.x = ax;
                     imu_data_msg.linear_acceleration.y = ay;
                     imu_data_msg.linear_acceleration.z = az;
 
@@ -279,7 +279,7 @@ bool TMSerial::OnSerialRX()
     return true;
 }
 
-    
+
 void TMSerial::FillCovarianceMatrices()
 {
     for(int i = 0; i < 9; i++){
