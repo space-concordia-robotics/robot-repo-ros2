@@ -95,10 +95,19 @@ def launch_setup(context: LaunchContext, *args, **kwargs):
         'approx_sync': rgbd_image_used,
         'wait_for_transform': 0.4,
         # begin newly added
-        'Grid/RangeMax': '48.0',
-        # 'Icp/RangeMin': '0.75',
+        'Grid/RangeMin': '0.5',
+        'Grid/RangeMax': '256.0',
+        'Vis/MaxDepth': '256.0',
+        # 0=SURF 1=SIFT 2=ORB 3=FAST/FREAK 4=FAST/BRIEF 5=GFTT/FREAK 6=GFTT/BRIEF 7=BRISK 8=GFTT/ORB 9=KAZE 10=ORB-OCTREE 11=SuperPoint 12=SURF/FREAK 13=GFTT/DAISY 14=SURF/DAISY 15=PyDetector
+        'Kp/DetectorStrategy': '1',
+        'Vis/FeatureType': '1',
+        'Kp/MaxFeatures': '1000',
+        # 'Odom/Strategy': '1',
+        'OdomF2M/MaxSize': '1000',  # default: 2000
+        'Icp/RangeMin': '0.75',
         # 'Grid/RangeMin': '0.75',
         # 'Marker/MinRange': '0.75',
+        'Reg/Force3DoF': 'true',
         'Reg/Strategy': '1',
         'Grid/FootprintHeight': '1.0',
         'Grid/FootprintLength': '0.8',
@@ -106,6 +115,7 @@ def launch_setup(context: LaunchContext, *args, **kwargs):
         'Grid/RayTracing': 'true',
         'Grid/Sensor': '0',
         'Icp/PointToPlaneMinComplexity': '0.01',
+        # 'Rtabmap/DetectionRate': '1',
         # end newly added
         # RTAB-Map's internal parameters are strings:
         'Icp/PointToPlane': 'true',
@@ -114,10 +124,11 @@ def launch_setup(context: LaunchContext, *args, **kwargs):
         'Icp/Epsilon': '0.001',
         'Icp/PointToPlaneK': '20',
         'Icp/PointToPlaneRadius': '0',
-        'Icp/MaxTranslation': '3',
+        'Icp/MaxTranslation': '1',
         'Icp/MaxCorrespondenceDistance': str(max_correspondence_distance),
         'Icp/Strategy': '1',
         'Icp/OutlierRatio': '0.7',
+        # 'Icp/DownsamplingStep': 2,
     }
 
     icp_odometry_parameters: SomeParametersDict = {
@@ -129,7 +140,7 @@ def launch_setup(context: LaunchContext, *args, **kwargs):
         # RTAB-Map's internal parameters are strings:
         'Odom/ScanKeyFrameThr': '0.4',
         'OdomF2M/ScanSubtractRadius': str(voxel_size_value),
-        'OdomF2M/ScanMaxSize': '15000',
+        'OdomF2M/ScanMaxSize': '10000',
         'OdomF2M/BundleAdjustment': 'false',
         'Icp/CorrespondenceRatio': '0.01'
     }
@@ -147,12 +158,16 @@ def launch_setup(context: LaunchContext, *args, **kwargs):
     )
 
     rtabmap_parameters: SomeParametersDict = {
+        'gen_scan': True,
+        'gen_depth_fill_holes_size': 2,
+        'gen_depth_fill_holes_iterations': 10,
         'subscribe_depth': False,
         'subscribe_rgb': False,
         'subscribe_odom_info': True,
         'subscribe_scan_cloud': True,
         'map_frame_id': 'map',
         'odom_sensor_sync': True,
+        'Rtabmap/DetectionRate': '0',
         # This will adjust camera position based on difference between lidar and camera stamps.
         # RTAB-Map's internal parameters are strings:
         'RGBD/ProximityMaxGraphDepth': '0',
@@ -310,7 +325,7 @@ def generate_launch_description():
 
         DeclareLaunchArgument(
             'min_loop_closure_overlap',
-            default_value='0.2',
+            default_value='0.1',
             description='Minimum scan overlap pourcentage to accept a loop closure.'
         ),
 
