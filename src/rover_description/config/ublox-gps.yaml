@@ -1,5 +1,5 @@
 # Configuration Settings for C94-M8P device
-gps_node:
+/**/gps_node:
   ros__parameters:
     debug: 1                    # Range 0-4 (0 means no debug statements will print)
 

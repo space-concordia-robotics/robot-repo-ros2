@@ -1,5 +1,5 @@
 from launch.actions import AppendEnvironmentVariable
-from launch.event_handlers import OnExecutionComplete, OnProcessExit
+from launch.event_handlers import OnProcessExit
 from launch.substitutions import PathJoinSubstitution
 from launch_ros.substitutions import FindPackageShare
 
@@ -8,9 +8,6 @@ from launch_util import SimpleLauncher, BridgeDirection
 
 def generate_launch_description():
     sl = SimpleLauncher(mode="simulation", control="ros")
-
-    sl.include(package="rover_description", launch_file="rsp.launch.py")
-    sl.include(package="rover_description", launch_file="joystick.launch.py")
 
     twist_mux_params = sl.params(package="rover_description", file="twist_mux.yml")
     sl.node(
@@ -70,12 +67,11 @@ def generate_launch_description():
         bridge.add_joint_states()
         bridge.add_tf()
         bridge.add_topic("/odom", "/diff_drive_base_controller/odom", BridgeDirection.GZ_TO_ROS, ros_msg="nav_msgs/Odometry")
-        bridge.add_topic("/cmd_vel", "/cmd_vel", BridgeDirection.ROS_TO_GZ, ros_msg="geometry_msgs/Twist")
-        bridge.add_topic("/ceres/imu", "/ceres/imu", BridgeDirection.GZ_TO_ROS, ros_msg="sensor_msgs/Imu")
-        bridge.add_topic("/ceres/lidar/imu", "/ceres/lidar/imu", BridgeDirection.GZ_TO_ROS, ros_msg="sensor_msgs/Imu")
-        bridge.add_topic("/ceres/scan", "/ceres/scan", BridgeDirection.GZ_TO_ROS, ros_msg="sensor_msgs/LaserScan")
-        bridge.add_topic("/ceres/scan/points", "/ceres/scan/points", BridgeDirection.GZ_TO_ROS, ros_msg="sensor_msgs/PointCloud2")
-        # bridge.add_topic("/ceres/scan2d", "/ceres/scan2d", BridgeDirection.GZ_TO_ROS, ros_msg="sensor_msgs/LaserScan")
-        bridge.add_topic("/ceres/gps/fix", "/ceres/gps/fix", BridgeDirection.GZ_TO_ROS, ros_msg="sensor_msgs/NavSatFix")
+        bridge.add_topic("/cmd_vel", "rover/cmd_vel", BridgeDirection.ROS_TO_GZ, ros_msg="geometry_msgs/Twist")
+        bridge.add_topic("/imu/data", "rover/imu/data", BridgeDirection.GZ_TO_ROS, ros_msg="sensor_msgs/Imu")
+        bridge.add_topic("/lidar/imu", "rover/lidar/imu/data", BridgeDirection.GZ_TO_ROS, ros_msg="sensor_msgs/Imu")
+        bridge.add_topic("/lidar/scan", "rover/lidar/scan", BridgeDirection.GZ_TO_ROS, ros_msg="sensor_msgs/LaserScan")
+        bridge.add_topic("/lidar/scan/points", "rover/lidar/scan/points", BridgeDirection.GZ_TO_ROS, ros_msg="sensor_msgs/PointCloud2")
+        bridge.add_topic("/gps/fix", "rover/gps/fix", BridgeDirection.GZ_TO_ROS, ros_msg="sensor_msgs/NavSatFix")
 
     return sl.launch_description()

@@ -1,4 +1,4 @@
-controller_manager:
+/**/controller_manager:
   ros__parameters:
     update_rate: 1000
     use_sim_time: true
@@ -9,13 +9,13 @@ controller_manager:
     diff_drive_base_controller:
       type: diff_drive_controller/DiffDriveController
 
-joint_state_broadcaster:
+/**/joint_state_broadcaster:
   ros__parameters:
     state_interfaces:
       - position
       - velocity
 
-diff_drive_base_controller:
+/**/diff_drive_base_controller:
   ros__parameters:
     command_interfaces:
       - velocity
@@ -43,8 +43,9 @@ diff_drive_base_controller:
     publish_rate: 100.0
     odom_frame_id: odom
     base_frame_id: base_link
-    pose_covariance_diagonal: [ 0.001, 0.0, 0.0, 0.0, 0.0, 0.01 ]
-    twist_covariance_diagonal: [ 0.001, 0.0, 0.0, 0.0, 0.0, 0.01 ]
+    # odom isn't always *super* accurate due to slip, etc. so I just ballparked these.
+    pose_covariance_diagonal: [ 0.1, 0.1, 0.1, 0.1, 0.1, 0.1 ]
+    twist_covariance_diagonal: [ 0.1, 0.1, 0.1, 0.1, 0.1, 0.1 ]
 
     open_loop: false # true
     enable_odom_tf: false
@@ -57,9 +58,10 @@ diff_drive_base_controller:
       x:
         has_velocity_limits: true
         has_acceleration_limits: true
-        max_velocity: 1.0
-        min_velocity: -1.0
-        max_acceleration: 1.0
+        max_velocity: 2.0
+        min_velocity: -2.0
+        max_acceleration: 4.0
+        min_acceleration: -4.0
         max_jerk: .NAN
         min_jerk: .NAN
 
@@ -67,9 +69,9 @@ diff_drive_base_controller:
       z:
         has_velocity_limits: true
         has_acceleration_limits: true
-        max_velocity: 1.0
-        min_velocity: -1.0
-        max_acceleration: 1.0
-        min_acceleration: -1.0
+        max_velocity: 2.0
+        min_velocity: -2.0
+        max_acceleration: 4.0
+        min_acceleration: -4.0
         max_jerk: .NAN
         min_jerk: .NAN

@@ -8,11 +8,13 @@ def generate_launch_description():
 
     sl.include(
         package="nav2_bringup",
+        # package="autonomy",
         launch_file="navigation_launch.py",
         launch_arguments={
-            "autostart": 'True',
-            "use_composition": 'False',  # TODO 2026-02-09 (Will Free): consider using composition?
-            "use_respawn": 'True',  # only relevant when composition is disabled
+            "autostart": sl.declare_arg("autostart"),
+            "use_composition": sl.declare_arg("use_composition"),
+            "namespace": sl.declare_arg("namespace", default_value=""),
+            "use_respawn": sl.declare_arg("use_respawn"),
             "params_file": sl.params(package="autonomy", file="nav2_params.yaml"),
         }.items(),
     )

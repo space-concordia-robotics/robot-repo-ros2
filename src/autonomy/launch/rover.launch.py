@@ -5,18 +5,24 @@ from launch_util import SimpleLauncher
 
 def generate_launch_description():
     sl = SimpleLauncher(mode="production", control="ros")
-    # /ceres/scan/points
+
+    # sl.add_action(PushROSNamespace("rover"))
+    # sl.add_action(SetRemap("tf", "/tf"))
+    # sl.add_action(SetRemap("/tf", "tf"))
+    # sl.add_action(SetRemap("tf_static", "/tf_static"))
+    # sl.add_action(SetRemap("/tf_static", "tf_static"))
+    # sl.add_action(SetRemap("~/robot_description", "/robot_description"))
 
     with sl.group():
-        # sl.add_action(
-        #     SetRemap(src="/ouster/points", dst="/ceres/scan/points"),
-        # )
         sl.add_action(
-            SetRemap(src="/ouster/scan", dst="/ceres/scan"),
+            SetRemap(src="/ouster/points", dst="rover/lidar/scan/points"),
         )
-        # sl.add_action(
-        #     SetRemap(src="/ouster/imu", dst="/ceres/lidar/imu"),
-        # )
+        sl.add_action(
+            SetRemap(src="/ouster/scan", dst="rover/lidar/scan"),
+        )
+        sl.add_action(
+            SetRemap(src="/ouster/imu", dst="rover/lidar/imu/data"),
+        )
         sl.include(
             package="ouster_ros",
             launch_file="sensor.launch.xml",
@@ -35,15 +41,15 @@ def generate_launch_description():
         executable="transducer_m_imu",
         parameters=[sl.params(package="rover_description", file="transducer.yaml")],
         remappings=[
-            ("/imu_data", "/ceres/imu"),
-            ("/imu_data_rpy", "/ceres/imu/rpy"),
-            ("/imu_data_mag", "/ceres/imu/mag"),
+            ("/imu_data", "rover/imu/data"),
+            ("/imu_data_rpy", "rover/imu/rpy"),
+            ("/imu_data_mag", "rover/imu/mag"),
         ],
     )
 
     sl.include(
         package="autonomy",
-        launch_file="gps.launch.py"
+        launch_file="gps.launch.py",
     )
 
     sl.include(package="rover_description", launch_file="rsp.launch.py")
@@ -53,7 +59,7 @@ def generate_launch_description():
     sl.node(
         package="twist_mux",
         parameters=[twist_mux_params],
-        remappings=[("/cmd_vel_out", "/diff_drive_base_controller/cmd_vel_unstamped")],
+        remappings=[("/cmd_vel_out", "rover/diff_drive_base_controller/cmd_vel_unstamped")],
     )
 
     controllers = sl.params(package="rover_description", file="controllers.yaml")
@@ -64,13 +70,14 @@ def generate_launch_description():
         executable="ros2_control_node",
         parameters=[controllers],
         remappings={
-            "~/robot_description": "/robot_description"
+            "~/robot_description": "rover/robot_description",
         }.items(),
     )
 
     sl.node(
         "controller_manager",
         "spawner",
+        namespace="rover",
         exec_name="diff_drive_spawner",
         arguments=["diff_drive_base_controller", "--param-file", controllers],
     )
@@ -78,8 +85,9 @@ def generate_launch_description():
     sl.node(
         "controller_manager",
         "spawner",
+        namespace="rover",
         exec_name="jsp_spawner",
-        arguments=["joint_state_broadcaster"]
+        arguments=["joint_state_broadcaster"],
     )
 
     sl.include(package="autonomy", launch_file="ekf_navsat.launch.py")

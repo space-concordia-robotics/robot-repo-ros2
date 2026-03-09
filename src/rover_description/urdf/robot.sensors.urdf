@@ -46,7 +46,7 @@
                 <always_on>1</always_on>
                 <update_rate>1000</update_rate>
                 <visualize>true</visualize>
-                <topic>ceres/imu</topic>
+                <topic>imu/data</topic>
                 <gz_frame_id>imu_link</gz_frame_id>
 
                 <!-- TODO 2025-09-19 (Will Free): Get the correct values for this -->
@@ -110,7 +110,7 @@
             <sensor name="navsat" type="navsat">
                 <always_on>true</always_on>
                 <update_rate>1</update_rate>
-                <topic>ceres/gps/fix</topic>
+                <topic>gps/fix</topic>
                 <gz_frame_id>gps_link</gz_frame_id>
                 <navsat>
                     <position_sensing>
@@ -143,7 +143,7 @@
                 <always_on>true</always_on>
                 <visualize>false</visualize>
                 <update_rate>20</update_rate> <!-- 10 or 20 -->
-                <topic>ceres/scan</topic>
+                <topic>lidar/scan</topic>
                 <gz_frame_id>lidar_link</gz_frame_id>
 
                 <!-- <ray> -->
@@ -202,12 +202,13 @@
                 <!-- </plugin> -->
             </sensor>
 
+            <!--
             <sensor name="lidar2d" type="gpu_lidar">
                 <pose relative_to="lidar_link">0 0 0 0 0 0</pose>
                 <always_on>true</always_on>
                 <visualize>false</visualize>
-                <update_rate>10</update_rate> <!-- 10 or 20 -->
-                <topic>ceres/scan2d</topic>
+                <update_rate>10</update_rate> &lt;!&ndash; 10 or 20 &ndash;&gt;
+                <topic>lidar/scan2d</topic>
                 <gz_frame_id>lidar_link</gz_frame_id>
 
                 <ray>
@@ -232,13 +233,13 @@
                     </range>
                 </ray>
             </sensor>
-
+            -->
 
             <sensor name="lidar_imu" type="imu">
                 <always_on>1</always_on>
                 <update_rate>1000</update_rate>
                 <visualize>true</visualize>
-                <topic>ceres/lidar/imu</topic>
+                <topic>lidar/imu/data</topic>
                 <gz_frame_id>lidar_link</gz_frame_id>
 
                 <!-- TODO 2025-09-19 (Will Free): Get the correct values for this -->

@@ -11,6 +11,7 @@ def generate_launch_description():
 
     sl.node("teleop_twist_joy", "teleop_node", name="teleop_node", parameters=[joy_params], remappings=[("/cmd_vel", "/cmd_vel_joy")])
 
+    # TODO 2026-03-09 (Will Free): move this somewhere better
     sl.node(
         "twist_stamper",
         remappings=[
