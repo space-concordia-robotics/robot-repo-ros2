@@ -1,5 +1,5 @@
 ### ekf config file ###
-ekf_node_odom:
+/**/ekf_node_odom:
   ros__parameters:
     print_diagnostics: true
 
@@ -54,7 +54,7 @@ ekf_node_odom:
     odom0_relative: false
     odom0_queue_size: 10
 
-    imu0: /ceres/imu #_integrated
+    imu0: rover/imu/data #_integrated
     imu0_config: [
       false, false, false, # xyz
       false, false, false, # rpy
@@ -67,7 +67,7 @@ ekf_node_odom:
     imu0_queue_size: 10
     imu0_differential: false
 
-    imu1: /ceres/lidar/imu
+    imu1: rover/lidar/imu/data
     #imu1: /ouster/imu
     imu1_config: [
       false, false, false, # xyz
@@ -97,7 +97,7 @@ ekf_node_odom:
                                 0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,     0.0,     0.0,    0.0,    0.0,    0.0,    0.0,    0.3,   0.0,
                                 0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,     0.0,     0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.3 ]
 
-ekf_node_map:
+/**/ekf_node_map:
   ros__parameters:
     print_diagnostics: true
 
@@ -139,7 +139,7 @@ ekf_node_map:
     # vr  vp  vy
     # ax  ay  az
 
-    odom0: /ceres/odometry/gps
+    odom0: rover/odometry/gps
     odom0_config: [
       true,  true,  false,
       false, false, false,
@@ -164,7 +164,7 @@ ekf_node_map:
     odom1_relative: false
     odom1_queue_size: 10
 
-    imu0: /ceres/imu #_integrated
+    imu0: rover/imu/data #_integrated
     imu0_config: [
       false, false, false, # xyz
       false, false, false, # rpy
@@ -177,7 +177,7 @@ ekf_node_map:
     imu0_queue_size: 10
     imu0_differential: false
 
-    imu1: /ceres/lidar/imu
+    imu1: rover/lidar/imu/data
     #imu1: /ouster/imu
     imu1_config: [
       false, false, false, # xyz
@@ -207,10 +207,10 @@ ekf_node_map:
                                 0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,     0.0,     0.0,    0.0,    0.0,    0.0,    0.0,    0.3,    0.0,
                                 0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.0,     0.0,     0.0,    0.0,    0.0,    0.0,    0.0,    0.0,    0.3 ]
 
-navsat_transform:
+/**/navsat_transform:
   ros__parameters:
     frequency: 30.0
-    delay: 3.0
+    delay: 1.0
     magnetic_declination_radians: 0.0
     yaw_offset: -1.570796327 # the gazebo IMU seems to use yaw=0 when pointing south.
     zero_altitude: true

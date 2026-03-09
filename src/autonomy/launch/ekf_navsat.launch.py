@@ -21,7 +21,7 @@ def generate_launch_description():
         executable="ekf_node",
         name="ekf_node_odom",
         parameters=[ekf_navsat_params],
-        remappings=[("odometry/filtered", "ceres/odometry/local")]
+        remappings=[("odometry/filtered", "rover/odometry/local")],
     )
 
     sl.node(
@@ -30,16 +30,8 @@ def generate_launch_description():
         name="ekf_node_map",
         output="screen",
         parameters=[ekf_navsat_params],
-        remappings=[("odometry/filtered", "ceres/odometry/global")],
+        remappings=[("odometry/filtered", "rover/odometry/global")],
     )
-
-    # GPS (/fix) ──┐
-    #              ├─→ navsat_transform ─→ /odometry/gps ──┐
-    # IMU (/imu/data_raw) ──┤                              │
-    #              └─→ ekf_local ─→ /odometry/local ───────┼─→ ekf_global ─→ /odometry/global
-    #  ODOM (/odom) ────────┘                              │
-    #                                                      │
-    #                                                (map ← odom TF)
 
     sl.node(
         package="robot_localization",
@@ -48,12 +40,11 @@ def generate_launch_description():
         output="screen",
         parameters=[ekf_navsat_params],
         remappings=[
-            # ("imu/data", "ceres/imu"),
-            ("imu/data", "ceres/lidar_imu"),
-            ("gps/fix", "ceres/gps/fix"),
-            ("gps/filtered", "ceres/gps/filtered"),
-            ("odometry/gps", "ceres/odometry/gps"),
-            ("odometry/filtered", "ceres/odometry/global"),
+            ("imu", "rover/imu/data"),
+            ("gps/fix", "rover/gps/fix"),
+            ("gps/filtered", "rover/gps/filtered"),
+            ("odometry/gps", "rover/odometry/gps"),
+            ("odometry/filtered", "rover/odometry/global"),
         ],
     )
 
@@ -63,8 +54,8 @@ def generate_launch_description():
     #     name="imu_integrator_node",
     #     output="screen",
     #     remappings=[
-    #         ("/ceres/imu", "/imu"),
-    #         ("/imu_integrated", "/ceres/imu_integrated"),
+    #         ("rover/imu", "/imu"),
+    #         ("/imu_integrated", "rover/imu/integrated"),
     #     ]
     # )
     #
@@ -74,8 +65,8 @@ def generate_launch_description():
     #     name="lidar_imu_integrator_node",
     #     output="screen",
     #     remappings=[
-    #         ("/ceres/lidar_imu", "/imu"),
-    #         ("/imu_integrated", "/ceres/lidar_imu_integrated"),
+    #         ("rover/lidar/imu/data", "/imu"),
+    #         ("/imu_integrated", "rover/lidar/imu/integrated"),
     #     ]
     # )
 

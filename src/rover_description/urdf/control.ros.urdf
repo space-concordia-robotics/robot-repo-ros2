@@ -93,7 +93,7 @@
     <xacro:if value="${simulation}">
         <gazebo>
             <plugin name="gz_ros2_control::GazeboSimROS2ControlPlugin" filename="libgz_ros2_control-system.so">
-                <parameters>$(find ceres_urdf)/config/controllers.yaml</parameters>
+                <parameters>$(find rover_description)/config/controllers.yaml</parameters>
 
                 <publish_odom>true</publish_odom>
                 <publish_odom_tf>true</publish_odom_tf>
