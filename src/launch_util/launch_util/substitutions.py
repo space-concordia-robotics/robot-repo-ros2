@@ -1,24 +1,55 @@
 from logging import Logger
-from tempfile import NamedTemporaryFile, _TemporaryFileWrapper
-from typing import Dict, IO, Optional, Mapping
+from string import Template
+from tempfile import NamedTemporaryFile
+from typing import Dict, IO, Optional, Mapping, Tuple, Text, Callable, Iterable, Any
 from typing import List
 from xml.dom import minidom
 
 import launch
 import xacro
-from launch import Action
+from launch import Action, Substitution
 from launch.event_handlers import OnShutdown, OnExecutionComplete
 from launch.launch_context import LaunchContext
 from launch.some_substitutions_type import SomeSubstitutionsType
-from launch.substitution import Substitution
 from launch.substitutions import SubstitutionFailure
 from launch.utilities import normalize_to_list_of_substitutions
 from launch.utilities import perform_substitutions
-from launch.utilities.type_utils import SomeValueType, normalize_typed_substitution, perform_typed_substitution, NormalizedValueType
+from launch.utilities.type_utils import SomeValueType, normalize_typed_substitution, perform_typed_substitution, NormalizedValueType, StrSomeValueType, \
+    AllowedTypesType
 
-SomeSubstitutionsDict = Mapping[SomeSubstitutionsType, SomeSubstitutionsType]
+__all__ = [
+    "SomeSubstitutionsValueTypeDict",
+    "NormalizedSubstitutionsValueTypeDict",
+    "normalize_typed_dict_substitutions",
+    "perform_typed_dict_substitutions",
+    "Xacro",
+    "WriteTempFile",
+    "OpaqueFunctionSubstitution",
+    "Templated",
+]
 
 SomeSubstitutionsValueTypeDict = Mapping[SomeSubstitutionsType, SomeValueType]
+
+NormalizedSubstitutionsValueTypeDict = Mapping[Tuple[Substitution, ...], NormalizedValueType]
+
+
+def normalize_typed_dict_substitutions(
+        items: SomeSubstitutionsValueTypeDict,
+        data_type: Optional[AllowedTypesType],
+) -> NormalizedSubstitutionsValueTypeDict:
+    return {
+        tuple(normalize_to_list_of_substitutions(key)): normalize_typed_substitution(value, data_type) for key, value in items.items()
+    }
+
+
+def perform_typed_dict_substitutions(
+        context: LaunchContext,
+        items: NormalizedSubstitutionsValueTypeDict,
+        data_type: Optional[AllowedTypesType],
+) -> Dict[Text, StrSomeValueType]:
+    return {
+        perform_substitutions(context, key): perform_typed_substitution(context, value, data_type) for key, value in items.items()
+    }
 
 
 class Xacro(Substitution):
@@ -53,7 +84,7 @@ class Xacro(Substitution):
     )
     """
     __file_path: List[Substitution]
-    __mappings: Dict[List[Substitution], List[Substitution]]
+    __mappings: NormalizedSubstitutionsValueTypeDict
     __strip_comments: NormalizedValueType
     __verbose: bool
     __logger: Logger
@@ -68,13 +99,8 @@ class Xacro(Substitution):
         """Create a Xacro."""
         super().__init__()
 
-        if mappings is None:
-            mappings = {}
-
         self.__file_path = normalize_to_list_of_substitutions(file_path)
-        self.__mappings = {
-            key: normalize_typed_substitution(value, None) for key, value in mappings.items()
-        }
+        self.__mappings = normalize_typed_dict_substitutions(mappings, None) if mappings is not None else {}
         self.__strip_comments = normalize_typed_substitution(strip_comments, bool) if strip_comments is not None else False
         self.__verbose = verbose
         self.__logger = launch.logging.get_logger(__name__)
@@ -87,10 +113,7 @@ class Xacro(Substitution):
         """Perform the substitution by returning the string with values substituted."""
 
         file_path = perform_substitutions(context, self.__file_path)
-        mappings = {
-            perform_substitutions(context, normalize_to_list_of_substitutions(key)): perform_typed_substitution(context, value, None) \
-            for key, value in self.__mappings.items()
-        }
+        mappings = perform_typed_dict_substitutions(context, self.__mappings, None)
 
         # TODO 2026-02-07 (Will Free): I don't think an __verbose field is needed here at all?
         if self.__verbose:
@@ -142,7 +165,7 @@ class WriteTempFile(Substitution):
     __contents: List[Substitution]
     __suffix: List[Substitution]
     __prefix: List[Substitution]
-    __temp_file: Optional[_TemporaryFileWrapper]
+    __temp_file: Optional[IO[bytes | str]]
 
     def __init__(self, suffix: SomeSubstitutionsType = None, prefix: SomeSubstitutionsType = None, contents: SomeSubstitutionsType = None) -> None:
         """Initialize the WriteTempFile substitution.
@@ -158,23 +181,22 @@ class WriteTempFile(Substitution):
         self.__temp_file = None
 
     def describe(self) -> str:
-        """Return a description of this substitution.
+        """
+        Return a description of this substitution.
 
-        Returns:
-            String description of the substitution for debugging
+        :return String description of the substitution for debugging
         """
         contents_str = " + ".join([sub.describe() for sub in self.__contents])
         return f"WriteTempFile(contents={contents_str})"
 
     def write(self, handle: IO, context: LaunchContext) -> None:
-        """Write the contents to a file handle.
+        """
+        Write the contents to a file handle.
 
-        Args:
-            handle: Binary file handle to write to
-            context: Launch context for performing substitutions
+        :param handle: Binary file handle to write to
+        :param context: Launch context for performing substitutions
 
-        Returns:
-            None
+        :return: None
         """
         contents = perform_substitutions(context, self.__contents)
         handle.write(contents.encode())
@@ -195,11 +217,9 @@ class WriteTempFile(Substitution):
         Creates a named temporary file, writes the substituted content to it,
         and returns the file path. The file is not automatically deleted.
 
-        Args:
-            context: Launch context for performing substitutions
+        :param context: Launch context for performing substitutions
 
-        Returns:
-            Path to the created temporary file
+        :return: Path to the created temporary file
         """
         suffix = perform_substitutions(context, self.__suffix)
         prefix = perform_substitutions(context, self.__prefix)
@@ -211,4 +231,96 @@ class WriteTempFile(Substitution):
 
         return self.__temp_file.name
 
-# TODO 2026-02-06 (Will Free): Add OpaqueFunctionSubstitution based off of the Command substitution & OpaqueFunction action?
+
+class OpaqueFunctionSubstitution(Substitution):
+    OpaqueSubstitution = Callable[[LaunchContext, Optional[Iterable[Any]], Optional[Dict[Text, Any]]], Text]
+
+    def __init__(
+            self,
+            function: OpaqueSubstitution,
+            args: Optional[Iterable[Any]] = None,
+            kwargs: Optional[Dict[Text, Any]] = None,
+    ) -> None:
+        super().__init__()
+
+        self.__function = function
+        self.__args = args if args is not None else []
+        self.__kwargs = kwargs if kwargs is not None else {}
+
+    def perform(self, context: LaunchContext) -> Text:
+        return self.__function(context, *self.args, **self.__kwargs)
+
+
+class Templated(Substitution):
+    """
+    Template-based substitution using Python's string.Template syntax.
+
+    This substitution class allows for template strings with variables that
+    are replaced with launch configuration values. Template variables are
+    specified using ${variable_name} syntax.
+
+    Example:
+        Templated("Hello ${name}, mode is ${mode}")
+
+    The variables 'name' and 'mode' will be replaced with their corresponding
+    launch configuration values.
+    """
+    __template: List[Substitution]
+    __args: NormalizedSubstitutionsValueTypeDict
+
+    def __init__(self, template: SomeSubstitutionsType, args: Optional[SomeSubstitutionsValueTypeDict] = None) -> None:
+        """
+        Initialize the Templated substitution.
+
+        :param template: Template string containing variable placeholders
+        :param args: Optional arguments
+        """
+
+        super().__init__()
+
+        self.__template = normalize_to_list_of_substitutions(template)
+        self.__args = normalize_typed_dict_substitutions(args, None) if args is not None else {}
+
+    @property
+    def raw_template(self) -> List[Substitution]:
+        """
+        Get the raw template as a list of substitutions.
+
+        :return: List of substitution objects representing the template
+        """
+
+        return self.__template
+
+    @property
+    def args(self) -> NormalizedSubstitutionsValueTypeDict:
+        return self.__args
+
+    @property
+    def describe(self) -> str:
+        """
+        Return a description of this substitution as a string.
+
+        :return: String representation of the template for debugging purposes
+        """
+
+        return f"'{self.raw_template}'"
+
+    def perform(self, context: LaunchContext) -> str:
+        """
+        Perform the substitution by replacing template variables.
+
+        Uses Python's string.Template to substitute variables with their
+        corresponding values from the launch context configuration.
+
+        :param context: Launch context containing configuration values
+
+        :return: String with template variables replaced by their values
+
+        :raise KeyError: If a template variable is not found in launch configurations
+        """
+
+        args = perform_typed_dict_substitutions(context, self.args, None) | context.launch_configurations
+
+        raw_template = perform_substitutions(context, self.raw_template)
+        template = Template(raw_template)
+        return template.substitute(args)
