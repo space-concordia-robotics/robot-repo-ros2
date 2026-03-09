@@ -6,6 +6,10 @@ from launch_ros.actions import PushRosNamespace
 
 from .events import When
 
+__all__ = [
+    'Group',
+]
+
 
 class Group:
     __parent: Optional['Group']
@@ -22,7 +26,7 @@ class Group:
             condition: Optional[Condition] = None,
             container: Text = '',
             parent: Optional['Group'] = None,
-            when: When = None
+            when: When = None,
     ):
         self.__parent = parent
         self.__condition = condition

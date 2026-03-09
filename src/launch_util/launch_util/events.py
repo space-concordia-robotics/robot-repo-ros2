@@ -1,6 +1,12 @@
+from typing import Text, Any, Mapping
+
 import launch
 from launch.actions import RegisterEventHandler, TimerAction, GroupAction
 from launch.event_handlers import OnProcessExit, OnProcessStart, OnExecutionComplete, OnProcessIO, OnShutdown
+
+__all__ = [
+    'When',
+]
 
 logger = launch.logging.get_logger(__name__)
 
@@ -20,7 +26,7 @@ class When:
             action=None,
             event=None,
             delay=None,
-            io=None
+            io=None,
     ):
         self.__ref = action
         self.__delay = delay
@@ -48,7 +54,7 @@ class When:
     def register(self, action):
         if self.__event == OnProcessIO:
             # this one expects Python functions that returns actions
-            kwargs = {self.__arg: None}
+            kwargs: Mapping[Text, Any] = {self.__arg: None}
             if len(action) == 0:
                 logger.warning('No callback in OnProcessIO block')
             else:
