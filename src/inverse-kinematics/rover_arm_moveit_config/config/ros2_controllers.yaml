@@ -16,7 +16,9 @@ arm_controller:
       - joint1
       - joint2
       - joint3
+      - joint4
       - joint5
+      - joint7
     command_interfaces:
       - velocity
     state_interfaces:
@@ -24,8 +26,9 @@ arm_controller:
       - velocity
 
     gains:
-
       joint1: {p: 40.0, d: 0.0, i: 0.0, i_clamp: 1.0}
       joint2: {p: 60.0, d: 0.0, i: 0.0, i_clamp: 1.0}
       joint3: {p: 40.0, d: 0.0, i: 0.0, i_clamp: 1.0}
+      joint4: {p: 40.0, d: 0.0, i: 0.0, i_clamp: 1.0}
       joint5: {p: 40.0, d: 0.0, i: 0.0, i_clamp: 1.0}
+      joint7: {p: 40.0, d: 0.0, i: 0.0, i_clamp: 1.0}

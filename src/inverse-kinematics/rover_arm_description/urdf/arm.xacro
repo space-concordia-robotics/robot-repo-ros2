@@ -139,18 +139,19 @@
         <limit effort="100.0" lower="0.0" upper="2.109" velocity="1.0" />
     </joint>
     
-   <joint name="joint4" type="fixed">
+   <joint name="joint4" type="revolute">
         <parent link="bicep_gearbox_link"/>
         <child link="forearm_tube_link"/>
         <origin xyz="0 0 0.085" rpy="0 0 0"/>
         <axis xyz=" 0 0 1"/>
+        <limit effort="100.0" lower="-3.14159" upper="3.14159" velocity="1.0" />
     </joint>
     
     <joint name="joint5" type="revolute">
         <parent link="forearm_tube_link"/>
         <child link="bracket_connection_link"/>
         <origin xyz="0 -0.0421 0.35" rpy="0 0 0"/>
-        <axis xyz=" 0 1 0"/>
+        <axis xyz="0 1 0"/>
         <limit effort="100.0" lower="-1.09" upper="1.57" velocity="1.0" />
     </joint>
 

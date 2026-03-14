@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="rover_arm">
     <xacro:arg name="initial_positions_file" default="initial_positions.yaml" />
+    <xacro:arg name="use_fake_hardware" default="false" />
 
     <!-- Import rover_arm urdf file -->
     <xacro:include filename="$(find rover_arm_description)/urdf/arm.urdf.xacro" />
@@ -9,6 +10,8 @@
     <xacro:include filename="rover_arm.ros2_control.xacro" />
 
 
-    <xacro:rover_arm_ros2_control name="FakeSystem" initial_positions_file="$(arg initial_positions_file)"/>
-
+        <xacro:rover_arm_ros2_control
+            name="FakeSystem"
+            initial_positions_file="$(arg initial_positions_file)"
+            use_fake_hardware="$(arg use_fake_hardware)"/>
 </robot>

@@ -13,9 +13,10 @@ from moveit_configs_utils import MoveItConfigsBuilder
 
 def generate_launch_description():
     moveit_config = (
-        MoveItConfigsBuilder("rover_arm")
-        .robot_description(file_path="config/rover_arm.urdf.xacro")
-        .joint_limits(file_path="config/joint_limits.yaml")
+        MoveItConfigsBuilder("rover_arm").robot_description(
+            file_path="config/rover_arm.urdf.xacro",
+            mappings={"use_fake_hardware": "true"},
+        ).joint_limits(file_path="config/joint_limits.yaml")
         .to_moveit_configs()
     )
 
@@ -74,16 +75,38 @@ def generate_launch_description():
             "300",
             "--controller-manager",
             "/controller_manager",
+            "--unload-on-kill",
         ],
     )
 
     rover_arm_controller_spawner = Node(
         package="controller_manager",
         executable="spawner",
-        arguments=["arm_controller", "-c", "/controller_manager"],
+        arguments=["arm_controller", "-c", "/controller_manager", "--unload-on-kill"],
     )
 
 
+    joy_node = Node(
+        package="joy",
+        executable="joy_node",
+        name="joy_node",
+        output="screen",
+    )
+
+    ik_mux_node = Node(
+        package="ik_mux_controller",
+        executable="ik_mux",
+        name="ik_mux",
+        output="screen",
+    )
+
+    base_link_alias_tf = Node(
+        package="tf2_ros",
+        executable="static_transform_publisher",
+        name="base_link_alias_tf",
+        arguments=["0", "0", "0", "0", "0", "0", "base_structure_link", "base_link"],
+        output="screen",
+    )
     # Launch a standalone Servo node.
     # As opposed to a node component, this may be necessary (for example) if Servo is running on a different PC
     servo_node_arm = Node(
@@ -106,6 +129,9 @@ def generate_launch_description():
             rviz_node,
             joint_state_broadcaster_spawner,
             rover_arm_controller_spawner,
+            joy_node,
+            ik_mux_node,
+            base_link_alias_tf,
             servo_node_arm,
             
             

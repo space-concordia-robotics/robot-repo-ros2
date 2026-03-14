@@ -1,35 +1,184 @@
 Panels:
   - Class: rviz_common/Displays
+    Help Height: 70
     Name: Displays
+    Property Tree Widget:
+      Expanded: ~
+      Splitter Ratio: 0.5
+    Tree Height: 415
   - Class: rviz_common/Help
     Name: Help
   - Class: rviz_common/Views
+    Expanded:
+      - /Current View1
     Name: Views
+    Splitter Ratio: 0.5
 Visualization Manager:
+  Class: ""
   Displays:
-    - Class: rviz_default_plugins/Grid
+    - Alpha: 0.5
+      Cell Size: 1
+      Class: rviz_default_plugins/Grid
+      Color: 160; 160; 164
+      Enabled: true
+      Line Style:
+        Line Width: 0.029999999329447746
+        Value: Lines
       Name: Grid
+      Normal Cell Count: 0
+      Offset:
+        X: 0
+        Y: 0
+        Z: 0
+      Plane: XY
+      Plane Cell Count: 10
+      Reference Frame: <Fixed Frame>
       Value: true
+    - Alpha: 1
+      Class: rviz_default_plugins/RobotModel
+      Collision Enabled: false
+      Description File: ""
+      Description Source: Topic
+      Description Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /robot_description
+      Enabled: true
+      Links:
+        All Links Enabled: true
+        Expand Joint Details: false
+        Expand Link Details: false
+        Expand Tree: false
+        Link Tree Style: Links in Alphabetic Order
+        base_pivot_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        base_structure_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        bicep_gearbox_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        bicep_tube_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        bracket_connection_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        forearm_tube_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        gripper_base_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        gripper_claw_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        left_claw_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        right_claw_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+      Mass Properties:
+        Inertia: false
+        Mass: false
+      Name: RobotModel
+      TF Prefix: ""
+      Update Interval: 0
+      Value: true
+      Visual Enabled: true
+  Enabled: true
   Global Options:
+    Background Color: 48; 48; 48
     Fixed Frame: base_structure_link
+    Frame Rate: 30
+  Name: root
   Tools:
     - Class: rviz_default_plugins/Interact
+      Hide Inactive Objects: true
     - Class: rviz_default_plugins/MoveCamera
     - Class: rviz_default_plugins/Select
+  Transformation:
+    Current:
+      Class: rviz_default_plugins/TF
   Value: true
   Views:
     Current:
       Class: rviz_default_plugins/Orbit
-      Distance: 2.0
+      Distance: 3.147038698196411
+      Enable Stereo Rendering:
+        Stereo Eye Separation: 0.05999999865889549
+        Stereo Focal Distance: 1
+        Swap Stereo Eyes: false
+        Value: false
       Focal Point:
-        X: -0.1
+        X: -0.10000000149011612
         Y: 0.25
-        Z: 0.30
+        Z: 0.30000001192092896
+      Focal Shape Fixed Size: true
+      Focal Shape Size: 0.05000000074505806
+      Invert Z Axis: false
       Name: Current View
-      Pitch: 0.5
+      Near Clip Distance: 0.009999999776482582
+      Pitch: 0.4500000476837158
       Target Frame: base_structure_link
-      Yaw: -0.623
+      Value: Orbit (rviz_default_plugins)
+      Yaw: 5.5501933097839355
+    Saved:
+      - Class: rviz_default_plugins/Orbit
+        Distance: 3.147038698196411
+        Enable Stereo Rendering:
+          Stereo Eye Separation: 0.05999999865889549
+          Stereo Focal Distance: 1
+          Swap Stereo Eyes: false
+          Value: false
+        Focal Point:
+          X: -0.10000000149011612
+          Y: 0.25
+          Z: 0.30000001192092896
+        Focal Shape Fixed Size: true
+        Focal Shape Size: 0.05000000074505806
+        Invert Z Axis: false
+        Name: Orbit
+        Near Clip Distance: 0.009999999776482582
+        Pitch: 0.7099997997283936
+        Target Frame: base_structure_link
+        Value: Orbit (rviz_default_plugins)
+        Yaw: -1.0729949474334717
 Window Geometry:
+  Displays:
+    collapsed: false
   Height: 975
-  QMainWindow State: 000000ff00000000fd0000000100000000000002b400000375fc0200000005fb00000044004d006f00740069006f006e0050006c0061006e006e0069006e00670020002d0020005400720061006a006500630074006f0072007900200053006c00690064006500720000000000ffffffff0000004100fffffffb000000100044006900730070006c006100790073010000003d00000123000000c900fffffffb0000001c004d006f00740069006f006e0050006c0061006e006e0069006e00670100000166000001910000018800fffffffb0000000800480065006c0070000000029a0000006e0000006e00fffffffb0000000a0056006900650077007301000002fd000000b5000000a400ffffff000001f60000037500000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  Help:
+    collapsed: false
+  Hide Left Dock: false
+  Hide Right Dock: false
+  QMainWindow State: 000000ff00000000fd0000000100000000000002b400000379fc0200000005fb00000044004d006f00740069006f006e0050006c0061006e006e0069006e00670020002d0020005400720061006a006500630074006f0072007900200053006c00690064006500720000000000ffffffff0000000000000000fb000000100044006900730070006c006100790073010000003b00000220000000c700fffffffb0000001c004d006f00740069006f006e0050006c0061006e006e0069006e00670100000166000001910000000000000000fb0000000800480065006c0070000000029a0000006e0000006e00fffffffb0000000a00560069006500770073010000026100000153000000a000ffffff000001f60000037900000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  Views:
+    collapsed: false
   Width: 1200
+  X: 25
+  Y: -32

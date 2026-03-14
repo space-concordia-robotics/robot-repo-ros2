@@ -1,11 +1,16 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
-    <xacro:macro name="rover_arm_ros2_control" params="name initial_positions_file">
+    <xacro:macro name="rover_arm_ros2_control" params="name initial_positions_file use_fake_hardware:=false">
         <xacro:property name="initial_positions" value="${load_yaml(initial_positions_file)['initial_positions']}"/>
 
        <ros2_control name="RoverArm" type="system">
           <hardware>
-            <plugin>arm_interface/ArmInterface</plugin>
+            <xacro:if value="${use_fake_hardware}">
+              <plugin>mock_components/GenericSystem</plugin>
+            </xacro:if>
+            <xacro:unless value="${use_fake_hardware}">
+              <plugin>arm_interface/ArmInterface</plugin>
+            </xacro:unless>
             <param name="calculate_dynamics">true</param>
           </hardware>
 
@@ -32,10 +37,24 @@
                 </state_interface>
                 <state_interface name="velocity"/>
             </joint>
+            <joint name="joint4">
+                <command_interface name="velocity"/>
+                <state_interface name="position">
+                  <param name="initial_value">${initial_positions['joint4']}</param>
+                </state_interface>
+                <state_interface name="velocity"/>
+            </joint>
             <joint name="joint5">
                 <command_interface name="velocity"/>
                 <state_interface name="position">
                   <param name="initial_value">${initial_positions['joint5']}</param>
+                </state_interface>
+                <state_interface name="velocity"/>
+            </joint>
+            <joint name="joint7">
+                <command_interface name="velocity"/>
+                <state_interface name="position">
+                  <param name="initial_value">${initial_positions['joint7']}</param>
                 </state_interface>
                 <state_interface name="velocity"/>
             </joint>
