@@ -19,8 +19,17 @@ void CanControllerNode::getTwistMessages(const geometry_msgs::msg::Twist::ConstS
     uint32_t left_wheel_velocity = -(linear_y + (angular_z*distance_between_wheels*0.5f)); 
 
 
-    //send it out to be processed by the framer 
+    //convert velocities into rpm
+    uint32_t right_wheel_velocity_rpm = right_wheel_velocity * 2000;
+    uint32_t left_wheel_velocity_rpm = left_wheel_velocity * 2000;
 
+
+
+    //send commands out to be processed by the framer 
+
+
+    RCLCPP_INFO(this->get_logger(), "Wheel Motor Commands Sent: Right RPM = %.2f, Left RPM = %2.f", 
+            right_wheel_velocity_rpm, left_wheel_velocity_rpm);
 }
 
 
