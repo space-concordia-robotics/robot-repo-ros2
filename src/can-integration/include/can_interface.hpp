@@ -13,3 +13,12 @@
 #include <termios.h>
 #include <net/if.h>
 #include <iostream>
+
+
+class CanManager{
+
+    public: 
+
+    private: 
+
+};

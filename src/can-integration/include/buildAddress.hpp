@@ -3,7 +3,6 @@
 #include "can_controller_node.hpp"
 #include "can_interface.hpp"
 
-//6 bites
 namespace DeviceId{
     enum : uint8_t{   
 
@@ -25,19 +24,26 @@ namespace DeviceId{
         RESERVED_PAYLOAD = 0x0F, 
         SIL = 0x10
     }; 
-}
+} //namespace DeviceId
 
-// 8 bits
 namespace manufacturer{
     enum : uint8_t{ 
         TEAM_USE = 0x08, 
         REV_ROBOTICS = 0x05,
     };
-}
+} //namespace manufacturer
 
-// 10 bits
+namespace severity{
+    enum : short{
+        MANUAL_EMERGENCY_INTERVENTION = 0x00, 
+        AUTOMATIC_EMERGENCY_INTERVENTION = 0x01,
+        SYSTEM_STATUS = 0x02,
+        CONTROL = 0x03
+    };
+} // namespace severity
+
 namespace instructions{
-    enum : uint16_t{
+    enum : uint8_t{
         CUT_POWER = 0x00,
         SEND_VELOCITY = 0,
         SEND_POSITION = 0, 
@@ -49,9 +55,8 @@ namespace instructions{
         ZERO_ENCODERS = 0, 
         SET_LED_COLOR = 0,
     };
-}
+} //namespace instructions
 
-//5 bits
 namespace deviceType{
     enum : uint8_t{
         MOTOR_CONTROLLER = 0x2,
@@ -60,7 +65,7 @@ namespace deviceType{
         SERVO_CONTROLLER = 0x0C,
         RESERVED = 0x0E
     };
-}
+} //namespace deviceType
 
 struct fields{
     uint32_t device_id: 6;
@@ -69,7 +74,7 @@ struct fields{
     uint32_t manufacturer: 8; 
 };
 
-class Framer{
+class BuildAddress{
 
     public: 
 
