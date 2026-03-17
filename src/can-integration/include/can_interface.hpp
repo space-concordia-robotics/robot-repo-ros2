@@ -15,7 +15,7 @@
 #include <iostream>
 #include <vector>
 
-enum class Status : uint8_t{
+enum Status{
     SUCCESS = 0,
     CANERROR
 };
@@ -32,12 +32,9 @@ class CanManager{
         ~CanManager(){reset();}
 
         int getfd() const {return s_socket;}
-        char* printtatusBuffer() {
-            if(!StatusBuffer_ .empty()){
-                printf("%s \n", StatusBuffer_.data());
-                return StatusBuffer_.data();
-            }
-            return nullptr; 
+
+        static inline void printtatusBuffer() {
+            printf("%s \n", s_StatusBuffer); 
         }
 
         uint8_t configureCan(const std::vector<char> fd_name); 
@@ -49,10 +46,10 @@ class CanManager{
                 ::close(s_socket);
             }
             s_socket = new_fd;
-            StatusBuffer_.clear(); 
+            delete[] s_StatusBuffer;
         } 
 
     private: 
         int s_socket{-1}; 
-        std::vector<char> StatusBuffer_; 
+        inline static char* s_StatusBuffer = nullptr;
 };
