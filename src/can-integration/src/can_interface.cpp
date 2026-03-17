@@ -32,3 +32,32 @@ uint8_t CanManager::configureCan(std::vector<char> fd_name){
 
     return SUCCESS; 
 }
+
+
+uint8_t CanManager::readFrame(struct can_frame& frame){
+    
+    //reading the socket in bytes. 
+    int nbytes = read(s_socket, &frame, sizeof(struct can_frame));
+
+    if(nbytes == -1){
+        sprintf(s_StatusBuffer, "read error : %i\n", errno);
+        return Status::CANERROR;
+    } 
+
+    if(nbytes < (ssize_t)sizeof(struct can_frame)){
+        sprintf(s_StatusBuffer, "read: incomplete CAN frame\n");
+        return Status::CANERROR;
+    }
+
+    //Printing the can frame here for verification .
+    printf("0x%03X [%d] ", frame.can_id, frame.len8_dlc);
+    return Status::SUCCESS; 
+
+
+}
+
+uint8_t CanManager::writeFrame(struct can_frame& frame){
+
+
+    return Status::SUCCESS; 
+}
