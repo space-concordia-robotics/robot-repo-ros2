@@ -57,6 +57,7 @@ namespace instructions{
 
 namespace deviceType{
     enum : uint8_t{
+        POWER_DISTRIBUTION_MODULE = 0x08,
         MOTOR_CONTROLLER = 0x2,
         ENCODER = 0x07,
         COLOR_SENS0R = 0x0D, 
@@ -65,10 +66,4 @@ namespace deviceType{
     };
 } //namespace deviceType
 
-struct fields{
-    uint32_t device_id: 6;
-    uint32_t device_type: 5; 
-    uint32_t instruction: 10; 
-    uint32_t manufacturer: 8; 
-};
 
