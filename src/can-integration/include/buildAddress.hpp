@@ -48,6 +48,8 @@ class BuildAddress{
 
                 //building the full frame
 
+
+                //The bitwise | operator, will compare both bits in the same position and takes the biggest one. 
                 frame.can_id = canID | CAN_EFF_FLAG; 
                 frame.can_dlc 8; 
 
