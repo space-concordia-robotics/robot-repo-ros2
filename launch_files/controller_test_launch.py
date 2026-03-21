@@ -91,6 +91,7 @@ def generate_launch_description():
         executable="joy_node",
         name="joy_node",
         output="screen",
+        parameters=[{"device_id": 0, "deadzone": 0.05}],
     )
 
     ik_mux_node = Node(
@@ -107,6 +108,15 @@ def generate_launch_description():
         arguments=["0", "0", "0", "0", "0", "0", "base_structure_link", "base_link"],
         output="screen",
     )
+    move_group_node = Node(
+        package="moveit_ros_move_group",
+        executable="move_group",
+        output="screen",
+        parameters=[
+            moveit_config.to_dict(),
+        ],
+    )
+
     # Launch a standalone Servo node.
     # As opposed to a node component, this may be necessary (for example) if Servo is running on a different PC
     servo_node_arm = Node(
@@ -126,6 +136,7 @@ def generate_launch_description():
         [
             ros2_control_node,
             robot_state_publisher,
+            move_group_node,
             rviz_node,
             joint_state_broadcaster_spawner,
             rover_arm_controller_spawner,
