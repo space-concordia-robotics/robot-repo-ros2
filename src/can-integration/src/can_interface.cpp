@@ -2,7 +2,7 @@
 #include "buildAddress.hpp"
 
 
-uint8_t CanManager::configureCan(std::vector<char> fd_name){
+uint8_t CanManager::configureCan(const char* fd_name){
 
     s_StatusBuffer = new char[1000];
     //initializing the can socket and checking for connection
@@ -15,7 +15,7 @@ uint8_t CanManager::configureCan(std::vector<char> fd_name){
 
     //Now we want to use ioctl to fetch the index of the can frame to prepare for binding
     struct ifreq ifr{};
-    strcpy(ifr.ifr_name, fd_name.data());
+    strcpy(ifr.ifr_name, fd_name);
     if(ioctl(s_socket, SIOCGIFINDEX, &ifr) == -1){
         sprintf(s_StatusBuffer,"Iocl error : %s (%i)\n", strerror(errno),errno);
         return Status::CANERROR;

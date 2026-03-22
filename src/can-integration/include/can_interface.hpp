@@ -37,7 +37,7 @@ class CanManager{
             printf("%s \n", s_StatusBuffer); 
         }
 
-        uint8_t configureCan(const std::vector<char> fd_name); 
+        uint8_t configureCan(const char* fd_name); 
         uint8_t readFrame(struct can_frame& frame);
         uint8_t writeFrame(struct can_frame& frame); 
 

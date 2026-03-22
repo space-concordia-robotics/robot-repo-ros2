@@ -4,6 +4,7 @@
 #include "geometry_msgs/msg/twist.hpp"
 #include "sensor_msgs/msg/joint_state.hpp"
 #include "std_msgs/msg/string.hpp"
+#include "can_interface.hpp"
 
 #include <chrono>
 
@@ -17,7 +18,12 @@ class CanControllerNode : public rclcpp::Node{
         CanControllerNode() : Node("can_controller_node") {
 
             //check to see if can has been sucessfully configured 
-
+            CanManager ManagerObj; 
+            if(ManagerObj.configureCan("can0") != SUCCESS){
+                RCLCPP_ERROR(this->get_logger(), "Failed to configure CAN interface...");
+                rclcpp::shutdown();
+            }
+            RCLCPP_INFO(this->get_logger(), "CAN interface configured successfully!");
 
 
             //intiallize subscriptions 
@@ -29,7 +35,7 @@ class CanControllerNode : public rclcpp::Node{
                 (sensor_msgs::msg::JointState::ConstSharedPtr& msg) {return getJointStateMessages(msg); });
 
             //initialize can start up function call. 
-
+            
         }
 
         void getTwistMessages(const geometry_msgs::msg::Twist::ConstSharedPtr twist_msg); 
