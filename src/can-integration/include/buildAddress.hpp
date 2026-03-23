@@ -51,7 +51,7 @@ class BuildAddress{
                 
                 const uint32_t canID = buildCANID(deviceType, manufacturerCode, SEVERITY, inst, deviceID); 
 
-                //building the full frame
+                //building the full frame here
 
 
                 //The bitwise | operator, will compare both bits in the same position and takes the biggest one. 

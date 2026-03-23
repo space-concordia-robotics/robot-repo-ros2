@@ -1,5 +1,6 @@
 #include "buildAddress.hpp"
 #include "can_interface.hpp"
+#include "parser.hpp"
 #include "prefixes.hpp"
 #include <iostream>
 
@@ -30,7 +31,7 @@ class SystemFramBuilder : public BuildAddress{
 };
 
 
-class SystemParser : public BuildAddress{
+class SystemParser : public CANParser{ 
 
     //Other components (aka: bab, encoders, wheel encoders, wheel motors, etc) to jetson?? 
 };

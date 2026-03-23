@@ -19,7 +19,7 @@ class CanControllerNode : public rclcpp::Node{
 
             //check to see if can has been sucessfully configured 
             CanManager ManagerObj; 
-            if(ManagerObj.configureCan("can0") != SUCCESS){
+            if(CanManager::configureCan("can0") != SUCCESS){
                 RCLCPP_ERROR(this->get_logger(), "Failed to configure CAN interface...");
                 rclcpp::shutdown();
             }
@@ -35,7 +35,7 @@ class CanControllerNode : public rclcpp::Node{
                 (sensor_msgs::msg::JointState::ConstSharedPtr& msg) {return getJointStateMessages(msg); });
 
             //initialize can start up function call. 
-            
+
         }
 
         void getTwistMessages(const geometry_msgs::msg::Twist::ConstSharedPtr twist_msg); 

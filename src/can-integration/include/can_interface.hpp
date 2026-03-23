@@ -24,7 +24,7 @@ class CanManager{
 
     public:     
         CanManager() = default; 
-        explicit CanManager(int fd_) : s_socket(fd_) {}
+        explicit CanManager(int fd_) { s_socket = fd_; }
 
         CanManager(const CanManager&) = delete; 
         CanManager& operator=(const CanManager&) = delete; 
@@ -37,9 +37,9 @@ class CanManager{
             printf("%s \n", s_StatusBuffer); 
         }
 
-        uint8_t configureCan(const char* fd_name); 
-        uint8_t readFrame(struct can_frame& frame);
-        uint8_t writeFrame(struct can_frame& frame); 
+        static uint8_t configureCan(const char* fd_name); 
+        static uint8_t readFrame(struct can_frame& frame);
+        static uint8_t writeFrame(struct can_frame& frame); 
 
         void reset(int new_fd = -1){
             if(s_socket > 0){
@@ -50,6 +50,6 @@ class CanManager{
         } 
 
     private: 
-        int s_socket{-1}; 
+        inline static int s_socket{-1}; 
         inline static char* s_StatusBuffer = nullptr;
 };

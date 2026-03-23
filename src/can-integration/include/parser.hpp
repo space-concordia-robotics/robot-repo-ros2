@@ -3,10 +3,9 @@
 #include "prefixes.hpp"
 #include <array>
 
-class CANParser {
-public:
-    // Container for the decoded message components
-    struct DecodedFrame {
+
+// Container for the decoded message components
+struct DecodedFrame {
         uint8_t deviceType;
         uint8_t manufacturer;
         uint8_t severity;
@@ -15,6 +14,9 @@ public:
         std::array<uint8_t, 8> data;  // Appends th DATA to an array 
     };
 
+
+class CANParser {
+public:
     /**
      * @brief Extracts protocol fields from a raw 29-bit CAN ID.
      * Inverse logic of BuildAddress::buildCANID.
