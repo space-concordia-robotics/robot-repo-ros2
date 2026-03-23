@@ -3,7 +3,6 @@
 #include <cstring>
 #include <map>
 #include <unistd.h>
-#include <cstdint>
 #include <sys/socket.h>
 #include <sys/ioctl.h>
 #include <linux/can.h>
@@ -13,8 +12,9 @@
 #include <iostream>
 #include <vector>
 
-//Testing to see if the proper CAN framw will be build with a series of instructions. 
 
+
+//Testing to see if the proper CAN frame will be build with a series of instructions. 
 class BuildAddress{
 
     public: 
@@ -98,9 +98,33 @@ int main(){
 
     float payload = 2000.0f;
 
+    std::cout << "\nTesting Builder" << std::endl;
+    // Building the Frame 
     can_frame f = BuildAddress::buildAddress(deviceType, manufacturerCode, severity, instruction, deviceId, payload); 
     printFrame(f);
 
+    std::cout << "\nTesting Parser" << std::endl; 
+    // Strip the CAN_EFF_FLAG for the parser logic to handle the pure 29-bit ID
+    auto decoded = CANParser::parse(f.can_id & CAN_EFF_MASK, f.data); 
+
+    // Verification Output
+    std::cout << "--- Decoded Results ---" << std::endl;
+    std::cout << "Device Type:  " << (int)decoded.deviceType << std::endl;
+    std::cout << "Manufacturer: " << (int)decoded.manufacturer << std::endl;
+    std::cout << "Severity:     " << (int)decoded.severity << std::endl;
+    std::cout << "Instruction:  " << (int)decoded.instruction << std::endl;
+    std::cout << "Device ID:    " << (int)decoded.deviceId << std::endl;
+
+    // Retrieve the payload back as a float
+    float decodedPayload = CANParser::getValue<float>(decoded.data);
+    std::cout << "Payload:      " << decodedPayload << std::endl;
+
+    // Final Test Check
+    if (decodedPayload == payload && decoded.deviceType == deviceType) {
+        std::cout << "\nSUCCESS: Frame built and parsed correctly!" << std::endl;
+    } else {
+        std::cout << "\nFAILURE: Mismatch detected between builder and parser." << std::endl;
+    }
+
     return 0; 
 }
-
