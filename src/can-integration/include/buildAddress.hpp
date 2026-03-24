@@ -22,7 +22,7 @@ class BuildAddress{
         static constexpr uint32_t DEVICE_ID_MASK = 0x3Fu;    // 6 bits
 
 
-        static uint32_t buildCANID(uint8_t DeviceType, uint8_t manufacturer, uint8_t severity, uint16_t instruction, uint8_t deviceId) {
+        static uint32_t buildCANID(uint8_t DeviceType, uint8_t manufacturer, uint8_t severity, uint8_t instruction, uint8_t deviceId) {
 
 
             //bitwise & operator truncates the parameters to be a specific bit length long. 
@@ -42,7 +42,7 @@ class BuildAddress{
         //                              5                   8                   10                  6
         //note: Order of frame is 1. Device type, 2. Manufacturer code, 3. instruction, and 4. DeviceID. 
         template <typename PayloadT> // fun fact, template variable is a variable that can work with any type specified when the variable is used ~ GFG.  
-        void buildAddress(uint8_t deviceType, uint8_t manufacturerCode, uint8_t SEVERITY, uint16_t inst, uint8_t deviceID, const PayloadT& payload){
+        void buildAddress(uint8_t deviceType, uint8_t manufacturerCode, uint8_t SEVERITY, uint8_t inst, uint8_t deviceID, const PayloadT& payload){
 
                 struct can_frame frame{}; 
                 static_assert(sizeof(PayloadT) <= 8, "Payload must be <= 8 bytes for CAN2.0B");
