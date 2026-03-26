@@ -33,6 +33,31 @@ void CanControllerNode::getTwistMessages(const geometry_msgs::msg::Twist::ConstS
 }
 
 
+void CanControllerNode::getJointStateMessages(const sensor_msgs::msg::JointState::ConstSharedPtr joint_state_msg){
+
+    if (joint_state_msg->velocity.size() < 7) {
+        RCLCPP_ERROR(this->get_logger(), "Received JointState message with insufficient velocity data. Joint size is %zu, expected at least 7.", joint_state_msg->velocity.size());
+        return;
+    }
+
+    // Create a buffer to send motor commands
+    uint8_t out_buf[1 + 1 + sizeof(float) * 6 + 1] = {}; // Correct buffer size
+    out_buf[0] = 0x4E;
+    out_buf[1] = sizeof(float) * 6;
+
+    // Map JointState velocities to motor speeds
+    for (int i = 0; i < 6; i++) {
+        float speed = static_cast<float>(joint_state_msg->velocity[i]) * 1024.f;
+        memcpy(&out_buf[(i * sizeof(float)) + 2], &speed, sizeof(float));
+    }
+    out_buf[27] = 0x0A; // End of message
+
+    // Send the motor commands to be processed by framer
+   
+
+}
+
+
 
 int main(int argc, char *argv[]){
 

@@ -16,7 +16,7 @@ class SystemFramBuilder : public BuildAddress{
         inline void StartRover(uint32_t mask); 
         inline void SystemIndicatorLight(); 
         inline void stopPayload(); 
-        inline void CutBABRelays(); 
+        inline void Kys(uint32_t mask); 
 
         //Jetson to motors
 
@@ -43,6 +43,7 @@ class SystemFramBuilder : public BuildAddress{
         inline void getPositionalData(float position, uint8_t deviceID);
         inline void getVelocityData(float velocity, uint8_t deviceID);
         inline void haltcurrentPosition(float position, uint8_t deviceID);
+        inline void ResetEncoders(uint8_t deviceID); //Not only zero encoders, also set their correct positions. 
  
 
 
