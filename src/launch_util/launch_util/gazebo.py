@@ -33,11 +33,13 @@ def ros_gz_prefix() -> GazeboType:
 
     # guess from installed packages
     from ament_index_python.packages import get_package_share_directory, PackageNotFoundError
-    try:
-        get_package_share_directory("ros_gz")
-        return GazeboType.GZ
-    except PackageNotFoundError:
-        return GazeboType.IGN
+    for pkg in ("ros_gz", "ros_gz_sim"):
+        try:
+            get_package_share_directory(pkg)
+            return GazeboType.GZ
+        except PackageNotFoundError:
+            continue
+    return GazeboType.IGN
 
 
 # ros <-> gz mapping
