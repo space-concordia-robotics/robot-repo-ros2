@@ -561,6 +561,7 @@
     </xacro:macro>
 
     <!-- Perimeter cameras: Luxonis OAK-FFC -->
+    <!-- TODO 2026-03-28 (Nicholas Sheppard): Add correct origin for the mount (and possibly collision) -->
     <xacro:macro name="oak_ffc_perimeter_cameras">
         <xacro:property name="oak_mount_x" value="${body_length/4}"/>
         <xacro:property name="oak_mount_h" value="0.045"/>
