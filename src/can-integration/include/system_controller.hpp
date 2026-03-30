@@ -7,55 +7,28 @@
 
 //This class takes care of all the system handlers, each motor has a handler function with switch cases depening on the instruction type 
 //being sent. 
-class SystemFramBuilder : public BuildAddress{
+class SystemFrameBuilder{
 
     public:
+
+        // Function to send motor velocity to each motor
+        inline void sendMotorVelocity(deviceType::DeviceType deviceT, Instructions::Inst motor_id, DeviceId::ID device_id, float velocity_rads);
         
+        inline void sendForceStop(deviceType::DeviceType DeviceType, DeviceId::ID deviceID);
+        inline void sendResume(deviceType::DeviceType DeviceType, DeviceId::ID deviceID);
+        inline void sendError(uint8_t error_code); 
 
-        //Start/Stop functions
-        inline void StartRover(uint32_t mask); 
-        inline void SystemIndicatorLight(); 
-        inline void stopPayload(); 
-        inline void Kys(uint32_t mask); 
-
-        //Jetson to motors
-
-        //Jetson -> BAB : cuts relays to batteries, commands PDS to cut power to rails 1, 2, or 3.
-        /*
-            Bab also receives: Manually close a PDS rail
-                               Manually close and open rails
-                               Manually turn off fans
-        */
-        //Jetson -> Hub : Attemps to issue stop commands to ALL WHEELS SIMULTANEOUSLY. (used if wheels continue to rotate without any cmds)
-        /*
-        
-            Hub can also receive a restart wheel command. 
-        
-        */
-        //Jetson -> encoders : Receives commands to stop at their current position 
-        /*
-            Should be able to receive zeroing command from jetson
-        */
-        //Jetson -> Payload : Stops all current processes on the payload 
-
-        //Jetson -> SIL : Receive RGB value, blink period, blonk off
-    
-        inline void getPositionalData(float position, uint8_t deviceID);
-        inline void getVelocityData(float velocity, uint8_t deviceID);
-        inline void haltcurrentPosition(float position, uint8_t deviceID);
-        inline void ResetEncoders(uint8_t deviceID); //Not only zero encoders, also set their correct positions. 
- 
-
-
-        ~SystemFramBuilder(){std::cout << "System frame builder destructor called" << std::endl; }
+         ~SystemFrameBuilder(){std::cout << "System frame builder destructor called" << std::endl; }
 
     private: 
+
+        BuildAddress builder_; 
 
 
 };
 
 
-class SystemParser : public CANParser{ 
+class SystemParser{ 
 
     //Other components (aka: bab, encoders, wheel encoders, wheel motors, etc) to jetson?? 
 
@@ -73,4 +46,13 @@ class SystemParser : public CANParser{
             9. Send notice that PDS failed
             10. Send TCU report of any failure. 
     */
+   public:
+
+    inline void CompatParser(); 
+
+   private:
+
+    BuildAddress builder_;
+
+   ~SystemParser() { std::cout << "System parser destructor called" << std::endl; }
 };

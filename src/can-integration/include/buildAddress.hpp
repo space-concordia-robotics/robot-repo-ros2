@@ -62,5 +62,27 @@ class BuildAddress{
                 memcpy(frame.data, &payload, sizeof(PayloadT));
 
                 CanManager::writeFrame(frame); 
+        }
+
+        //build a new function that can send a force stop command and also a resume motor command, only taking in the device id as a parameter. 
+        //and also the severity. 
+
+        void sendShutDownRequest(uint8_t DeviceType, uint8_t deviceID){
+            
+            struct can_frame frame{}; 
+            frame.can_id = (DeviceType << 24) | (STOP_BOARD << 6) | deviceID;
+            frame.can_dlc = 8; 
+
+            CanManager::writeFrame(frame); 
+
         } 
+
+        void sendRestartCommand(uint8_t DeviceType, uint8_t deviceID){
+
+            struct can_frame frame{}; 
+            frame.can_id = (DeviceType << 24) | (REBOOT_MOTORS << 6) | deviceID;
+            frame.can_dlc = 8; 
+
+            CanManager::writeFrame(frame); 
+        }
 }; 

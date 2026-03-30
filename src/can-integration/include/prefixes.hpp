@@ -1,30 +1,17 @@
 #pragma once
 #include <cstdint>
 
-namespace DeviceId{
-    enum : uint8_t{   
+//to stop da compat board: (5 bits for device type)...000010000100000001... (missing 6 bits for deviceID)
+#define STOP_BOARD 0b000010000100000001
+#define REBOOT_MOTORS 0b000010000100000010
 
-        BAB = 0x00,
-        JETSON = 0x01,
-        AIRLINK_RECEIVER = 0x02,
-        WHEEL_HARD_STOP = 0x03,
-        ARM_HARD_STOP = 0X04,
-        JMSB = 0x05, 
-        COMPAT_BOARD = 0x06,
-        BASE_ENCODER = 0x07,
-        SHOULDER_ENCODER = 0x08,
-        ELBOW_ENCODER = 0x09,
-        FOREARM_ENCODER = 0x0A,
-        WRIST_ENCODER = 0x0B,
-        SPIN_SERVO_ENCODER = 0x0C,
-        CLAMP_SERVO_ENCODER = 0x0D, 
-        HUB = 0x0E,
-        RESERVED_PAYLOAD = 0x0F, 
-        SIL = 0x10
-    }; 
-} //namespace DeviceId
+namespace deviceType{
+    enum class DeviceType : uint8_t{
+        COMPAT = 0x07, 
+    };
+} //namespace deviceType
 
-namespace manufacturer{
+namespace Manufacturer{
     enum : uint8_t{ 
         TEAM_USE = 0x08, 
         REV_ROBOTICS = 0x05,
@@ -32,38 +19,27 @@ namespace manufacturer{
 } //namespace manufacturer
 
 namespace severity{
-    enum : short{
-        MANUAL_EMERGENCY_INTERVENTION = 0x00, 
-        AUTOMATIC_EMERGENCY_INTERVENTION = 0x01,
-        SYSTEM_STATUS = 0x02,
-        CONTROL = 0x03
+    enum : uint8_t{
+       SEV_CNTRL = 0x01,
+       SEV_STATUS = 0x02, 
     };
 } // namespace severity
 
-namespace instructions{
-    enum : uint8_t{
-        CUT_POWER = 0x00,
-        SEND_VELOCITY = 0,
-        SEND_POSITION = 0, 
-        STATUS = 0, 
-        CHECK_VOLTAGE = 0, 
-        TEMP = 0, 
-        STOP = 0, 
-        CHECK_HEALTH = 0, 
-        ZERO_ENCODERS = 0, 
-        SET_LED_COLOR = 0,
+namespace Instructions{
+    enum class Inst: uint8_t{
+        ARM_MOTOR_1 = 0x09,
+        ARM_MOTOR_2 = 0x0A,
+        ARM_MOTOR_3 = 0x0B,
+        ARM_MOTOR_4 = 0x0C,
+        ARM_MOTOR_5 = 0x0D, 
+        RESUME_MOTOR = 0x02
     };
 } //namespace instructions
 
-namespace deviceType{
-    enum : uint8_t{
-        POWER_DISTRIBUTION_MODULE = 0x08,
-        MOTOR_CONTROLLER = 0x2,
-        ENCODER = 0x07,
-        COLOR_SENS0R = 0x0D, 
-        SERVO_CONTROLLER = 0x0C,
-        RESERVED = 0x0E
-    };
-} //namespace deviceType
+namespace DeviceId{
+    enum class ID : uint8_t{   
+        COMPAT_BOARD_ID = 0x06,  
+    }; 
+} //namespace DeviceId
 
 
