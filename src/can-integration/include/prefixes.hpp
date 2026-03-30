@@ -2,8 +2,7 @@
 #include <cstdint>
 
 //to stop da compat board: (5 bits for device type)...000010000100000001... (missing 6 bits for deviceID)
-#define STOP_BOARD 0b000010000100000001
-#define REBOOT_MOTORS 0b000010000100000010
+
 
 namespace deviceType{
     enum class DeviceType : uint8_t{
@@ -32,6 +31,8 @@ namespace Instructions{
         ARM_MOTOR_3 = 0x0B,
         ARM_MOTOR_4 = 0x0C,
         ARM_MOTOR_5 = 0x0D, 
+        
+        STOP_COMPAT = 0x01,
         RESUME_MOTOR = 0x02
     };
 } //namespace instructions

@@ -70,8 +70,12 @@ class BuildAddress{
         void sendShutDownRequest(uint8_t DeviceType, uint8_t deviceID){
             
             struct can_frame frame{}; 
-            frame.can_id = (DeviceType << 24) | (STOP_BOARD << 6) | deviceID;
-            frame.can_dlc = 8; 
+            if(deviceID == static_cast<uint8_t>(DeviceId::ID::COMPAT_BOARD_ID)){
+                const uint32_t compatID = buildCANID(DeviceType, Manufacturer::TEAM_USE, severity::SEV_CNTRL, 
+                static_cast<uint8_t>(Instructions::Inst::STOP_COMPAT), deviceID);
+                frame.can_id = compatID; 
+                frame.can_dlc = 8; 
+            }
 
             CanManager::writeFrame(frame); 
 
@@ -80,8 +84,12 @@ class BuildAddress{
         void sendRestartCommand(uint8_t DeviceType, uint8_t deviceID){
 
             struct can_frame frame{}; 
-            frame.can_id = (DeviceType << 24) | (REBOOT_MOTORS << 6) | deviceID;
-            frame.can_dlc = 8; 
+            if(deviceID == static_cast<uint8_t>(DeviceId::ID::COMPAT_BOARD_ID)){
+                const uint32_t compatID = buildCANID(DeviceType, Manufacturer::TEAM_USE, severity::SEV_CNTRL, 
+                static_cast<uint8_t>(Instructions::Inst::RESUME_MOTOR), deviceID);
+                frame.can_id = compatID; 
+                frame.can_dlc = 8; 
+            }
 
             CanManager::writeFrame(frame); 
         }

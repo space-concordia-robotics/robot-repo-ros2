@@ -72,9 +72,9 @@ void CanControllerNode::getjoyfeedback(const sensor_msgs::msg::Joy::ConstSharedP
     constexpr int FORCE_STOP_BAB = 8; 
     constexpr int RESTART_BAB = 9; 
 
-    // each force stop and restart expression wil; have its on boolean value, and when activated, it will send a forceStop or resume request
+    // each force stop and restart expression wil: have its on boolean value, and when activated, it will send a forceStop or resume request
     // to its respective motor
-    bool force_stop_active = false;
+    static bool force_stop_active = false;
     bool force_stop_compat = msg->buttons[FORCE_STOP_COMPAT] == 1 ;
     bool restart_arm_pressed = msg->buttons[RESTART_ARM_MOTORS] == 1; 
 
