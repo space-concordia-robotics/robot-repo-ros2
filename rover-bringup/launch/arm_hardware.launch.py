@@ -1,30 +1,23 @@
 import os
-from ament_index_python.packages import get_package_share_directory
 
+from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
-from launch.actions import TimerAction
 from launch.actions import RegisterEventHandler
+from launch.actions import TimerAction
 from launch.event_handlers import OnProcessStart
-from launch_ros.actions import Node
 from launch.substitutions import Command
+from launch_ros.actions import Node
 from launch_ros.parameter_descriptions import ParameterValue
-from launch_param_builder import ParameterBuilder
 
 
 def generate_launch_description():
-
     urdf_path = os.path.join(get_package_share_directory('rover_arm_description'), 'urdf', 'arm.urdf.xacro')
 
-
-
     robot_description = ParameterValue(Command(['xacro ', urdf_path]), value_type=str)
-
-
 
     controller_config = os.path.join(
         get_package_share_directory('rover_arm_bringup'), 'config', 'ros2_controllers.yaml'
     )
-
 
     rsp_launch = Node(
         package="robot_state_publisher",
@@ -39,14 +32,13 @@ def generate_launch_description():
         output="screen",
     )
 
-    #delaying controller manager to give time for everything to initialize
+    # delaying controller manager to give time for everything to initialize
     delayed_controller_manager = TimerAction(
-        period = 3.0,
+        period=3.0,
         actions=[controller_manager],
     )
 
-
-    #spawining in the joint state broadcaster
+    # spawining in the joint state broadcaster
 
     jsb_spawner = Node(
         package="controller_manager",
@@ -60,7 +52,7 @@ def generate_launch_description():
     arm_controller_spawner = Node(
         package="controller_manager",
         executable="spawner",
-        arguments=["arm_controller", "--controller-manager", "/controller_manager"], # <-- Fixed controller name
+        arguments=["arm_controller", "--controller-manager", "/controller_manager"],  # <-- Fixed controller name
         output="screen",
     )
 
@@ -73,10 +65,7 @@ def generate_launch_description():
         )
     )
 
-    #spawining in moveit servo
-
-
-
+    # spawining in moveit servo
 
     # Temporarily commented out ik_mux_node due to build issues
     # ik_mux_node = Node(

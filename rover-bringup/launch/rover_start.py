@@ -19,7 +19,7 @@ def generate_launch_description():
             package='joy_mux_controller_py',
             executable='joy_mux_controller',
             name='joy_mux',
-            #output='screen',
+            # output='screen',
         ),
 
         # Launch the arm_controller_node
@@ -41,7 +41,7 @@ def generate_launch_description():
             output='screen',
             parameters=[
                 {'can_path': 'can0'},  # Default CAN interface path
-                {'multiplier': 2000}    # Default multiplier for RPM conversion
+                {'multiplier': 2000}  # Default multiplier for RPM conversion
             ]
         ),
 
