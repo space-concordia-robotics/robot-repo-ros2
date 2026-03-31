@@ -1,6 +1,8 @@
 from launch import LaunchDescription
-from launch.actions import ExecuteProcess
+from launch.substitutions import PathJoinSubstitution
 from launch_ros.actions import Node
+from launch_ros.substitutions import FindPackageShare
+
 
 def generate_launch_description():
     return LaunchDescription([
@@ -50,7 +52,7 @@ def generate_launch_description():
             output='screen',
             parameters=[
                 # Modify the camera parameters in rtsp_cameras.yaml
-                'rtsp_cameras.yaml'
+                PathJoinSubstitution([FindPackageShare('rover_bringup'), 'config', 'rtsp_cameras.yaml']),
             ]
         )
     ])

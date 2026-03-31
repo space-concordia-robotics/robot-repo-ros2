@@ -11,20 +11,20 @@ from launch_ros.parameter_descriptions import ParameterValue
 from launch_param_builder import ParameterBuilder
 
 
-def generate_launch_description(): 
-    
+def generate_launch_description():
+
     urdf_path = os.path.join(get_package_share_directory('rover_arm_description'), 'urdf', 'arm.urdf.xacro')
 
 
 
     robot_description = ParameterValue(Command(['xacro ', urdf_path]), value_type=str)
 
-    
+
 
     controller_config = os.path.join(
         get_package_share_directory('rover_arm_bringup'), 'config', 'ros2_controllers.yaml'
     )
-   
+
 
     rsp_launch = Node(
         package="robot_state_publisher",
@@ -46,9 +46,9 @@ def generate_launch_description():
     )
 
 
-    #spawining in the joint state broadcaster 
+    #spawining in the joint state broadcaster
 
-    jsb_spawner = Node( 
+    jsb_spawner = Node(
         package="controller_manager",
         executable="spawner",
         arguments=["joint_state_broadcaster", "--controller-manager", "/controller_manager"],
@@ -69,14 +69,14 @@ def generate_launch_description():
         event_handler=OnProcessStart(
             target_action=controller_manager,
             # Add both spawners here
-            on_start=[jsb_spawner, arm_controller_spawner], 
+            on_start=[jsb_spawner, arm_controller_spawner],
         )
     )
 
     #spawining in moveit servo
 
-   
-    
+
+
 
     # Temporarily commented out ik_mux_node due to build issues
     # ik_mux_node = Node(
@@ -87,7 +87,7 @@ def generate_launch_description():
     # )
 
     return LaunchDescription([
-        
+
         rsp_launch,
         delayed_controller_manager,
         delayed_spawners,
