@@ -1,5 +1,4 @@
-
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.22)
 project(wheels_controller)
 
 if(NOT CMAKE_CXX_STANDARD)
@@ -24,7 +23,7 @@ find_package(builtin_interfaces REQUIRED)
 #)
 include_directories(include)
 
-add_executable(wheels_controller_node 
+add_executable(wheels_controller_node
     src/wheels_controller_node.cpp
     src/rev_motor_controller.cpp
     src/can_controller.cpp
@@ -37,12 +36,12 @@ add_executable(wheels_controller_node
 #        ${PROJECT_NAME} "rosidl_typesupport_cpp")
 
 ament_target_dependencies(
-    wheels_controller_node 
-    rclcpp 
-    geometry_msgs  
-    builtin_interfaces 
-    action_msgs 
-    std_msgs 
+    wheels_controller_node
+    rclcpp
+    geometry_msgs
+    builtin_interfaces
+    action_msgs
+    std_msgs
 )
 
 install(TARGETS

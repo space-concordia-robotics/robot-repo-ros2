@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 3.22)
 project(tm_imu)
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
@@ -16,7 +16,7 @@ find_package(tf2_ros REQUIRED)
 
 include_directories(include external/serialib external/EasyProfile)
 
-add_executable(transducer_m_imu 
+add_executable(transducer_m_imu
     src/tm_imu_node.cpp
     external/serialib/serialib.cpp
     external/EasyProfile/EasyObjectDictionary.cpp

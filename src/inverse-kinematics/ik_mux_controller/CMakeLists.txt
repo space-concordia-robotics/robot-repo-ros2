@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 3.22)
 project(ik_mux_controller)
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
@@ -16,22 +16,22 @@ find_package(sensor_msgs REQUIRED)
 
 
 add_executable(ik_mux src/ik_mux.cpp)
-ament_target_dependencies(ik_mux 
-  rclcpp 
-  control_msgs 
-  moveit_msgs 
-  geometry_msgs  
-  sensor_msgs 
+ament_target_dependencies(ik_mux
+  rclcpp
+  control_msgs
+  moveit_msgs
+  geometry_msgs
+  sensor_msgs
   std_srvs
 )
 
 add_executable(ik_nxt src/ik_mux_nxt.cpp)
-ament_target_dependencies(ik_nxt 
-  rclcpp 
-  control_msgs 
-  moveit_msgs 
-  geometry_msgs  
-  sensor_msgs 
+ament_target_dependencies(ik_nxt
+  rclcpp
+  control_msgs
+  moveit_msgs
+  geometry_msgs
+  sensor_msgs
   std_srvs
 )
 

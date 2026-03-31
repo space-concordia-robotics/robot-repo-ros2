@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 3.22)
 project(arm_hardware)
 
 if(NOT CMAKE_CXX_STANDARD)
