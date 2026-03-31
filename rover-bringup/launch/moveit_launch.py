@@ -65,7 +65,7 @@ def generate_launch_description():
     delayed_spawners = RegisterEventHandler(
         event_handler=OnProcessStart(
             target_action=ros2_control_node,
-            on_start=[jsb_spawner, rover_arm_spawner], 
+            on_start=[jsb_spawner, rover_arm_spawner],
         )
     )
 
@@ -86,6 +86,6 @@ def generate_launch_description():
         [
             delayed_controller_manager,
             delayed_spawners,
-            servo_node,      
+            servo_node,
         ]
     )

@@ -12,7 +12,7 @@ def generate_launch_description():
         'zed_camera.launch.py',
         {'camera_name':'zed2'}
     )
-    
+
     return LaunchDescription([
         Node(
             package="ublox_gps",
@@ -21,7 +21,7 @@ def generate_launch_description():
             output="screen",
         ),
 
-        Node( 
+        Node(
             package='joy_mux_controller',
             executable='joy_mux_controller',
             name='joy_mux_controller',
@@ -61,5 +61,5 @@ def generate_launch_description():
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(zed_launch_file),
         ),
-     ]) 
+     ])
 
