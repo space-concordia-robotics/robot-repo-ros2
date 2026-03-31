@@ -24,12 +24,12 @@ find_package(builtin_interfaces REQUIRED)
 include_directories(include)
 
 add_executable(wheels_controller_node
-    src/wheels_controller_node.cpp
-    src/rev_motor_controller.cpp
-    src/can_controller.cpp
-    src/can_controller.h
-    src/rev_motor_controller.h
-    src/wheels_controller_node.h
+        src/wheels_controller_node.cpp
+        src/rev_motor_controller.cpp
+        src/can_controller.cpp
+        src/can_controller.h
+        src/rev_motor_controller.h
+        src/wheels_controller_node.h
 )
 
 #rosidl_target_interfaces(wheels_controller_node

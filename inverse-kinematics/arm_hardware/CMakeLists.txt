@@ -21,8 +21,8 @@ find_package(sensor_msgs REQUIRED)
 find_package(pluginlib REQUIRED)
 
 add_library(arm_interface SHARED
-  src/arm_interface.cpp
-  src/absenc.cpp
+        src/arm_interface.cpp
+        src/absenc.cpp
 )
 
 target_include_directories(arm_interface
@@ -55,13 +55,13 @@ install(
 
 #install files
 install(FILES
-  rover_hardware_interface.xml
+        rover_hardware_interface.xml
   DESTINATION share/${PROJECT_NAME}
 )
 
 # Install headers
 install(
-  DIRECTORY include/
+  DIRECTORY include
   DESTINATION include
 )
 
