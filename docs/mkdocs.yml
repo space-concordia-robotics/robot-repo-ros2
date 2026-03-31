@@ -1,0 +1,174 @@
+# yaml-language-server: $schema=https://squidfunk.github.io/mkdocs-material/schema.json
+site_name: SCRB Software Documentation
+site_description: Space Concordia Robotics software documentation website
+# TODO 2026-03-14 (Will Free): put the correct url
+site_url: https://example.com
+
+plugins:
+  # TODO 2026-03-14 (Will Free): add glightbox? see mkdocs-material documentation reference for "images"
+  #  - group:
+  #      enabled: !ENV [ CI, false ]
+  #      plugins:
+  - awesome-nav
+  - meta
+  - offline:
+      enabled: !ENV [ OFFLINE, false ]
+  - privacy:
+      cache: true
+      assets: true
+      assets_fetch: true
+      links: true
+      links_attr_map: { }
+      links_noopener: true
+  - search:
+      lang: en
+  - social:
+      cache: true
+      cards: true
+      cards_layout_options:
+        background_color: white
+        color: "#7e56c2"
+        font_family: Fira Sans
+  # TODO 2026-03-14 (Will Free): Set up tags plugin
+  - tags:
+      tags_slugify: !!python/object/apply:pymdownx.slugs.slugify
+        kwds:
+          case: lower
+      tags_slugify_separator: "-"
+      tags_slugify_format: "tag:{slug}"
+      tags_hierarchy: true
+      tags_hierarchy_separator: "/"
+  - optimize:
+      cache: true
+      optimize: true
+      optimize_png: true
+      optimize_png_speed: 1
+      optimize_png_strip: true
+      optimize_jpg: true
+      optimize_jpg_quality: 75
+      optimize_jpg_progressive: true
+  - minify
+  # TODO 2026-03-14 (Will Free): add RSS plugin? maybe look for an Atom plugin?
+
+theme:
+  name: material
+  logo: assets/images/logo.png
+  favicon: assets/images/favicon.png
+  custom_dir: overrides
+  palette:
+    # Palette toggle for automatic mode
+    - media: "(prefers-color-sch
+    eme)"
+      primary: deep purple
+      toggle:
+        icon: material/brightness-auto
+        name: Switch to light mode
+
+    # Palette toggle for light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: deep purple
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+
+    # Palette toggle for dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: deep purple
+      toggle:
+        icon: material/brightness-4
+        name: Switch to system preference
+
+  features:
+    - content.code.copy
+    - content.footnote.tooltips
+    - content.tabs.link
+    - content.tooltips
+    - header.autohide
+    - navigation.footer
+    - navigation.instant
+    - navigation.instant.prefetch
+    - navigation.instant.progress
+    - navigation.instant.preview
+    - navigation.tracking
+    - navigation.tabs
+    - navigation.tabs.sticky
+    #- navigation.sections
+    - navigation.path
+    - navigation.prune
+    - navigation.indexes
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - search.share
+    - toc.follow
+    #- toc.integrate
+
+markdown_extensions:
+  - abbr
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.betterem
+  - pymdownx.blocks.caption
+  - pymdownx.caret
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+      # TODO 2026-03-14 (Will Free): adding some custom icons might be useful...
+  - pymdownx.highlight:
+      auto_title: true
+      linenums: true
+      linenums_style: table
+      anchor_linenums: true
+      line_spans: __span
+      use_pygments: true
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.magiclink
+  - pymdownx.mark
+  - pymdownx.smartsymbols
+  - pymdownx.snippets
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+      combine_header_slug: true
+      slugify: !!python/object/apply:pymdownx.slugs.slugify
+        kwds:
+          case: lower
+  - pymdownx.tilde
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - toc:
+      permalink: true
+      slugify: !!python/object/apply:pymdownx.slugs.slugify
+        kwds:
+          case: lower
+  - tables
+
+extra:
+  # TODO 2026-03-14 (Will Free): add social links
+  social: { }
+  generator: true # preserve generator name, as it's nice to know what a site was made with
+
+# TODO: move to MathJax instead of KaTeX?
+extra_javascript:
+  - assets/js/katex.js
+  - https://unpkg.com/katex@0/dist/katex.min.js
+  - https://unpkg.com/katex@0/dist/contrib/auto-render.min.js
+  #- assets/js/mathjax.js
+  #- https://unpkg.com/mathjax@4/tex-mml-chtml.js
+
+extra_css:
+  - https://unpkg.com/katex@0/dist/katex.min.css
