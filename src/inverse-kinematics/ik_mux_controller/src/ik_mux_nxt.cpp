@@ -10,7 +10,7 @@
 #include <rclcpp/node.hpp>
 #include <rclcpp/publisher.hpp>
 #include <rclcpp/qos.hpp>
-#include <rclcpp/qos_event.hpp>
+#include <rclcpp/event_handler.hpp>
 #include <rclcpp/subscription.hpp>
 #include <rclcpp/time.hpp>
 #include <rclcpp/utilities.hpp>
@@ -40,14 +40,14 @@ enum Button
   DEADMAN = 0,
   A2 = 2,
   PINKY_BUTTON = 4,
-  THMB_HAT_FWD = 15, 
-  THMB_HAT_LEFT = 18, 
+  THMB_HAT_FWD = 15,
+  THMB_HAT_LEFT = 18,
   THMB_HAT_RIGHT = 16,
-  THMB_HAT_BCK = 17, 
-  A3_FWD = 5, 
+  THMB_HAT_BCK = 17,
+  A3_FWD = 5,
   A3_LEFT = 8,
   A3_RIGHT = 6,
-  A3_BCK = 7, 
+  A3_BCK = 7,
   A4_FWD = 10,
   A4_LEFT = 13,
   A4_RIGHT = 11,
@@ -91,7 +91,7 @@ bool convertJoyToCmd(const std::vector<float>& axes, const std::vector<int>& but
   twist->twist.linear.x = axes[X];
   twist->twist.linear.y = axes[Y];
   twist->twist.linear.z = axes[A1_UP];
-  twist->twist.angular.z = axes[Z]; 
+  twist->twist.angular.z = axes[Z];
 
 
   return true;
@@ -135,7 +135,7 @@ public:
     // Create the messages we might publish
     auto twist_msg = std::make_unique<geometry_msgs::msg::TwistStamped>();
     auto joint_msg = std::make_unique<control_msgs::msg::JointJog>();
-   
+
     // Check deadman button state
     bool deadman_pressed = msg->buttons[DEADMAN];
     if (deadman_pressed != deadman_)
@@ -174,11 +174,11 @@ private:
   rclcpp::Publisher<control_msgs::msg::JointJog>::SharedPtr joint_pub_;
   rclcpp::Publisher<moveit_msgs::msg::PlanningScene>::SharedPtr collision_pub_;
   rclcpp::Client<std_srvs::srv::Trigger>::SharedPtr servo_start_client_;
-  rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr wheel_pub_; 
+  rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr wheel_pub_;
   std::string frame_to_publish_;
 
   std::thread collision_pub_thread_;
-  bool deadman_ = false; 
+  bool deadman_ = false;
 };  // class JoyToServoPub
 
 }  // namespace moveit_servo

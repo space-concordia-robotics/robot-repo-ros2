@@ -10,7 +10,7 @@
 #include <rclcpp/node.hpp>
 #include <rclcpp/publisher.hpp>
 #include <rclcpp/qos.hpp>
-#include <rclcpp/qos_event.hpp>
+#include <rclcpp/event_handler.hpp>
 #include <rclcpp/subscription.hpp>
 #include <rclcpp/time.hpp>
 #include <rclcpp/utilities.hpp>
@@ -163,7 +163,6 @@ public:
         joint_msg->duration = 1.0;
         joint_pub_->publish(std::move(joint_msg));
       }
-    
   }
 
 private:
@@ -172,7 +171,7 @@ private:
   rclcpp::Publisher<control_msgs::msg::JointJog>::SharedPtr joint_pub_;
   rclcpp::Publisher<moveit_msgs::msg::PlanningScene>::SharedPtr collision_pub_;
   rclcpp::Client<std_srvs::srv::Trigger>::SharedPtr servo_start_client_;
-  rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr wheel_pub_; 
+  rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr wheel_pub_;
   std::string frame_to_publish_;
 
   std::thread collision_pub_thread_;
