@@ -10,7 +10,7 @@
 #include <termios.h>
 #include <net/if.h>
 #include <iostream>
-#include <vector>
+#include <array>
 
 
 //Testing to see if the proper CAN frame will be build with a series of instructions. 
