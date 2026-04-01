@@ -15,30 +15,24 @@ find_package(std_msgs REQUIRED)
 
 include_directories(include)
 
-add_executable(can_controller_node
-    src/can_controller_node.cpp
-    src/can_interface.cpp
-    src/can_interface.hpp
-    src/buildAddress.hpp
-    src/system_controller.hpp
-    src/parser.hpp
+add_executable(can_node
+  src/can_controller_node.cpp
+  src/can_interface.cpp
 )
 
 #rosidl_target_interfaces(wheels_controller_node
 #        ${PROJECT_NAME} "rosidl_typesupport_cpp")
 
 ament_target_dependencies(
-    can_controlller_node
+    can_node
     rclcpp 
     geometry_msgs  
-    builtin_interfaces 
-    action_msgs 
+    sensor_msgs
     std_msgs 
 )
 
 install(TARGETS
-        can_controller_node
+        can_node
         DESTINATION lib/${PROJECT_NAME})
 ament_package()
 
-ament_package()

@@ -1,38 +1,37 @@
 #include "can_controller_node.hpp"
-#include "system_controller.hpp"
 #include "prefixes.hpp"
 
 // ------------------------------ Obtainig Wheel twist Data from controller -------------------------------- 
-void CanControllerNode::getTwistMessages(const geometry_msgs::msg::Twist::ConstSharedPtr& twist_msg){
+// void CanControllerNode::getTwistMessages(const geometry_msgs::msg::Twist::ConstSharedPtr& twist_msg){
 
-    //get linear and angular motion in x, and y direction from /cmd_vel
+//     //get linear and angular motion in x, and y direction from /cmd_vel
 
-    auto linear_y = twist_msg->linear.x; 
-    auto angular_z = twist_msg->angular.z;
+//     auto linear_y = twist_msg->linear.x; 
+//     auto angular_z = twist_msg->angular.z;
 
-    //multiply them together for exponential control
+//     //multiply them together for exponential control
 
-    linear_y *= linear_y * linear_y; 
-    angular_z *= angular_z * angular_z; 
+//     linear_y *= linear_y * linear_y; 
+//     angular_z *= angular_z * angular_z; 
 
-    //calculate the wheel velocity and multiply them by a multiplier
-    float distance_between_wheels = 1.2f;
-    uint32_t right_wheel_velocity = -(linear_y - (angular_z*distance_between_wheels*0.5f)); 
-    uint32_t left_wheel_velocity = -(linear_y + (angular_z*distance_between_wheels*0.5f)); 
-
-
-    //convert velocities into rpm
-    uint32_t right_wheel_velocity_rpm = right_wheel_velocity * 2000;
-    uint32_t left_wheel_velocity_rpm = left_wheel_velocity * 2000;
+//     //calculate the wheel velocity and multiply them by a multiplier
+//     float distance_between_wheels = 1.2f;
+//     uint32_t right_wheel_velocity = -(linear_y - (angular_z*distance_between_wheels*0.5f)); 
+//     uint32_t left_wheel_velocity = -(linear_y + (angular_z*distance_between_wheels*0.5f)); 
 
 
+//     //convert velocities into rpm
+//     uint32_t right_wheel_velocity_rpm = right_wheel_velocity * 2000;
+//     uint32_t left_wheel_velocity_rpm = left_wheel_velocity * 2000;
 
-    //send commands out to be processed by the framer 
+
+
+//     //send commands out to be processed by the framer 
     
 
-    RCLCPP_INFO(this->get_logger(), "Wheel Motor Commands Sent: Right RPM = %.2f, Left RPM = %2.f", 
-            right_wheel_velocity_rpm, left_wheel_velocity_rpm);
-}
+//     RCLCPP_INFO(this->get_logger(), "Wheel Motor Commands Sent: Right RPM = %.2f, Left RPM = %2.f", 
+//             right_wheel_velocity_rpm, left_wheel_velocity_rpm);
+// }
 
 
 // ---------------------------- Obtaining Joint State Data from controller -------------------------- 
@@ -53,7 +52,7 @@ void CanControllerNode::getJointStateMessages(const sensor_msgs::msg::JointState
     };
     // sendMotorVelocity() takes in: 1. device type, 2. instruction, 3. motor id, 4. payload (velocities) 
     RCLCPP_INFO(this->get_logger(), "Extracting velocity data from JointState");
-    for(int i = 0; i < joint_state_msg->velocity.size(); i++){
+    for(size_t i = 0; i < joint_state_msg->velocity.size(); i++){
 
         const float velocities = static_cast<float>(joint_state_msg->velocity[i]); 
         systemframebuilder_.sendMotorVelocity(deviceType::DeviceType::COMPAT, MOTOR_MAP[i], DeviceId::ID::COMPAT_BOARD_ID, velocities); 
@@ -67,10 +66,10 @@ void CanControllerNode::getjoyfeedback(const sensor_msgs::msg::Joy::ConstSharedP
     
     constexpr int FORCE_STOP_COMPAT = 4; //Some random button
     constexpr int RESTART_ARM_MOTORS = 5; 
-    constexpr int FORCE_STOP_WHEELS = 6;
-    constexpr int RESTART_WHEEL_MOTORS = 7; 
-    constexpr int FORCE_STOP_BAB = 8; 
-    constexpr int RESTART_BAB = 9; 
+    // constexpr int FORCE_STOP_WHEELS = 6;
+    // constexpr int RESTART_WHEEL_MOTORS = 7; 
+    // constexpr int FORCE_STOP_BAB = 8; 
+    // constexpr int RESTART_BAB = 9; 
 
     // each force stop and restart expression wil: have its on boolean value, and when activated, it will send a forceStop or resume request
     // to its respective motor

@@ -1,6 +1,5 @@
 #pragma once 
 
-#include "can_controller_node.hpp"
 #include "can_interface.hpp"
 #include "prefixes.hpp"
 
@@ -73,7 +72,7 @@ class BuildAddress{
             if(deviceID == static_cast<uint8_t>(DeviceId::ID::COMPAT_BOARD_ID)){
                 const uint32_t compatID = buildCANID(DeviceType, Manufacturer::TEAM_USE, severity::SEV_CNTRL, 
                 static_cast<uint8_t>(Instructions::Inst::STOP_COMPAT), deviceID);
-                frame.can_id = compatID; 
+                frame.can_id = compatID | CAN_EFF_FLAG; 
                 frame.can_dlc = 8; 
             }
 
@@ -87,7 +86,7 @@ class BuildAddress{
             if(deviceID == static_cast<uint8_t>(DeviceId::ID::COMPAT_BOARD_ID)){
                 const uint32_t compatID = buildCANID(DeviceType, Manufacturer::TEAM_USE, severity::SEV_CNTRL, 
                 static_cast<uint8_t>(Instructions::Inst::RESUME_MOTOR), deviceID);
-                frame.can_id = compatID; 
+                frame.can_id = compatID | CAN_EFF_FLAG; 
                 frame.can_dlc = 8; 
             }
 

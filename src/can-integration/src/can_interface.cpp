@@ -58,6 +58,9 @@ uint8_t CanManager::readFrame(struct can_frame& frame){
 
 uint8_t CanManager::writeFrame(struct can_frame& frame){
 
-
+    if (write(s_socket, &frame, sizeof(struct can_frame)) != sizeof(struct can_frame)) {
+        sprintf(s_StatusBuffer,"Error with send frame, did not write all data \n");
+        return Status::CANERROR;
+    }
     return Status::SUCCESS; 
 }
