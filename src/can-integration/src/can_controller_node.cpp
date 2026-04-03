@@ -2,7 +2,7 @@
 #include "prefixes.hpp"
 
 
-static bool inhibit_command_extraction_ = false; 
+static bool inhibit_command_extraction_ = true; 
 //------------------------------ Obtaining Joystick input from controller -------------------------------
 void CanControllerNode::getjoyfeedback(const sensor_msgs::msg::Joy::ConstSharedPtr& msg){
     
@@ -25,13 +25,13 @@ void CanControllerNode::getjoyfeedback(const sensor_msgs::msg::Joy::ConstSharedP
     //the condition becomes !true = false, hence the true && false conditions will cause the command to not be activated. 
     if(force_stop_compat && !force_stop_active){
         force_stop_active = true; 
-        inhibit_command_extraction_ = true; 
+        inhibit_command_extraction_ = false; 
         systemframebuilder_.sendForceStop(deviceType::DeviceType::COMPAT, DeviceId::ID::COMPAT_BOARD_ID); 
         RCLCPP_WARN(this->get_logger(), "Force stop arm motors request sent"); 
     }
     if(restart_arm_pressed && force_stop_active){
         force_stop_active = false; 
-        inhibit_command_extraction_ = false; 
+        inhibit_command_extraction_ = true; 
         systemframebuilder_.sendResume(deviceType::DeviceType::COMPAT, DeviceId::ID::COMPAT_BOARD_ID); 
         RCLCPP_INFO(this->get_logger(), "Restart arm motors request sent"); 
     }
