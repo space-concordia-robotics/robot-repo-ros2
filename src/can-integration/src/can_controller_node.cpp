@@ -1,6 +1,42 @@
 #include "can_controller_node.hpp"
 #include "prefixes.hpp"
 
+
+static bool inhibit_command_extraction_ = false; 
+//------------------------------ Obtaining Joystick input from controller -------------------------------
+void CanControllerNode::getjoyfeedback(const sensor_msgs::msg::Joy::ConstSharedPtr& msg){
+    
+    constexpr int FORCE_STOP_COMPAT = 3; //Some random button
+    constexpr int RESTART_ARM_MOTORS = 2; 
+    // constexpr int FORCE_STOP_WHEELS = 6;
+    // constexpr int RESTART_WHEEL_MOTORS = 7; 
+    // constexpr int FORCE_STOP_BAB = 8; 
+    // constexpr int RESTART_BAB = 9; 
+
+    // each force stop and restart expression wil: have its on boolean value, and when activated, it will send a forceStop or resume request
+    // to its respective motor
+    static bool force_stop_active = false;
+    bool force_stop_compat = msg->buttons[FORCE_STOP_COMPAT] == 1 ;
+    bool restart_arm_pressed = msg->buttons[RESTART_ARM_MOTORS] == 1; 
+
+    //Force stop active prevents the sendForceStop command to be called more than once. 
+    //For command to execute, both conditions in if statement must be true. when force_stop_active 
+    //is first called, it is false, therefore, !false = true, and so the command is executed. But, when it is true,
+    //the condition becomes !true = false, hence the true && false conditions will cause the command to not be activated. 
+    if(force_stop_compat && !force_stop_active){
+        force_stop_active = true; 
+        inhibit_command_extraction_ = true; 
+        systemframebuilder_.sendForceStop(deviceType::DeviceType::COMPAT, DeviceId::ID::COMPAT_BOARD_ID); 
+        RCLCPP_WARN(this->get_logger(), "Force stop arm motors request sent"); 
+    }
+    if(restart_arm_pressed && force_stop_active){
+        force_stop_active = false; 
+        inhibit_command_extraction_ = false; 
+        systemframebuilder_.sendResume(deviceType::DeviceType::COMPAT, DeviceId::ID::COMPAT_BOARD_ID); 
+        RCLCPP_INFO(this->get_logger(), "Restart arm motors request sent"); 
+    }
+}
+
 // ------------------------------ Obtainig Wheel twist Data from controller -------------------------------- 
 // void CanControllerNode::getTwistMessages(const geometry_msgs::msg::Twist::ConstSharedPtr& twist_msg){
 
@@ -50,49 +86,21 @@ void CanControllerNode::getJointStateMessages(const sensor_msgs::msg::JointState
         Instructions::Inst::ARM_MOTOR_4,
         Instructions::Inst::ARM_MOTOR_5,
     };
-    // sendMotorVelocity() takes in: 1. device type, 2. instruction, 3. motor id, 4. payload (velocities) 
-    RCLCPP_INFO(this->get_logger(), "Extracting velocity data from JointState");
-    for(size_t i = 0; i < joint_state_msg->velocity.size(); i++){
 
-        const float velocities = static_cast<float>(joint_state_msg->velocity[i]); 
-        systemframebuilder_.sendMotorVelocity(deviceType::DeviceType::COMPAT, MOTOR_MAP[i], DeviceId::ID::COMPAT_BOARD_ID, velocities); 
+    if(inhibit_command_extraction_){
+        // sendMotorVelocity() takes in: 1. device type, 2. instruction, 3. motor id, 4. payload (velocities) 
+        RCLCPP_INFO(this->get_logger(), "Extracting velocity data from JointState");
+        for(size_t i = 0; i < joint_state_msg->velocity.size(); i++){
 
-        RCLCPP_DEBUG(this->get_logger(), "Motor %zu → %.3f rad/s", i + 1, velocities);
+            const float velocities = static_cast<float>(joint_state_msg->velocity[i]); 
+            systemframebuilder_.sendMotorVelocity(deviceType::DeviceType::COMPAT, MOTOR_MAP[i], DeviceId::ID::COMPAT_BOARD_ID, velocities); 
+
+            RCLCPP_DEBUG(this->get_logger(), "Motor %zu → %.3f rad/s", i + 1, velocities);
+        }
     }
 }
 
 
-void CanControllerNode::getjoyfeedback(const sensor_msgs::msg::Joy::ConstSharedPtr& msg){
-    
-    constexpr int FORCE_STOP_COMPAT = 4; //Some random button
-    constexpr int RESTART_ARM_MOTORS = 5; 
-    // constexpr int FORCE_STOP_WHEELS = 6;
-    // constexpr int RESTART_WHEEL_MOTORS = 7; 
-    // constexpr int FORCE_STOP_BAB = 8; 
-    // constexpr int RESTART_BAB = 9; 
-
-    // each force stop and restart expression wil: have its on boolean value, and when activated, it will send a forceStop or resume request
-    // to its respective motor
-    static bool force_stop_active = false;
-    bool force_stop_compat = msg->buttons[FORCE_STOP_COMPAT] == 1 ;
-    bool restart_arm_pressed = msg->buttons[RESTART_ARM_MOTORS] == 1; 
-
-    //Force stop active prevents the sendForceStop command to be called more than once. 
-    //For command to execute, both conditions in if statement must be true. when force_stop_active 
-    //is first called, it is false, therefore, !false = true, and so the command is executed. But, when it is true,
-    //the condition becomes !true = false, hence the true && false conditions will cause the command to not be activated. 
-    if(force_stop_compat && !force_stop_active){
-        force_stop_active = true; 
-        systemframebuilder_.sendForceStop(deviceType::DeviceType::COMPAT, DeviceId::ID::COMPAT_BOARD_ID); 
-        RCLCPP_WARN(this->get_logger(), "Force stop arm motors request sent"); 
-    }
-    if(restart_arm_pressed && force_stop_active){
-        force_stop_active = false; 
-        systemframebuilder_.sendResume(deviceType::DeviceType::COMPAT, DeviceId::ID::COMPAT_BOARD_ID); 
-        RCLCPP_INFO(this->get_logger(), "Restart arm motors request sent"); 
-    }
-
-}
 
 int main(int argc, char *argv[]){
 

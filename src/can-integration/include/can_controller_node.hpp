@@ -23,6 +23,7 @@ class CanControllerNode : public rclcpp::Node{
             if(CanManager::configureCan("vcan0") != SUCCESS){
                 RCLCPP_ERROR(this->get_logger(), "Failed to configure CAN interface...");
                 rclcpp::shutdown();
+                return; 
             }
             RCLCPP_INFO(this->get_logger(), "CAN interface configured successfully!");
 
