@@ -6,7 +6,7 @@
 
 namespace deviceType{
     enum class DeviceType : uint8_t{
-        COMPAT = 0x07, 
+        COMPAT = 0x02, 
     };
 } //namespace deviceType
 
@@ -19,7 +19,7 @@ namespace Manufacturer{
 
 namespace severity{
     enum : uint8_t{
-       SEV_CNTRL = 0x01,
+       SEV_CNTRL = 0x03,
        SEV_STATUS = 0x02, 
     };
 } // namespace severity
