@@ -1,15 +1,15 @@
-#include "wheels_interface/can_controller.hpp"
-
+#include "can_util/can_controller.hpp"
 #include <cstring>
 #include <fcntl.h>
 #include <unistd.h>
+#include <utility>
 #include <net/if.h>
 #include <rclcpp/logging.hpp>
-#include <utility>
 #include <sys/ioctl.h>
 #include <sys/socket.h>
 
-namespace wheels_interface {
+
+namespace can_util {
     CANController::CANController(std::string path, rclcpp::Logger logger) : logger(logger.get_child("can_controller")), path(std::move(path)) {}
 
     CANController::~CANController() {

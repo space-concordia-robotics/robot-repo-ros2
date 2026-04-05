@@ -20,6 +20,7 @@ set(DEPENDENCIES
         diagnostic_msgs
         pluginlib
         ros2_fmt_logger
+        can_util
 )
 
 find_package(ament_cmake REQUIRED)
@@ -33,7 +34,6 @@ endforeach ()
 add_library(
         wheels_interface
         SHARED
-        src/can_controller.cpp
         src/wheels_interface.cpp
         src/spark/spark_base.cpp
         src/spark/spark_max.cpp
