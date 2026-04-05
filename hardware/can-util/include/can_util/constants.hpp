@@ -81,6 +81,6 @@ namespace can_util::constants {
         MANUAL_INTERVENTION = 0x00,
         AUTOMATIC_INTERVENTION = 0x01,
         STATUS = 0x02,
-        CNTRL = 0x03
+        CONTROL = 0x03
     };
 }
