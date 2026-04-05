@@ -10,7 +10,7 @@ namespace wheels_interface {
     public:
         RCLCPP_SMART_PTR_DEFINITIONS(SparkMax);
 
-        explicit SparkMax(rclcpp::Logger& logger, CANController& can_controller, uint8_t deviceId);
+        explicit SparkMax(rclcpp::Logger& logger, can_util::CANController& can_controller, uint8_t deviceId);
 
         ~SparkMax() override = default;
     };

@@ -8,7 +8,7 @@
 
 
 namespace wheels_interface {
-    SparkBase::SparkBase(rclcpp::Logger& logger, CANController& can_controller, const uint8_t deviceId)
+    SparkBase::SparkBase(rclcpp::Logger& logger, can_util::CANController& can_controller, const uint8_t deviceId)
         : logger(logger.get_child("spark_max")), can_controller(can_controller), device_id(deviceId) {
         frame_callback = can_controller.registerFrameCallback([this](const uint32_t id, const std::vector<uint8_t>& data) {
             handleFrame(id, data);

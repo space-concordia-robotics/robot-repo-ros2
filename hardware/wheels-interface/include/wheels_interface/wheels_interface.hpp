@@ -13,7 +13,7 @@
 #include <rclcpp_lifecycle/state.hpp>
 #include <rclcpp_lifecycle/node_interfaces/lifecycle_node_interface.hpp>
 #include <ros2_fmt_logger/ros2_fmt_logger.hpp>
-#include <wheels_interface/can_controller.hpp>
+#include <can_util/can_controller.hpp>
 
 #include "spark/spark_max.hpp"
 
@@ -101,7 +101,7 @@ namespace wheels_interface {
 #endif
 
     private:
-        CANController::SharedPtr can_controller;
+        can_util::CANController::SharedPtr can_controller;
         double multiplier;
 
 #if !HARDWARE_INTERFACE_IS_JAZZY

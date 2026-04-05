@@ -1,22 +1,16 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-    <name>wheels_interface</name>
+    <name>can_util</name>
     <version>0.0.0</version>
-    <description>TODO: Package description</description>
+    <description>CAN utilities</description>
     <maintainer email="will.free@spaceconcordia.ca">Will Free</maintainer>
     <license>MIT</license>
 
     <depend>rclcpp</depend>
-    <depend>rclcpp_components</depend>
-    <depend>rclcpp_lifecycle</depend>
-    <depend>hardware_interface</depend>
-    <depend>diagnostic_updater</depend>
-    <depend>diagnostic_msgs</depend>
-    <depend>pluginlib</depend>
     <depend>ros2_fmt_logger</depend>
 
-    <buildtool_depend>ament_cmake</buildtool_depend>
+    <buildtool_depend>ament_cmake_ros</buildtool_depend>
 
     <test_depend>ament_lint_auto</test_depend>
     <test_depend>ament_lint_common</test_depend>

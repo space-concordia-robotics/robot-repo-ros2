@@ -1,18 +1,17 @@
 #pragma once
 
 #include <functional>
-#include <iostream>
 #include <linux/can.h>
+#include <rclcpp/logger.hpp>
+#include <rclcpp/macros.hpp>
 #include <ros2_fmt_logger/ros2_fmt_logger.hpp>
 
-#define STATUS_BUFFER_SIZE 1000
-
-namespace wheels_interface {
+namespace can_util {
     using CANFrameCallback = std::function<void(uint32_t id, const std::vector<uint8_t>& data)>;
 
-    class CANController {
+    class CANController : public std::enable_shared_from_this<CANController> {
     public:
-        RCLCPP_SMART_PTR_DEFINITIONS(CANController)
+        RCLCPP_SMART_PTR_DEFINITIONS(CANController);
 
         CANController(std::string path, rclcpp::Logger logger);
 
