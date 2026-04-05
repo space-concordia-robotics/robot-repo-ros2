@@ -26,6 +26,7 @@ endforeach ()
 add_library(
         can_util
         SHARED
+        src/can_util.cpp
         src/can_controller.cpp
 )
 add_library(can_util::can_util ALIAS can_util)

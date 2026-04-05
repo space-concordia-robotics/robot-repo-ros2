@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdint.h>
+
 namespace can_util::constants {
     //! see https://docs.wpilib.org/en/stable/docs/software/can-devices/can-addressing.html#device-type
     enum class DeviceType : uint8_t {

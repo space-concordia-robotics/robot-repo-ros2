@@ -1,12 +1,12 @@
 #pragma once
 
+#include <stdint.h>
+
 #include "constants.hpp"
 
 namespace can_util::FRCCan {
-    template < typename
-    T >
-    static constexpr T mask(const uint8_t bits)
-    {
+    template <typename T>
+    static constexpr T mask(const uint8_t bits) {
         constexpr T one = 1;
         constexpr std::uint8_t width = std::numeric_limits<T>::digits;
 
@@ -38,8 +38,7 @@ namespace can_util::FRCCan {
         const uint8_t severity,
         const uint8_t instruction,
         const uint8_t device_id
-    )
-    {
+    ) {
         return static_cast<uint32_t>(device_type & DEVICE_TYPE_MASK) << DEVICE_TYPE_OFFSET
             | static_cast<uint32_t>(manufacturer & MANUFACTURER_MASK) << MANUFACTURER_OFFSET
             | static_cast<uint32_t>(severity & SEVERITY_MASK) << SEVERITY_OFFSET
@@ -53,8 +52,7 @@ namespace can_util::FRCCan {
         const constants::Severity severity,
         const uint8_t instruction,
         const uint8_t device_id
-    )
-    {
+    ) {
         return createFrameId(
             static_cast<uint8_t>(device_type),
             static_cast<uint8_t>(manufacturer),
@@ -70,8 +68,7 @@ namespace can_util::FRCCan {
         const uint8_t api_class,
         const uint8_t api_index,
         const uint8_t device_id
-    )
-    {
+    ) {
         return static_cast<uint32_t>(device_type & DEVICE_TYPE_MASK) << DEVICE_TYPE_OFFSET
             | static_cast<uint32_t>(manufacturer & MANUFACTURER_MASK) << MANUFACTURER_OFFSET
             | static_cast<uint32_t>(api_class & API_CLASS_MASK) << API_CLASS_OFFSET
@@ -85,8 +82,7 @@ namespace can_util::FRCCan {
         const constants::ApiClass api_class,
         const constants::ApiIndex api_index,
         const uint8_t device_id
-    )
-    {
+    ) {
         return createFRCFrameId(
             static_cast<uint8_t>(device_type),
             static_cast<uint8_t>(manufacturer),
