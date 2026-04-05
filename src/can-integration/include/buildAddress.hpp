@@ -76,6 +76,13 @@ class BuildAddress{
                 frame.can_dlc = 8; 
             }
 
+            if(deviceID == static_cast<uint8_t>(DeviceId::ID::HUB)){
+                const uint32_t hubID = buildCANID(DeviceType, Manufacturer::TEAM_USE, severity::SEV_MAN_INTERVENTION, 
+                    static_cast<uint8_t>(Instructions::Inst::STOP_HUB), deviceID); 
+                frame.can_id = hubID | CAN_EFF_FLAG; 
+                frame.can_dlc = 8; 
+            }
+
             CanManager::writeFrame(frame); 
 
         } 
@@ -87,6 +94,12 @@ class BuildAddress{
                 const uint32_t compatID = buildCANID(DeviceType, Manufacturer::TEAM_USE, severity::SEV_CNTRL, 
                 static_cast<uint8_t>(Instructions::Inst::RESUME_MOTOR), deviceID);
                 frame.can_id = compatID | CAN_EFF_FLAG; 
+                frame.can_dlc = 8; 
+            }
+            if(deviceID == static_cast<uint8_t>(DeviceId::ID::HUB)){
+                const uint32_t hubID = buildCANID(DeviceType, Manufacturer::TEAM_USE, severity::SEV_MAN_INTERVENTION, 
+                    static_cast<uint8_t>(Instructions::Inst::RESUME_HUB), deviceID); 
+                frame.can_id = hubID | CAN_EFF_FLAG; 
                 frame.can_dlc = 8; 
             }
 

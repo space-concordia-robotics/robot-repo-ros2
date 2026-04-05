@@ -30,18 +30,20 @@ class CanControllerNode : public rclcpp::Node{
 
             //intiallize subscriptions 
 
-            // twist_msgs_ = this->create_subscription<geometry_msgs::msg::Twist>("/cmd_vel", rclcpp::SystemDefaultsQoS(), [this]
-            // (geometry_msgs::msg::Twist::ConstSharedPtr& msg) {return getTwistMessages(msg); });
+            twist_msgs_ = this->create_subscription<geometry_msgs::msg::Twist>("/cmd_vel", rclcpp::SystemDefaultsQoS(), [this]
+            (geometry_msgs::msg::Twist::ConstSharedPtr& msg) {return getTwistMessages(msg); });
             joint_state_msgs_ = this->create_subscription<sensor_msgs::msg::JointState>("/arm_xyz_cmd", rclcpp::SensorDataQoS(), [this]
             (const sensor_msgs::msg::JointState::ConstSharedPtr& msg) {return getJointStateMessages(msg); });
             joy_msgs_ = this->create_subscription<sensor_msgs::msg::Joy>("/joy", rclcpp::SystemDefaultsQoS(), [this]
             (const sensor_msgs::msg::Joy::ConstSharedPtr& msg){return getjoyfeedback(msg); });
 
+            RCLCPP_INFO(this->get_logger(), "Subscribed to the required topics");
+
             //initialize can start up function call. 
 
         }
 
-        //void getTwistMessages(const geometry_msgs::msg::Twist::ConstSharedPtr& twist_msg); 
+        void getTwistMessages(const geometry_msgs::msg::Twist::ConstSharedPtr& twist_msg); 
         void getJointStateMessages(const sensor_msgs::msg::JointState::ConstSharedPtr& joint_state_msg);
         void getjoyfeedback(const sensor_msgs::msg::Joy::ConstSharedPtr& msg); 
 
