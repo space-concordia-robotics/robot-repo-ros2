@@ -66,9 +66,9 @@ class JoyMuxController(Node):
                 joint_state.velocity = [
                     float(msg.axes[Axes.D_PAD_X]),  # Joint 1
                     float(msg.axes[Axes.D_PAD_Y]),  # Joint 2
-                    float(msg.axes[Axes.RIGHT_TRIGGER]),  # Joint 3
+                    float(msg.axes[Axes.RIGHT_STICK_X]),  # Joint 3
                     float((1 if msg.buttons[Buttons.X] else 0) - (1 if msg.buttons[Buttons.TRIANGLE] else 0)),   # Joint 4
-                    float(msg.axes[Axes.LEFT_TRIGGER]),   # Joint 5
+                    float(msg.axes[Axes.LEFT_STICK_Y]),   # Joint 5
                     float(msg.axes[Axes.LEFT_STICK_X]),  # Joint 6
                     float((1 if msg.buttons[Buttons.CIRCLE] else 0) - (1 if msg.buttons[Buttons.SQUARE] else 0))  # Joint 7: Positive (button 0) and negative (button 1)
                 ]
