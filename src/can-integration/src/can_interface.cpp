@@ -33,19 +33,19 @@ uint8_t CanManager::configureCan(const char* fd_name){
     return SUCCESS; 
 }
 
-uint8_t CanManager::sendBlockingFrame(struct can_frame& frame){
-    while (true){
-        auto status = writeFrame(frame);
-        if (errno != 105) break;
-        errno = 0;
-        usleep(100);
-    }
-    int errno_0 = errno;
-    errno = 0;
-    if(errno_0 !=0)
-        std::cout << strerror(errno_0) << "\n";
-    return errno_0 ? Status::CANERROR : Status::SUCCESS;  
-}
+// uint8_t CanManager::sendBlockingFrame(struct can_frame& frame){
+//     while (true){
+//         writeFrame(frame);
+//         if (errno != 105) break;
+//         errno = 0;
+//         usleep(100);
+//     }
+//     int errno_0 = errno;
+//     errno = 0;
+//     if(errno_0 !=0)
+//         std::cout << strerror(errno_0) << "\n";
+//     return errno_0 ? Status::CANERROR : Status::SUCCESS;  
+// }
 
 uint8_t CanManager::readFrame(struct can_frame& frame){
     

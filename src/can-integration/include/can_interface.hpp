@@ -38,7 +38,7 @@ class CanManager{
         }
 
         static uint8_t configureCan(const char* fd_name); 
-        static uint8_t CanManager::sendBlockingFrame(struct can_frame& frame); 
+        // static uint8_t sendBlockingFrame(struct can_frame& frame); 
         static uint8_t readFrame(struct can_frame& frame);
         static uint8_t writeFrame(struct can_frame& frame); 
 

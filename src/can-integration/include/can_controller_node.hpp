@@ -30,8 +30,8 @@ class CanControllerNode : public rclcpp::Node{
 
             //intiallize subscriptions 
 
-            twist_msgs_ = this->create_subscription<geometry_msgs::msg::Twist>("/cmd_vel", rclcpp::SystemDefaultsQoS(), [this]
-            (geometry_msgs::msg::Twist::ConstSharedPtr& msg) {return getTwistMessages(msg); });
+            // twist_msgs_ = this->create_subscription<geometry_msgs::msg::Twist>("/cmd_vel", rclcpp::SystemDefaultsQoS(), [this]
+            // (geometry_msgs::msg::Twist::ConstSharedPtr& msg) {return getTwistMessages(msg); });
             joint_state_msgs_ = this->create_subscription<sensor_msgs::msg::JointState>("/arm_xyz_cmd", rclcpp::SensorDataQoS(), [this]
             (const sensor_msgs::msg::JointState::ConstSharedPtr& msg) {return getJointStateMessages(msg); });
             joy_msgs_ = this->create_subscription<sensor_msgs::msg::Joy>("/joy", rclcpp::SystemDefaultsQoS(), [this]
@@ -43,7 +43,7 @@ class CanControllerNode : public rclcpp::Node{
 
         }
 
-        void getTwistMessages(const geometry_msgs::msg::Twist::ConstSharedPtr& twist_msg); 
+        // void getTwistMessages(const geometry_msgs::msg::Twist::ConstSharedPtr& twist_msg); 
         void getJointStateMessages(const sensor_msgs::msg::JointState::ConstSharedPtr& joint_state_msg);
         void getjoyfeedback(const sensor_msgs::msg::Joy::ConstSharedPtr& msg); 
 
@@ -51,7 +51,7 @@ class CanControllerNode : public rclcpp::Node{
 
         SystemFrameBuilder systemframebuilder_;
         
-        rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr twist_msgs_; 
+        // rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr twist_msgs_; 
         rclcpp::Subscription<sensor_msgs::msg::Joy>::SharedPtr joy_msgs_; 
         rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr joint_state_msgs_; 
 
