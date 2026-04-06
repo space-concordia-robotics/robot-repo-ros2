@@ -2,7 +2,27 @@
 #include <cstdint>
 
 
+#define COMMAND_PREFIX_SET_DEVCE_ID 0x205C0
+
+#define COMMAND_PREFIX_RAMP 0x205CE
+
+#define COMMAND_PREFIX_COAST 0x205C1
+#define COMMAND_PREFIX_BRAKE 0x205C1
+
+#define COMMAND_PREFIX_HARD_FORWARD_LIMIT 0x205CD0
+#define COMMAND_PREFIX_HARD_REVERSE_LIMIT 0x205CD4
+
+#define COMMAND_PREFIX_MOVE_MOTORS 0x20500
+
+#define COMMAND_PREFIX_MAINTAIN_VELOCITY 0x82052c80 
+#define COMMAND_PREFIX_MAINTAIN_SPEED 0x02052C80
+#define COMMAND_PREFIX_READ_STATUS 0x502C0
+
+#define COMMAND_PREFIX_PERIODIC_FRAME  0x2051
 #define COMMAND_PREFIX_VELOCITY_CONTROL 0x820504
+
+#define STATUS_FRAME_ID_OFFSET 0x40
+#define DEVICE_MAX_ID 0x3E
 
 namespace deviceType{
     enum class DeviceType : uint8_t{
@@ -38,10 +58,8 @@ namespace Instructions{
         ARM_MOTOR_4 = 0x0C,
         ARM_MOTOR_5 = 0x0D, 
         
-        STOP_COMPAT = 0x01,
-        STOP_HUB = 0x00, 
-        RESUME_MOTOR = 0x02, 
-        RESUME_HUB = 0x01, 
+        STOP_MOTOR = 0x00,
+        RESUME_OPERATION = 0x01, 
 
     };
 } //namespace instructions
@@ -64,12 +82,6 @@ namespace DeviceId{
         CLAMP_SERVO_ENCODER = 0X0D, 
 
         HUB = 0X0E,
-        WHEEL_MOT1 = 1,
-        WHEEL_MOT2 = 2, 
-        WHEEL_MOT3 = 3, 
-        WHEEL_MOT4 = 4, 
-        WHEEL_MOT5 = 5,
-        WHEEL_MOT6 = 6,
         
         SIL = 0X10
     }; 

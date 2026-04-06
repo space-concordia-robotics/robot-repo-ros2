@@ -1,56 +1,45 @@
-#pragma once 
+#pragma once
 
-#include <cstdint>
-#include <cstdio>
-#include <cstring>
-#include <map>
-#include <unistd.h>
-#include <cstdint>
-#include <sys/socket.h>
-#include <sys/ioctl.h>
+#include <functional>
 #include <linux/can.h>
-#include <linux/can/raw.h>
-#include <termios.h>
-#include <net/if.h>
-#include <iostream>
-#include <vector>
+#include <rclcpp/logger.hpp>
+#include <rclcpp/macros.hpp>
+#include <ros2_fmt_logger/ros2_fmt_logger.hpp>
 
-enum Status{
-    SUCCESS = 0,
-    CANERROR
-};
+namespace can_util {
+    using CANFrameCallback = std::function<void(uint32_t id, const std::vector<uint8_t>& data)>;
 
-class CanManager{
+    class CANController : public std::enable_shared_from_this<CANController> {
+    public:
+        RCLCPP_SMART_PTR_DEFINITIONS(CANController)
 
-    public:     
-        CanManager() = default; 
-        explicit CanManager(int fd_) { s_socket = fd_; }
+        CANController(std::string path, rclcpp::Logger logger);
 
-        CanManager(const CanManager&) = delete; 
-        CanManager& operator=(const CanManager&) = delete; 
+        ~CANController();
 
-        ~CanManager(){reset();}
+        bool initialize();
 
-        int getfd() const {return s_socket;}
+        std::shared_ptr<CANFrameCallback> registerFrameCallback(CANFrameCallback callback);
 
-        static inline void printtatusBuffer() {
-            printf("%s \n", s_StatusBuffer); 
-        }
+        bool sendBlockingFrame(uint32_t id, const std::vector<uint8_t>& data) const;
 
-        static uint8_t configureCan(const char* fd_name); 
-        static uint8_t CanManager::sendBlockingFrame(struct can_frame& frame); 
-        static uint8_t readFrame(struct can_frame& frame);
-        static uint8_t writeFrame(struct can_frame& frame); 
+        // TODO 2026-02-25 (Will Free): add a way to read can frames with a specific id, ignoring all others?
+        bool readFrameIfAvailable(can_frame& frame) const;
 
-        void reset(int new_fd = -1){
-            if(s_socket > 0){
-                ::close(s_socket);
-            }
-            s_socket = new_fd;
-            delete[] s_StatusBuffer;
-        } 
+        bool readFrame(can_frame& frame) const;
 
-    private: 
-        inline static int s_socket{-1}; 
-        inline static char* s_StatusBuffer = nullptr;
-};
+    private:
+        bool sendBlockingFrame(const can_frame& frame) const;
+
+        bool writeFrame(const can_frame& frame) const;
+
+        mutable std::mutex mtx;
+        ros2_fmt_logger::Logger logger;
+        std::string path;
+        int socket_descriptor = 0;
+        std::thread readThread;
+        std::vector<std::weak_ptr<CANFrameCallback>> frame_callbacks = {};
+
+        static constexpr auto READ_TIMEOUT_US = 20000;
+    };
+}

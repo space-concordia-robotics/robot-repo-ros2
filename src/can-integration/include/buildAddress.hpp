@@ -21,7 +21,7 @@ class BuildAddress{
         static constexpr uint32_t DEVICE_ID_MASK = 0x3Fu;    // 6 bits
 
 
-        static uint32_t buildCANID(uint8_t DeviceType, uint8_t manufacturer, uint8_t severity, uint8_t instruction, uint8_t deviceId) {
+        uint32_t buildCANID(uint8_t DeviceType, uint8_t manufacturer, uint8_t severity, uint8_t instruction, uint8_t deviceId) {
 
 
             //bitwise & operator truncates the parameters to be a specific bit length long. 
@@ -38,71 +38,41 @@ class BuildAddress{
 
             return (dt << 24) | (mfc << 16) | (inst10 << 6) | id; //Bit shifting to the left, in order to create the can frame 
         }
-        //                              5                   8                   10                  6
-        //note: Order of frame is 1. Device type, 2. Manufacturer code, 3. instruction, and 4. DeviceID. 
-        template <typename PayloadT> // fun fact, template variable is a variable that can work with any type specified when the variable is used ~ GFG.  
-        void buildAddress(uint8_t deviceType, uint8_t manufacturerCode, uint8_t SEVERITY, uint8_t inst, uint8_t deviceID, const PayloadT& payload){
-
-                struct can_frame frame{}; 
-                static_assert(sizeof(PayloadT) <= 8, "Payload must be <= 8 bytes for CAN2.0B");
-
-                //calling buildCANID to build the 29-bit canID with the given parameters (which btw, will be specified in the system_controller)
-                
-                const uint32_t canID = buildCANID(deviceType, manufacturerCode, SEVERITY, inst, deviceID); 
-
-                //building the full frame here
-
-
-                //The bitwise | operator, will compare both bits in the same position and takes the biggest one. 
-                frame.can_id = canID | CAN_EFF_FLAG; 
-                frame.can_dlc = 8; 
-
-                memset(frame.data, 0, sizeof(frame.data));
-                memcpy(frame.data, &payload, sizeof(PayloadT));
-
-                CanManager::writeFrame(frame); 
-        }
 
         //build a new function that can send a force stop command and also a resume motor command, only taking in the device id as a parameter. 
         //and also the severity. 
 
-        void sendShutDownRequest(uint8_t DeviceType, uint8_t deviceID){
+        inline void sendShutDownRequest(uint8_t DeviceType, uint8_t deviceID){
             
-            struct can_frame frame{}; 
             if(deviceID == static_cast<uint8_t>(DeviceId::ID::COMPAT_BOARD_ID)){
                 const uint32_t compatID = buildCANID(DeviceType, Manufacturer::TEAM_USE, severity::SEV_CNTRL, 
-                static_cast<uint8_t>(Instructions::Inst::STOP_COMPAT), deviceID);
-                frame.can_id = compatID | CAN_EFF_FLAG; 
-                frame.can_dlc = 8; 
+                static_cast<uint8_t>(Instructions::Inst::STOP_MOTOR), deviceID);
+                can_controller->sendBlockingFrame(compatID, std::vector<uint8_t>(0, 0)); 
             }
 
             if(deviceID == static_cast<uint8_t>(DeviceId::ID::HUB)){
                 const uint32_t hubID = buildCANID(DeviceType, Manufacturer::TEAM_USE, severity::SEV_MAN_INTERVENTION, 
-                    static_cast<uint8_t>(Instructions::Inst::STOP_HUB), deviceID); 
-                frame.can_id = hubID | CAN_EFF_FLAG; 
-                frame.can_dlc = 8; 
+                    static_cast<uint8_t>(Instructions::Inst::STOP_MOTOR), deviceID); 
+                can_controller->sendBlockingFrame(hubID, std::vector<uint8_t>(0,0)); 
             }
-
-            CanManager::writeFrame(frame); 
 
         } 
 
-        void sendRestartCommand(uint8_t DeviceType, uint8_t deviceID){
+        inline void sendRestartCommand(uint8_t DeviceType, uint8_t deviceID){
 
-            struct can_frame frame{}; 
             if(deviceID == static_cast<uint8_t>(DeviceId::ID::COMPAT_BOARD_ID)){
                 const uint32_t compatID = buildCANID(DeviceType, Manufacturer::TEAM_USE, severity::SEV_CNTRL, 
-                static_cast<uint8_t>(Instructions::Inst::RESUME_MOTOR), deviceID);
-                frame.can_id = compatID | CAN_EFF_FLAG; 
-                frame.can_dlc = 8; 
+                static_cast<uint8_t>(Instructions::Inst::RESUME_OPERATION), deviceID);
+                can_controller->sendBlockingFrame(compatID, std::vector<uint8_t>(0, 0)); 
             }
             if(deviceID == static_cast<uint8_t>(DeviceId::ID::HUB)){
                 const uint32_t hubID = buildCANID(DeviceType, Manufacturer::TEAM_USE, severity::SEV_MAN_INTERVENTION, 
-                    static_cast<uint8_t>(Instructions::Inst::RESUME_HUB), deviceID); 
-                frame.can_id = hubID | CAN_EFF_FLAG; 
-                frame.can_dlc = 8; 
+                    static_cast<uint8_t>(Instructions::Inst::RESUME_OPERATION), deviceID); 
+                can_controller->sendBlockingFrame(hubID, std::vector<uint8_t>(0, 0));
             }
-
-            CanManager::writeFrame(frame); 
         }
+
+    private:
+        can_util::CANController::SharedPtr can_controller;
+
 }; 

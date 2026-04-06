@@ -1,79 +1,215 @@
 #include "can_interface.hpp"
-#include "buildAddress.hpp"
+#include <cstring>
+#include <fcntl.h>
+#include <unistd.h>
+#include <utility>
+#include <net/if.h>
+#include <rclcpp/logging.hpp>
+#include <sys/ioctl.h>
+#include <sys/socket.h>
 
 
-uint8_t CanManager::configureCan(const char* fd_name){
+namespace can_util {
+    CANController::CANController(std::string path, rclcpp::Logger logger) : logger(logger.get_child("can_controller")), path(std::move(path)) {}
 
-    s_StatusBuffer = new char[1000];
-    //initializing the can socket and checking for connection
-    struct sockaddr_can addr{};
-    s_socket = socket(PF_CAN, SOCK_RAW, CAN_RAW);
-    if(s_socket == -1){
-        sprintf(s_StatusBuffer, "Socket error, %s (%i)\n", strerror(errno), errno); 
-        return Status::CANERROR; 
+    CANController::~CANController() {
+        readThread.join();
     }
 
-    //Now we want to use ioctl to fetch the index of the can frame to prepare for binding
-    struct ifreq ifr{};
-    strcpy(ifr.ifr_name, fd_name);
-    if(ioctl(s_socket, SIOCGIFINDEX, &ifr) == -1){
-        sprintf(s_StatusBuffer,"Iocl error : %s (%i)\n", strerror(errno),errno);
-        return Status::CANERROR;
+    bool CANController::initialize() {
+        // open canbus socket
+        socket_descriptor = socket(PF_CAN, SOCK_RAW, CAN_RAW);
+
+        if (socket_descriptor == -1) {
+            logger.fatal("socket error: {} ({})\nPossible causes:\n1. CAN modules not loaded\n2. System resource limitations",
+                         strerror(errno), errno);
+            return false;
+        }
+
+        if (path.length() > IF_NAMESIZE) {
+            logger.fatal("CAN interface name is longer than the maximum length of {}.", IF_NAMESIZE);
+            return false;
+        }
+
+        // setup canbus socket
+
+        auto ifr = ifreq{};
+        strncpy(ifr.ifr_name, path.c_str(), IF_NAMESIZE);
+
+        if (ioctl(socket_descriptor, SIOCGIFINDEX, &ifr) == -1) {
+            logger.fatal("ioctl error: {} ({})\nPossible causes:\n1. CAN interface does not exist\n2. CAN bus not initialized\n3. CAN interface is not up",
+                         strerror(errno), errno);
+            close(socket_descriptor);
+            return false;
+        }
+
+        auto addr = sockaddr_can{
+            .can_family = AF_CAN,
+            .can_ifindex = ifr.ifr_ifindex,
+            .can_addr = {}
+        };
+
+        // cast sockaddr_can* to a sockaddr*, as bind() uses a sockaddr* even though it can accept a sockaddr_can* for SocketCan
+        if (bind(socket_descriptor, reinterpret_cast<sockaddr*>(&addr), sizeof(addr)) < 0) {
+            logger.fatal("bind error: {} ({})\nPossible cause: Another program may be using this interface", strerror(errno), errno);
+            close(socket_descriptor);
+            return false;
+        }
+
+        // TODO 2026-02-18 (Will Free): This is broken right now
+        // make socket non blocking
+        // const int flags = fcntl(socket_descriptor, F_GETFL, 0);
+        // if (flags == -1) {
+        //     logger.fatal("fcntl error: {} ({})", strerror(errno), errno);
+        //     return false;
+        // }
+        //
+        // if (fcntl(socket_descriptor, F_SETFL, flags | O_NONBLOCK) < 0) {
+        //     logger.fatal("fcntl error: {} ({})", strerror(errno), errno);
+        // }
+
+        readThread = std::thread([this] {
+            while (rclcpp::ok()) {
+                if (auto frame = can_frame{}; readFrameIfAvailable(frame) == true) {
+                    const auto id = frame.can_id & CAN_EFF_MASK;
+                    // ReSharper disable once CppTemplateArgumentsCanBeDeduced
+                    const auto data = std::vector<uint8_t>(std::begin(frame.data), std::end(frame.data));
+
+                    // copy callbacks to avoid race condition where a callback is deleted as we're iterating
+                    for (const auto callbacks = frame_callbacks; const auto& weak_ptr : callbacks) {
+                        if (const auto callback_ptr = weak_ptr.lock()) {
+                            const auto callback = *callback_ptr.get();
+                            callback(id, data);
+                        }
+                    }
+                }
+            }
+        });
+
+        logger.info("CAN configuration on {} successful", path);
+        return true;
     }
 
-    addr.can_family = AF_CAN; 
-    addr.can_ifindex = ifr.ifr_ifindex; 
+    std::shared_ptr<CANFrameCallback> CANController::registerFrameCallback(CANFrameCallback callback) {
+        auto shared_pointer = std::shared_ptr<CANFrameCallback>(
+            new CANFrameCallback(std::move(callback)),
+            [this](CANFrameCallback* cb) {
+                std::erase_if(
+                    frame_callbacks,
+                    [cb](const std::weak_ptr<CANFrameCallback>& weak_pointer) {
+                        const auto sp = weak_pointer.lock();
+                        return !sp || sp.get() == cb;
+                    });
+                delete cb;
+            }
+        );
 
-    //Now we bund the socket to the can index
-    if(bind(s_socket, (struct sockaddr *)&addr, sizeof(addr)) == -1){
-        sprintf(s_StatusBuffer, "Bind error : %s (%i)\n", strerror(errno),errno);
-        return Status::CANERROR;
+        frame_callbacks.push_back(shared_pointer);
+
+        return shared_pointer;
     }
 
-    return SUCCESS; 
-}
+    bool CANController::sendBlockingFrame(const uint32_t id, const std::vector<uint8_t>& data) const {
+        if (data.size() > 8) {
+            logger.error("CAN frame too large");
+            return false;
+        }
 
-uint8_t CanManager::sendBlockingFrame(struct can_frame& frame){
-    while (true){
-        auto status = writeFrame(frame);
-        if (errno != 105) break;
-        errno = 0;
-        usleep(100);
-    }
-    int errno_0 = errno;
-    errno = 0;
-    if(errno_0 !=0)
-        std::cout << strerror(errno_0) << "\n";
-    return errno_0 ? Status::CANERROR : Status::SUCCESS;  
-}
+        auto frame = can_frame{};
+        frame.can_id = id | CAN_EFF_FLAG;
 
-uint8_t CanManager::readFrame(struct can_frame& frame){
-    
-    //reading the socket in bytes. 
-    int nbytes = read(s_socket, &frame, sizeof(struct can_frame));
+        frame.len = static_cast<uint8_t>(data.size());
+        memcpy(frame.data, data.data(), data.size());
 
-    if(nbytes == -1){
-        sprintf(s_StatusBuffer, "read error : %i\n", errno);
-        return Status::CANERROR;
-    } 
-
-    if(nbytes < (ssize_t)sizeof(struct can_frame)){
-        sprintf(s_StatusBuffer, "read: incomplete CAN frame\n");
-        return Status::CANERROR;
+        return sendBlockingFrame(frame);
     }
 
-    //Printing the can frame here for verification .
-    printf("0x%03X [%d] ", frame.can_id, frame.len8_dlc);
-    return Status::SUCCESS; 
+    bool CANController::readFrameIfAvailable(can_frame& frame) const {
+        // Set up the file descriptor set
+        fd_set read_fds;
+        FD_ZERO(&read_fds);
+        FD_SET(socket_descriptor, &read_fds);
 
+        // Set up the timeout with zero seconds for non-blocking
+        // TODO 2026-02-17 (Will Free): Should we set a timeout here?
+        auto timeout = timeval{
+            .tv_sec = 0,
+            .tv_usec = READ_TIMEOUT_US,
+        };
 
-}
+        // Use select to check if data is available
+        if (
+            const int result = select(socket_descriptor + 1, &read_fds, nullptr, nullptr, &timeout);
+            result > 0 && FD_ISSET(socket_descriptor, &read_fds)
+        ) {
+            readFrame(frame);
+            return true;
+        } else if (result == 0) {
+            // timeout
+            return false;
+        }
 
-uint8_t CanManager::writeFrame(struct can_frame& frame){
-
-    if (write(s_socket, &frame, sizeof(struct can_frame)) != sizeof(struct can_frame)) {
-        sprintf(s_StatusBuffer,"Error with send frame, did not write all data \n");
-        return Status::CANERROR;
+        return false;
     }
-    return Status::SUCCESS; 
+
+    // ReSharper disable once CppDFAUnreachableFunctionCall
+    bool CANController::readFrame(can_frame& frame) const {
+        // clear the previous frame contents
+        memset(&frame, 0, sizeof(frame));
+
+        const auto byte_count = read(socket_descriptor, &frame, sizeof(struct can_frame));
+
+        if (byte_count == -1) {
+            logger.fatal("read error: {} ({})", strerror(errno), errno);
+            return false;
+        }
+
+        if (byte_count < static_cast<ssize_t>(sizeof(can_frame))) {
+            logger.fatal("read error: incomplete CAN frame");
+            return false;
+        }
+        return true;
+    }
+
+    // TODO 2026-02-14 (Will Free): what is this? what is it doing? why do we need it?
+    bool CANController::sendBlockingFrame(const can_frame& frame) const {
+        constexpr auto WAIT_TIME = std::chrono::microseconds(1);
+        constexpr int MAX_ATTEMPTS = 32;
+
+        for (int attempt = 0; attempt < MAX_ATTEMPTS; ++attempt) {
+            if (writeFrame(frame))
+                return true;
+
+            if (errno == ENOBUFS || errno == EAGAIN) {
+                std::this_thread::sleep_for(WAIT_TIME);
+                continue;
+            }
+
+            logger.warn("Failed to send CAN frame: {} ({})", strerror(errno), errno);
+            return false;
+        }
+
+        logger.error("Failed to send CAN frame after multiple retries, buffer consistently full.");
+
+        return false;
+    }
+
+    bool CANController::writeFrame(const can_frame& frame) const {
+        std::lock_guard lock(mtx);
+
+        const auto byte_count = write(socket_descriptor, &frame, sizeof(can_frame));
+        const auto original_errno = errno;
+        if (byte_count == -1) {
+            logger.fatal("write error: {} ({})", strerror(original_errno), original_errno);
+            return false;
+        }
+
+        if (byte_count != sizeof(can_frame)) {
+            logger.fatal("write error: did not write all the data, but no error code was returned");
+            return false;
+        }
+        errno = original_errno;
+
+        return true;
+    }
 }
