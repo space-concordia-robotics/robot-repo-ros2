@@ -20,7 +20,7 @@ class CanControllerNode : public rclcpp::Node{
         CanControllerNode() : Node("can_controller_node") {
 
             //check to see if can has been sucessfully configured 
-            if(CanManager::configureCan("vcan0") != SUCCESS){
+            if(CanManager::configureCan("can0") != SUCCESS){
                 RCLCPP_ERROR(this->get_logger(), "Failed to configure CAN interface...");
                 rclcpp::shutdown();
                 return; 
