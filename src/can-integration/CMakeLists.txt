@@ -11,7 +11,6 @@ find_package(rclcpp REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
-find_package(ros2_fmt_logger REQUIRED)
 
 
 include_directories(include)
@@ -26,7 +25,6 @@ add_executable(can_node
 
 ament_target_dependencies(
     can_node
-    ros2_fmt_logger
     rclcpp 
     geometry_msgs  
     sensor_msgs

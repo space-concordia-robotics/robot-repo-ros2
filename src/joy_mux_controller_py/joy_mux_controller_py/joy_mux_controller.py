@@ -61,21 +61,16 @@ class JoyMuxController(Node):
                 twist.linear.z = msg.axes[Axes.RIGHT_STICK_Y]
                 self.rover_pub.publish(twist)
             else:
-                # Triggers are typically +1 at rest and move toward -1 when pressed.
-                # Normalize to [0, 1] so idle does not command full-speed arm motion.
-                left_trigger = 0.5 * (1.0 - float(msg.axes[Axes.LEFT_TRIGGER]))
-                right_trigger = 0.5 * (1.0 - float(msg.axes[Axes.RIGHT_TRIGGER]))
-
                 joint_state = JointState()
                 joint_state.name = [f'joint{i+1}' for i in range(7)]  # Names for 7 joints
                 joint_state.velocity = [
                     float(msg.axes[Axes.D_PAD_X]),  # Joint 1
                     float(msg.axes[Axes.D_PAD_Y]),  # Joint 2
-                    float(msg.axes[Axes.RIGHT_STICK_Y]),  # Joint 3 (CAN)
+                    float(msg.axes[Axes.RIGHT_TRIGGER]),  # Joint 3
                     float((1 if msg.buttons[Buttons.X] else 0) - (1 if msg.buttons[Buttons.TRIANGLE] else 0)),   # Joint 4
-                    float(msg.axes[Axes.RIGHT_STICK_X]),   # Joint 5 (CAN)
-                    left_trigger,  # Joint 6
-                    right_trigger  # Joint 7
+                    float(msg.axes[Axes.LEFT_TRIGGER]),   # Joint 5
+                    float(msg.axes[Axes.LEFT_STICK_X]),  # Joint 6
+                    float((1 if msg.buttons[Buttons.CIRCLE] else 0) - (1 if msg.buttons[Buttons.SQUARE] else 0))  # Joint 7: Positive (button 0) and negative (button 1)
                 ]
                 joint_state.position = []  # Empty position field
                 joint_state.effort = []    # Empty effort field
