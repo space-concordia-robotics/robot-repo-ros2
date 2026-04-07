@@ -2,7 +2,6 @@
 
 #include <chrono>
 #include <cmath>
-#include <limits>
 #include <memory>
 #include <vector>
 #include <hardware_interface/lexical_casts.hpp>
@@ -72,7 +71,6 @@ namespace wheels_interface {
         return value * std::numbers::pi * 2 * radius;
     }
 
-#if HARDWARE_INTERFACE_IS_JAZZY
     CallbackReturn RoverSystemWheelsHardware::on_init(const hardware_interface::HardwareComponentInterfaceParams& params) {
         const auto& info = params.hardware_info;
         const auto& executor = params.executor;
@@ -89,19 +87,8 @@ namespace wheels_interface {
         // }
 
         const auto node = get_node();
-#else // @formatter:off
-    CallbackReturn RoverSystemWheelsHardware::on_init(const HardwareInfo& info) {
-        if (SystemInterface::on_init(info) != CallbackReturn::SUCCESS)
-            return CallbackReturn::ERROR;
 
-        auto rcl_logger = rclcpp::get_logger("RoverSystemWheelsHardwareBot");
-
-        clock = std::make_shared<rclcpp::Clock>();
-
-        const auto nodeName = camelCaseToSnakeCase(info.name);
-        const auto node = std::make_shared<rclcpp::Node>(nodeName);
-#endif // @formatter:on
-
+        // TODO 2026-03-12 (Will Free): re-enable
         diagnostic_updater = std::make_shared<diagnostic_updater::Updater>(node);
         diagnostic_updater->setHardwareID(get_hardware_info().name);
 
@@ -126,7 +113,7 @@ namespace wheels_interface {
 
         const auto can_path = info_.hardware_parameters["can_path"];
 
-        can_controller = std::make_shared<CANController>(can_path, rcl_logger);
+        can_controller = CANController::make_shared(can_path, rcl_logger);
 
         for (auto i = 0u; i < info.joints.size(); i++) {
             const auto& joint = info.joints[i];
@@ -205,32 +192,6 @@ namespace wheels_interface {
         return SystemInterface::on_configure(previous_state);
     }
 
-#if !HARDWARE_INTERFACE_IS_JAZZY
-    std::vector<StateInterface> RoverSystemWheelsHardware::export_state_interfaces() {
-        std::vector<StateInterface> state_interfaces = {};
-
-        state_interfaces.reserve(wheels.size() * 2);
-        for (const auto& wheel : wheels) {
-            state_interfaces.emplace_back(wheel->name, hardware_interface::HW_IF_POSITION, &wheel->position_state);
-            state_interfaces.emplace_back(wheel->name, hardware_interface::HW_IF_VELOCITY, &wheel->velocity_state);
-        }
-
-        return state_interfaces;
-    }
-
-    std::vector<CommandInterface> RoverSystemWheelsHardware::export_command_interfaces() {
-        std::vector<CommandInterface> command_interfaces = {};
-
-        command_interfaces.reserve(wheels.size());
-        for (const auto& wheel : wheels) {
-            command_interfaces.emplace_back(wheels.name, hardware_interface::HW_IF_VELOCITY, &wheel->velocity_command); // NOLINT(*-use-emplace)
-        }
-
-        return command_interfaces;
-    }
-
-#endif
-
     CallbackReturn RoverSystemWheelsHardware::on_activate(const rclcpp_lifecycle::State& /*previous_state*/) {
         logger->info("Activating...");
 
@@ -244,25 +205,15 @@ namespace wheels_interface {
             set_command(name, get_state(name));
         }
 
+        // for (const auto & wheel : wheels) {
+        //     wheel->motor->setVelocity()
+        // }
 
         using namespace std::chrono_literals;
 
         // TODO 2026-03-01 (Will Free): is 20ms a correct value for the heartbeat period here?
         constexpr auto HEARTBEAT_PERIOD = 20ms;
-#if HARDWARE_INTERFACE_IS_JAZZY
         heartbeat_timer = get_node()->create_wall_timer(HEARTBEAT_PERIOD, std::bind(&RoverSystemWheelsHardware::heartbeat, this));
-#else
-        heartbeat_running = true;
-
-        heartbeat_thread = std::thread([&] {
-            const auto rate = rclcpp::WallRate::make_shared(HEARTBEAT_PERIOD);
-            rate->reset();
-
-            while (heartbeat_running&& rclcpp::ok()) {
-                heartbeat();
-            }
-        });
-#endif
 
         logger->info("Successfully activated");
 
@@ -270,7 +221,8 @@ namespace wheels_interface {
     }
 
     // TODO 2026-03-01 (Will Free): rolling has stuff like init_hardware_status_message, look at that
-    void RoverSystemWheelsHardware::produce_diagnostics(diagnostic_updater::DiagnosticStatusWrapper& stat, const WheelDescription::ConstSharedPtr& wheel) {
+    void RoverSystemWheelsHardware::produce_diagnostics(diagnostic_updater::DiagnosticStatusWrapper& stat,
+                                                        const WheelDescription::ConstSharedPtr& wheel) const {
         using namespace diagnostic_msgs::msg;
 
         const auto& motor = wheel->motor;
@@ -315,11 +267,7 @@ namespace wheels_interface {
         stat.add("alt_encoder_velocity", altEncoderVelocity);
         stat.add("alt_encoder_position", altEncoderPosition);
 
-#if HARDWARE_INTERFACE_IS_JAZZY
         const auto command = get_command(wheel->velocity_interface_name) * ENCODER_MULTIPLIER;
-#else
-        const auto command = hw_commands[i] * ENCODER_MULTIPLIER;
-#endif
 
         const auto targetVelocity = metersPerSecondToRPM(command, wheel->radius) * multiplier;
 
@@ -361,7 +309,6 @@ namespace wheels_interface {
 
         std::this_thread::sleep_for(DEACTIVATION_DELAY);
 
-#if HARDWARE_INTERFACE_IS_JAZZY
         try {
             heartbeat_timer->reset();
             heartbeat_timer->cancel();
@@ -369,11 +316,6 @@ namespace wheels_interface {
             logger->error("Failure to deactivate while stopping heartbeat");
             return CallbackReturn::ERROR;
         }
-#else
-        heartbeat_running = false;
-        if (heartbeat_thread.joinable())
-            heartbeat_thread.join();
-#endif
 
         logger->info("Successfully deactivated");
 
@@ -390,13 +332,8 @@ namespace wheels_interface {
             // TODO 2026-03-01 (Will Free): double check if the position is also inverted or not
             const auto position = rotationsToMeters(rotations, wheel->radius) / multiplier;
 
-#if HARDWARE_INTERFACE_IS_JAZZY
             set_state(wheel->velocity_interface_name, velocity);
             set_state(wheel->position_interface_name, position);
-#else
-            wheel->velocity_state = velocity;
-            wheel->position_state = position;
-#endif
         }
 
         return return_type::OK;
@@ -405,11 +342,7 @@ namespace wheels_interface {
     return_type RoverSystemWheelsHardware::write(const rclcpp::Time& /*time*/, const rclcpp::Duration& /*period*/) {
         auto result = return_type::OK;
         for (const auto& wheel : wheels) {
-#if HARDWARE_INTERFACE_IS_JAZZY
             const auto command = get_command(wheel->velocity_interface_name) * ENCODER_MULTIPLIER;
-#else
-            const auto command = hw_commands[i] * ENCODER_MULTIPLIER;
-#endif
 
             const auto targetVelocity = metersPerSecondToRPM(command, wheel->radius) * multiplier;
 
