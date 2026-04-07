@@ -4,7 +4,7 @@
 #include <linux/can.h>
 #include <rclcpp/logger.hpp>
 #include <rclcpp/macros.hpp>
-#include <ros2_fmt_logger/ros2_fmt_logger.hpp>
+#include <ros2_fmt_logger/logger.hpp>
 
 namespace can_util {
     using CANFrameCallback = std::function<void(uint32_t id, const std::vector<uint8_t>& data)>;
