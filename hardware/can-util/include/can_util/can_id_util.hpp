@@ -4,7 +4,7 @@
 
 #include "constants.hpp"
 
-namespace can_util::FRCCan {
+namespace can_util {
     template <typename T>
     static constexpr T mask(const uint8_t bits) {
         constexpr T one = 1;
@@ -32,7 +32,7 @@ namespace can_util::FRCCan {
     static constexpr auto SEVERITY_MASK = mask<uint8_t>(2);
     static constexpr auto INSTRUCTION_MASK = mask<uint8_t>(8);
 
-    constexpr uint32_t createFrameId(
+    constexpr uint32_t createCANFrameId(
         const uint8_t device_type,
         const uint8_t manufacturer,
         const uint8_t severity,
@@ -46,14 +46,14 @@ namespace can_util::FRCCan {
             | static_cast<uint32_t>(device_id & DEVICE_ID_MASK);
     }
 
-    constexpr uint32_t createFrameId(
+    constexpr uint32_t createCANFrameId(
         const constants::DeviceType device_type,
         const constants::Manufacturer manufacturer,
         const constants::Severity severity,
         const uint8_t instruction,
         const uint8_t device_id
     ) {
-        return createFrameId(
+        return createCANFrameId(
             static_cast<uint8_t>(device_type),
             static_cast<uint8_t>(manufacturer),
             static_cast<uint8_t>(severity),
@@ -62,7 +62,7 @@ namespace can_util::FRCCan {
         );
     }
 
-    constexpr uint32_t createFRCFrameId(
+    constexpr uint32_t createFRCCANFrameId(
         const uint8_t device_type,
         const uint8_t manufacturer,
         const uint8_t api_class,
@@ -76,18 +76,18 @@ namespace can_util::FRCCan {
             | static_cast<uint32_t>(device_id & DEVICE_ID_MASK);
     }
 
-    constexpr uint32_t createFRCFrameId(
+    constexpr uint32_t createFRCCANFrameId(
         const constants::DeviceType device_type,
         const constants::Manufacturer manufacturer,
-        const constants::ApiClass api_class,
-        const constants::ApiIndex api_index,
+        const uint8_t api_class,
+        const uint8_t api_index,
         const uint8_t device_id
     ) {
-        return createFRCFrameId(
+        return createFRCCANFrameId(
             static_cast<uint8_t>(device_type),
             static_cast<uint8_t>(manufacturer),
-            static_cast<uint8_t>(api_class),
-            static_cast<uint8_t>(api_index),
+            api_class,
+            api_index,
             device_id
         );
     }

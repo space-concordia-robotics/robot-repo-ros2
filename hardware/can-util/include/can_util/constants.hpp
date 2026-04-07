@@ -49,34 +49,6 @@ namespace can_util::constants {
         // 21-255 are reserved. allocate them as necessary.
     };
 
-    //! see https://docs.wpilib.org/en/stable/docs/software/can-devices/can-addressing.html#api-class
-    enum class ApiClass : uint8_t {
-        VOLTAGE_CONTROL_MODE = 0,
-        SPEED_CONTROL_MODE = 1,
-        VOLTAGE_COMPENSATION_MODE = 2,
-        POSITION_CONTROL_MODE = 3,
-        CURRENT_CONTROL_MODE = 4,
-        STATUS = 5,
-        PERIODIC_STATUS = 6,
-        CONFIGURATION = 7,
-        ACK = 8,
-    };
-
-    //! see https://docs.wpilib.org/en/stable/docs/software/can-devices/can-addressing.html#api-index
-    enum class ApiIndex : uint8_t {
-        ENABLE_CONTROL = 0,
-        DISABLE_CONTROL = 1,
-        SET_SETPOINT = 2,
-        P_CONSTANT = 3,
-        I_CONSTANT = 4,
-        D_CONSTANT = 5,
-        SET_REFERENCE = 6,
-        TRUSTED_ENABLE = 7,
-        TRUSTED_SET_NO_ACK = 8,
-        TRUSTED_SET_SETPOINT_NO_ACK = 10,
-        SET_SETPOINT_NO_ACK = 11,
-    };
-
     enum class Severity : uint8_t {
         MANUAL_INTERVENTION = 0x00,
         AUTOMATIC_INTERVENTION = 0x01,
