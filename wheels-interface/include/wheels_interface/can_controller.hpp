@@ -3,7 +3,7 @@
 #include <functional>
 #include <iostream>
 #include <linux/can.h>
-#include <ros2_fmt_logger/ros2_fmt_logger.hpp>
+#include <ros2_fmt_logger/logger.hpp>
 
 #define STATUS_BUFFER_SIZE 1000
 
