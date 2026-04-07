@@ -80,12 +80,6 @@ namespace wheels_interface {
 
         auto rcl_logger = get_logger();
 
-        // if (auto locked_executor = executor.lock()) {
-        //     // ... executor is valid and can be used here ...
-        // } else {
-        //     return hardware_interface::CallbackReturn::ERROR;
-        // }
-
         const auto node = get_node();
 
         // TODO 2026-03-12 (Will Free): re-enable
@@ -204,10 +198,6 @@ namespace wheels_interface {
         for (const auto& [name, descr] : joint_command_interfaces_) {
             set_command(name, get_state(name));
         }
-
-        // for (const auto & wheel : wheels) {
-        //     wheel->motor->setVelocity()
-        // }
 
         using namespace std::chrono_literals;
 
@@ -329,7 +319,6 @@ namespace wheels_interface {
             const auto velocity = rpmToMetersPerSecond(velocityRPM, wheel->radius) / multiplier;
 
             const auto rotations = static_cast<double>(motor->getPosition() / ENCODER_MULTIPLIER);
-            // TODO 2026-03-01 (Will Free): double check if the position is also inverted or not
             const auto position = rotationsToMeters(rotations, wheel->radius) / multiplier;
 
             set_state(wheel->velocity_interface_name, velocity);
