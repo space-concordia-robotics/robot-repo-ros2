@@ -14,6 +14,7 @@
 #include <ros2_fmt_logger/logger.hpp>
 #include <wheels_interface/can_controller.hpp>
 
+#include "../../../transducer-imu/external/EasyProfile/BasicTypes.h"
 #include "spark/spark_max.hpp"
 
 namespace wheels_interface {
@@ -79,13 +80,31 @@ namespace wheels_interface {
     };
 }
 
-// namespace diagnostic_updater {
-//     template <>
-//     inline void DiagnosticStatusWrapper::add<float>(const std::string& key, const float& b) {
-//         diagnostic_msgs::msg::KeyValue ds;
-//         ds.key = key;
-//         ds.value = b ? "True" : "False";
-//
-//         values.push_back(ds);
-//     }
-// }
+namespace diagnostic_updater {
+    template <>
+    inline void DiagnosticStatusWrapper::add<float>(const std::string& key, const float& f) {
+        diagnostic_msgs::msg::KeyValue ds;
+        ds.key = key;
+        ds.value = fmt::format("{:f}", f);
+
+        values.push_back(ds);
+    }
+
+    template <>
+    inline void DiagnosticStatusWrapper::add<double>(const std::string& key, const double& d) {
+        diagnostic_msgs::msg::KeyValue ds;
+        ds.key = key;
+        ds.value = fmt::format("{:f}", d);
+
+        values.push_back(ds);
+    }
+
+    template <>
+    inline void DiagnosticStatusWrapper::add<uint16>(const std::string& key, const uint16& d) {
+        diagnostic_msgs::msg::KeyValue ds;
+        ds.key = key;
+        ds.value = fmt::format("{:d}", d);
+
+        values.push_back(ds);
+    }
+}
