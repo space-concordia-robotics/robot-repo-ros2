@@ -38,10 +38,8 @@ namespace Instructions{
         ARM_MOTOR_4 = 0x0C,
         ARM_MOTOR_5 = 0x0D, 
         
-        STOP_COMPAT = 0x00,
-        STOP_HUB = 0x00, 
-        RESUME_MOTOR = 0x01, 
-        RESUME_HUB = 0x01, 
+        STOP_COMMAND = 0x00,
+        RESUME_COMMAND = 0x01, 
 
     };
 } //namespace instructions

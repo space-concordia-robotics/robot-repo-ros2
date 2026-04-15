@@ -41,7 +41,7 @@ class BuildAddress{
         //                              5                   8                   10                  6
         //note: Order of frame is 1. Device type, 2. Manufacturer code, 3. instruction, and 4. DeviceID. 
         template <typename PayloadT> // fun fact, template variable is a variable that can work with any type specified when the variable is used ~ GFG.  
-        void buildAddress(uint8_t deviceType, uint8_t manufacturerCode, uint8_t SEVERITY, uint8_t inst, uint8_t deviceID, const PayloadT& payload){
+        uint32_t buildAddress(uint8_t deviceType, uint8_t manufacturerCode, uint8_t SEVERITY, uint8_t inst, uint8_t deviceID, const PayloadT& payload){
 
                 struct can_frame frame{}; 
                 static_assert(sizeof(PayloadT) <= 8, "Payload must be <= 8 bytes for CAN2.0B");
@@ -60,49 +60,53 @@ class BuildAddress{
                 memset(frame.data, 0, sizeof(frame.data));
                 memcpy(frame.data, &payload, sizeof(PayloadT));
 
-                CanManager::writeFrame(frame); 
+                return manager_.writeFrame(frame); 
         }
 
         //build a new function that can send a force stop command and also a resume motor command, only taking in the device id as a parameter. 
         //and also the severity. 
 
-        void sendShutDownRequest(uint8_t DeviceType, uint8_t deviceID){
+        uint32_t sendShutDownRequest(uint8_t DeviceType, uint8_t deviceID){
             
             struct can_frame frame{}; 
             if(deviceID == static_cast<uint8_t>(DeviceId::ID::COMPAT_BOARD_ID)){
                 const uint32_t compatID = buildCANID(DeviceType, Manufacturer::TEAM_USE, severity::SEV_CNTRL, 
-                static_cast<uint8_t>(Instructions::Inst::STOP_COMPAT), deviceID);
+                static_cast<uint8_t>(Instructions::Inst::STOP_COMMAND), deviceID);
                 frame.can_id = compatID | CAN_EFF_FLAG; 
                 frame.can_dlc = 8; 
             }
 
             if(deviceID == static_cast<uint8_t>(DeviceId::ID::HUB)){
                 const uint32_t hubID = buildCANID(DeviceType, Manufacturer::TEAM_USE, severity::SEV_MAN_INTERVENTION, 
-                    static_cast<uint8_t>(Instructions::Inst::STOP_HUB), deviceID); 
+                    static_cast<uint8_t>(Instructions::Inst::STOP_COMMAND), deviceID); 
                 frame.can_id = hubID | CAN_EFF_FLAG; 
                 frame.can_dlc = 8; 
             }
 
-            CanManager::writeFrame(frame); 
+            return manager_.writeFrame(frame); 
 
         } 
 
-        void sendRestartCommand(uint8_t DeviceType, uint8_t deviceID){
+        uint32_t sendRestartCommand(uint8_t DeviceType, uint8_t deviceID){
 
             struct can_frame frame{}; 
             if(deviceID == static_cast<uint8_t>(DeviceId::ID::COMPAT_BOARD_ID)){
                 const uint32_t compatID = buildCANID(DeviceType, Manufacturer::TEAM_USE, severity::SEV_CNTRL, 
-                static_cast<uint8_t>(Instructions::Inst::RESUME_MOTOR), deviceID);
+                static_cast<uint8_t>(Instructions::Inst::RESUME_COMMAND), deviceID);
                 frame.can_id = compatID | CAN_EFF_FLAG; 
                 frame.can_dlc = 8; 
             }
             if(deviceID == static_cast<uint8_t>(DeviceId::ID::HUB)){
                 const uint32_t hubID = buildCANID(DeviceType, Manufacturer::TEAM_USE, severity::SEV_MAN_INTERVENTION, 
-                    static_cast<uint8_t>(Instructions::Inst::RESUME_HUB), deviceID); 
+                    static_cast<uint8_t>(Instructions::Inst::RESUME_COMMAND), deviceID); 
                 frame.can_id = hubID | CAN_EFF_FLAG; 
                 frame.can_dlc = 8; 
             }
 
-            CanManager::writeFrame(frame); 
+            return manager_.writeFrame(frame); 
         }
+
+    private: 
+
+        CanManager manager_; 
 }; 

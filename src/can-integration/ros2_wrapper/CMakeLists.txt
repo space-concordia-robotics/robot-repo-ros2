@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.8)
-project(can-integration)
+project(ros2_wrapper)
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
@@ -11,13 +11,14 @@ find_package(rclcpp REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
-
+find_package(ros2_fmt_logger REQUIRED)
+find_package(can-utils REQUIRED)
 
 include_directories(include)
 
 add_executable(can_node
   src/can_controller_node.cpp
-  src/can_interface.cpp
+  
 )
 
 #rosidl_target_interfaces(wheels_controller_node
@@ -28,7 +29,8 @@ ament_target_dependencies(
     rclcpp 
     geometry_msgs  
     sensor_msgs
-    std_msgs 
+  std_msgs
+  can-utils
 )
 
 install(TARGETS
