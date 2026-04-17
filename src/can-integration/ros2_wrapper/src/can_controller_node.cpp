@@ -4,13 +4,16 @@
 
 
 
-CanControllerNode::CanControllerNode() : Node("can_controller_node"), can_interface("can0", this->get_logger()){
+CanControllerNode::CanControllerNode(can_util::CANController& can_interface_) : Node("can_controller_node"), can_interface(can_interface_){
 
             //check to see if can has been sucessfully configured 
-            if(can_interface.configureCan("can0") != 0){
-                RCLCPP_ERROR(this->get_logger(), "Failed to configure CAN interface...");
-                rclcpp::shutdown();
-                return; 
+            try
+            {
+                can_interface.configureCan(); 
+            }
+            catch(const std::exception& e)
+            {
+                std::cerr << e.what() << '\n';
             }
             RCLCPP_INFO(this->get_logger(), "CAN interface configured successfully!");
 
@@ -167,7 +170,8 @@ int main(int argc, char *argv[]){
 
     rclcpp::init(argc, argv); 
 
-    auto node = std::make_shared<CanControllerNode>(); 
+    auto can_controller = std::make_shared<can_util::CANController>(); 
+    auto node = std::make_shared<CanControllerNode>(can_controller); 
     rclcpp::spin(node); 
 
 

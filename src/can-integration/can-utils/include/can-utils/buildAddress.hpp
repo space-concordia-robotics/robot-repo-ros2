@@ -1,6 +1,6 @@
 #pragma once 
 
-#include "can_interface.hpp"
+#include "can-utils/can_interface.hpp"
 #include "prefixes.hpp"
 
 
@@ -60,7 +60,7 @@ class BuildAddress{
                 memset(frame.data, 0, sizeof(frame.data));
                 memcpy(frame.data, &payload, sizeof(PayloadT));
 
-                return manager_.writeFrame(frame); 
+                return manager_->sendBlockingFrame(frame); 
         }
 
         //build a new function that can send a force stop command and also a resume motor command, only taking in the device id as a parameter. 
@@ -83,7 +83,7 @@ class BuildAddress{
                 frame.can_dlc = 8; 
             }
 
-            return manager_.writeFrame(frame); 
+            return manager_->sendBlockingFrame(frame); 
 
         } 
 
@@ -103,10 +103,11 @@ class BuildAddress{
                 frame.can_dlc = 8; 
             }
 
-            return manager_.writeFrame(frame); 
+            return manager_->sendBlockingFrame(frame); 
         }
 
     private: 
 
-        CanManager manager_; 
+    std::shared_ptr<can_util::CANController> manager_; 
+
 }; 

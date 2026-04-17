@@ -1,6 +1,7 @@
 #include "buildAddress.hpp"
 #include "can_interface.hpp"
 #include "parser.hpp"
+#include <cassert>
 #include "prefixes.hpp"
 #include <iostream>
 
@@ -14,14 +15,16 @@ class SystemFrameBuilder{
         SystemFrameBuilder(); 
 
         inline uint32_t sendWheelMotorVelocity(DeviceId::ID device_id, float velocity_payload){
-            
+
+
+            assert(velocity_payload < 8 && "payload is to big"); 
             struct can_frame frame{}; 
 
             frame.can_id = (COMMAND_PREFIX_VELOCITY_CONTROL << 8) | (static_cast<uint8_t>(device_id) + 0x80) | CAN_EFF_FLAG;
             frame.can_dlc = 8; 
             
             memcpy(frame.data, &velocity_payload, sizeof(float));
-            return can_manager_.sendBlockingFrame(frame); 
+            return can_manager_->sendBlockingFrame(frame); 
         }
 
         //Function to send arm motor velocity to each motor
@@ -40,8 +43,8 @@ class SystemFrameBuilder{
          ~SystemFrameBuilder(){std::cout << "System frame builder destructor called" << std::endl; }
 
     private: 
-
-        CanManager can_manager_; 
+        
+        std::shared_ptr<can_util::CANController> can_manager_; 
         BuildAddress builder_; 
 
 
