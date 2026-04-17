@@ -12,6 +12,12 @@ class BuildAddress{
 
     public: 
 
+        explicit BuildAddress(const std::shared_ptr<can_util::CANController>& manager) : manager_(manager){
+            if(!manager_){
+                throw std::invalid_argument("manager_ must not be null"); 
+            }
+        }
+
         //initializing the different masks that will go into building the frame
         // by specifying their bitlengths. 
         static constexpr uint32_t DEVICE_TYPE_MASK = 0x1Fu;  //5 bits
@@ -73,14 +79,14 @@ class BuildAddress{
                 const uint32_t compatID = buildCANID(DeviceType, Manufacturer::TEAM_USE, severity::SEV_CNTRL, 
                 static_cast<uint8_t>(Instructions::Inst::STOP_COMMAND), deviceID);
                 frame.can_id = compatID | CAN_EFF_FLAG; 
-                frame.can_dlc = 8; 
-            }
-
-            if(deviceID == static_cast<uint8_t>(DeviceId::ID::HUB)){
+                frame.len = 8; 
+            } else if(deviceID == static_cast<uint8_t>(DeviceId::ID::HUB)){
                 const uint32_t hubID = buildCANID(DeviceType, Manufacturer::TEAM_USE, severity::SEV_MAN_INTERVENTION, 
                     static_cast<uint8_t>(Instructions::Inst::STOP_COMMAND), deviceID); 
                 frame.can_id = hubID | CAN_EFF_FLAG; 
-                frame.can_dlc = 8; 
+                frame.len = 8; 
+            }else{
+                throw std::invalid_argument("Unknown Deviceid"); 
             }
 
             return manager_->sendBlockingFrame(frame); 
@@ -108,6 +114,6 @@ class BuildAddress{
 
     private: 
 
-    std::shared_ptr<can_util::CANController> manager_; 
+        std::shared_ptr<can_util::CANController> manager_; 
 
 }; 

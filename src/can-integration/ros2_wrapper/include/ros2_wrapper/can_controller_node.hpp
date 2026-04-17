@@ -17,7 +17,7 @@ using namespace std::literals::chrono_literals;
 class CanControllerNode : public rclcpp::Node{
 
     public:
-        CanControllerNode(can_util::CANController& can_interface_);
+        explicit CanControllerNode(const rclcpp::NodeOptions& options = rclcpp::NodeOptions());
 
         void getTwistMessages(const geometry_msgs::msg::Twist::ConstSharedPtr& twist_msg); 
         void getJointStateMessages(const sensor_msgs::msg::JointState::ConstSharedPtr& joint_state_msg);
@@ -25,8 +25,10 @@ class CanControllerNode : public rclcpp::Node{
 
     private: 
 
-        can_util::CANController& can_interface; 
-        SystemFrameBuilder frame_builder_; 
+        std::string can_interface_; 
+        
+        std::shared_ptr<can_util::CANController> can_controller_; 
+        std::unique_ptr<SystemFrameBuilder> frame_builder_; 
         
         rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr twist_msgs_; 
         rclcpp::Subscription<sensor_msgs::msg::Joy>::SharedPtr joy_msgs_; 

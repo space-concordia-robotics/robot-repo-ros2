@@ -4,32 +4,35 @@
 
 
 
-CanControllerNode::CanControllerNode(can_util::CANController& can_interface_) : Node("can_controller_node"), can_interface(can_interface_){
+CanControllerNode::CanControllerNode(const rclcpp::NodeOptions& options) : 
+    Node("can_controller_node", options){
 
-            //check to see if can has been sucessfully configured 
-            try
-            {
-                can_interface.configureCan(); 
-            }
-            catch(const std::exception& e)
-            {
-                std::cerr << e.what() << '\n';
-            }
-            RCLCPP_INFO(this->get_logger(), "CAN interface configured successfully!");
+        can_interface_ = this->declare_parameter<std::string>("can_interface", "vcan0");
 
+        can_controller_ = std::make_shared<can_util::CANController>(can_interface_, this->get_logger());
+        if (!can_controller_->configureCan()) {
+            RCLCPP_FATAL(get_logger(), "Failed to configure CAN on interface '%s'", can_interface_.c_str());
+            throw std::runtime_error("CAN configure failed");
+        }
+        
+        RCLCPP_INFO(this->get_logger(), "CAN interface configured successfully!");
+        
+        frame_builder_ = std::make_unique<SystemFrameBuilder>(can_controller_);
 
-            //intiallize subscriptions 
+        
 
-            twist_msgs_ = this->create_subscription<geometry_msgs::msg::Twist>("/cmd_vel", rclcpp::SystemDefaultsQoS(), [this]
-            (const geometry_msgs::msg::Twist::ConstSharedPtr& msg) {getTwistMessages(msg);});
-            joint_state_msgs_ = this->create_subscription<sensor_msgs::msg::JointState>("/arm_xyz_cmd", rclcpp::SensorDataQoS(), [this]
-            (const sensor_msgs::msg::JointState::ConstSharedPtr& msg) {getJointStateMessages(msg);});
-            joy_msgs_ = this->create_subscription<sensor_msgs::msg::Joy>("/joy", rclcpp::SystemDefaultsQoS(), [this]
-            (const sensor_msgs::msg::Joy::ConstSharedPtr& msg){getjoyfeedback(msg);});
+        //intiallize subscriptions 
 
-            RCLCPP_INFO(this->get_logger(), "Subscribed to the required topics");
-            
-            //initialize can start up function call. 
+        twist_msgs_ = this->create_subscription<geometry_msgs::msg::Twist>("/cmd_vel", rclcpp::SystemDefaultsQoS(), [this]
+        (const geometry_msgs::msg::Twist::ConstSharedPtr& msg) {getTwistMessages(msg);});
+        joint_state_msgs_ = this->create_subscription<sensor_msgs::msg::JointState>("/arm_xyz_cmd", rclcpp::SensorDataQoS(), [this]
+        (const sensor_msgs::msg::JointState::ConstSharedPtr& msg) {getJointStateMessages(msg);});
+        joy_msgs_ = this->create_subscription<sensor_msgs::msg::Joy>("/joy", rclcpp::SystemDefaultsQoS(), [this]
+        (const sensor_msgs::msg::Joy::ConstSharedPtr& msg){getjoyfeedback(msg);});
+
+        RCLCPP_INFO(this->get_logger(), "Subscribed to the required topics");
+        
+        //initialize can start up function call. 
             
 }
         
@@ -64,12 +67,12 @@ void CanControllerNode::getjoyfeedback(const sensor_msgs::msg::Joy::ConstSharedP
     if(force_stop_compat && !arm_force_stop){
         arm_force_stop = true; 
         inhibit_arm_cmds = false; 
-        frame_builder_.sendForceStop(deviceType::DeviceType::COMPAT, DeviceId::ID::COMPAT_BOARD_ID); 
+        frame_builder_->sendForceStop(deviceType::DeviceType::COMPAT, DeviceId::ID::COMPAT_BOARD_ID); 
         RCLCPP_WARN(this->get_logger(), "Force stop arm motors request sent"); 
     }else if(restart_arm_pressed && arm_force_stop){
         arm_force_stop = false; 
         inhibit_arm_cmds = true; 
-        frame_builder_.sendResume(deviceType::DeviceType::COMPAT, DeviceId::ID::COMPAT_BOARD_ID); 
+        frame_builder_->sendResume(deviceType::DeviceType::COMPAT, DeviceId::ID::COMPAT_BOARD_ID); 
         RCLCPP_INFO(this->get_logger(), "Restart arm motors request sent"); 
     }
 
@@ -77,13 +80,13 @@ void CanControllerNode::getjoyfeedback(const sensor_msgs::msg::Joy::ConstSharedP
 
         wheel_force_stop = true; 
         inhibit_wheel_cmds = false;
-        frame_builder_.sendForceStop(deviceType::DeviceType::RELAY, DeviceId::ID::HUB);
+        frame_builder_->sendForceStop(deviceType::DeviceType::RELAY, DeviceId::ID::HUB);
         RCLCPP_WARN(this->get_logger(), "Wheel force stop request sent"); 
 
     }else if(restart_wheels && wheel_force_stop){
         wheel_force_stop = false; 
         inhibit_wheel_cmds = true;
-        frame_builder_.sendResume(deviceType::DeviceType::RELAY, DeviceId::ID::HUB); 
+        frame_builder_->sendResume(deviceType::DeviceType::RELAY, DeviceId::ID::HUB); 
         RCLCPP_WARN(this->get_logger(), "Wheel restart request sent"); 
     }
 }
@@ -112,13 +115,13 @@ void CanControllerNode::getTwistMessages(const geometry_msgs::msg::Twist::ConstS
 
     if(!inhibit_wheel_cmds){
         //send commands out to be processed by the framer 
-        frame_builder_.sendWheelMotorVelocity(DeviceId::ID::WHEEL_MOT1, right_wheel_velocity_rpm);
-        frame_builder_.sendWheelMotorVelocity(DeviceId::ID::WHEEL_MOT2, right_wheel_velocity_rpm);
-        frame_builder_.sendWheelMotorVelocity(DeviceId::ID::WHEEL_MOT3, right_wheel_velocity_rpm);
+        frame_builder_->sendWheelMotorVelocity(DeviceId::ID::WHEEL_MOT1, right_wheel_velocity_rpm);
+        frame_builder_->sendWheelMotorVelocity(DeviceId::ID::WHEEL_MOT2, right_wheel_velocity_rpm);
+        frame_builder_->sendWheelMotorVelocity(DeviceId::ID::WHEEL_MOT3, right_wheel_velocity_rpm);
 
-        frame_builder_.sendWheelMotorVelocity(DeviceId::ID::WHEEL_MOT4, left_wheel_velocity_rpm);
-        frame_builder_.sendWheelMotorVelocity(DeviceId::ID::WHEEL_MOT5, left_wheel_velocity_rpm);
-        frame_builder_.sendWheelMotorVelocity(DeviceId::ID::WHEEL_MOT6, left_wheel_velocity_rpm);
+        frame_builder_->sendWheelMotorVelocity(DeviceId::ID::WHEEL_MOT4, left_wheel_velocity_rpm);
+        frame_builder_->sendWheelMotorVelocity(DeviceId::ID::WHEEL_MOT5, left_wheel_velocity_rpm);
+        frame_builder_->sendWheelMotorVelocity(DeviceId::ID::WHEEL_MOT6, left_wheel_velocity_rpm);
         
 
         RCLCPP_INFO(this->get_logger(), "Wheel Motor Commands Sent: Right RPM = %.2f, Left RPM = %.2f", 
@@ -151,7 +154,7 @@ void CanControllerNode::getJointStateMessages(const sensor_msgs::msg::JointState
         for(size_t i = 0; i < joint_state_msg->velocity.size(); i++){
 
             const float velocities = static_cast<float>(joint_state_msg->velocity[i]); 
-            frame_builder_.sendArmMotorVelocity(deviceType::DeviceType::COMPAT, MOTOR_MAP[i], DeviceId::ID::COMPAT_BOARD_ID, velocities); 
+            frame_builder_->sendArmMotorVelocity(deviceType::DeviceType::COMPAT, MOTOR_MAP[i], DeviceId::ID::COMPAT_BOARD_ID, velocities); 
  
             RCLCPP_DEBUG(this->get_logger(), "Motor %zu → %.3f rad/s", i + 1, velocities);
         }
@@ -170,8 +173,7 @@ int main(int argc, char *argv[]){
 
     rclcpp::init(argc, argv); 
 
-    auto can_controller = std::make_shared<can_util::CANController>(); 
-    auto node = std::make_shared<CanControllerNode>(can_controller); 
+    auto node = std::make_shared<CanControllerNode>(); 
     rclcpp::spin(node); 
 
 
