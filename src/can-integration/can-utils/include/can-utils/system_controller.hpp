@@ -22,7 +22,8 @@ class SystemFrameBuilder{
 
         inline uint32_t sendWheelMotorVelocity(DeviceId::ID device_id, float velocity_payload){
 
-
+            //TODO: (Michael) Assert here is broken. whenever 2 joysticks on the ps4 remote 
+            //are used to simultaneously send commands, assert kicks in and terminates code. 
             assert(velocity_payload < 8 && "payload is to big broski, get outta here"); 
             struct can_frame frame{}; 
 

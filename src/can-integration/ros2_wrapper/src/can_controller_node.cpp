@@ -113,7 +113,7 @@ void CanControllerNode::getTwistMessages(const geometry_msgs::msg::Twist::ConstS
     float left_wheel_velocity_rpm = static_cast<float>(left_wheel_velocity) * 2000;
 
 
-    if(!inhibit_wheel_cmds){
+    if(inhibit_wheel_cmds){
         //send commands out to be processed by the framer 
         frame_builder_->sendWheelMotorVelocity(DeviceId::ID::WHEEL_MOT1, right_wheel_velocity_rpm);
         frame_builder_->sendWheelMotorVelocity(DeviceId::ID::WHEEL_MOT2, right_wheel_velocity_rpm);
@@ -148,7 +148,7 @@ void CanControllerNode::getJointStateMessages(const sensor_msgs::msg::JointState
         Instructions::Inst::ARM_MOTOR_5,
     };
 
-    if(!inhibit_arm_cmds){
+    if(inhibit_arm_cmds){
         // sendMotorVelocity() takes in: 1. device type, 2. instruction, 3. motor id, 4. payload (velocities) 
         RCLCPP_INFO(this->get_logger(), "Extracting velocity data from JointState");
         for(size_t i = 0; i < joint_state_msg->velocity.size(); i++){
