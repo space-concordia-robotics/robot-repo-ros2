@@ -35,7 +35,7 @@ try:
     print("ArUco detector initialized.")
 except Exception as e:
     print("Failed to initialize ArUco:", e)
-    sys.exit()
+    sys.exit(1)
 
 
 # GET VIDEO FILES
@@ -75,7 +75,12 @@ def process_video(video_path):
 
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')
     out = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
-
+    if not out.isOpened():
+        print("Error opening video writer for:", output_path)
+        cap.release()
+        out.release()
+        return
+    
     # Progress bar
     with tqdm(total=total_frames,
               desc=filename,
@@ -116,6 +121,7 @@ def process_video(video_path):
 
             except Exception as e:
                 print("YOLO error:", e)
+                sys.exit(1)
 
             # ARUCO DETECTION
             try:
