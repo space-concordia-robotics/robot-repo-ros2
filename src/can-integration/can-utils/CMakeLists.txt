@@ -27,6 +27,7 @@ add_library(
         can_util
         SHARED
         src/can_interface.cpp
+        src/system_controller.cpp
 )
 target_include_directories(can_util
         PUBLIC
