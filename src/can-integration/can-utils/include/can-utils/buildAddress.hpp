@@ -30,9 +30,7 @@ class BuildAddress{
         static uint32_t buildCANID(uint8_t DeviceType, uint8_t manufacturer, uint8_t severity, uint8_t instruction, uint8_t deviceId) {
 
 
-            //bitwise & operator truncates the parameters to be a specific bit length long. 
-            // Think of the bitwise & operator as taking the "smallest" binary value between the two expressions
-            // example: 111 & 001 will give 001, similarily, 011 & 110 will give 010, since 0 < 1, therefore, 0 will be selected. 
+    
             const uint32_t dt = (static_cast<uint32_t>(DeviceType) & DEVICE_TYPE_MASK);
             const uint32_t mfc = (static_cast<uint32_t>(manufacturer) & MANUFACTURER_MASK);
 
@@ -46,7 +44,7 @@ class BuildAddress{
         }
         //                              5                   8                   10                  6
         //note: Order of frame is 1. Device type, 2. Manufacturer code, 3. instruction, and 4. DeviceID. 
-        template <typename PayloadT> // fun fact, template variable is a variable that can work with any type specified when the variable is used ~ GFG.  
+        template <typename PayloadT> 
         uint32_t buildAddress(uint8_t deviceType, uint8_t manufacturerCode, uint8_t SEVERITY, uint8_t inst, uint8_t deviceID, const PayloadT& payload){
 
                 struct can_frame frame{}; 

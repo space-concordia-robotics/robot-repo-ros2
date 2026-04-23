@@ -25,10 +25,10 @@ add_executable(can_node
 #        ${PROJECT_NAME} "rosidl_typesupport_cpp")
 
 ament_target_dependencies(
-    can_node
-    rclcpp 
-    geometry_msgs  
-    sensor_msgs
+  can_node
+  rclcpp 
+  geometry_msgs  
+  sensor_msgs
   std_msgs
   can-utils
 )

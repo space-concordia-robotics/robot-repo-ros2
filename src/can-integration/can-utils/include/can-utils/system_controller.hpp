@@ -12,15 +12,14 @@ class SystemFrameBuilder{
 
     public:
 
-        explicit SystemFrameBuilder(std::shared_ptr<can_util::CANController> can_manager) : 
-            can_manager_(std::move(can_manager)), builder_(can_manager_) {}
+        explicit SystemFrameBuilder(std::shared_ptr<can_util::CANController> can_manager);
 
-        inline uint32_t sendWheelMotorVelocity(DeviceId::ID device_id, float velocity_payload);
+        uint32_t sendWheelMotorVelocity(DeviceId::ID device_id, float velocity_payload);
 
         //Function to send arm motor velocity to each motor
-        inline void sendArmMotorVelocity(deviceType::DeviceType deviceT, Instructions::Inst motor_id, DeviceId::ID device_id, float velocity_rads);
-        inline void sendForceStop(deviceType::DeviceType DeviceType, DeviceId::ID deviceID);
-        inline void sendResume(deviceType::DeviceType DeviceType, DeviceId::ID deviceID);
+        void sendArmMotorVelocity(deviceType::DeviceType deviceT, Instructions::Inst motor_id, DeviceId::ID device_id, float velocity_rads);
+        void sendForceStop(deviceType::DeviceType DeviceType, DeviceId::ID deviceID);
+        void sendResume(deviceType::DeviceType DeviceType, DeviceId::ID deviceID);
 
          ~SystemFrameBuilder(){std::cout << "System frame builder destructor called" << std::endl; }
 

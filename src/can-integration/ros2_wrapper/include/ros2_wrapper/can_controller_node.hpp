@@ -12,8 +12,9 @@
 
 using namespace std::chrono;
 using namespace std::literals::chrono_literals; 
+#define MAX_MOTOR_SPEED 1024.f
 
-//TODO: Implement heartbeat listener thread and data streaming thread. 
+
 class CanControllerNode : public rclcpp::Node{
 
     public:
@@ -29,6 +30,8 @@ class CanControllerNode : public rclcpp::Node{
         
         std::shared_ptr<can_util::CANController> can_controller_; 
         std::unique_ptr<SystemFrameBuilder> frame_builder_; 
+
+        ros2_fmt_logger::Logger logger; 
         
         rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr twist_msgs_; 
         rclcpp::Subscription<sensor_msgs::msg::Joy>::SharedPtr joy_msgs_; 

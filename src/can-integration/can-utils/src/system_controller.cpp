@@ -2,7 +2,7 @@
 
 
 
-explicit SystemFrameBuilder::SystemFrameBuilder(std::shared_ptr<can_util::CANController> can_manager) : 
+SystemFrameBuilder::SystemFrameBuilder(std::shared_ptr<can_util::CANController> can_manager) : 
     can_manager_(std::move(can_manager)), builder_(can_manager_){
 
     if(!can_manager_){
@@ -10,11 +10,9 @@ explicit SystemFrameBuilder::SystemFrameBuilder(std::shared_ptr<can_util::CANCon
     }
 } 
 
-inline uint32_t SystemFrameBuilder::sendWheelMotorVelocity(DeviceId::ID device_id, float velocity_payload){
+uint32_t SystemFrameBuilder::sendWheelMotorVelocity(DeviceId::ID device_id, float velocity_payload){
 
-    //TODO: (Michael) Assert here is broken. whenever 2 joysticks on the ps4 remote 
-    //are used to simultaneously send commands, assert kicks in and terminates code. 
-    assert(velocity_payload < 8 && "Error: Pyalad is greater than 8 bytes"); 
+    static_assert(sizeof(float) <= 8, "Error: Payload must be 8 bytes or less");
     struct can_frame frame{}; 
 
     frame.can_id = (COMMAND_PREFIX_VELOCITY_CONTROL << 8) | (static_cast<uint8_t>(device_id) + 0x80) | CAN_EFF_FLAG;
@@ -25,15 +23,15 @@ inline uint32_t SystemFrameBuilder::sendWheelMotorVelocity(DeviceId::ID device_i
 }
 
 //Function to send arm motor velocity to each motor
-inline void SystemFrameBuilder::sendArmMotorVelocity(deviceType::DeviceType deviceT, Instructions::Inst motor_id, DeviceId::ID device_id, float velocity_rads){
+void SystemFrameBuilder::sendArmMotorVelocity(deviceType::DeviceType deviceT, Instructions::Inst motor_id, DeviceId::ID device_id, float velocity_rads){
     builder_.buildAddress(static_cast<uint8_t>(deviceT), Manufacturer::TEAM_USE, severity::SEV_CNTRL, static_cast<uint8_t>(motor_id), 
     static_cast<uint8_t>(device_id), velocity_rads); 
 }
 
-inline void SystemFrameBuilder::sendForceStop(deviceType::DeviceType DeviceType, DeviceId::ID deviceID){
+void SystemFrameBuilder::sendForceStop(deviceType::DeviceType DeviceType, DeviceId::ID deviceID){
     builder_.sendShutDownRequest(static_cast<uint8_t>(DeviceType), static_cast<uint8_t>(deviceID)); 
 }
-inline void SystemFrameBuilder::sendResume(deviceType::DeviceType DeviceType, DeviceId::ID deviceID){
+void SystemFrameBuilder::sendResume(deviceType::DeviceType DeviceType, DeviceId::ID deviceID){
     builder_.sendRestartCommand(static_cast<uint8_t>(DeviceType), static_cast<uint8_t>(deviceID));
 }
 

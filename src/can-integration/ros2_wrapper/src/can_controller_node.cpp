@@ -5,17 +5,17 @@
 
 
 CanControllerNode::CanControllerNode(const rclcpp::NodeOptions& options) : 
-    Node("can_controller_node", options){
+    Node("can_controller_node", options), logger(this->get_logger().get_child("can_controller_node")){
 
         can_interface_ = this->declare_parameter<std::string>("can_interface", "vcan0");
 
         can_controller_ = std::make_shared<can_util::CANController>(can_interface_, this->get_logger());
         if (!can_controller_->configureCan()) {
-            RCLCPP_FATAL(get_logger(), "Failed to configure CAN on interface '%s'", can_interface_.c_str());
+            logger.fatal("Failed to configure CAN on interface {}", can_interface_); 
             throw std::runtime_error("CAN configure failed");
         }
         
-        RCLCPP_INFO(this->get_logger(), "CAN interface configured successfully!");
+        logger.info("Successfully configured CAN interface!");
         
         frame_builder_ = std::make_unique<SystemFrameBuilder>(can_controller_);
 
@@ -30,7 +30,7 @@ CanControllerNode::CanControllerNode(const rclcpp::NodeOptions& options) :
         joy_msgs_ = this->create_subscription<sensor_msgs::msg::Joy>("/joy", rclcpp::SystemDefaultsQoS(), [this]
         (const sensor_msgs::msg::Joy::ConstSharedPtr& msg){getjoyfeedback(msg);});
 
-        RCLCPP_INFO(this->get_logger(), "Subscribed to the required topics");
+        logger.info("All subscriptions initialized"); 
         
         //initialize can start up function call. 
             
@@ -68,12 +68,12 @@ void CanControllerNode::getjoyfeedback(const sensor_msgs::msg::Joy::ConstSharedP
         arm_force_stop = true; 
         inhibit_arm_cmds = false; 
         frame_builder_->sendForceStop(deviceType::DeviceType::COMPAT, DeviceId::ID::COMPAT_BOARD_ID); 
-        RCLCPP_WARN(this->get_logger(), "Force stop arm motors request sent"); 
+        logger.info("Sending force stop command to arm motors");  
     }else if(restart_arm_pressed && arm_force_stop){
         arm_force_stop = false; 
         inhibit_arm_cmds = true; 
         frame_builder_->sendResume(deviceType::DeviceType::COMPAT, DeviceId::ID::COMPAT_BOARD_ID); 
-        RCLCPP_INFO(this->get_logger(), "Restart arm motors request sent"); 
+        logger.info("Sending restart request to arm motors"); 
     }
 
     if(force_stop_wheels && !wheel_force_stop){
@@ -81,13 +81,12 @@ void CanControllerNode::getjoyfeedback(const sensor_msgs::msg::Joy::ConstSharedP
         wheel_force_stop = true; 
         inhibit_wheel_cmds = false;
         frame_builder_->sendForceStop(deviceType::DeviceType::RELAY, DeviceId::ID::HUB);
-        RCLCPP_WARN(this->get_logger(), "Wheel force stop request sent"); 
-
+        logger.info("Sending force stop command to wheel motors");
     }else if(restart_wheels && wheel_force_stop){
         wheel_force_stop = false; 
         inhibit_wheel_cmds = true;
         frame_builder_->sendResume(deviceType::DeviceType::RELAY, DeviceId::ID::HUB); 
-        RCLCPP_WARN(this->get_logger(), "Wheel restart request sent"); 
+        logger.info("Sending restart command to wheel motors");
     }
 }
 
@@ -104,13 +103,13 @@ void CanControllerNode::getTwistMessages(const geometry_msgs::msg::Twist::ConstS
 
     //calculate the wheel velocity and multiply them by a multiplier
     float distance_between_wheels = 1.2f;
-    uint32_t right_wheel_velocity = -(linear_y - (-angular_z*distance_between_wheels*0.5f)); 
-    uint32_t left_wheel_velocity = -(linear_y + (-angular_z*distance_between_wheels*0.5f)); 
+    float right_wheel_velocity = -(linear_y - (-angular_z * distance_between_wheels * 0.5f)); 
+    float left_wheel_velocity = -(linear_y + (-angular_z * distance_between_wheels * 0.5f)); 
 
 
     //convert velocities into rpm
-    float right_wheel_velocity_rpm = static_cast<float>(right_wheel_velocity) * 2000;
-    float left_wheel_velocity_rpm = static_cast<float>(left_wheel_velocity) * 2000;
+    float right_wheel_velocity_rpm = static_cast<float>(right_wheel_velocity) * 2000.0;
+    float left_wheel_velocity_rpm = static_cast<float>(left_wheel_velocity) * 2000.0;
 
 
     if(inhibit_wheel_cmds){
@@ -124,7 +123,7 @@ void CanControllerNode::getTwistMessages(const geometry_msgs::msg::Twist::ConstS
         frame_builder_->sendWheelMotorVelocity(DeviceId::ID::WHEEL_MOT6, left_wheel_velocity_rpm);
         
 
-        RCLCPP_INFO(this->get_logger(), "Wheel Motor Commands Sent: Right RPM = %.2f, Left RPM = %.2f", 
+        logger.info("Wheel Motor Commands Sent: Right RPM = {:.2f}, Left RPM = {:.2f}", 
                 right_wheel_velocity_rpm, left_wheel_velocity_rpm);
     }
     
@@ -136,6 +135,7 @@ void CanControllerNode::getJointStateMessages(const sensor_msgs::msg::JointState
 
 // @brief Publisher sends out JoinState topic data. Here, we subscribe to the Joinstate to extract oncoming velocity messgaes and then send em off
     if(joint_state_msg->velocity.size() < 5){
+        logger.error("Received joint state messages with insufficient velocity data. joint size is {}, expected at least 5", joint_state_msg->velocity.size()); 
         RCLCPP_ERROR(this->get_logger(), "Received JointState message with insufficient velocity data. Joint size is %zu, expected at least 5.", joint_state_msg->velocity.size());
         return; 
     }
@@ -150,10 +150,10 @@ void CanControllerNode::getJointStateMessages(const sensor_msgs::msg::JointState
 
     if(inhibit_arm_cmds){
         // sendMotorVelocity() takes in: 1. device type, 2. instruction, 3. motor id, 4. payload (velocities) 
-        RCLCPP_INFO(this->get_logger(), "Extracting velocity data from JointState");
+        logger.info("Extracting joint state data");
         for(size_t i = 0; i < joint_state_msg->velocity.size(); i++){
 
-            const float velocities = static_cast<float>(joint_state_msg->velocity[i]); 
+            const float velocities = static_cast<float>(joint_state_msg->velocity[i]) * MAX_MOTOR_SPEED; 
             frame_builder_->sendArmMotorVelocity(deviceType::DeviceType::COMPAT, MOTOR_MAP[i], DeviceId::ID::COMPAT_BOARD_ID, velocities); 
  
             RCLCPP_DEBUG(this->get_logger(), "Motor %zu → %.3f rad/s", i + 1, velocities);
