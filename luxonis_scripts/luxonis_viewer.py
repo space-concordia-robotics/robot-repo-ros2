@@ -4,6 +4,9 @@
 Start the encoder first. Default --rtsp-backend auto uses FFmpeg if GStreamer
 is unavailable (common with pip opencv-python). Many streams need enough
 network bandwidth from the cameras to the PC — lower encoder --bitrate if video corrupts.
+
+Keys: f fullscreen one camera | Esc or f again back to grid | [ ] Tab arrows switch camera
+      1–9 pick camera | l labels | y YOLO | q quit
 """
 
 from __future__ import annotations
@@ -284,6 +287,68 @@ def build_grid(
     return np.vstack([ffc_block, oakd_row])
 
 
+def wait_key_ex(delay_ms: int = 1) -> int:
+    if hasattr(cv2, "waitKeyEx"):
+        return int(cv2.waitKeyEx(delay_ms))
+    return int(cv2.waitKey(delay_ms))
+
+
+def window_inner_size(win: str, fallback: Tuple[int, int] = (1280, 720)) -> Tuple[int, int]:
+    if hasattr(cv2, "getWindowImageRect"):
+        r = cv2.getWindowImageRect(win)
+        if len(r) >= 4 and r[2] > 32 and r[3] > 32:
+            return int(r[2]), int(r[3])
+    return fallback
+
+
+def fit_frame_inside(frame: np.ndarray, target_w: int, target_h: int) -> np.ndarray:
+    """Letterbox-scale frame to fit inside target_w x target_h."""
+    fh, fw = frame.shape[:2]
+    if fw <= 0 or fh <= 0 or target_w <= 0 or target_h <= 0:
+        return frame
+    scale = min(target_w / fw, target_h / fh)
+    nw, nh = max(1, int(fw * scale)), max(1, int(fh * scale))
+    resized = cv2.resize(frame, (nw, nh), interpolation=cv2.INTER_AREA)
+    out = np.zeros((target_h, target_w, 3), dtype=np.uint8)
+    y0 = (target_h - nh) // 2
+    x0 = (target_w - nw) // 2
+    out[y0 : y0 + nh, x0 : x0 + nw] = resized
+    return out
+
+
+def draw_bar_bottom(img: np.ndarray, text: str) -> None:
+    h, w = img.shape[:2]
+    bar = 34
+    y0 = max(0, h - bar)
+    cv2.rectangle(img, (0, y0), (w, h), (0, 0, 0), -1)
+    cv2.putText(
+        img,
+        text,
+        (6, h - 10),
+        cv2.FONT_HERSHEY_SIMPLEX,
+        0.48,
+        (230, 230, 230),
+        1,
+        cv2.LINE_AA,
+    )
+
+
+def draw_bar_top(img: np.ndarray, text: str) -> None:
+    h, w = img.shape[:2]
+    bar = 36
+    cv2.rectangle(img, (0, 0), (w, bar), (0, 0, 0), -1)
+    cv2.putText(
+        img,
+        text,
+        (6, 24),
+        cv2.FONT_HERSHEY_SIMPLEX,
+        0.5,
+        (240, 240, 240),
+        1,
+        cv2.LINE_AA,
+    )
+
+
 def parse_args():
     epilog = """
 Examples:  %(prog)s --host localhost --sources both
@@ -291,6 +356,8 @@ Examples:  %(prog)s --host localhost --sources both
            %(prog)s --yolo --model weights.pt
 
 Env: LUXONIS_SOURCES, LUXONIS_RTSP_HOST, LUXONIS_RTSP_BACKEND, OPENCV_FFMPEG_CAPTURE_OPTIONS
+
+Keys: f=fullscreen cam | Esc=grid | [ ] Tab arrows=cam | 1-9=cam | l y q
 """
     p = argparse.ArgumentParser(
         description="Tiled RTSP viewer (Luxonis encoder); optional YOLO.",
@@ -402,12 +469,28 @@ def main():
 
     show_labels = True
     yolo_enabled = args.yolo
+    focus_mode = False
+    focus_idx = 0
 
-    print("Controls: q=quit  l=toggle stream labels  y=toggle YOLO (if loaded)")
+    KEY_LEFT = 65361
+    KEY_RIGHT = 65363
+    KEY_UP = 65362
+    KEY_DOWN = 65364
+
+    print(
+        "Keys: f fullscreen | Esc grid | [ ] Tab arrows switch cam | 1-9 pick | l labels | y YOLO | q quit"
+    )
     print(f"Streaming {len(names)} camera(s) from rtsp://{args.host}:8554/ ...")
 
     window = "luxonis_viewer"
     cv2.namedWindow(window, cv2.WINDOW_NORMAL)
+
+    def set_fullscreen(on: bool) -> None:
+        try:
+            prop = cv2.WINDOW_FULLSCREEN if on else cv2.WINDOW_NORMAL
+            cv2.setWindowProperty(window, cv2.WND_PROP_FULLSCREEN, prop)
+        except Exception:
+            pass
 
     try:
         while True:
@@ -425,16 +508,72 @@ def main():
                 for name in list(frames.keys()):
                     frames[name] = yolo.annotate(name, frames[name])
 
-            canvas = build_grid(args.sources, frames, cell_w, cell_h, show_labels)
-            cv2.imshow(window, canvas)
-            key = cv2.waitKey(1) & 0xFF
-            if key == ord("q") or key == 27:
+            if focus_mode:
+                tw, th = window_inner_size(window)
+                name = names[focus_idx]
+                raw = frames.get(name)
+                if raw is None:
+                    view = black_cell(tw, th, f"{name}: no signal")
+                else:
+                    view = fit_frame_inside(raw.copy(), tw, th)
+                draw_bar_top(
+                    view,
+                    f"{name}  ({focus_idx + 1}/{len(names)})   "
+                    "[ ] arrows Tab  switch   Esc f  grid   q quit",
+                )
+                cv2.imshow(window, view)
+            else:
+                canvas = build_grid(args.sources, frames, cell_w, cell_h, show_labels)
+                sel = names[focus_idx] if names else ""
+                draw_bar_bottom(
+                    canvas,
+                    f"next zoom: [{sel}]   f fullscreen   [ ] Tab arrows   1-{min(9, len(names))}   l y   q quit",
+                )
+                cv2.imshow(window, canvas)
+
+            k = wait_key_ex(1)
+            low = k & 0xFF
+
+            if low == ord("q"):
                 break
-            if key == ord("l"):
-                show_labels = not show_labels
-            if key == ord("y") and yolo is not None:
-                yolo_enabled = not yolo_enabled
+
+            if focus_mode:
+                if low == 27 or low == ord("f"):
+                    focus_mode = False
+                    set_fullscreen(False)
+                elif low == ord("[") or k == KEY_LEFT or k == KEY_UP:
+                    focus_idx = (focus_idx - 1) % len(names)
+                elif low == ord("]") or k == KEY_RIGHT or k == KEY_DOWN or low == ord("\t"):
+                    focus_idx = (focus_idx + 1) % len(names)
+                elif ord("1") <= low <= ord("9"):
+                    idx = low - ord("1")
+                    if idx < len(names):
+                        focus_idx = idx
+                elif low == ord("l"):
+                    show_labels = not show_labels
+                elif low == ord("y") and yolo is not None:
+                    yolo_enabled = not yolo_enabled
+            else:
+                if low == ord("f") and names:
+                    focus_mode = True
+                    set_fullscreen(True)
+                elif low == ord("[") or k == KEY_LEFT or k == KEY_UP:
+                    focus_idx = (focus_idx - 1) % len(names)
+                elif low == ord("]") or k == KEY_RIGHT or k == KEY_DOWN or low == ord("\t"):
+                    focus_idx = (focus_idx + 1) % len(names)
+                elif ord("1") <= low <= ord("9"):
+                    idx = low - ord("1")
+                    if idx < len(names):
+                        focus_idx = idx
+                elif low == ord("l"):
+                    show_labels = not show_labels
+                elif low == ord("y") and yolo is not None:
+                    yolo_enabled = not yolo_enabled
     finally:
+        try:
+            set_fullscreen(False)
+        except Exception:
+            pass
         for r in readers:
             r.stop()
         cv2.destroyAllWindows()
