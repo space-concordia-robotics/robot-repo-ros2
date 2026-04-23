@@ -1,0 +1,2 @@
+depthai
+depthai_cli

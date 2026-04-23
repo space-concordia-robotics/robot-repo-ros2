@@ -1,0 +1,19 @@
+Luxonis encoder — install notes
+================================
+
+Need:
+  • gi (PyGObject) + GStreamer RTSP typelibs — apt
+  • depthai — pip, same Python you use to run the encoder
+
+Apt (Ubuntu/Debian):
+  sudo apt install python3-gi gir1.2-gstreamer-1.0 gir1.2-gst-rtsp-server-1.0
+
+Venv: apt’s `python3-gi` is not visible in a normal venv. Use either:
+  python3 -m venv --system-site-packages depthai-env
+  # or set include-system-site-packages = true in pyvenv.cfg
+
+Then: pip install depthai
+
+Do not: pip install gi (wrong package). Fish: source …/bin/activate.fish
+
+More: default `python3` must see `gi` (often depthai-env with system site-packages).
