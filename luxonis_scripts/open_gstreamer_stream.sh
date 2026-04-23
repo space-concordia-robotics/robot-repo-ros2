@@ -12,3 +12,4 @@ if [[ "${1:-}" != "" && "${1:-}" != --* ]]; then
   shift
 fi
 exec python3 "${SCRIPT_DIR}/luxonis_viewer.py" --host "${HOST}" "$@"
+,
