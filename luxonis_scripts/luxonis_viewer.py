@@ -457,15 +457,31 @@ def main():
         readers.append(r)
 
     yolo: Optional[YoloRunner] = None
+    yolo_error: Optional[str] = None
+
+    def ensure_yolo_loaded() -> bool:
+        nonlocal yolo, yolo_error
+        if yolo is not None:
+            return True
+        try:
+            yolo = YoloRunner(
+                args.model,
+                args.conf,
+                args.stride,
+                args.imgsz,
+                args.half,
+                args.yolo_rgb_only,
+            )
+            print(f"YOLO loaded: {args.model}")
+            yolo_error = None
+            return True
+        except Exception as e:
+            yolo_error = str(e)
+            print(f"Failed to load YOLO model '{args.model}': {e}")
+            return False
+
     if args.yolo:
-        yolo = YoloRunner(
-            args.model,
-            args.conf,
-            args.stride,
-            args.imgsz,
-            args.half,
-            args.yolo_rgb_only,
-        )
+        ensure_yolo_loaded()
 
     show_labels = True
     yolo_enabled = args.yolo
@@ -551,8 +567,13 @@ def main():
                         focus_idx = idx
                 elif low == ord("l"):
                     show_labels = not show_labels
-                elif low == ord("y") and yolo is not None:
-                    yolo_enabled = not yolo_enabled
+                elif low == ord("y"):
+                    if yolo_enabled:
+                        yolo_enabled = False
+                        print("YOLO disabled")
+                    elif ensure_yolo_loaded():
+                        yolo_enabled = True
+                        print("YOLO enabled")
             else:
                 if low == ord("f") and names:
                     focus_mode = True
@@ -567,8 +588,13 @@ def main():
                         focus_idx = idx
                 elif low == ord("l"):
                     show_labels = not show_labels
-                elif low == ord("y") and yolo is not None:
-                    yolo_enabled = not yolo_enabled
+                elif low == ord("y"):
+                    if yolo_enabled:
+                        yolo_enabled = False
+                        print("YOLO disabled")
+                    elif ensure_yolo_loaded():
+                        yolo_enabled = True
+                        print("YOLO enabled")
     finally:
         try:
             set_fullscreen(False)
