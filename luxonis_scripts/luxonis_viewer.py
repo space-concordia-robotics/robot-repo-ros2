@@ -16,6 +16,7 @@ import os
 import socket
 import threading
 import time
+from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
 import cv2
@@ -432,6 +433,11 @@ Keys: f=fullscreen cam | Esc=grid | [ ] Tab arrows=cam | 1-9=cam | l y q
 
 def main():
     args = parse_args()
+    if args.model == "best_190_Epoch.pt":
+        script_dir = Path(__file__).resolve().parent
+        candidate = script_dir / args.model
+        if candidate.exists():
+            args.model = str(candidate)
     names = streams_for_sources(args.sources)
     rotate_code = None
     if args.rotate == "180":
