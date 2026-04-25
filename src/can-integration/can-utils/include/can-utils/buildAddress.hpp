@@ -84,12 +84,12 @@ class BuildAddress{
             if(deviceID == static_cast<uint8_t>(DeviceId::ID::COMPAT_BOARD_ID)){
                 const uint32_t compatID = buildCANID(DeviceType, Manufacturer::TEAM_USE, severity::SEV_CNTRL, 
                 static_cast<uint8_t>(Instructions::Inst::STOP_COMMAND), deviceID);
-                frame.can_id = compatID | CAN_EFF_FLAG; 
+                frame.can_id = compatID; 
                 frame.len = 8; 
             } else if(deviceID == static_cast<uint8_t>(DeviceId::ID::HUB)){
                 const uint32_t hubID = buildCANID(DeviceType, Manufacturer::TEAM_USE, severity::SEV_MAN_INTERVENTION, 
                     static_cast<uint8_t>(Instructions::Inst::STOP_COMMAND), deviceID); 
-                frame.can_id = hubID | CAN_EFF_FLAG; 
+                frame.can_id = hubID; 
                 frame.len = 8; 
             }else{
                 throw std::invalid_argument("Unknown Deviceid"); 
@@ -105,13 +105,13 @@ class BuildAddress{
             if(deviceID == static_cast<uint8_t>(DeviceId::ID::COMPAT_BOARD_ID)){
                 const uint32_t compatID = buildCANID(DeviceType, Manufacturer::TEAM_USE, severity::SEV_CNTRL, 
                 static_cast<uint8_t>(Instructions::Inst::RESUME_COMMAND), deviceID);
-                frame.can_id = compatID | CAN_EFF_FLAG; 
+                frame.can_id = compatID; 
                 frame.can_dlc = 8; 
             }
             if(deviceID == static_cast<uint8_t>(DeviceId::ID::HUB)){
                 const uint32_t hubID = buildCANID(DeviceType, Manufacturer::TEAM_USE, severity::SEV_MAN_INTERVENTION, 
                     static_cast<uint8_t>(Instructions::Inst::RESUME_COMMAND), deviceID); 
-                frame.can_id = hubID | CAN_EFF_FLAG; 
+                frame.can_id = hubID; 
                 frame.can_dlc = 8; 
             }
 

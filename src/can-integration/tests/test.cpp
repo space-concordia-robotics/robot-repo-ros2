@@ -77,36 +77,87 @@ class BuildAddress{
             
             std::bitset<32> bits2(frame.can_id); 
 
-            std::printf("Can id in buildAddress: %s\n", bits2.to_string().c_str()); 
+            std::printf("Can id in buildAddress: %s\n\n", bits2.to_string().c_str()); 
             memset(frame.data, 0, sizeof(frame.data));
             memcpy(frame.data, &payload, sizeof(PayloadT));
             return frame;
             //CanManager::writeFrame(frame); 
         } 
+
+        static uint32_t sendShutDownRequest(uint8_t DeviceType, uint8_t deviceID){
+            
+            struct can_frame frame{}; 
+            if(deviceID == 0x06){
+                const uint32_t compatID = buildCANID(DeviceType, 0x08, 0x03, 
+                0x00, deviceID);
+                frame.can_id = compatID; 
+                frame.len = 8; 
+
+                std::bitset<32> pee(frame.can_id); 
+                std::printf("CAN Frame ID in bits for the stop command (compat): %s\n\n", pee.to_string().c_str());
+            } else if(deviceID == 0x0E){
+                const uint32_t hubID = buildCANID(DeviceType, 0x08, 0x00, 
+                   0x00, deviceID); 
+                frame.can_id = hubID; 
+                frame.len = 8; 
+                std::bitset<32> poo(frame.can_id); 
+                std::printf("CAN Frame ID in bits for the stop command (Hub): %s\n\n", poo.to_string().c_str());
+            }else{
+                throw std::invalid_argument("Unknown Deviceid"); 
+            }
+            
+            return 1; 
+            //return manager_->sendBlockingFrame(frame); 
+
+        } 
+
+        static uint32_t sendRestartCommand(uint8_t DeviceType, uint8_t deviceID){
+
+            struct can_frame frame{}; 
+            if(deviceID == 0x06){
+                const uint32_t compatID = buildCANID(DeviceType, 0x08, 0x03, 
+                0x01, deviceID);
+                frame.can_id = compatID; 
+                frame.can_dlc = 8; 
+                std::bitset<32> peel(frame.can_id); 
+                std::printf("CAN Frame ID in bits for the resume command (Compat): %s\n\n", peel.to_string().c_str());
+            }
+            if(deviceID == 0x0E){
+                const uint32_t hubID = buildCANID(DeviceType,0x08, 0x00, 
+                    0x01, deviceID); 
+                frame.can_id = hubID; 
+                frame.can_dlc = 8; 
+                std::bitset<32> pool(frame.can_id); 
+                std::printf("CAN Frame ID in bits for the resume command (Hub): %s\n\n", pool.to_string().c_str());
+            }
+            
+            return 1; 
+            //return manager_->sendBlockingFrame(frame); 
+        }
 }; 
 
-static void printFrame(const can_frame& f)
-{
-    // Mask out EFF flag when printing the raw 29-bit ID:
-    uint32_t raw = f.can_id & CAN_EFF_MASK;
+// static void printFrame(const can_frame& f)
+// {
+//     // Mask out EFF flag when printing the raw 29-bit ID:
+//     uint32_t raw = f.can_id & CAN_EFF_MASK;
 
-    std::printf("can_id (with flags): 0x%08X\n", f.can_id);
-    std::printf("Can frame (with flags) length: %zu\n", sizeof(f.can_id)*8 );
-    std::printf("raw 29-bit id:       0x%08X\n", raw);
+//     std::printf("can_id (with flags): 0x%08X\n", f.can_id);
+//     std::printf("Can frame (with flags) length: %zu\n", sizeof(f.can_id)*8 );
+//     std::printf("raw 29-bit id:       0x%08X\n", raw);
 
-    std::bitset<32> bits(f.can_id);
-    std::bitset<32> rawbits(raw);
+//     std::bitset<32> bits(f.can_id);
+//     std::bitset<32> rawbits(raw);
 
-    std::printf("binary can (WITH FLAG)frame: %s\n", bits.to_string().c_str()); 
-    std::printf("binary can frame: %s\n", rawbits.to_string().c_str()); 
+//     std::printf("binary can (WITH FLAG)frame: %s\n", bits.to_string().c_str()); 
+//     std::printf("binary can frame: %s\n", rawbits.to_string().c_str()); 
     
-    std::printf("dlc: %u\n", f.can_dlc);
-    std::printf("data:");
-    for (int i = 0; i < f.can_dlc; i++) {
-        std::printf(" %02X", f.data[i]);
-    }
-    std::printf("\n");
-}
+//     std::printf("dlc: %u\n", f.can_dlc);
+//     std::printf("data:");
+//     for (int i = 0; i < f.can_dlc; i++) {
+//         std::printf(" %02X", f.data[i]);
+//     }
+//     std::printf("\n");
+// }
 
 
 
@@ -169,17 +220,21 @@ int main(){
 
     uint8_t severity           = 0x03; 
     uint16_t instruction       = 0x0F; // max 10-bit
-    uint8_t deviceType         = 0x07;  // max 5-bit
+    uint8_t deviceType         = 0x02;  // max 5-bit
     uint8_t manufacturerCode   = 0x08;  // 8-bit
-    uint8_t deviceId           = 0x04;  // max 6-bit
+    uint8_t deviceId           = 0x0E;  // max 6-bit
 
     float payload = 2000.0f;
 
 
     std::cout << "\nTesting Builder" << std::endl;
     // Building the Frame 
-    can_frame f = BuildAddress::buildAddress(deviceType, manufacturerCode, severity, instruction, deviceId, payload); 
-    printFrame(f);
+
+    BuildAddress::buildAddress(deviceType, manufacturerCode, severity, instruction, deviceId, payload);
+    BuildAddress::sendShutDownRequest(deviceType, deviceId); 
+    BuildAddress::sendRestartCommand(deviceType, deviceId); 
+
+    //printFrame(f);
 
     // std::cout << "\nTesting Parser" << std::endl; 
     // // Strip the CAN_EFF_FLAG for the parser logic to handle the pure 29-bit ID
