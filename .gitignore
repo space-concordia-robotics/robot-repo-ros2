@@ -30,6 +30,9 @@ __pycache__/
 *.pyo
 *.pyd
 
+# DepthAI local Python virtual environment (Luxonis / depthai packages)
+depthai-env/
+
 # Temporary files
 *.tmp
 *.bak
