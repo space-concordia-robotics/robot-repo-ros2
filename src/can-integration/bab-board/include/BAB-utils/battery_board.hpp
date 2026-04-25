@@ -144,6 +144,7 @@ class BAB{
         /*
         *  @brief Sends command to cut fan power
         *  @param: DeviceId::ID fanid
+        *  @details --> Commands get sent to TCU board. 
         *  @return: True for success
         */
         bool cutFanPower(DeviceId::ID fanID); 

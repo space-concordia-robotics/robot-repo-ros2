@@ -7,6 +7,7 @@
 namespace deviceType{
     enum class DeviceType : uint8_t{
         COMPAT = 0x02, 
+        JMSB = 0x00, 
         RELAY = 0x03, 
         ENCODER = 0X07, 
         POWER_DISTRIBUTION = 0X08, 
@@ -17,7 +18,7 @@ namespace deviceType{
 namespace Manufacturer{
     enum : uint8_t{ 
         REV_ROBOTICS = 0x05,
-        TEAM_USE = 0x08
+        TEAM_USE = 0x08 
     };
 } //namespace manufacturer
 
@@ -50,7 +51,7 @@ namespace DeviceId{
         AIRLINK = 0X02, 
         WHEEL_EMERGENCY_INTERVENTION = 0X03,
         ARM_EMERGENCY_INTERVENTION = 0x04,
-        JMSB = 0x05, 
+        JMSB = 0x01, 
         COMPAT_BOARD_ID = 0x06, 
 
         BASE_ENCODER = 0X07, 
