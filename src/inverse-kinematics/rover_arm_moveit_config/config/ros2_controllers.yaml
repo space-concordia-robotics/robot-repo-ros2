@@ -24,7 +24,8 @@ arm_controller:
     state_interfaces:
       - position 
       - velocity
-
+# TODO calibrate the gains for the arm_controller
+#probably able to change this during runtime with dynamic reconfigure, which would be nice for tuning
     gains:
       joint1: {p: 40.0, d: 0.0, i: 0.0, i_clamp: 1.0}
       joint2: {p: 60.0, d: 0.0, i: 0.0, i_clamp: 1.0}

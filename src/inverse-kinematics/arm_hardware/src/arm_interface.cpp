@@ -253,6 +253,7 @@ namespace arm_interface
         {
             if (!std::isnan(hw_states_velocity_[i])) //switched from hw_states_position_ to hw_states_velocity_ 
             {
+                //TODO positions in velocity commands?
                 hw_commands_velocity_[i] = hw_states_position_[i];
             }
             else
@@ -348,7 +349,7 @@ namespace arm_interface
         /////////////////////////////////////////////////
 
         const double deg_to_rad = M_PI / 180;
-
+        //TODO only 4 encoders
         // Map encoders to URDF joint order: joint1, joint2, joint3, joint5
         // NOTE: ROS expects joint positions in radians.
         hw_states_position_[1] = angle_1 * deg_to_rad; // joint1 <- encoder 1
@@ -398,13 +399,13 @@ namespace arm_interface
         {   
             
             const double joint_velocities = hw_commands_velocity_[i]; // in rad/s
-
+            //TODO before scaling, should we clamp  to MAX_JOINT_VELOCITY?
             float speed = static_cast<float>(joint_velocities) * MAX_MOTOR_SPEED;
-
+            
             memcpy(&out_buf[(i * sizeof(float)) + 2], &speed, sizeof(float)); 
         }
-        out_buf[27] = 0x0A; // End of message
-
+        //TODO fixed end of buffer 
+        out_buf[26] = 0x0A; // End of message
         RCLCPP_INFO_THROTTLE(rclcpp::get_logger("ArmInterfac"), steady_clock_, 10, "Writing joint velocity commands [%.2f, %.2f, %.2f, %.2f]",
                              hw_commands_velocity_[0], hw_commands_velocity_[1], hw_commands_velocity_[2], hw_commands_velocity_[3]);
 

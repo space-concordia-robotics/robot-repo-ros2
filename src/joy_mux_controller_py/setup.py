@@ -1,4 +1,5 @@
 from setuptools import find_packages, setup
+from glob import glob
 
 package_name = 'joy_mux_controller_py'
 
@@ -10,6 +11,7 @@ setup(
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
+        ('share/' + package_name + '/launch', glob('launch/*.launch.py')),
     ],
     install_requires=['setuptools'],
     zip_safe=True,
@@ -21,6 +23,8 @@ setup(
     entry_points={
         'console_scripts': [
             'joy_mux_controller = joy_mux_controller_py.joy_mux_controller:main',
+            'fk_keyboard_controller = joy_mux_controller_py.fk_keyboard_controller:main',
+            'fk_moveit_keyboard_controller = joy_mux_controller_py.fk_moveit_keyboard_controller:main',
         ],
     },
 )

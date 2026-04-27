@@ -7,14 +7,21 @@ from moveit_configs_utils import MoveItConfigsBuilder
 
 from launch.actions import RegisterEventHandler
 from launch.event_handlers import OnProcessStart
+from launch.actions import DeclareLaunchArgument
+from launch.substitutions import LaunchConfiguration
 
 from launch.actions import TimerAction
 
 
 def generate_launch_description():
+    use_fake_hardware = LaunchConfiguration("use_fake_hardware")
+
     moveit_config = (
         MoveItConfigsBuilder("rover_arm")
-        .robot_description(file_path="config/rover_arm.urdf.xacro")
+        .robot_description(
+            file_path="config/rover_arm.urdf.xacro",
+            mappings={"use_fake_hardware": use_fake_hardware},
+        )
         .joint_limits(file_path="config/joint_limits.yaml")
         .to_moveit_configs()
     )
@@ -83,6 +90,11 @@ def generate_launch_description():
 
     return LaunchDescription(
         [
+            DeclareLaunchArgument(
+                "use_fake_hardware",
+                default_value="false",
+                description="Use mock ros2_control hardware for simulation/RViz testing",
+            ),
             delayed_controller_manager,
             delayed_spawners,
             servo_node_arm,    
