@@ -3,7 +3,7 @@ from launch.event_handlers import OnProcessExit
 from launch.substitutions import PathJoinSubstitution
 from launch_ros.substitutions import FindPackageShare
 
-from launch_util import SimpleLauncher, BridgeDirection
+from launch_util import SimpleLauncher, BridgeDirection, ImageBridgeQoS
 
 
 def generate_launch_description():
@@ -81,5 +81,11 @@ def generate_launch_description():
         bridge.add_topic("/lidar/scan", "rover/lidar/scan", BridgeDirection.GZ_TO_ROS, ros_msg="sensor_msgs/LaserScan")
         bridge.add_topic("/lidar/scan/points", "rover/lidar/scan/points", BridgeDirection.GZ_TO_ROS, ros_msg="sensor_msgs/PointCloud2")
         bridge.add_topic("/gps/fix", "rover/gps/fix", BridgeDirection.GZ_TO_ROS, ros_msg="sensor_msgs/NavSatFix")
+
+        ffc_cameras = ['front', 'left', 'rear', 'right']
+        for camera in ffc_cameras:
+            bridge.add_topic(f"/ffc/{camera}/image_raw", f"rover/ffc/{camera}/image_raw", BridgeDirection.GZ_TO_ROS, ros_msg="sensor_msgs/Image")
+
+        bridge.image_bridge(qos=ImageBridgeQoS.SENSOR, lazy=True, subscription_heartbeat=500)
 
     return sl.launch_description()

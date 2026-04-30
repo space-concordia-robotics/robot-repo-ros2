@@ -248,7 +248,7 @@ class OpaqueFunctionSubstitution(Substitution):
         self.__kwargs = kwargs if kwargs is not None else {}
 
     def perform(self, context: LaunchContext) -> Text:
-        return self.__function(context, *self.args, **self.__kwargs)
+        return self.__function(context, *self.__args, **self.__kwargs)
 
 
 class Templated(Substitution):

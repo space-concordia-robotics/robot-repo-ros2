@@ -1,5 +1,5 @@
 from .events import When
-from .gazebo import GazeboType, BridgeDirection, GazeboBridge
+from .gazebo import GazeboType, BridgeDirection, ImageBridgeQoS, GazeboBridge
 from .group import Group
 from .simple_launcher import SimpleLauncher
 from .substitutions import normalize_typed_dict_substitutions, perform_typed_dict_substitutions, SomeSubstitutionsValueTypeDict, \
@@ -10,6 +10,7 @@ __all__ = [
     "When",
     "GazeboType",
     "BridgeDirection",
+    "ImageBridgeQoS",
     "GazeboBridge",
     "Group",
     "SimpleLauncher",

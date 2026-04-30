@@ -630,12 +630,22 @@ class SimpleLauncher:
                         ros_topic = flatten_substitutions([topic.ros_topic, ext])
                         remappings.append((gz_topic, ros_topic))
 
+                image_bridge_params: Dict[Text, SomeParameterValue] = {}
+
+                if bridge.image_bridge_qos is not None:
+                    image_bridge_params['qos'] = bridge.image_bridge_qos.value
+                if bridge.image_bridge_lazy is not None:
+                    image_bridge_params['lazy'] = bridge.image_bridge_lazy
+                if bridge.image_bridge_subscription_heartbeat is not None:
+                    image_bridge_params['subscription_heartbeat'] = bridge.image_bridge_subscription_heartbeat
+
                 self.node(
                     f"{ros_gz}_image",
                     "image_bridge",
                     name=flatten_substitutions([name, "_image"]),
                     arguments=[topic.gz_topic for topic in im_topics],
                     remappings=remappings,
+                    parameters=[image_bridge_params]
                 )
 
     # def gz_world_tf(self, world_frame=None):
