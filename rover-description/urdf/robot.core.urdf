@@ -571,8 +571,98 @@
         <xacro:gazebo_color reference="forward_camera" color="plastic-black"/>
     </xacro:macro>
 
+    <!-- Perimeter cameras: Luxonis OAK-FFC (stem + sensor box on top) -->
+    <xacro:macro name="oak_ffc_perimeter_cameras">
+        <xacro:property name="oak_mount_x" value="${body_length/4}"/>
+        <xacro:property name="oak_stem_h" value="0.3048"/>
+        <xacro:property name="oak_stem_w" value="0.028"/>
+        <xacro:property name="oak_mount_h" value="0.09"/>
+        <xacro:property name="oak_mount_w" value="0.10"/>
+        <xacro:property name="oak_face_offset" value="${oak_mount_w/2 + 0.005}"/>
+
+        <joint name="base_to_oak_ffc_stem" type="fixed">
+            <parent link="base_link"/>
+            <child link="oak_ffc_stem"/>
+            <origin xyz="${oak_mount_x} 0 ${oak_stem_h/2}" rpy="0 0 0"/>
+        </joint>
+        <link name="oak_ffc_stem">
+            <visual>
+                <geometry>
+                    <box size="${oak_stem_w} ${oak_stem_w} ${oak_stem_h}"/>
+                </geometry>
+                <material name="plastic-red"/>
+            </visual>
+            <collision>
+                <geometry>
+                    <box size="${oak_stem_w} ${oak_stem_w} ${oak_stem_h}"/>
+                </geometry>
+            </collision>
+            <xacro:default_inertial mass="0.08"/>
+        </link>
+        <xacro:gazebo_color reference="oak_ffc_stem" color="plastic-black"/>
+
+        <joint name="oak_ffc_stem_to_mount" type="fixed">
+            <parent link="oak_ffc_stem"/>
+            <child link="oak_ffc_mount"/>
+            <origin xyz="0 0 ${oak_stem_h/2 + oak_mount_h/2}" rpy="0 0 0"/>
+        </joint>
+
+        <link name="oak_ffc_mount">
+            <visual>
+                <geometry>
+                    <box size="${oak_mount_w} ${oak_mount_w} ${oak_mount_h}"/>
+                </geometry>
+                <material name="plastic-red"/>
+            </visual>
+            <collision>
+                <geometry>
+                    <box size="${oak_mount_w} ${oak_mount_w} ${oak_mount_h}"/>
+                </geometry>
+            </collision>
+            <xacro:default_inertial mass="0.05"/>
+        </link>
+        <xacro:gazebo_color reference="oak_ffc_mount" color="plastic-red"/>
+
+        <joint name="oak_ffc_mount_to_front_camera" type="fixed">
+            <parent link="oak_ffc_mount"/>
+            <child link="oak_ffc_cam_front_link"/>
+            <origin xyz="${oak_face_offset} 0 0" rpy="0 0 0"/>
+        </joint>
+        <link name="oak_ffc_cam_front_link">
+            <xacro:default_inertial mass="0.01"/>
+        </link>
+
+        <joint name="oak_ffc_mount_to_left_camera" type="fixed">
+            <parent link="oak_ffc_mount"/>
+            <child link="oak_ffc_cam_left_link"/>
+            <origin xyz="0 ${oak_face_offset} 0" rpy="0 0 ${pi/2}"/>
+        </joint>
+        <link name="oak_ffc_cam_left_link">
+            <xacro:default_inertial mass="0.01"/>
+        </link>
+
+        <joint name="oak_ffc_mount_to_rear_camera" type="fixed">
+            <parent link="oak_ffc_mount"/>
+            <child link="oak_ffc_cam_rear_link"/>
+            <origin xyz="${-oak_face_offset} 0 0" rpy="0 0 ${pi}"/>
+        </joint>
+        <link name="oak_ffc_cam_rear_link">
+            <xacro:default_inertial mass="0.01"/>
+        </link>
+
+        <joint name="oak_ffc_mount_to_right_camera" type="fixed">
+            <parent link="oak_ffc_mount"/>
+            <child link="oak_ffc_cam_right_link"/>
+            <origin xyz="0 ${-oak_face_offset} 0" rpy="0 0 ${-pi/2}"/>
+        </joint>
+        <link name="oak_ffc_cam_right_link">
+            <xacro:default_inertial mass="0.01"/>
+        </link>
+    </xacro:macro>
+
     <!-- TODO 2026-02-26 (Will Free): select the correct one depending on mission type -->
     <!-- <xacro:arm_attachment/> -->
+    <xacro:oak_ffc_perimeter_cameras/>
     <xacro:autonomy_module/>
 
     <xacro:macro name="battery" params="side">
