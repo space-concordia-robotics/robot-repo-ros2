@@ -32,6 +32,8 @@
         <gazebo>
             <!-- IMU -->
             <plugin filename="gz-sim-imu-system" name="gz::sim::systems::Imu"/>
+            <!-- Magnetometer -->
+            <plugin filename="gz-sim-magnetometer-system" name="gz::sim::systems::Magnetometer"/>
 
             <!-- LiDAR -->
             <plugin filename="gz-sim-sensors-system" name="gz::sim::systems::Sensors">
@@ -55,16 +57,25 @@
                         <x>
                             <noise type="gaussian">
                                 <mean>0.0</mean>
+                                <stddev>2e-4</stddev>
+                                <bias_mean>0.0000075</bias_mean>
+                                <bias_stddev>0.0000008</bias_stddev>
                             </noise>
                         </x>
                         <y>
                             <noise type="gaussian">
                                 <mean>0.0</mean>
+                                <stddev>2e-4</stddev>
+                                <bias_mean>0.0000075</bias_mean>
+                                <bias_stddev>0.0000008</bias_stddev>
                             </noise>
                         </y>
                         <z>
                             <noise type="gaussian">
                                 <mean>0.0</mean>
+                                <stddev>2e-4</stddev>
+                                <bias_mean>0.0000075</bias_mean>
+                                <bias_stddev>0.0000008</bias_stddev>
                             </noise>
                         </z>
                     </angular_velocity>
@@ -73,20 +84,65 @@
                         <x>
                             <noise type="gaussian">
                                 <mean>0.0</mean>
+                                <stddev>1.7e-2</stddev>
+                                <bias_mean>0.1</bias_mean>
+                                <bias_stddev>0.001</bias_stddev>
                             </noise>
                         </x>
                         <y>
                             <noise type="gaussian">
                                 <mean>0.0</mean>
+                                <stddev>1.7e-2</stddev>
+                                <bias_mean>0.1</bias_mean>
+                                <bias_stddev>0.001</bias_stddev>
                             </noise>
                         </y>
                         <z>
                             <noise type="gaussian">
                                 <mean>0.0</mean>
+                                <stddev>1.7e-2</stddev>
+                                <bias_mean>0.1</bias_mean>
+                                <bias_stddev>0.001</bias_stddev>
                             </noise>
                         </z>
                     </linear_acceleration>
                 </imu>
+            </sensor>
+
+            <sensor name="magnetometer" type="magnetometer">
+                <always_on>1</always_on>
+                <update_rate>1000</update_rate>
+                <visualize>true</visualize>
+                <topic>imu/mag</topic>
+                <gz_frame_id>imu_link</gz_frame_id>
+
+                <!-- TODO 2025-09-19 (Will Free): Get the correct values for this -->
+                <magnetometer>
+                    <x>
+                        <noise type="gaussian">
+                            <mean>0.0</mean>
+                            <stddev>1.7e-2</stddev>
+                            <bias_mean>0.1</bias_mean>
+                            <bias_stddev>0.001</bias_stddev>
+                        </noise>
+                    </x>
+                    <y>
+                        <noise type="gaussian">
+                            <mean>0.0</mean>
+                            <stddev>1.7e-2</stddev>
+                            <bias_mean>0.1</bias_mean>
+                            <bias_stddev>0.001</bias_stddev>
+                        </noise>
+                    </y>
+                    <z>
+                        <noise type="gaussian">
+                            <mean>0.0</mean>
+                            <stddev>1.7e-2</stddev>
+                            <bias_mean>0.1</bias_mean>
+                            <bias_stddev>0.001</bias_stddev>
+                        </noise>
+                    </z>
+                </magnetometer>
             </sensor>
         </gazebo>
     </xacro:if>
@@ -190,11 +246,11 @@
                         <resolution>0.1</resolution>
                     </range>
 
-                    <!-- <noise> -->
-                    <!--     <type>gaussian</type> -->
-                    <!--     <mean>0.0</mean> -->
-                    <!--     <stddev>0.01</stddev> &lt;!&ndash; from my reading of the datasheet, I think this should be like 0.02? see: range precision &ndash;&gt; -->
-                    <!-- </noise> -->
+                    <noise>
+                        <type>gaussian</type>
+                        <mean>0.0</mean>
+                        <stddev>0.02</stddev> <!-- from my reading of the datasheet, I think this should be like 0.02? see: range precision -->
+                    </noise>
                 </lidar>
                 <!-- <plugin filename="RosGzPointCloud" name="ros_gz_point_cloud::PointCloud"> -->
                 <!--     <topic>points</topic> -->
@@ -248,25 +304,25 @@
                         <x>
                             <noise type="gaussian">
                                 <mean>0.0</mean>
-                                <!-- <stddev>2e-4</stddev> -->
-                                <!-- <bias_mean>0.0000075</bias_mean> -->
-                                <!-- <bias_stddev>0.0000008</bias_stddev> -->
+                                <stddev>2e-4</stddev>
+                                <bias_mean>0.0000075</bias_mean>
+                                <bias_stddev>0.0000008</bias_stddev>
                             </noise>
                         </x>
                         <y>
                             <noise type="gaussian">
                                 <mean>0.0</mean>
-                                <!-- <stddev>2e-4</stddev> -->
-                                <!-- <bias_mean>0.0000075</bias_mean> -->
-                                <!-- <bias_stddev>0.0000008</bias_stddev> -->
+                                <stddev>2e-4</stddev>
+                                <bias_mean>0.0000075</bias_mean>
+                                <bias_stddev>0.0000008</bias_stddev>
                             </noise>
                         </y>
                         <z>
                             <noise type="gaussian">
                                 <mean>0.0</mean>
-                                <!-- <stddev>2e-4</stddev> -->
-                                <!-- <bias_mean>0.0000075</bias_mean> -->
-                                <!-- <bias_stddev>0.0000008</bias_stddev> -->
+                                <stddev>2e-4</stddev>
+                                <bias_mean>0.0000075</bias_mean>
+                                <bias_stddev>0.0000008</bias_stddev>
                             </noise>
                         </z>
                     </angular_velocity>
@@ -275,25 +331,25 @@
                         <x>
                             <noise type="gaussian">
                                 <mean>0.0</mean>
-                                <!-- <stddev>1e-4</stddev> -->
-                                <!-- <bias_mean>1e-4</bias_mean> -->
-                                <!-- <bias_stddev>1e-4</bias_stddev> -->
+                                <stddev>1.7e-2</stddev>
+                                <bias_mean>0.1</bias_mean>
+                                <bias_stddev>0.001</bias_stddev>
                             </noise>
                         </x>
                         <y>
                             <noise type="gaussian">
                                 <mean>0.0</mean>
-                                <!-- <stddev>1e-4</stddev> -->
-                                <!-- <bias_mean>1e-4</bias_mean> -->
-                                <!-- <bias_stddev>1e-4</bias_stddev> -->
+                                <stddev>1.7e-2</stddev>
+                                <bias_mean>0.1</bias_mean>
+                                <bias_stddev>0.001</bias_stddev>
                             </noise>
                         </y>
                         <z>
                             <noise type="gaussian">
                                 <mean>0.0</mean>
-                                <!-- <stddev>1e-4</stddev> -->
-                                <!-- <bias_mean>1e-4</bias_mean> -->
-                                <!-- <bias_stddev>1e-4</bias_stddev> -->
+                                <stddev>1.7e-2</stddev>
+                                <bias_mean>0.1</bias_mean>
+                                <bias_stddev>0.001</bias_stddev>
                             </noise>
                         </z>
                     </linear_acceleration>
