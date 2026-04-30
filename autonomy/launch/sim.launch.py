@@ -4,6 +4,12 @@ from launch_util import SimpleLauncher
 def generate_launch_description():
     sl = SimpleLauncher(mode="simulation")
 
+    world = sl.declare_arg(
+        "world",
+        default_value="maze.world",
+        description="World file in autonomy/worlds (e.g. maze.world, forest.sdf).",
+    )
+
     sl.include(package="rover_description", launch_file="joystick.launch.py")
 
     sl.include(
@@ -27,7 +33,11 @@ def generate_launch_description():
     # # sl.add_action(SetRemap("bond", "/bond"))
     # sl.add_action(SetRemap("cmd_vel_joy", "/cmd_vel_joy"))
 
-    sl.include(package="rover_description", launch_file="simulation.launch.py")
+    sl.include(
+        package="rover_description",
+        launch_file="simulation.launch.py",
+        launch_arguments={"gz_world": world}.items(),
+    )
 
     sl.include(package="autonomy", launch_file="ekf_navsat.launch.py")
 

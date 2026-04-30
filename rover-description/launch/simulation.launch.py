@@ -9,6 +9,12 @@ from launch_util import SimpleLauncher, BridgeDirection
 def generate_launch_description():
     sl = SimpleLauncher(mode="simulation", control="ros")
 
+    gz_world = sl.declare_arg(
+        "gz_world",
+        default_value="maze.world",
+        description="World filename in the autonomy package worlds/ directory (e.g. maze.world, forest.sdf).",
+    )
+
     twist_mux_params = sl.params(package="rover_description", file="twist_mux.yml")
     sl.node(
         package="twist_mux",
@@ -26,7 +32,7 @@ def generate_launch_description():
     # robot seems to be ~0.49m tall
     sl.declare_gazebo_axes(z="0.5")
 
-    sl.gz_launch(package="autonomy", file="maze.world")
+    sl.gz_launch(package="autonomy", file=gz_world)
 
     gz_spawn_ceres = sl.spawn_gz_model(name="ceres", spawn_args=sl.gazebo_axes_args())
 
