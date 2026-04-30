@@ -5,25 +5,26 @@
 #define COMMAND_PREFIX_VELOCITY_CONTROL 0x820504
 
 namespace deviceType{
-    enum class DeviceType : uint8_t{
-        COMPAT = 0x02, 
+    enum class DeviceType : uint32_t{
         JMSB = 0x00, 
+        BAB = 0x01, 
+        COMPAT = 0x02, 
         RELAY = 0x03, 
         ENCODER = 0X07, 
         POWER_DISTRIBUTION = 0X08, 
-        COLOR_SENSOR = 0X13
+        COLOR_SENSOR = 0X13, 
     };
 } //namespace deviceType
 
 namespace Manufacturer{
-    enum : uint8_t{ 
+    enum : uint32_t{ 
         REV_ROBOTICS = 0x05,
         TEAM_USE = 0x08 
     };
 } //namespace manufacturer
 
 namespace severity{
-    enum : uint8_t{
+    enum : uint32_t{
         SEV_MAN_INTERVENTION = 0x00,
         SEV_AUTOMATIC_INTERVENTION = 0x01,
         SEV_STATUS = 0x02, 
@@ -32,7 +33,7 @@ namespace severity{
 } // namespace severity
 
 namespace Instructions{
-    enum class Inst: uint8_t{
+    enum class Inst: uint32_t{
         ARM_MOTOR_1 = 0x09,
         ARM_MOTOR_2 = 0x0A,
         ARM_MOTOR_3 = 0x0B,
@@ -42,11 +43,34 @@ namespace Instructions{
         STOP_COMMAND = 0x00,
         RESUME_COMMAND = 0x01, 
 
+        CUT_PDS_OUTPUTS = 0x8F,
+        AUTOMATIC_RAIL_SHUTDOWN = 0x02, 
+
+
+        COMMAND_OFF = 0x04,
+        TURN_OFF_RELAY = 0X01, 
+        TURN_OFF_FAN = 0X08, 
+        
+        COMMAND_ON = 0X06, 
+        TURN_ON_RELAY = 0X02, 
+        TURN_ON_FAN = 0X0A,
+
+
+        BATTERY_TELEM = 0x00, 
+        RAIL_TELEM = 0x01, 
+        TCU_TELEM = 0x03,  
+
+
+        RELAY_STATUS = 0x08
+
+
+
+
     };
 } //namespace instructions
 
 namespace DeviceId{
-    enum class ID : uint8_t{   
+    enum class ID : uint32_t{   
         BAB = 0X00, 
         AIRLINK = 0X02, 
         WHEEL_EMERGENCY_INTERVENTION = 0X03,

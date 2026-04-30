@@ -36,29 +36,25 @@ class BuildAddress{
 
             // 00010/000010[01]00//1100000000/001100[0]
 
-        static uint32_t buildCANID(uint8_t DeviceType, uint8_t manufacturer, uint8_t severity, uint8_t instruction, uint8_t deviceId) {
+            //00010 00001000 1100000000 00110 
+        static uint32_t buildCANID(uint32_t DeviceType, uint32_t manufacturer, uint32_t severity, uint32_t instruction, uint32_t deviceId) {
 
-            const uint32_t mfc_raw = static_cast<uint32_t>(manufacturer) & MANUFACTURER_MASK; 
-            const uint32_t mfc_high6 = (mfc_raw >> 2) & 0x3F;
-            const uint32_t mfc_low2 = mfc_raw & 0x03;
-
-    
-            const uint32_t dt = (static_cast<uint32_t>(DeviceType) & DEVICE_TYPE_MASK);
-            const uint32_t mfc = (mfc_high6 << 4) | (0x01u << 2) | mfc_low2; 
-            const uint32_t sev2 = (static_cast<uint32_t>(severity) & SEVERITY_VALUE_MASK);
-            const uint32_t inst8 = (static_cast<uint32_t>(instruction) & INSTRUCTION_MASK); 
+            const uint32_t mfc_raw = manufacturer & MANUFACTURER_MASK; 
+            const uint32_t dt = DeviceType & DEVICE_TYPE_MASK;
+            const uint32_t sev2 = severity & SEVERITY_VALUE_MASK;
+            const uint32_t inst8 = instruction & INSTRUCTION_MASK; 
 
             const uint32_t inst10 = (sev2 << 8) | inst8;
-            const uint32_t id = (static_cast<uint32_t>(deviceId) & DEVICE_ID_MASK);
+            const uint32_t id = deviceId & DEVICE_ID_MASK;
 
-            return (dt << 27) | (mfc << 17) | (inst10 << 7) | id << 1; //Bit shifting to the left, in order to create the can frame 
+            return (dt << 24) | (mfc_raw << 16) | (inst10 << 6) | id; //Bit shifting to the left, in order to create the can frame 
         }
         //                              5                   8                   10                  6
 
         // [00011] [000010 [01] 00] [1100000010] [0011000] = 32
         //note: Order of frame is 1. Device type, 2. Manufacturer code, 3. instruction, and 4. DeviceID. 
         template <typename PayloadT> // fun fact, template variable is a variable that can work with any type specified when the variable is used ~ GFG.  
-        static can_frame buildAddress(uint8_t deviceType, uint8_t manufacturerCode, uint8_t SEVERITY, uint16_t inst, uint8_t deviceID, const PayloadT& payload){
+        static can_frame buildAddress(uint32_t deviceType, uint32_t manufacturerCode, uint32_t SEVERITY, uint16_t inst, uint32_t deviceID, const PayloadT& payload){
 
             struct can_frame frame{}; 
             static_assert(sizeof(PayloadT) <= 8, "Payload must be <= 8 bytes for CAN2.0B");
@@ -72,7 +68,7 @@ class BuildAddress{
 
             //The bitwise | operator, will compare both bits in the same position and takes the biggest one. 
             //Example 011001 | 110001 = 111001
-            frame.can_id = canID; 
+            frame.can_id = canID | CAN_EFF_FLAG; 
             frame.len = 8; 
             
             std::bitset<32> bits2(frame.can_id); 
@@ -84,23 +80,23 @@ class BuildAddress{
             //CanManager::writeFrame(frame); 
         } 
 
-        static uint32_t sendShutDownRequest(uint8_t DeviceType, uint8_t deviceID){
+        static uint32_t sendShutDownRequest(uint32_t DeviceType, uint32_t deviceID){
             
             struct can_frame frame{}; 
             if(deviceID == 0x06){
                 const uint32_t compatID = buildCANID(DeviceType, 0x08, 0x03, 
                 0x00, deviceID);
-                frame.can_id = compatID; 
+                frame.can_id = compatID | CAN_EFF_FLAG; 
                 frame.len = 8; 
 
-                std::bitset<32> pee(frame.can_id); 
+                std::bitset<29> pee(frame.can_id); 
                 std::printf("CAN Frame ID in bits for the stop command (compat): %s\n\n", pee.to_string().c_str());
             } else if(deviceID == 0x0E){
                 const uint32_t hubID = buildCANID(DeviceType, 0x08, 0x00, 
                    0x00, deviceID); 
-                frame.can_id = hubID; 
+                frame.can_id = hubID | CAN_EFF_FLAG; 
                 frame.len = 8; 
-                std::bitset<32> poo(frame.can_id); 
+                std::bitset<29> poo(frame.can_id); 
                 std::printf("CAN Frame ID in bits for the stop command (Hub): %s\n\n", poo.to_string().c_str());
             }else{
                 throw std::invalid_argument("Unknown Deviceid"); 
@@ -111,21 +107,21 @@ class BuildAddress{
 
         } 
 
-        static uint32_t sendRestartCommand(uint8_t DeviceType, uint8_t deviceID){
+        static uint32_t sendRestartCommand(uint32_t DeviceType, uint32_t deviceID){
 
             struct can_frame frame{}; 
             if(deviceID == 0x06){
                 const uint32_t compatID = buildCANID(DeviceType, 0x08, 0x03, 
                 0x01, deviceID);
-                frame.can_id = compatID; 
+                frame.can_id = compatID | CAN_EFF_FLAG; 
                 frame.can_dlc = 8; 
-                std::bitset<32> peel(frame.can_id); 
+                std::bitset<29> peel(frame.can_id); 
                 std::printf("CAN Frame ID in bits for the resume command (Compat): %s\n\n", peel.to_string().c_str());
             }
             if(deviceID == 0x0E){
                 const uint32_t hubID = buildCANID(DeviceType,0x08, 0x00, 
                     0x01, deviceID); 
-                frame.can_id = hubID; 
+                frame.can_id = hubID | CAN_EFF_FLAG; 
                 frame.can_dlc = 8; 
                 std::bitset<32> pool(frame.can_id); 
                 std::printf("CAN Frame ID in bits for the resume command (Hub): %s\n\n", pool.to_string().c_str());
@@ -165,12 +161,12 @@ class BuildAddress{
 
 // // Container for the decoded message components
 // struct DecodedFrame {
-//         uint8_t deviceType;
-//         uint8_t manufacturer;
-//         uint8_t severity;
+//         uint32_t deviceType;
+//         uint32_t manufacturer;
+//         uint32_t severity;
 //         uint16_t instruction;
-//         uint8_t deviceId;
-//         std::array<uint8_t, 8> data;  // Appends th DATA to an array 
+//         uint32_t deviceId;
+//         std::array<uint32_t, 8> data;  // Appends th DATA to an array 
 // };
 
 
@@ -180,7 +176,7 @@ class BuildAddress{
 //      * @brief Extracts protocol fields from a raw 29-bit CAN ID.
 //      * Inverse logic of BuildAddress::buildCANID.
 //      */
-//     static DecodedFrame parse(uint32_t raw_id, const uint8_t* raw_data) {
+//     static DecodedFrame parse(uint32_t raw_id, const uint32_t* raw_data) {
 //         DecodedFrame decoded;
 
 //         // Shift right to reach the field, then AND with mask to isolate it
@@ -206,7 +202,7 @@ class BuildAddress{
 //      * @brief Casts the 8-byte array back into a specific data type (e.g. float).
 //      */
 //     template <typename T>
-//     static T getValue(const std::array<uint8_t, 8>& data) {
+//     static T getValue(const std::array<uint32_t, 8>& data) {
 //         // Reinterprets the memory address of the array as a pointer to type T
 //         return *reinterpret_cast<const T*>(data.data());
 //     }
@@ -218,11 +214,11 @@ int main(){
     //   5      6     2   2  2    8       7
     // 00111 000010 [01] 00 11 00001111 0001000
 
-    uint8_t severity           = 0x03; 
-    uint16_t instruction       = 0x0F; // max 10-bit
-    uint8_t deviceType         = 0x02;  // max 5-bit
-    uint8_t manufacturerCode   = 0x08;  // 8-bit
-    uint8_t deviceId           = 0x0E;  // max 6-bit
+    uint32_t severity           = 0x03; 
+    uint32_t instruction       = 0x0F; // max 10-bit
+    uint32_t deviceType         = 0x02;  // max 5-bit
+    uint32_t manufacturerCode   = 0x08;  // 8-bit
+    uint32_t deviceId           = 0x06;  // max 6-bit
 
     float payload = 2000.0f;
 

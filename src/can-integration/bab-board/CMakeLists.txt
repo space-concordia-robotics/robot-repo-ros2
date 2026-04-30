@@ -1,39 +1,58 @@
-cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 3.22)
 project(bab-board)
 
-if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  add_compile_options(-Wall -Wextra -Wpedantic)
-endif()
+set(CMAKE_CXX_STANDARD 23)
+
+if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    add_compile_options(-Wall -Wextra -Wpedantic)
+endif ()
 
 # find dependencies
+set(DEPENDENCIES
+        rclcpp
+        ros2_fmt_logger
+)
+
 find_package(ament_cmake REQUIRED)
-find_package(rclcpp REQUIRED)
-find_package(sensor_msgs REQUIRED)
-find_package(std_msgs REQUIRED)
-find_package(ros2_fmt_logger REQUIRED)
-find_package(can-utils REQUIRED)
+find_package(ament_cmake_ros REQUIRED)
+find_package(backward_ros REQUIRED)
 
-include_directories(include)
+foreach (dependency IN ITEMS ${DEPENDENCIES})
+    find_package(${dependency} REQUIRED)
+endforeach ()
 
-add_executable(can_node
-  src/can_controller_node.cpp
-  
+## COMPILE
+
+add_library(
+        bab_board
+        SHARED
+        src/battery_board.cpp
+)
+target_include_directories(bab_board
+        PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:include>
+)
+ament_target_dependencies(bab_board PUBLIC ${DEPENDENCIES})
+
+## INSTALL
+
+install(
+        DIRECTORY include/
+        DESTINATION include
 )
 
-#rosidl_target_interfaces(wheels_controller_node
-#        ${PROJECT_NAME} "rosidl_typesupport_cpp")
-
-ament_target_dependencies(
-    can_node
-    rclcpp 
-    geometry_msgs  
-    sensor_msgs
-  std_msgs
-  can-utils
+install(
+        TARGETS bab_board
+        EXPORT export_${PROJECT_NAME}
+        ARCHIVE DESTINATION lib
+        LIBRARY DESTINATION lib
+        RUNTIME DESTINATION bin
 )
 
-install(TARGETS
-        can_node
-        DESTINATION lib/${PROJECT_NAME})
+ament_export_include_directories("include/${PROJECT_NAME}")
+ament_export_libraries(bab_board)
+ament_export_targets(export_${PROJECT_NAME})
+ament_export_dependencies(${DEPENDENCIES})
+
 ament_package()
-

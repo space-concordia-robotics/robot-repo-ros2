@@ -1,28 +1,50 @@
 #include "can-utils/can_interface.hpp"
 #include "can-utils/prefixes.hpp"
+#include "can-utils/parser.hpp"
+#include "can-utils/buildAddress.hpp"
 #include <mutex> 
 #include <string> 
 #include <chrono>
 #include <vector> 
 
 
-
-//TODO (Michael): Figure out the command value associated with each desired telemetry point. 
-
+#define VOLTAGE_MULTIPLIER 100.0f
+#define CURRENT_MULTIPLIER 100.0f
+#define POWER_MULTIPLIER 10.0f 
 
 /*
     * @brief Struct storing important telemetry updates to be printed on the terminal.
 */
-struct telemetryUpdates{
+struct BatteryTelem{
     float voltage;
     float temperature; 
-    float current; 
-    std::string RelayStatus; 
-    std::string BABStatus; 
-    std::string BMSHealth; 
-    std::string TCUStatus; 
+    float current;  
     std::chrono::steady_clock::time_point timestamp; 
 };
+
+struct RailTelem{
+
+    int RailNum; 
+    std::string status; 
+    float voltage;
+    float temperature;
+    float current; 
+    float power; 
+};
+
+struct TCUtelem{
+
+    std::string fan_status; 
+    float temperature; 
+};
+
+struct RelayTelem{
+
+    int RelayNum; 
+    std::string status; 
+
+};
+
 
  /*
 *  @class BAB
@@ -44,10 +66,24 @@ class BAB{
         *  
         */
 
-        BAB(rclcpp::Logger& logger, can_util::CANController& can_controller_); 
+        BAB(rclcpp::Logger& logger, 
+            can_util::CANController& can_controller_, 
+            buildAddress::BuildAddress& build_frame, 
+            uint32_t deviceID); 
 
 
-        void handleFrames(const DeviceId::ID id, const std::vector<uint8_t>& data); 
+
+        uint32_t validateFrameID(uint32_t sev, Instructions::Inst cmd) const; 
+
+
+        /*
+        *  @brief: given a 32 bit id frame ID and a 8 byte data payload, the function decodes the incoming data and stores 
+        *          the respective telemetry info in the telemetryUpdates struct
+        *  @param: 32 bit CAN frame id, 8 byte payload of data   
+        *  @return: void
+        * 
+        */
+        void handleFrames(const uint32_t id, const std::vector<uint8_t>& data); 
 
 
 
@@ -109,7 +145,7 @@ class BAB{
         /*
         *  @brief Gets the status of the power relays for the arm, BAB and wheel motor power rails. 
         *  @param: None
-        *   
+        *  @return: Returns string indicating relay status
         */
         std::string getRelayStatus() const; 
 
@@ -174,6 +210,13 @@ class BAB{
         mutable std::mutex mtx; 
         ros2_fmt_logger::Logger logger; 
         can_util::CANController& can_controller; 
+        buildAddress::BuildAddress& build_frame; 
+        uint32_t deviceId;
+        std::shared_ptr<can_util::CANFrameCallback> frame_callback; 
 
+        BatteryTelem batteryTelem;
+        RelayTelem relayTelem;
+        RailTelem railTelem; 
+        TCUtelem tcuTelem; 
 
 }; 

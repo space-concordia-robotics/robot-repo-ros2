@@ -17,7 +17,10 @@ class SystemFrameBuilder{
         uint32_t sendWheelMotorVelocity(DeviceId::ID device_id, float velocity_payload);
 
         //Function to send arm motor velocity to each motor
-        void sendArmMotorVelocity(deviceType::DeviceType deviceT, Instructions::Inst motor_id, DeviceId::ID device_id, float velocity_rads);
+        void sendArmMotorVelocity(deviceType::DeviceType deviceT, 
+                                  Instructions::Inst motor_id, 
+                                  DeviceId::ID device_id, 
+                                  float velocity_rads);
         void sendForceStop(deviceType::DeviceType DeviceType, DeviceId::ID deviceID);
         void sendResume(deviceType::DeviceType DeviceType, DeviceId::ID deviceID);
 
