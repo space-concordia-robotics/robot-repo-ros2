@@ -110,9 +110,20 @@
                 <box size="${body_length} ${body_width} ${body_height}"/>
             </geometry>
         </collision>
+    </link>
+
+    <joint name="base_to_mass" type="fixed">
+        <parent link="base_link"/>
+        <child link="mass"/>
+        <origin xyz="0 0 0"/>
+    </joint>
+
+
+    <link name="mass">
         <inertial>
             <origin xyz="${body_length/2} 0 -${body_height/2}"/>
-            <mass value="5"/>
+            <!-- I assume this is like kg or smth? -->
+            <mass value="20"/>
             <inertia ixx="0.126164" ixy="0.0" ixz="0.0" iyy="0.416519" iyz="0.0" izz="0.481014"/>
         </inertial>
     </link>

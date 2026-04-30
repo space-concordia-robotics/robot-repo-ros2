@@ -19,8 +19,8 @@ def generate_launch_description():
     sl.add_action(
         AppendEnvironmentVariable(
             "GZ_SIM_RESOURCE_PATH",
-            PathJoinSubstitution([FindPackageShare("autonomy"), "models"])
-        )
+            PathJoinSubstitution([FindPackageShare("autonomy"), "models"]),
+        ),
     )
 
     # robot seems to be ~0.49m tall
@@ -52,14 +52,14 @@ def generate_launch_description():
         OnProcessExit(
             target_action=gz_spawn_ceres,
             on_exit=[joint_state_broadcaster_spawner],
-        )
+        ),
     )
 
     sl.add_event(
         OnProcessExit(
             target_action=joint_state_broadcaster_spawner,
             on_exit=[diff_drive_spawner],
-        )
+        ),
     )
 
     with sl.gz_bridge() as bridge:
@@ -69,7 +69,9 @@ def generate_launch_description():
         bridge.add_topic("/odom", "/diff_drive_base_controller/odom", BridgeDirection.GZ_TO_ROS, ros_msg="nav_msgs/Odometry")
         bridge.add_topic("/cmd_vel", "rover/cmd_vel", BridgeDirection.ROS_TO_GZ, ros_msg="geometry_msgs/Twist")
         bridge.add_topic("/imu/data", "rover/imu/data", BridgeDirection.GZ_TO_ROS, ros_msg="sensor_msgs/Imu")
-        bridge.add_topic("/lidar/imu", "rover/lidar/imu/data", BridgeDirection.GZ_TO_ROS, ros_msg="sensor_msgs/Imu")
+        bridge.add_topic("/imu/mag", "rover/imu/mag", BridgeDirection.GZ_TO_ROS, ros_msg="sensor_msgs/MagneticField")
+        bridge.add_topic("/cam", "cam", BridgeDirection.GZ_TO_ROS, ros_msg="sensor_msgs/Image")
+        bridge.add_topic("/lidar/imu/data", "rover/lidar/imu/data", BridgeDirection.GZ_TO_ROS, ros_msg="sensor_msgs/Imu")
         bridge.add_topic("/lidar/scan", "rover/lidar/scan", BridgeDirection.GZ_TO_ROS, ros_msg="sensor_msgs/LaserScan")
         bridge.add_topic("/lidar/scan/points", "rover/lidar/scan/points", BridgeDirection.GZ_TO_ROS, ros_msg="sensor_msgs/PointCloud2")
         bridge.add_topic("/gps/fix", "rover/gps/fix", BridgeDirection.GZ_TO_ROS, ros_msg="sensor_msgs/NavSatFix")
