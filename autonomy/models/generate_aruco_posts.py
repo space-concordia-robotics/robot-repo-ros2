@@ -260,7 +260,7 @@ def generate_model(tag_id: int):
     <model name='ArUco tag id {tag_id}'>
         <static>true</static>
         <link name='link'>
-            <pose>0 0 0 0 0 0</pose>
+            <pose>0 0 0 {math.pi / 2} 0 {-math.pi / 2}</pose>
             <collision name='collision'>
                 <geometry>
                     <mesh>
