@@ -3,7 +3,7 @@
     <model name='ArUco tag id 7'>
         <static>true</static>
         <link name='link'>
-            <pose>0 0 0 0 0 0</pose>
+            <pose>0 0 0 1.5707963267948966 0 -1.5707963267948966</pose>
             <collision name='collision'>
                 <geometry>
                     <mesh>
