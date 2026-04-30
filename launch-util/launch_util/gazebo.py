@@ -13,6 +13,7 @@ __all__ = [
     "ros_gz_prefix",
     "GazeboType",
     "BridgeDirection",
+    "ImageBridgeQoS",
     "GazeboBridge",
 ]
 
@@ -141,6 +142,12 @@ class BridgeDirection(Enum):
     GZ_TO_ROS = 1
     ROS_TO_GZ = 2
     BIDIRECTIONAL = 3
+
+
+class ImageBridgeQoS(Enum):
+    DEFAULT = 'default'
+    SENSOR = 'sensor'
+    SYSTEM_DEFAULT = 'system_default'
 
 
 bridged_topic_template = """
@@ -275,9 +282,17 @@ class GazeboBridge:
             )
 
     topics: list[Topic]
+    image_bridge_qos: Optional[ImageBridgeQoS]
+    image_bridge_lazy: Optional[bool]
+    image_bridge_subscription_heartbeat: Optional[int]
 
     def __init__(self):
         self.topics = []
+
+    def image_bridge(self, qos: Optional[ImageBridgeQoS] = None, lazy: Optional[bool] = None, subscription_heartbeat: Optional[int] = None):
+        self.image_bridge_qos = qos
+        self.image_bridge_lazy = lazy
+        self.image_bridge_subscription_heartbeat = subscription_heartbeat
 
     def add_topic(self, gz_topic, ros_topic, direction: BridgeDirection, ros_msg: Optional[Text] = None, gz_msg: Optional[Text] = None):
         topic = GazeboBridge.Topic(gz_topic, ros_topic, direction, ros_msg=ros_msg, gz_msg=gz_msg)
