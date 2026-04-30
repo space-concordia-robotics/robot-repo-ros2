@@ -5,6 +5,7 @@ from launch import LaunchDescription
 from launch.actions import ExecuteProcess
 from launch.actions import IncludeLaunchDescription
 from launch.launch_description_sources import PythonLaunchDescriptionSource
+from launch_ros.actions import Node
 
 
 def generate_launch_description():
@@ -22,17 +23,32 @@ def generate_launch_description():
         "moveit_rviz.launch.py",
     )
 
+    base_link_alias_tf = Node(
+        package="tf2_ros",
+        executable="static_transform_publisher",
+        name="base_link_alias_tf",
+        arguments=["0", "0", "0", "0", "0", "0", "base_structure_link", "base_link"],
+        output="screen",
+    )
+
     return LaunchDescription(
         [
             IncludeLaunchDescription(
                 PythonLaunchDescriptionSource(workspace_moveit_launch),
                 launch_arguments={"use_fake_hardware": "true"}.items(),
             ),
-            IncludeLaunchDescription(PythonLaunchDescriptionSource(move_group_launch)),
+            IncludeLaunchDescription(
+                PythonLaunchDescriptionSource(move_group_launch),
+                launch_arguments={"use_fake_hardware": "true"}.items(),
+            ),
             IncludeLaunchDescription(
                 PythonLaunchDescriptionSource(moveit_rviz_launch),
-                launch_arguments={"use_joint_state_publisher_gui": "false"}.items(),
+                launch_arguments={
+                    "use_joint_state_publisher_gui": "false",
+                    "use_fake_hardware": "true",
+                }.items(),
             ),
+            base_link_alias_tf,
             ExecuteProcess(
                 cmd=["ros2", "run", "joy_mux_controller_py", "fk_moveit_keyboard_controller"],
                 output="screen",

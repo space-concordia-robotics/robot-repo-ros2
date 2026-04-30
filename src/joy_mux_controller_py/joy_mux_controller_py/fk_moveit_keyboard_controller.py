@@ -7,6 +7,7 @@ import tty
 
 import rclpy
 from control_msgs.msg import JointJog
+from moveit_msgs.srv import ServoCommandType as ServoCommandTypeSrv
 from rclpy.node import Node
 from std_srvs.srv import Trigger
 
@@ -34,12 +35,18 @@ class FKMoveItKeyboardController(Node):
         self.running = True
         self.servo_started = False
         self.start_request_in_flight = False
+        self.command_type_set = False
+        self.command_type_request_in_flight = False
 
         self.joint_pub = self.create_publisher(JointJog, "/servo_node/delta_joint_cmds", 10)
         self.start_servo_client = self.create_client(Trigger, "/servo_node/start_servo")
+        self.command_type_client = self.create_client(
+            ServoCommandTypeSrv, "/servo_node/switch_command_type"
+        )
 
         self.publish_timer = self.create_timer(0.05, self.publish_joint_jog)
         self.start_timer = self.create_timer(0.5, self.try_start_servo)
+        self.command_type_timer = self.create_timer(0.5, self.try_set_command_type)
 
         self.get_logger().info(HELP_TEXT)
         self.get_logger().info("Selected joint: joint1")
@@ -71,6 +78,35 @@ class FKMoveItKeyboardController(Node):
             self.get_logger().warn(f"MoveIt Servo start call failed: {exc}")
         finally:
             self.start_request_in_flight = False
+
+    def try_set_command_type(self) -> None:
+        if self.command_type_set or self.command_type_request_in_flight:
+            return
+
+        if not self.command_type_client.service_is_ready():
+            self.get_logger().debug("switch_command_type service not ready yet", throttle_duration_sec=2.0)
+            return
+
+        request = ServoCommandTypeSrv.Request()
+        request.command_type = ServoCommandTypeSrv.Request.JOINT_JOG
+        self.command_type_request_in_flight = True
+        future = self.command_type_client.call_async(request)
+        future.add_done_callback(self._on_command_type_response)
+
+    def _on_command_type_response(self, future) -> None:
+        try:
+            response = future.result()
+            self.command_type_set = bool(response.success)
+            if self.command_type_set:
+                self.get_logger().info("MoveIt Servo command type set to JOINT_JOG")
+            else:
+                self.get_logger().warn(
+                    f"Failed to set MoveIt Servo command type: {response.message}"
+                )
+        except Exception as exc:
+            self.get_logger().warn(f"MoveIt Servo command type call failed: {exc}")
+        finally:
+            self.command_type_request_in_flight = False
 
     def keyboard_loop(self) -> None:
         input_fd = None

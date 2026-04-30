@@ -121,7 +121,8 @@ def generate_launch_description():
     # As opposed to a node component, this may be necessary (for example) if Servo is running on a different PC
     servo_node_arm = Node(
         package="moveit_servo",
-        executable="servo_node_main",
+        executable="servo_node",
+        name="servo_node",
         parameters=[
             servo_params_arm,
             moveit_config.robot_description,

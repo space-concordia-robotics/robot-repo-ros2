@@ -81,8 +81,7 @@ BACKGROUND:
 #define SET_MOTOR_SPEED 0x4E
 
 
-namespace arm_interface
-{
+namespace arm_interface {
 
     // Input: input parameters, initialize hw_states_position_, hw_states_velocity & hw_command_positions
     // Outputs: Successful log messages or failure log messages, initialized state and command joints
@@ -248,22 +247,15 @@ namespace arm_interface
             return hardware_interface::CallbackReturn::ERROR;
         }
 
-        // Copy current state into command buffer to avoid sudden jumps when controller starts
+        // Zero velocity commands so the arm holds still at activation
         for (size_t i = 0; i < nj; ++i)
         {
-            if (!std::isnan(hw_states_velocity_[i])) //switched from hw_states_position_ to hw_states_velocity_ 
+            if (std::isnan(hw_states_position_[i]))
             {
-                //TODO positions in velocity commands?
-                hw_commands_velocity_[i] = hw_states_position_[i];
-            }
-            else
-            {
-                // If state is NaN for some reason, set to zero and warno
-                hw_states_position_[i] = 0.0;  // changed from hw_states_position_ to hw_states_velocity_ 
-                hw_commands_velocity_[i] = 0.0;
                 RCLCPP_WARN(rclcpp::get_logger("ArmInterface"),
-                            "hw_states_position_[%zu] was NaN on activate; resetting to 0.", i);
+                            "hw_states_position_[%zu] is NaN on activate; encoder not yet read.", i);
             }
+            hw_commands_velocity_[i] = 0.0;
         }
 
         RCLCPP_INFO(rclcpp::get_logger("ArmInterface"), "Hardware interface activated successfully.");

@@ -12,6 +12,7 @@ controller_manager:
 arm_controller:
   ros__parameters:
     allow_integration_in_goal_trajectories: true
+    allow_nonzero_velocity_at_trajectory_end: true
     joints:
       - joint1
       - joint2
