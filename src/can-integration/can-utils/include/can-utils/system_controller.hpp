@@ -29,7 +29,7 @@ class SystemFrameBuilder{
     private: 
         
         std::shared_ptr<can_util::CANController> can_manager_; 
-        BuildAddress builder_; 
+        buildAddress::BuildAddress builder_; 
 
 
 };
