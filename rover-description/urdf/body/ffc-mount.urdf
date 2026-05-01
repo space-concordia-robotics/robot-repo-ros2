@@ -1,0 +1,80 @@
+<?xml version="1.0"?>
+<robot name="ceres"
+       xmlns="https://www.ros.org"
+       xmlns:xacro="https://ros.org/wiki/xacro"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="https://www.ros.org ../../urdf.xsd https://ros.org/wiki/xacro ../../xacro.xsd">
+    <!-- Perimeter cameras: Luxonis OAK-FFC (stem + sensor box on top) -->
+    <xacro:macro name="oak_ffc_perimeter_cameras">
+        <xacro:property name="oak_mount_x" value="${body_length/4}"/>
+        <xacro:property name="oak_stem_h" value="0.3048"/>
+        <xacro:property name="oak_stem_w" value="0.028"/>
+        <xacro:property name="oak_mount_h" value="0.09"/>
+        <xacro:property name="oak_mount_w" value="0.10"/>
+        <xacro:property name="oak_face_offset" value="${oak_mount_w/2 + 0.005}"/>
+
+        <joint name="base_to_oak_ffc_stem" type="fixed">
+            <parent link="base_link"/>
+            <child link="oak_ffc_stem"/>
+            <origin xyz="${oak_mount_x} 0 ${oak_stem_h/2}" rpy="0 0 0"/>
+        </joint>
+        <link name="oak_ffc_stem">
+            <visual>
+                <geometry>
+                    <box size="${oak_stem_w} ${oak_stem_w} ${oak_stem_h}"/>
+                </geometry>
+                <material name="plastic-red"/>
+            </visual>
+            <collision>
+                <geometry>
+                    <box size="${oak_stem_w} ${oak_stem_w} ${oak_stem_h}"/>
+                </geometry>
+            </collision>
+            <xacro:default_inertial mass="0.08"/>
+        </link>
+        <xacro:gazebo_color reference="oak_ffc_stem" color="plastic-black"/>
+
+        <joint name="oak_ffc_stem_to_mount" type="fixed">
+            <parent link="oak_ffc_stem"/>
+            <child link="oak_ffc_mount"/>
+            <origin xyz="0 0 ${oak_stem_h/2 + oak_mount_h/2}" rpy="0 0 0"/>
+        </joint>
+
+        <link name="oak_ffc_mount">
+            <visual>
+                <geometry>
+                    <cylinder radius="${oak_mount_w}" length="${oak_mount_h}"/>
+                </geometry>
+                <material name="plastic-red"/>
+            </visual>
+            <collision>
+                <geometry>
+                    <cylinder radius="${oak_mount_w}" length="${oak_mount_h}"/>
+                </geometry>
+            </collision>
+            <xacro:default_inertial mass="0.05"/>
+        </link>
+        <xacro:gazebo_color reference="oak_ffc_mount" color="plastic-red"/>
+
+        <xacro:macro name="ffc_camera" params="side angle">
+            <xacro:property name="x" value="${oak_face_offset * cos(angle)}"/>
+            <xacro:property name="y" value="${oak_face_offset * sin(angle)}"/>
+
+            <joint name="oak_ffc_mount_to_${side}_camera" type="fixed">
+                <parent link="oak_ffc_mount"/>
+                <child link="ffc_${side}_camera"/>
+                <origin xyz="${x} ${y} 0" rpy="0 0 ${angle}"/>
+            </joint>
+
+            <link name="ffc_${side}_camera">
+            </link>
+        </xacro:macro>
+
+        <xacro:ffc_camera side="front" angle="${0 * pi/2}"/>
+        <xacro:ffc_camera side="left" angle="${1 * pi/2}"/>
+        <xacro:ffc_camera side="rear" angle="${2 * pi/2}"/>
+        <xacro:ffc_camera side="right" angle="${3 * pi/2}"/>
+    </xacro:macro>
+
+    <xacro:oak_ffc_perimeter_cameras/>
+</robot>

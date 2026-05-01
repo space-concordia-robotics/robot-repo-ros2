@@ -1,0 +1,279 @@
+<?xml version="1.0"?>
+<robot name="ceres"
+       xmlns="https://www.ros.org"
+       xmlns:xacro="https://ros.org/wiki/xacro"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="https://www.ros.org ../../urdf.xsd https://ros.org/wiki/xacro ../../xacro.xsd">
+    <!-- region Wheels -->
+    <xacro:macro name="wheel" params="prefix x y z mirror">
+        <!-- TODO: wtf is this from? it was in the wheel geometry... -->
+        <!-- <box size=".40 .408 .20"/> -->
+
+        <link name="${prefix}_wheel">
+            <visual>
+                <origin xyz="${x} ${(wheel_thickness/2 + y) * mirror} ${z}" rpy="${pi/2} 0 0"/>
+                <geometry>
+                    <cylinder radius="${wheel_radius}" length="${wheel_thickness}"/>
+                </geometry>
+                <material name="plastic-red"/>
+            </visual>
+            <collision>
+                <origin xyz="${x} ${(wheel_thickness/2 + y) * mirror} ${z}" rpy="${pi/2} 0 0"/>
+                <geometry>
+                    <cylinder radius="${wheel_radius}" length="${wheel_thickness}"/>
+                </geometry>
+            </collision>
+            <!-- <inertial> -->
+            <!--     <origin xyz="${body_length/2} 0 -${body_height/2}"/> -->
+            <!--     <mass value="1.14395"/> -->
+            <!--     <inertia -->
+            <!--             ixx="0.126164" -->
+            <!--             ixy="0.0" -->
+            <!--             ixz="0.0" -->
+            <!--             iyy="0.416519" -->
+            <!--             iyz="0.0" -->
+            <!--             izz="0.481014"/> -->
+            <!-- </inertial> -->
+            <xacro:default_inertial mass="0.2"/>
+        </link>
+
+        <xacro:gazebo_color reference="${prefix}_wheel" color="plastic-red"/>
+
+        <joint name="${prefix}_parent_to_inner_wheel" type="fixed">
+            <parent link="${prefix}_wheel"/>
+            <child link="${prefix}_inner_wheel"/>
+            <origin xyz="${x} ${(wheel_thickness/2 + y) * mirror} ${z}"/>
+        </joint>
+
+        <!-- region Inner Wheels (Visual) -->
+        <link name="${prefix}_inner_wheel">
+            <visual>
+                <origin rpy="${pi/2} 0 0"/>
+                <geometry>
+                    <cylinder radius="${wheel_inner_radius}" length="${wheel_thickness + visual_adjustment}"/>
+                </geometry>
+                <material name="plastic-black"/>
+            </visual>
+        </link>
+
+        <xacro:gazebo_color reference="${prefix}_inner_wheel" color="plastic-black"/>
+        <!-- endregion -->
+    </xacro:macro>
+
+    <xacro:macro name="wheel_joint" params="parent prefix xyz:='0 0 0' rpy:='0 0 0'">
+        <joint name="${parent}_to_wheel" type="continuous">
+            <axis xyz="0 1 0" rpy="0 0 0"/>
+            <parent link="${parent}"/>
+            <child link="${prefix}_wheel"/>
+            <origin xyz="${xyz}" rpy="${rpy}"/>
+            <dynamics damping="0.2"/> <!-- TODO 2025-09-19 (Will Free): Correct values -->
+        </joint>
+    </xacro:macro>
+    <!-- endregion -->
+
+    <!-- region Bogeys -->
+    <xacro:macro name="front_bogey" params="side">
+        <xacro:property name="reflect" value="${1 if side == 'left' else -1}"/>
+
+        <xacro:property name="bogey_offset_x" value="-0.05251"/>
+        <xacro:property name="bogey_offset_y" value="-0.0015"/>
+        <xacro:property name="bogey_offset_z" value="0.02"/>
+
+        <joint name="base_to_front_${side}_bogey" type="fixed">
+            <parent link="base_link"/>
+            <child link="front_${side}_bogey"/>
+            <origin xyz="${body_length + bogey_offset_x} ${(body_width/2 + bogey_offset_y) * reflect} ${-body_height + bogey_offset_z}"/>
+        </joint>
+
+        <xacro:property name="bogey_base_length" value="0.10378"/>
+        <xacro:property name="bogey_base_width" value="0.0746"/>
+        <xacro:property name="bogey_base_height" value="0.08448"/>
+
+        <link name="front_${side}_bogey">
+            <visual>
+                <origin xyz="0 ${bogey_base_width/2 * reflect} -${bogey_base_height/2}"/>
+                <geometry>
+                    <box size="${bogey_base_length} ${bogey_base_width} ${bogey_base_height}"/>
+                </geometry>
+                <material name="aluminum"/>
+            </visual>
+            <collision>
+                <origin xyz="0 ${bogey_base_width/2 * reflect} -${bogey_base_height/2}"/>
+                <geometry>
+                    <box size="${bogey_base_length} ${bogey_base_width} ${bogey_base_height}"/>
+                </geometry>
+            </collision>
+
+            <xacro:default_inertial mass="0.1"/>
+        </link>
+
+        <xacro:gazebo_color reference="front_${side}_bogey" color="aluminum"/>
+
+        <xacro:property name="bogey_bar_radius" value="0.0127"/>
+        <xacro:property name="bogey_bar_length" value="0.25117"/>
+        <xacro:property name="bogey_bar_angle_deg" value="116.39"/>
+        <xacro:property name="bogey_bar_wheel_offset" value="0.020475"/>
+
+        <xacro:macro name="front_bogey_bar" params="orientation">
+            <xacro:property name="reflect_bar" value="${1 if orientation == 'forwards' else -1}"/>
+            <xacro:property name="bar_prefix" value="front_${side}_bogey_${orientation}"/>
+
+            <joint name="front_${side}_bogey_to_${orientation}_bar" type="fixed">
+                <parent link="front_${side}_bogey"/>
+                <child link="${bar_prefix}_bar"/>
+                <!-- <origin xyz="-0.00013 ${reflect * 0.04249} -0.06904"/> -->
+                <origin xyz="-0.00013 ${reflect * 0.04249} ${-0.0490381}" rpy="0 ${-bogey_bar_angle_deg / 360 * pi * reflect_bar} 0"/>
+            </joint>
+
+            <link name="${bar_prefix}_bar">
+                <!-- TODO: Fix the z value for the origin -->
+                <visual>
+                    <!-- <origin xyz="-${bogey_bar_length/2} 0 -${bogey_base_height}" rpy="0 ${bogey_bar_angle_deg / 360 * pi} 0"/> -->
+                    <origin xyz="0 0 -${bogey_bar_length/2}" rpy="0 0 0"/>
+                    <geometry>
+                        <cylinder radius="${bogey_bar_radius}" length="${bogey_bar_length}"/>
+                        <!-- <box size="${bogey_base_length} ${bogey_base_width} ${bogey_base_height}"/> -->
+                    </geometry>
+                    <material name="aluminum"/>
+                </visual>
+                <!-- <collision> -->
+                <!--     <origin xyz="0 -${bogey_base_width/2} -${bogey_base_height/2}"/> -->
+                <!--     <geometry> -->
+                <!--         <box size="${bogey_base_length} ${bogey_base_width} ${bogey_base_height}"/> -->
+                <!--     </geometry> -->
+                <!-- </collision> -->
+
+                <xacro:default_inertial mass="0.1"/>
+            </link>
+
+            <xacro:gazebo_color reference="${bar_prefix}_bar" color="aluminum"/>
+
+            <link name="${bar_prefix}_bar_base">
+                <!--
+                mass: 111.8 grams
+                center of mass (xyz):
+                - 4.93 mm
+                - 2.45 mm
+                - -1.82mm
+                 -->
+                <xacro:property name="bar_base_radius" value="0.045"/>
+                <xacro:property name="bar_base_thickness" value="${bogey_bar_wheel_offset + bogey_bar_radius}"/>
+                <visual>
+                    <origin xyz="0 ${(bar_base_thickness/2 - bogey_bar_radius) * reflect} 0" rpy="${pi/2} 0 0"/>
+                    <geometry>
+                        <cylinder radius="${bar_base_radius}" length="${bar_base_thickness}"/>
+                    </geometry>
+                    <material name="aluminum"/>
+                </visual>
+                <collision>
+                    <origin xyz="0 ${(bar_base_thickness/2 - bogey_bar_radius) * reflect} 0" rpy="${pi/2} 0 0"/>
+                    <geometry>
+                        <cylinder radius="${bar_base_radius}" length="${bar_base_thickness}"/>
+                    </geometry>
+                </collision>
+
+                <xacro:default_inertial mass="0.05"/>
+            </link>
+
+            <xacro:gazebo_color reference="${bar_prefix}_bar_base" color="aluminum"/>
+
+            <joint name="${bar_prefix}_bar_to_base" type="fixed">
+                <parent link="${bar_prefix}_bar"/>
+                <child link="${bar_prefix}_bar_base"/>
+                <origin xyz="0 0 -${bogey_bar_length}" rpy="0 ${-bogey_bar_angle_deg / 360 * pi * reflect_bar} 0"/>
+            </joint>
+
+            <xacro:wheel_joint parent="${bar_prefix}_bar" prefix="${bar_prefix}" xyz="0 0 -${bogey_bar_length}"
+                               rpy="0 ${-bogey_bar_angle_deg / 360 * pi * reflect_bar} 0"/>
+            <xacro:wheel prefix="${bar_prefix}" mirror="${reflect}" x="0" y="${bogey_bar_wheel_offset}" z="0"/>
+        </xacro:macro>
+
+        <xacro:front_bogey_bar orientation="forwards"/>
+        <xacro:front_bogey_bar orientation="backwards"/>
+    </xacro:macro>
+
+    <xacro:macro name="back_bogey">
+        <xacro:property name="bogey_bar_offset_x" value="0.02389"/>
+        <xacro:property name="bogey_bar_offset_z" value="0.0027"/>
+        <xacro:property name="bogey_bar_length" value="0.435"/>
+        <xacro:property name="bogey_bar_width" value="0.040"/>
+        <xacro:property name="bogey_bar_height" value="0.020"/>
+
+        <joint name="base_to_back_bogey" type="fixed">
+            <parent link="base_link"/>
+            <child link="back_bogey"/>
+            <origin xyz="-${bogey_bar_offset_x} 0 -${body_height + bogey_bar_offset_z}"/>
+        </joint>
+
+        <link name="back_bogey">
+            <visual>
+                <origin xyz="-${bogey_bar_width/2} 0 -${bogey_bar_height/2}"/>
+                <geometry>
+                    <box size="${bogey_bar_width} ${bogey_bar_length} ${bogey_bar_height}"/>
+                </geometry>
+                <material name="aluminum"/>
+            </visual>
+            <collision>
+                <origin xyz="-${bogey_bar_width/2} 0 -${bogey_bar_height/2}"/>
+                <geometry>
+                    <box size="${bogey_bar_width} ${bogey_bar_length} ${bogey_bar_height}"/>
+                </geometry>
+            </collision>
+
+            <xacro:default_inertial mass="0.1"/>
+        </link>
+
+        <xacro:gazebo_color reference="back_bogey" color="aluminum"/>
+
+        <xacro:macro name="back_wheel_leg" params="side">
+            <xacro:property name="reflect" value="${1 if side == 'left' else -1}"/>
+
+            <xacro:property name="leg_offset" value="0.00211"/>
+            <xacro:property name="leg_length" value="0.0889"/>
+            <xacro:property name="leg_width" value="0.0254"/>
+            <xacro:property name="leg_height" value="0.175"/>
+            <xacro:property name="leg_wheel_y_offset" value="0.0127"/>
+            <xacro:property name="leg_wheel_z_offset" value="0.04044"/>
+
+            <joint name="back_bogey_to_${side}_leg" type="fixed">
+                <parent link="back_bogey"/>
+                <child link="back_bogey_${side}_leg"/>
+                <origin xyz="-${bogey_bar_width/2} ${(bogey_bar_length/2 + leg_offset) * reflect} -${bogey_bar_height}"/>
+            </joint>
+
+            <link name="back_bogey_${side}_leg">
+                <visual>
+                    <origin xyz="0 0 -${leg_height/2}"/>
+                    <geometry>
+                        <box size="${leg_length} ${leg_width} ${leg_height}"/>
+                    </geometry>
+                    <material name="aluminum"/>
+                </visual>
+                <collision>
+                    <origin xyz="0 0 -${leg_height/2}"/>
+                    <geometry>
+                        <box size="${leg_length} ${leg_width} ${leg_height}"/>
+                    </geometry>
+                </collision>
+
+                <xacro:default_inertial mass="0.1"/>
+            </link>
+
+            <xacro:gazebo_color reference="back_bogey_${side}_leg" color="aluminum"/>
+
+            <xacro:wheel_joint parent="back_bogey_${side}_leg" prefix="back_bogey_${side}"
+                               xyz="0 ${leg_width/2 * reflect} ${-leg_height + leg_wheel_z_offset}"/>
+            <!-- <xacro:wheel prefix="back_bogey_${side}" mirror="${reflect}" x="0" y="${leg_wheel_y_offset * reflect}" z="${leg_wheel_z_offset}"/> -->
+            <xacro:wheel prefix="back_bogey_${side}" mirror="${reflect}" x="0" y="0" z="0"/>
+        </xacro:macro>
+
+        <xacro:back_wheel_leg side="left"/>
+        <xacro:back_wheel_leg side="right"/>
+    </xacro:macro>
+
+    <xacro:front_bogey side="left"/>
+    <xacro:front_bogey side="right"/>
+
+    <xacro:back_bogey/>
+    <!-- endregion -->
+</robot>

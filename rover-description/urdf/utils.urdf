@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="https://ros.org/wiki/xacro"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       name="ceres"
+       xmlns="https://www.ros.org"
+       xsi:schemaLocation="https://www.ros.org ../urdf.xsd https://ros.org/wiki/xacro ../xacro.xsd">
+    <xacro:macro name="simulation" params="*block">
+        <xacro:if value="${simulation}">
+            <xacro:insert_block name="block"/>
+        </xacro:if>
+    </xacro:macro>
+
+    <xacro:macro name="production" params="*block">
+        <xacro:if value="${production}">
+            <xacro:insert_block name="block"/>
+        </xacro:if>
+    </xacro:macro>
+</robot>

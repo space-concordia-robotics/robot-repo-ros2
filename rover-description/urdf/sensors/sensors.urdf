@@ -3,7 +3,7 @@
        xmlns="https://www.ros.org"
        xmlns:xacro="https://ros.org/wiki/xacro"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xsi:schemaLocation="https://www.ros.org ../urdf.xsd https://ros.org/wiki/xacro ../xacro.xsd">
+       xsi:schemaLocation="https://www.ros.org ../../urdf.xsd https://ros.org/wiki/xacro ../../xacro.xsd">
     <xacro:arg name="mode" default="production"/>
     <xacro:arg name="control" default="ros"/>
 
@@ -11,6 +11,13 @@
     <xacro:property name="production" value="${mode == 'production'}"/>
     <xacro:property name="simulation" value="${mode == 'simulation'}"/>
 
+    <xacro:property name="control" value="$(arg control)"/>
+    <xacro:property name="ros_control" value="${control == 'ros'}"/>
+    <xacro:property name="gazebo_control" value="${control == 'gazebo'}"/>
 
-    <!-- TODO 2025-09-19 (Will Free): Add gazebo control -->
+    <xacro:include filename="misc.urdf"/>
+
+    <xacro:include filename="lidar.urdf"/>
+
+    <xacro:include filename="ffc-module.urdf"/>
 </robot>

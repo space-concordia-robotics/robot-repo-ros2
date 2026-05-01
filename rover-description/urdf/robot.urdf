@@ -15,15 +15,18 @@
     <xacro:property name="ros_control" value="${control == 'ros'}"/>
     <xacro:property name="gazebo_control" value="${control == 'gazebo'}"/>
 
-    <xacro:include filename="robot.core.urdf"/>
+    <xacro:include filename="utils.urdf"/>
 
-    <xacro:include filename="robot.sensors.urdf"/>
+    <xacro:include filename="body/base.urdf"/>
+
+    <xacro:include filename="sensors/sensors.urdf"/>
 
     <xacro:if value="${ros_control}">
-        <xacro:include filename="control.ros.urdf"/>
+        <xacro:include filename="control/ros.urdf"/>
     </xacro:if>
+
     <xacro:if value="${gazebo_control}">
-        <xacro:include filename="control.gazebo.urdf"/>
-        <!-- TODO 2025-08-30 (Will Free): Gazebo control -->
+        <xacro:include filename="control/gazebo.urdf"/>
+        <!-- TODO 2025-08-30 (Will Free): Gazebo control (not currently implemented -->
     </xacro:if>
 </robot>
