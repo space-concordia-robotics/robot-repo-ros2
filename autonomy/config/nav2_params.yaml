@@ -236,7 +236,7 @@
       # see: https://arxiv.org/pdf/1706.09068
       inflation_layer_wide:
         plugin: "nav2_costmap_2d::InflationLayer"
-        cost_scaling_factor: 2.0 # exponential decay factor for cost inflation
+        cost_scaling_factor: 1.5 # exponential decay factor for cost inflation
         inflation_radius: 2.5
 
       # inflate the cost significantly for areas in which the rover will collide
@@ -577,7 +577,12 @@
     costmap_topic: local_costmap/costmap_raw
     footprint_topic: local_costmap/published_footprint
     cycle_frequency: 10.0
-    behavior_plugins: [ "spin", "backup", "drive_on_heading", "assisted_teleop", "wait" ]
+    behavior_plugins:
+      - spin
+      - backup
+      - drive_on_heading
+      - assisted_teleop
+      - wait
     # Humble:
     #spin:
     #  plugin: "nav2_behaviors/Spin"
@@ -605,6 +610,8 @@
     robot_base_frame: base_link
     transform_tolerance: 0.1
     simulate_ahead_time: 2.0
+    projection_time: 2.0
+    simulation_time_step: 0.05
     max_rotational_vel: 1.5
     min_rotational_vel: 0.2
     rotational_acc_lim: 3.2

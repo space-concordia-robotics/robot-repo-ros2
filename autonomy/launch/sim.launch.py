@@ -39,6 +39,7 @@ def generate_launch_description():
         launch_arguments={"gz_world": world}.items(),
     )
 
+    # with sl.group(when=When(delay=10.0)):
     sl.include(package="autonomy", launch_file="ekf_navsat.launch.py")
 
     rviz_config = sl.declare_arg("rviz_config", default_value=sl.find(package="rover_description", directory="rviz", file="urdf.rviz"))

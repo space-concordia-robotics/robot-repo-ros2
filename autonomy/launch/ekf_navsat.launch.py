@@ -17,6 +17,19 @@ def generate_launch_description():
     sl.arg("output_location", default=sl.find(package="autonomy", directory="logs", file="dual_ekf_navsat_example_debug.txt"))
 
     sl.node(
+        package="imu_filter_madgwick",
+        executable="imu_filter_madgwick_node",
+        name="rover_imu_filter",
+        output="screen",
+        parameters=[ekf_navsat_params],
+        remappings=[
+            ("imu/data_raw", "rover/imu/data"),
+            ("imu/mag", "rover/imu/mag"),
+            ("imu/data", "rover/imu/filtered"),
+        ]
+    )
+
+    sl.node(
         package="robot_localization",
         executable="ekf_node",
         name="ekf_node_odom",
