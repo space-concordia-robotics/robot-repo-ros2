@@ -3,7 +3,7 @@
        xmlns="https://www.ros.org"
        xmlns:xacro="https://ros.org/wiki/xacro"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xsi:schemaLocation="https://www.ros.org ../urdf.xsd https://ros.org/wiki/xacro ../xacro.xsd">
+       xsi:schemaLocation="https://www.ros.org ../../urdf.xsd https://ros.org/wiki/xacro ../../xacro.xsd">
     <xacro:property name="mode" value="$(arg mode)"/>
     <xacro:property name="production" value="${mode == 'production'}"/>
     <xacro:property name="simulation" value="${mode == 'simulation'}"/>
@@ -18,6 +18,7 @@
                 <state_interface name="position"/>
                 <state_interface name="velocity"/>
 
+                <!-- TODO 2026-04-30 (Will Free): can't move to xacro:production, because xacro block arguments are not variadic -->
                 <xacro:if value="${production}">
                     <param name="can_id">${id}</param>
                     <!-- TODO 2026-02-18 (Will Free): take this from a parameter properly -->
@@ -42,9 +43,11 @@
         </xacro:macro>
 
         <hardware>
-            <xacro:if value="${simulation}">
+            <xacro:simulation>
                 <plugin>gz_ros2_control/GazeboSimSystem</plugin>
-            </xacro:if>
+            </xacro:simulation>
+
+            <!-- TODO 2026-04-30 (Will Free): can't move to xacro:production, because xacro block arguments are not variadic -->
             <xacro:if value="${production}">
                 <plugin>wheels_interface/RoverSystemWheelsHardware</plugin>
                 <param name="can_path">can0</param>
@@ -59,7 +62,7 @@
     </ros2_control>
 
     <!-- TODO 2025-10-01 (Will Free): Add rover ros2 control plugin -->
-    <!-- <xacro:if value="${production}"> -->
+    <!-- <xacro:production> -->
     <!--     <ros2_control name="RealRobot" type="system"> -->
     <!--         <hardware> -->
     <!--             <plugin>diffdrive_arduino/DiffDriveArduino</plugin> -->
@@ -88,9 +91,9 @@
     <!--             <state_interface name="position"/> -->
     <!--         </joint> -->
     <!--     </ros2_control> -->
-    <!-- </xacro:if> -->
+    <!-- </xacro:production> -->
 
-    <xacro:if value="${simulation}">
+    <xacro:simulation>
         <gazebo>
             <plugin name="gz_ros2_control::GazeboSimROS2ControlPlugin" filename="libgz_ros2_control-system.so">
                 <parameters>$(find rover_description)/config/controllers.yaml</parameters>
@@ -103,5 +106,5 @@
                 <robot_base_frame>base_link</robot_base_frame>
             </plugin>
         </gazebo>
-    </xacro:if>
+    </xacro:simulation>
 </robot>
