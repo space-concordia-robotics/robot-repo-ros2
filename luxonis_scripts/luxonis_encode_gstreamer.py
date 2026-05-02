@@ -153,7 +153,7 @@ def run_ffc_device(server, device_info, fps, bitrate):
                 cam = pipeline.create(dai.node.ColorCamera)
                 cam.setBoardSocket(sock)
                 cam.setResolution(dai.ColorCameraProperties.SensorResolution.THE_1080_P)
-                cam.setVideoSize(640, 360)
+                cam.setVideoSize(1920, 1080)
                 cam.setFps(fps)
                 cam.setInterleaved(False)
 
@@ -199,7 +199,7 @@ def run_oakd_device(server, device_info, fps, bitrate):
                 cam = pipeline.create(dai.node.ColorCamera)
                 cam.setBoardSocket(sock)
                 cam.setResolution(res)
-                cam.setVideoSize(640, 360)
+                cam.setVideoSize(1280, 800)
                 cam.setFps(fps)
                 cam.setInterleaved(False)
 
@@ -305,7 +305,7 @@ Config: --config JSON with ffc_mxid, oakd_mxid (see luxonis_devices.example.json
     p.add_argument(
         "--discovery-delay",
         type=float,
-        default=5.0,
+        default=1.0,
         help="Seconds between discovery attempts (default: 5).",
     )
     return p.parse_args()
