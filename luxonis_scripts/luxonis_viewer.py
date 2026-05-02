@@ -22,7 +22,7 @@ from typing import Dict, List, Optional, Tuple
 import cv2
 import numpy as np
 
-FFC_STREAMS = ["ffc0", "ffc1", "ffc2", "ffc3"]
+FFC_STREAMS = ["FRONT", "RIGHT", "LEFT", "BACK"]
 OAKD_STREAMS = ["oakd_rgb", "oakd_left", "oakd_right"]
 
 _rtsp_wait_detail_lock = threading.Lock()
@@ -261,15 +261,15 @@ def build_grid(
         return out
 
     if sources == "ffc":
-        row0 = np.hstack([prep("ffc0"), prep("ffc1")])
-        row1 = np.hstack([prep("ffc2"), prep("ffc3")])
+        row0 = np.hstack([prep("FRONT"), prep("RIGHT")])
+        row1 = np.hstack([prep("LEFT"), prep("BACK")])
         return np.vstack([row0, row1])
 
     if sources == "oakd":
         return np.hstack([prep("oakd_rgb"), prep("oakd_left"), prep("oakd_right")])
 
-    row0 = np.hstack([prep("ffc0"), prep("ffc1")])
-    row1 = np.hstack([prep("ffc2"), prep("ffc3")])
+    row0 = np.hstack([prep("FRONT"), prep("RIGHT")])
+    row1 = np.hstack([prep("LEFT"), prep("BACK")])
     ffc_block = np.vstack([row0, row1])
     oakd_row = np.hstack([prep("oakd_rgb"), prep("oakd_left"), prep("oakd_right")])
     w_top = ffc_block.shape[1]

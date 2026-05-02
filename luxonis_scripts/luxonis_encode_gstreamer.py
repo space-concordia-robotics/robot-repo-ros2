@@ -35,7 +35,7 @@ except ModuleNotFoundError as e:
         "luxonis_scripts/system_deps_encoder.txt"
     ) from e
 
-FFC_STREAMS = ["ffc0", "ffc1", "ffc2", "ffc3"]
+FFC_STREAMS = ["FRONT", "RIGHT", "LEFT", "BACK"] # CAMC = LEFT, CAMD = BACK, CAMA = FRONT, CAMB = RIGHT
 OAKD_STREAMS = ["oakd_rgb", "oakd_left", "oakd_right"]
 
 DEFAULT_FFC_MXID = "14442C10014791D700"
@@ -147,7 +147,7 @@ def run_ffc_device(server, device_info, fps, bitrate):
                 dai.CameraBoardSocket.CAM_C,
                 dai.CameraBoardSocket.CAM_D,
             ]
-            stream_names = ["ffc0", "ffc1", "ffc2", "ffc3"]
+            stream_names = ["FRONT", "RIGHT", "LEFT", "BACK"]
 
             for i, sock in enumerate(sockets):
                 cam = pipeline.create(dai.node.ColorCamera)
