@@ -41,13 +41,15 @@ sudo udevadm control --reload-rules && sudo udevadm trigger
 
 | `--sources` | Stream tags (paths after `:8554/`) |
 |-------------|-------------------------------------|
-| `ffc` | `ffc0`, `ffc1`, `ffc2`, `ffc3` |
+| `ffc` | `FRONT`, `RIGHT`, `LEFT`, `BACK` |
 | `oakd` | `oakd_rgb`, `oakd_left`, `oakd_right` |
 | `both` | all of the above |
 
 Example: `rtsp://localhost:8554/oakd_rgb`
 
+
 ## Encoder (from repo root, venv on — start before the viewer)
+### **MAKE SURE YOU ACTIVE YOUR VENV BEFORE RUNNING (source .venv/bin/activate)**
 
 | Goal | Command |
 |------|---------|
@@ -61,6 +63,7 @@ Example: `rtsp://localhost:8554/oakd_rgb`
 | Slow USB / discovery | `... --discovery-attempts 20 --discovery-delay 3` |
 
 ## Viewer (match `--sources` to the running encoder)
+### **MAKE SURE YOU ACTIVE YOUR VENV BEFORE RUNNING (source .venv/bin/activate)**
 
 | Goal | Command |
 |------|---------|
