@@ -16,6 +16,7 @@
     * @brief Struct storing important telemetry updates to be printed on the terminal.
 */
 struct BatteryTelem{
+    int BatteryNum;
     float voltage;
     float temperature; 
     float current;  
@@ -25,7 +26,7 @@ struct BatteryTelem{
 struct RailTelem{
 
     int RailNum; 
-    std::string status; 
+    bool status; 
     float voltage;
     float temperature;
     float current; 
@@ -34,14 +35,14 @@ struct RailTelem{
 
 struct TCUtelem{
 
-    std::string fan_status; 
+    bool fan_status; 
     float temperature; 
 };
 
 struct RelayTelem{
 
     int RelayNum; 
-    std::string status; 
+    bool status; 
 
 };
 
@@ -93,7 +94,7 @@ class BAB{
         *  @return return a voltage value in Volts. 
         * 
         */
-        float getVoltageLevel() const; 
+        float getBatteryVoltageLevel() const; 
 
         /*
         *  @brief Gets the current running through the battery.
@@ -101,7 +102,7 @@ class BAB{
         *  @return return a voltage value in Volts. 
         * 
         */
-        float getCurrentLevel() const; 
+        float getBatteryCurrentLevel() const; 
 
 
 
@@ -112,7 +113,7 @@ class BAB{
         *  @param: None 
         * 
         */
-        float getBMSTemp() const;
+        float getBatteryTemp() const;
 
 
 
@@ -214,9 +215,8 @@ class BAB{
         uint32_t deviceId;
         std::shared_ptr<can_util::CANFrameCallback> frame_callback; 
 
-        BatteryTelem batteryTelem;
-        RelayTelem relayTelem;
-        RailTelem railTelem; 
-        TCUtelem tcuTelem; 
-
+        BatteryTelem batteryTelem{};
+        RelayTelem relayTelem{};
+        RailTelem railTelem{}; 
+        TCUtelem tcuTelem{}; 
 }; 

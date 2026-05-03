@@ -32,7 +32,12 @@ class CanControllerNode : public rclcpp::Node{
         std::unique_ptr<SystemFrameBuilder> frame_builder_; 
 
         ros2_fmt_logger::Logger logger; 
+        int multiplier; 
         
+
+        std::shared_ptr<rclcpp::ParameterEventHandler> parameter_event_handler;
+        rclcpp::ParameterCallbackHandle::SharedPtr multiplier_callback_handle;
+
         rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr twist_msgs_; 
         rclcpp::Subscription<sensor_msgs::msg::Joy>::SharedPtr joy_msgs_; 
         rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr joint_state_msgs_; 

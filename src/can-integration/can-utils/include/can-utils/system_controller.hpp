@@ -6,6 +6,8 @@
 #include <iostream>
 
 
+#define COMMAND_PREFIX_MAINTAIN_VELOCITY 0x82052c80 
+
 //This class takes care of all the system handlers, each motor has a handler function with switch cases depening on the instruction type 
 //being sent. 
 class SystemFrameBuilder{
@@ -13,6 +15,8 @@ class SystemFrameBuilder{
     public:
 
         explicit SystemFrameBuilder(std::shared_ptr<can_util::CANController> can_manager);
+
+        uint32_t startMotors(uint32_t mask); 
 
         uint32_t sendWheelMotorVelocity(DeviceId::ID device_id, float velocity_payload);
 
@@ -24,7 +28,7 @@ class SystemFrameBuilder{
         void sendForceStop(deviceType::DeviceType DeviceType, DeviceId::ID deviceID);
         void sendResume(deviceType::DeviceType DeviceType, DeviceId::ID deviceID);
 
-         ~SystemFrameBuilder(){std::cout << "System frame builder destructor called" << std::endl; }
+        ~SystemFrameBuilder(){std::cout << "System frame builder destructor called" << std::endl; }
 
     private: 
         

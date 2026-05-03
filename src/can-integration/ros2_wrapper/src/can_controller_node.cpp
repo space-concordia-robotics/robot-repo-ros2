@@ -7,6 +7,9 @@
 CanControllerNode::CanControllerNode(const rclcpp::NodeOptions& options) : 
     Node("can_controller_node", options), logger(this->get_logger().get_child("can_controller_node")){
 
+        this->declare_parameter("can_path", "can0");
+        multiplier = this->declare_parameter("multiplier", 500);
+
         can_interface_ = this->declare_parameter<std::string>("can_interface", "vcan0");
 
         can_controller_ = std::make_shared<can_util::CANController>(can_interface_, this->get_logger());
@@ -15,7 +18,14 @@ CanControllerNode::CanControllerNode(const rclcpp::NodeOptions& options) :
             throw std::runtime_error("CAN configure failed");
         }
         
-        logger.info("Successfully configured CAN interface!");
+        parameter_event_handler = std::make_shared<rclcpp::ParameterEventHandler>(this);
+
+        auto multiplier_callback = [this](const rclcpp::Parameter parameter) {
+        if (parameter.get_name() == "multiplier")
+        multiplier = parameter.as_int();
+        };
+
+        multiplier_callback_handle = parameter_event_handler->add_parameter_callback("multiplier", multiplier_callback);
         
         frame_builder_ = std::make_unique<SystemFrameBuilder>(can_controller_);
 
@@ -29,6 +39,11 @@ CanControllerNode::CanControllerNode(const rclcpp::NodeOptions& options) :
         (const sensor_msgs::msg::JointState::ConstSharedPtr& msg) {getJointStateMessages(msg);});
         joy_msgs_ = this->create_subscription<sensor_msgs::msg::Joy>("/joy", rclcpp::SystemDefaultsQoS(), [this]
         (const sensor_msgs::msg::Joy::ConstSharedPtr& msg){getjoyfeedback(msg);});
+
+
+        // Start the motors
+        uint64_t mask = 0x7E;
+        frame_builder_->startMotors(mask); 
 
         logger.info("All subscriptions initialized"); 
         
@@ -48,7 +63,7 @@ void CanControllerNode::getjoyfeedback(const sensor_msgs::msg::Joy::ConstSharedP
     constexpr int FORCE_STOP_WHEELS = 6;
     constexpr int RESTART_WHEEL_MOTORS = 7; 
 
-    // each force stop and restart expression wil: have its on boolean value, and when activated, it will send a forceStop or resume request
+    // each force stop and restart expression will: have its on boolean value, and when activated, it will send a forceStop or resume request
     // to its respective motor
     static bool arm_force_stop = false;
     static bool wheel_force_stop = false; 
@@ -108,8 +123,8 @@ void CanControllerNode::getTwistMessages(const geometry_msgs::msg::Twist::ConstS
 
 
     //convert velocities into rpm
-    float right_wheel_velocity_rpm = static_cast<float>(right_wheel_velocity) * 2000.0;
-    float left_wheel_velocity_rpm = static_cast<float>(left_wheel_velocity) * 2000.0;
+    float right_wheel_velocity_rpm = static_cast<float>(right_wheel_velocity) * multiplier;
+    float left_wheel_velocity_rpm = static_cast<float>(left_wheel_velocity) * multiplier;
 
 
     if(inhibit_wheel_cmds){

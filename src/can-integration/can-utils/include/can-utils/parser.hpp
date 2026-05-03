@@ -21,7 +21,7 @@ public:
      * @brief Extracts protocol fields from a raw 29-bit CAN ID.
      * Inverse logic of BuildAddress::buildCANID.
      */
-    static DecodedFrame parse(uint32_t raw_id, const uint8_t* raw_data) {
+    static DecodedFrame parse(uint32_t raw_id, const std::vector<uint8_t>& raw_data) {
         DecodedFrame decoded;
 
         // Shift right to reach the field, then AND with mask to isolate it
