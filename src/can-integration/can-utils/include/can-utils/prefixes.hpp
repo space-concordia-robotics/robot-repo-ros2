@@ -40,8 +40,8 @@ namespace Instructions{
         ARM_MOTOR_4 = 0x0C,
         ARM_MOTOR_5 = 0x0D, 
         
-        STOP_COMMAND = 0x00,
-        RESUME_COMMAND = 0x01, 
+        STOP_COMMAND = 0x01,
+        RESUME_COMMAND = 0x02, 
 
         CUT_PDS_OUTPUTS = 0x8F,
         AUTOMATIC_RAIL_SHUTDOWN = 0x02, 
