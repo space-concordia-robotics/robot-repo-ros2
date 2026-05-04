@@ -1,0 +1,38 @@
+# ROS 2 Jazzy dev environment for non-ubuntu distrobutions
+#
+#  + XWayland: on host run `xhost +local:` (or 'xhost +local:docker' if running X11 system) before GUI apps.
+#
+# Persistent container — start once, open many shells:
+#   docker compose up -d jazzy
+#   docker compose exec -it jazzy bash
+#   # source /opt/ros/jazzy/setup.bash && colcon build ...
+#   docker compose down
+#
+# One-shot shell (container removed on exit):
+#   docker compose run --rm jazzy bash
+
+services:
+  jazzy:
+    image: osrf/ros:jazzy-desktop-full
+    container_name: ros2-jazzy-${COMPOSE_PROJECT_NAME:-robot-repo}
+    network_mode: host
+    ipc: host
+    user: "${HOST_UID:-1000}:${HOST_GID:-1000}"
+    environment:
+      DISPLAY: "${DISPLAY:-:1}"
+      XDG_RUNTIME_DIR: /tmp/xdg-runtime
+      QT_X11_NO_MITSHM: "1"
+      ROS_DOMAIN_ID: "${ROS_DOMAIN_ID:-0}"
+    working_dir: /ws
+    volumes:
+      - .:/ws:rw
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+    stdin_open: true
+    tty: true
+    command: sleep infinity
+    # Uncomment for AMDGPU/intel DRI inside the container:
+    # devices:
+    #   - /dev/dri
+    # group_add:
+    #   - video
+    #   - render

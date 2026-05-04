@@ -30,6 +30,9 @@ __pycache__/
 *.pyo
 *.pyd
 
+# DepthAI local Python virtual environment (Luxonis / depthai packages)
+depthai-env/
+
 # Temporary files
 *.tmp
 *.bak
@@ -38,6 +41,9 @@ __pycache__/
 *.rej
 
 .cache/
+
+# Local Docker Compose overrides (UID/GID, DISPLAY)
+.env
 
 # LiDAR metadata
 os1-992005000098-metadata.json
