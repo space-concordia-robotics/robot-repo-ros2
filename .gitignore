@@ -42,5 +42,8 @@ depthai-env/
 
 .cache/
 
+# Local Docker Compose overrides (UID/GID, DISPLAY)
+.env
+
 # LiDAR metadata
 os1-992005000098-metadata.json
