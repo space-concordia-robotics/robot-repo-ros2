@@ -2,20 +2,16 @@
 """Teleop for SIL board LEDs — presets and custom R/G/B/brightness input."""
 
 import sys
+from pathlib import Path
+
+_script_dir = str(Path(__file__).resolve().parent)
+if _script_dir not in sys.path:
+    sys.path.insert(0, _script_dir)
+
 import rclpy
 from rclpy.node import Node
 from sil_board.msg import LedCommand
-
-PRESETS = {
-    "white":  (255, 255, 255, 255),
-    "red":    (255, 0,   0,   255),
-    "green":  (0,   255, 0,   255),
-    "blue":   (0,   0,   255, 255),
-    "yellow": (255, 255, 0,   255),
-    "cyan":   (0,   255, 255, 255),
-    "purple": (255, 0,   255, 255),
-    "off":    (0,   0,   0,   0),
-}
+from sil_board_presets import PRESETS
 
 HELP_TEXT = """
 SIL Board LED Teleop

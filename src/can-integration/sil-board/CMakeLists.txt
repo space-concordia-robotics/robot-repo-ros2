@@ -35,7 +35,13 @@ install(TARGETS sil_board_node
   DESTINATION lib/${PROJECT_NAME}
 )
 
-install(PROGRAMS scripts/sil_board_teleop.py
+install(PROGRAMS
+  scripts/sil_board_teleop.py
+  scripts/sil_board_joy_teleop.py
+  DESTINATION lib/${PROJECT_NAME}
+)
+
+install(FILES scripts/sil_board_presets.py
   DESTINATION lib/${PROJECT_NAME}
 )
 
