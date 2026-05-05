@@ -162,14 +162,15 @@ void CanControllerNode::getJointStateMessages(const sensor_msgs::msg::JointState
         Instructions::Inst::ARM_MOTOR_4,
         Instructions::Inst::ARM_MOTOR_5,
     };
+    static constexpr size_t ARM_MOTOR_COUNT = sizeof(MOTOR_MAP) / sizeof(MOTOR_MAP[0]);
 
     if(inhibit_arm_cmds){
-        // sendMotorVelocity() takes in: 1. device type, 2. instruction, 3. motor id, 4. payload (velocities) 
+        // sendMotorVelocity() takes in: 1. device type, 2. instruction, 3. device id, 4. payload (velocities) 
         logger.info("Extracting joint state data");
-        for(size_t i = 0; i < joint_state_msg->velocity.size(); i++){
+        for(size_t i = 0; i < ARM_MOTOR_COUNT; i++){
 
             const float velocities = static_cast<float>(joint_state_msg->velocity[i]) * MAX_MOTOR_SPEED; 
-            frame_builder_->sendArmMotorVelocity(deviceType::DeviceType::COMPAT, MOTOR_MAP[i], DeviceId::ID::COMPAT_BOARD_ID, velocities); 
+            frame_builder_->sendArmMotorVelocity(deviceType::DeviceType::ARM_MOTOR_CONTROLLER, MOTOR_MAP[i], DeviceId::ID::ARM_MOTOR_CONTROLLER, velocities); 
  
             RCLCPP_DEBUG(this->get_logger(), "Motor %zu → %.3f rad/s", i + 1, velocities);
         }

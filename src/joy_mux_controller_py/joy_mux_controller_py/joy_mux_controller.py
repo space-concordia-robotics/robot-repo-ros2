@@ -33,6 +33,11 @@ class Axes(IntEnum):
     D_PAD_Y = 7
 
 
+# Largest indices used in this node: buttons[12], axes[7] → need lengths 13 and 8.
+_JOY_MIN_BUTTONS = 13
+_JOY_MIN_AXES = 8
+
+
 class JoyMuxController(Node):
 
 
@@ -43,10 +48,28 @@ class JoyMuxController(Node):
         self.arm_pub = self.create_publisher(JointState, '/arm_xyz_cmd', 10)  # Changed to JointState
         self.current_mode = 0
         self.last_toggle = 0
-    
+
+    def _publish_all_stop(self) -> None:
+        self.rover_pub.publish(Twist())
+        stopped = JointState()
+        stopped.name = [f'joint{i+1}' for i in range(7)]
+        stopped.velocity = [0.0] * 7
+        stopped.position = []
+        stopped.effort = []
+        self.arm_pub.publish(stopped)
 
     def joy_callback(self, msg: Joy):
-        
+        if len(msg.buttons) < _JOY_MIN_BUTTONS or len(msg.axes) < _JOY_MIN_AXES:
+            self.get_logger().warning(
+                (
+                    f'Joy message too short (buttons={len(msg.buttons)}, axes={len(msg.axes)}); '
+                    f'need at least {_JOY_MIN_BUTTONS} and {_JOY_MIN_AXES}. Publishing stop.'
+                ),
+                throttle_duration_sec=2.0,
+            )
+            self._publish_all_stop()
+            return
+
         if msg.buttons[Buttons.TOGGLE] == 1 and self.last_toggle == 0:
             self.current_mode = 1 - self.current_mode
             self.get_logger().info(f"Switched to {'Arm' if self.current_mode else 'Rover'} mode")
@@ -75,6 +98,9 @@ class JoyMuxController(Node):
                 joint_state.position = []  # Empty position field
                 joint_state.effort = []    # Empty effort field
                 self.arm_pub.publish(joint_state)
+        else:
+            # Deadman released: clear outputs so last cmd_vel / arm_xyz_cmd does not stick.
+            self._publish_all_stop()
         return
 
 def main(args=None):

@@ -12,6 +12,7 @@ namespace deviceType{
         RELAY = 0x03, 
         ENCODER = 0X07, 
         POWER_DISTRIBUTION = 0X08, 
+        ARM_MOTOR_CONTROLLER = 0X10,
         COLOR_SENSOR = 0X13, 
     };
 } //namespace deviceType
@@ -19,7 +20,8 @@ namespace deviceType{
 namespace Manufacturer{
     enum : uint32_t{ 
         REV_ROBOTICS = 0x05,
-        TEAM_USE = 0x08 
+        TEAM_USE = 0x08,
+        ARM_MOTOR_CONTROLLER = 0x81
     };
 } //namespace manufacturer
 
@@ -34,11 +36,11 @@ namespace severity{
 
 namespace Instructions{
     enum class Inst: uint32_t{
-        ARM_MOTOR_1 = 0x09,
-        ARM_MOTOR_2 = 0x0A,
-        ARM_MOTOR_3 = 0x0B,
-        ARM_MOTOR_4 = 0x0C,
-        ARM_MOTOR_5 = 0x0D, 
+        ARM_MOTOR_1 = 0x12,
+        ARM_MOTOR_2 = 0x14,
+        ARM_MOTOR_3 = 0x16,
+        ARM_MOTOR_4 = 0x18,
+        ARM_MOTOR_5 = 0x1A, 
         
         STOP_COMMAND = 0x01,
         RESUME_COMMAND = 0x02, 
@@ -87,6 +89,7 @@ namespace DeviceId{
         CLAMP_SERVO_ENCODER = 0X0D, 
 
         HUB = 0X0E,
+        ARM_MOTOR_CONTROLLER = 0X0C,
         WHEEL_MOT1 = 1,
         WHEEL_MOT2 = 2, 
         WHEEL_MOT3 = 3, 
