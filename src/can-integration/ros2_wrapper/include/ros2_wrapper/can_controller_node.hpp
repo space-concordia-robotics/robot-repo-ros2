@@ -12,8 +12,6 @@
 
 using namespace std::chrono;
 using namespace std::literals::chrono_literals; 
-#define MAX_MOTOR_SPEED 1024.f
-
 
 class CanControllerNode : public rclcpp::Node{
 
@@ -33,10 +31,12 @@ class CanControllerNode : public rclcpp::Node{
 
         ros2_fmt_logger::Logger logger; 
         int multiplier; 
+        double arm_velocity_scale_;
         
 
         std::shared_ptr<rclcpp::ParameterEventHandler> parameter_event_handler;
         rclcpp::ParameterCallbackHandle::SharedPtr multiplier_callback_handle;
+        rclcpp::ParameterCallbackHandle::SharedPtr arm_velocity_scale_callback_handle_;
 
         rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr twist_msgs_; 
         rclcpp::Subscription<sensor_msgs::msg::Joy>::SharedPtr joy_msgs_; 

@@ -9,6 +9,7 @@ CanControllerNode::CanControllerNode(const rclcpp::NodeOptions& options) :
 
         this->declare_parameter("can_path", "can0");
         multiplier = this->declare_parameter("multiplier", 500);
+        arm_velocity_scale_ = this->declare_parameter("arm_velocity_scale", 4096.0);
 
         can_interface_ = this->declare_parameter<std::string>("can_interface", "vcan0");
 
@@ -26,6 +27,14 @@ CanControllerNode::CanControllerNode(const rclcpp::NodeOptions& options) :
         };
 
         multiplier_callback_handle = parameter_event_handler->add_parameter_callback("multiplier", multiplier_callback);
+
+        auto arm_scale_callback = [this](const rclcpp::Parameter& parameter) {
+            if (parameter.get_name() == "arm_velocity_scale") {
+                arm_velocity_scale_ = parameter.as_double();
+            }
+        };
+        arm_velocity_scale_callback_handle_ =
+            parameter_event_handler->add_parameter_callback("arm_velocity_scale", arm_scale_callback);
         
         frame_builder_ = std::make_unique<SystemFrameBuilder>(can_controller_);
 
@@ -165,11 +174,14 @@ void CanControllerNode::getJointStateMessages(const sensor_msgs::msg::JointState
     static constexpr size_t ARM_MOTOR_COUNT = sizeof(MOTOR_MAP) / sizeof(MOTOR_MAP[0]);
 
     if(inhibit_arm_cmds){
-        // sendMotorVelocity() takes in: 1. device type, 2. instruction, 3. device id, 4. payload (velocities) 
         logger.info("Extracting joint state data");
         for(size_t i = 0; i < ARM_MOTOR_COUNT; i++){
 
-            const float velocities = static_cast<float>(joint_state_msg->velocity[i]) * MAX_MOTOR_SPEED; 
+            const double raw = joint_state_msg->velocity[i];
+            constexpr double DEADZONE = 0.05;
+            const float velocities = (std::abs(raw) < DEADZONE)
+                ? 0.0f
+                : static_cast<float>(raw * arm_velocity_scale_);
             frame_builder_->sendArmMotorVelocity(deviceType::DeviceType::ARM_MOTOR_CONTROLLER, MOTOR_MAP[i], DeviceId::ID::ARM_MOTOR_CONTROLLER, velocities); 
  
             RCLCPP_DEBUG(this->get_logger(), "Motor %zu → %.3f rad/s", i + 1, velocities);
