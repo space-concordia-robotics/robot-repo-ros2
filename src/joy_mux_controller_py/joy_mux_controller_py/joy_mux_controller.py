@@ -40,14 +40,37 @@ _JOY_MIN_AXES = 8
 
 class JoyMuxController(Node):
 
-
     def __init__(self):
         super().__init__('joy_mux_controller')
+
+        max_cmd_publish_hz = self.declare_parameter("max_cmd_publish_hz", 20.0).value
+        self._skip_identical = self.declare_parameter("skip_identical", True).value
+        self._epsilon = self.declare_parameter("identical_epsilon", 1e-3).value
+
         self.subscription = self.create_subscription(Joy, '/joy', self.joy_callback, 10)
         self.rover_pub = self.create_publisher(Twist, '/cmd_vel', 10)
-        self.arm_pub = self.create_publisher(JointState, '/arm_xyz_cmd', 10)  # Changed to JointState
+        self.arm_pub = self.create_publisher(JointState, '/arm_xyz_cmd', 10)
+
+        period_s = 1.0 / max(0.1, max_cmd_publish_hz)
+        self._publish_timer = self.create_timer(period_s, self._tick)
+
         self.current_mode = 0
         self.last_toggle = 0
+        self._deadman_held = False
+        self._prev_deadman = False
+
+        # Cached commands built from latest /joy
+        self._cached_twist: Twist | None = None
+        self._cached_joint: JointState | None = None
+
+        # Last-published payloads for skip_identical
+        self._last_twist_vals: tuple[float, ...] | None = None
+        self._last_joint_vals: tuple[float, ...] | None = None
+
+        self.get_logger().info(
+            f"joy_mux_controller ready — max_cmd_publish_hz={max_cmd_publish_hz}, "
+            f"skip_identical={self._skip_identical}, epsilon={self._epsilon}"
+        )
 
     def _publish_all_stop(self) -> None:
         self.rover_pub.publish(Twist())
@@ -57,6 +80,13 @@ class JoyMuxController(Node):
         stopped.position = []
         stopped.effort = []
         self.arm_pub.publish(stopped)
+        self._last_twist_vals = None
+        self._last_joint_vals = None
+
+    def _floats_equal(self, a: tuple[float, ...], b: tuple[float, ...] | None) -> bool:
+        if b is None or len(a) != len(b):
+            return False
+        return all(abs(x - y) < self._epsilon for x, y in zip(a, b))
 
     def joy_callback(self, msg: Joy):
         if len(msg.buttons) < _JOY_MIN_BUTTONS or len(msg.axes) < _JOY_MIN_AXES:
@@ -72,36 +102,64 @@ class JoyMuxController(Node):
 
         if msg.buttons[Buttons.TOGGLE] == 1 and self.last_toggle == 0:
             self.current_mode = 1 - self.current_mode
+            self._last_twist_vals = None
+            self._last_joint_vals = None
             self.get_logger().info(f"Switched to {'Arm' if self.current_mode else 'Rover'} mode")
         self.last_toggle = msg.buttons[Buttons.TOGGLE]
 
-        if msg.buttons[Buttons.DEADMAN] == 1:
+        self._deadman_held = msg.buttons[Buttons.DEADMAN] == 1
+
+        if self._deadman_held:
             if self.current_mode == 0:
                 twist = Twist()
                 twist.linear.x = msg.axes[Axes.LEFT_STICK_X]
                 twist.angular.z = msg.axes[Axes.LEFT_STICK_Y]
                 twist.linear.y = msg.axes[Axes.RIGHT_STICK_X]
                 twist.linear.z = msg.axes[Axes.RIGHT_STICK_Y]
-                self.rover_pub.publish(twist)
+                self._cached_twist = twist
             else:
                 joint_state = JointState()
-                joint_state.name = [f'joint{i+1}' for i in range(7)]  # Names for 7 joints
+                joint_state.name = [f'joint{i+1}' for i in range(7)]
                 joint_state.velocity = [
-                    float(msg.axes[Axes.D_PAD_X]),  # Joint 1
-                    float(msg.axes[Axes.D_PAD_Y]),  # Joint 2
-                    float(msg.axes[Axes.RIGHT_STICK_X]),  # Joint 3
-                    float((1 if msg.buttons[Buttons.X] else 0) - (1 if msg.buttons[Buttons.TRIANGLE] else 0)),   # Joint 4
-                    float(msg.axes[Axes.LEFT_STICK_Y]),   # Joint 5
-                    float(msg.axes[Axes.LEFT_STICK_X]),  # Joint 6
-                    float((1 if msg.buttons[Buttons.CIRCLE] else 0) - (1 if msg.buttons[Buttons.SQUARE] else 0))  # Joint 7: Positive (button 0) and negative (button 1)
+                    float(msg.axes[Axes.D_PAD_X]),
+                    float(msg.axes[Axes.D_PAD_Y]),
+                    float(msg.axes[Axes.RIGHT_STICK_X]),
+                    float((1 if msg.buttons[Buttons.X] else 0) - (1 if msg.buttons[Buttons.TRIANGLE] else 0)),
+                    float(msg.axes[Axes.LEFT_STICK_Y]),
+                    float(msg.axes[Axes.LEFT_STICK_X]),
+                    float((1 if msg.buttons[Buttons.CIRCLE] else 0) - (1 if msg.buttons[Buttons.SQUARE] else 0))
                 ]
-                joint_state.position = []  # Empty position field
-                joint_state.effort = []    # Empty effort field
-                self.arm_pub.publish(joint_state)
-        else:
-            # Deadman released: clear outputs so last cmd_vel / arm_xyz_cmd does not stick.
+                joint_state.position = []
+                joint_state.effort = []
+                self._cached_joint = joint_state
+        elif self._prev_deadman:
             self._publish_all_stop()
-        return
+
+        self._prev_deadman = self._deadman_held
+
+    def _tick(self):
+        if not self._deadman_held:
+            return
+
+        if self.current_mode == 0:
+            tw = self._cached_twist
+            if tw is None:
+                return
+            vals = (tw.linear.x, tw.linear.y, tw.linear.z, tw.angular.z)
+            if self._skip_identical and self._floats_equal(vals, self._last_twist_vals):
+                return
+            self.rover_pub.publish(tw)
+            self._last_twist_vals = vals
+        else:
+            js = self._cached_joint
+            if js is None:
+                return
+            vals = tuple(js.velocity)
+            if self._skip_identical and self._floats_equal(vals, self._last_joint_vals):
+                return
+            self.arm_pub.publish(js)
+            self._last_joint_vals = vals
+
 
 def main(args=None):
     rclpy.init(args=args)
