@@ -9,6 +9,7 @@
 #include "can-utils/can_interface.hpp"
 #include <memory>
 #include <chrono>
+#include <mutex>
 
 using namespace std::chrono;
 using namespace std::literals::chrono_literals; 
@@ -24,6 +25,8 @@ class CanControllerNode : public rclcpp::Node{
 
     private: 
 
+        void sendCanFrames();
+
         std::string can_interface_; 
         
         std::shared_ptr<can_util::CANController> can_controller_; 
@@ -32,7 +35,7 @@ class CanControllerNode : public rclcpp::Node{
         ros2_fmt_logger::Logger logger; 
         int multiplier; 
         double arm_velocity_scale_;
-        
+        int can_send_rate_hz_;
 
         std::shared_ptr<rclcpp::ParameterEventHandler> parameter_event_handler;
         rclcpp::ParameterCallbackHandle::SharedPtr multiplier_callback_handle;
@@ -42,8 +45,12 @@ class CanControllerNode : public rclcpp::Node{
         rclcpp::Subscription<sensor_msgs::msg::Joy>::SharedPtr joy_msgs_; 
         rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr joint_state_msgs_; 
 
-        rclcpp::TimerBase::SharedPtr timer_; 
+        rclcpp::TimerBase::SharedPtr can_send_timer_; 
 
-
+        std::mutex cmd_mutex_;
+        geometry_msgs::msg::Twist::ConstSharedPtr latest_twist_;
+        sensor_msgs::msg::JointState::ConstSharedPtr latest_joint_state_;
+        bool twist_dirty_{false};
+        bool joint_state_dirty_{false};
 }; 
 
