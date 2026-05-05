@@ -1,15 +1,14 @@
 #include "wheels_controller_node.h"
 
 WheelsControllerNode::WheelsControllerNode() : rclcpp::Node("wheels_controller_node") {
-    this->declare_parameter("can_path", "can0");
+    can_path_ = this->declare_parameter<std::string>("can_path", "can0");
     multiplier = this->declare_parameter("multiplier", 500);
 
-   
-   if (CANController::configureCAN("can0") != SUCCESS) {
-        RCLCPP_ERROR(this->get_logger(), "Failed to configure CAN interface");
+    if (CANController::configureCAN(can_path_.c_str()) != SUCCESS) {
+        RCLCPP_ERROR(this->get_logger(), "Failed to configure CAN interface: %s", can_path_.c_str());
         rclcpp::shutdown();
     }
-    RCLCPP_INFO(this->get_logger(), "Initialized CAN interface: %s", "can0");
+    RCLCPP_INFO(this->get_logger(), "Initialized CAN interface: %s", can_path_.c_str());
     // Subscribe to cmd_vel
     twist_msg_callback = this->create_subscription<geometry_msgs::msg::Twist>(
         "cmd_vel", 10, std::bind(&WheelsControllerNode::TwistMessageCallback, this, std::placeholders::_1)

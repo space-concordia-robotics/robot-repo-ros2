@@ -3,6 +3,7 @@
 //
 
 #include "can_controller.h"
+#include <cerrno>
 
 uint8_t CANController::configureCAN(const char* fd_path){
     /*
@@ -36,17 +37,22 @@ uint8_t CANController::configureCAN(const char* fd_path){
     Someone fuking document this (it wont fucking be me)
 */
  uint8_t CANController::sendBlockingFrame(struct can_frame& frame){
-    while (true){
-        auto status = sendFrame(frame);
-        if (errno != 105) break;
+    while (true) {
+        if (sendFrame(frame) == SUCCESS) {
+            return SUCCESS;
+        }
+        if (errno != ENOBUFS) {
+            break;
+        }
         errno = 0;
         usleep(100);
     }
-    int errno_0 = errno;
+    const int err = errno;
     errno = 0;
-    if(errno_0 !=0)
-        std::cout << strerror(errno_0) << "\n";
-    return errno_0 ? CAN_ERROR : SUCCESS;  
+    if (err != 0) {
+        std::cout << strerror(err) << "\n";
+    }
+    return CAN_ERROR;
 }
 
 /*

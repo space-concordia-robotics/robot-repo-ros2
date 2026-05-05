@@ -9,6 +9,7 @@
 #include "rev_motor_controller.h"
 
 #include <chrono>
+#include <string>
 using namespace std::chrono;
 
 #define DEVICE_1_ID 1
@@ -39,6 +40,7 @@ private:
     rclcpp::ParameterCallbackHandle::SharedPtr multiplier_callback_handle;
 
     int multiplier;
+    std::string can_path_;
 };
 
 #endif

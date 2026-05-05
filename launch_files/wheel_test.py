@@ -37,7 +37,7 @@ def generate_launch_description():
             #output='screen',
         ),
         Node(
-            package='joy_mux_controller',
+            package='joy_mux_controller_py',
             executable='joy_mux_controller',
             name='joy_mux_controller',
             #output='screen',
