@@ -32,6 +32,20 @@ void VideoWidget::onShutdown() {
     video_thread.join();
 }
 
+ImVec2 VideoWidget::expectedSize(const ImVec2 available) const {
+    const float video_aspect = static_cast<float>(current_frame.cols) / static_cast<float>(current_frame.rows);
+
+    ImVec2 size = available;
+
+    if (const float window_aspect = available.x / available.y; window_aspect > video_aspect) {
+        size.x = available.y * video_aspect;
+    } else {
+        size.y = available.x / video_aspect;
+    }
+
+    return size;
+}
+
 void VideoWidget::draw() {
     updateTexture();
 
@@ -51,7 +65,7 @@ void VideoWidget::draw() {
         }
 
         ImGui::SetCursorPosX((avail.x - size.x) * 0.5f);
-        ImGui::SetCursorPosY((avail.y - size.y) * 0.5f);
+        // ImGui::SetCursorPosY((avail.y - size.y) * 0.5f);
 
         ImGui::Image(texture_id, size);
 
@@ -64,17 +78,17 @@ void VideoWidget::draw() {
 }
 
 void VideoWidget::videoThread() {
-    auto video_capture = cv::VideoCapture(
+    video_capture = std::make_shared<cv::VideoCapture>(
         "rtspsrc location=rtsp://127.0.0.1:8554/test latency=100 ! decodebin ! videoconvert "
         "! video/x-raw,format=RGBA ! appsink drop=true max-buffers=1 sync=true",
         cv::CAP_GSTREAMER
     );
 
-    video_capture.set(cv::CAP_PROP_BUFFERSIZE, 1);
+    video_capture->set(cv::CAP_PROP_BUFFERSIZE, 1);
 
-    std::cout << "Backend: " << video_capture.getBackendName() << std::endl;
+    std::cout << "Backend: " << video_capture->getBackendName() << std::endl;
 
-    if (!video_capture.isOpened()) {
+    if (!video_capture->isOpened()) {
         logger.error("Failed to open RTSP stream");
         return;
     }
@@ -83,7 +97,7 @@ void VideoWidget::videoThread() {
     cv::Mat frame;
 
     while (running) {
-        if (!video_capture.read(frame)) {
+        if (!video_capture->read(frame)) {
             logger.warn("RTSP read failed");
             continue;
         }
@@ -94,8 +108,8 @@ void VideoWidget::videoThread() {
             new_frame_available = true;
         }
 
-        const auto fps = video_capture.get(cv::CAP_PROP_FPS);
-        // const auto bitrate = video_capture.get(cv::CAP_PROP_BITRATE);
+        const auto fps = video_capture->get(cv::CAP_PROP_FPS);
+        // const auto bitrate = video_capture->get(cv::CAP_PROP_BITRATE);
         const auto width = frame.cols;
         const auto height = frame.rows;
 

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <opencv2/videoio.hpp>
 #include <opencv2/core/mat.hpp>
 
 #include "foc2-gui/overlayable.hpp"
@@ -14,6 +15,8 @@ public:
     void onInit() override;
     void onShutdown() override;
 
+    ImVec2 expectedSize(ImVec2 available) const;
+
 protected:
     void draw() override;
 
@@ -23,6 +26,7 @@ private:
     cv::Mat next_frame;
     cv::Mat current_frame;
     std::mutex frame_mutex;
+    std::shared_ptr<cv::VideoCapture> video_capture;
 
     std::shared_ptr<VideoStatsOverlay> video_stats_overlay;
 

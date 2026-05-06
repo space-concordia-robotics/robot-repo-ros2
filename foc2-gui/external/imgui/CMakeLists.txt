@@ -32,7 +32,7 @@ target_compile_options(${PROJECT_NAME} PRIVATE -w -Wno-everything)
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${imgui_SOURCE_DIR})
 
-target_compile_definitions(${PROJECT_NAME} PUBLIC IMGUI_ENABLE_FREETYPE)
+target_compile_definitions(${PROJECT_NAME} PUBLIC IMGUI_ENABLE_FREETYPE IMGUI_DEFINE_MATH_OPERATORS)
 
 target_link_libraries(${PROJECT_NAME} PUBLIC SDL3::SDL3 OpenGL::GL Freetype::Freetype)
 
