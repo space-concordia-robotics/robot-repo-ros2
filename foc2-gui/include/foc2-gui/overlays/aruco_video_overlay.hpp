@@ -9,7 +9,7 @@
 #include <tf2_ros/transform_listener.hpp>
 
 #include "foc2-gui/overlay.hpp"
-#include "foc2-gui/util/imgui-util.h"
+#include "foc2-gui/util/imgui_util.h"
 
 
 class ArucoVideoOverlay : public UiOverlay {

@@ -4,7 +4,7 @@
 #include <tf2_ros/transform_listener.hpp>
 
 #include "foc2-gui/overlay.hpp"
-#include "foc2-gui/util/imgui-util.h"
+#include "foc2-gui/util/imgui_util.h"
 
 
 class MiniMapOverlay : public UiOverlay {
@@ -16,10 +16,6 @@ public:
               tf_buffer,
               &app
           ) {}
-
-    static constexpr double SIZE = 192.0;
-    static constexpr double MARGIN = 12.0;
-    static constexpr auto RADIUS = SIZE / 2;
 
     void onInit() override;
 
@@ -41,7 +37,7 @@ private:
 
     void pollTransform();
 
-    static void drawRobotAtCenter(ImDrawList* draw_list, const ImVec2& center, bool active);
+    static void drawRobotAtCenter(ImDrawList* draw_list, double radius, const ImVec2& center, bool active);
 
-    static void drawCompass(ImDrawList* draw_list, const ImVec2& center, double robot_yaw);
+    static void drawCompass(ImDrawList* draw_list, double radius, const ImVec2& center, double robot_yaw);
 };

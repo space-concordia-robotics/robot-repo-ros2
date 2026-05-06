@@ -3,17 +3,25 @@
 #include <imgui.h>
 #include <rclcpp/executors.hpp>
 #include <rclcpp/utilities.hpp>
+#include <misc/cpp/imgui_stdlib.h>
 
 #include "foc2-gui/im_application.hpp"
 #include "foc2-gui/widgets/video_widget.hpp"
 
 class FOC2Application : public ImApplication {
 public:
-    FOC2Application() : ImApplication("test_app", "Test App"), widget(*this) {}
+    FOC2Application() : ImApplication("test_app", "Test App"), video_top(*this), video_bottom_left(*this), video_bottom_right(*this) {}
 
 protected:
     void onInit() override {
-        widget.onInit();
+        video_top.onInit();
+        video_bottom_left.onInit();
+        video_bottom_right.onInit();
+
+        auto& style = ImGui::GetStyle();
+        style.WindowPadding = ImVec2(4.0, 4.0);
+        style.Colors[ImGuiCol_WindowBg] = ImVec4(0.12, 0.12, 0.12, 1.0);
+        style.Colors[ImGuiCol_ChildBg] = ImVec4(0.16, 0.16, 0.16, 1.0);
     }
 
     void onFrame() override {
@@ -26,24 +34,102 @@ protected:
             ImGuiWindowFlags_NoMove |
             ImGuiWindowFlags_NoScrollbar |
             ImGuiWindowFlags_NoSavedSettings |
-            ImGuiWindowFlags_NoBringToFrontOnFocus |
-            ImGuiWindowFlags_NoBackground;
+            ImGuiWindowFlags_NoBringToFrontOnFocus;
 
         ImGui::Begin("MainUI", nullptr, flags);
 
-        // TODO 2026-05-04 (Will Free): do something better here for the layout
+        const ImVec2 available = ImGui::GetContentRegionAvail();
 
-        widget.onFrame();
+        // TODO 2026-05-05 (Will Free): for now these are just split 50/50. figure out something better for layout later.
+        const float left_width = available.x * 0.5f;
+
+        // TODO 2026-05-05 (Will Free): figure out what to put on the left side
+
+        ImGui::BeginChild("Left", ImVec2(left_width, 0), false);
+        drawLeft();
+        ImGui::EndChild();
+
+        ImGui::SameLine();
+
+        {
+            const auto draw_list = ImGui::GetWindowDrawList();
+            const auto cursor_pos = ImGui::GetCursorScreenPos();
+
+            const auto top = ImGui::GetWindowPos().y;
+            const auto bottom = top + ImGui::GetWindowSize().y;
+
+            draw_list->AddLine(
+                ImVec2(cursor_pos.x, top + 8),
+                ImVec2(cursor_pos.x, bottom - 8),
+                ImGui::ImColor(200, 200, 200, 40),
+                2.0
+            );
+        }
+
+        ImGui::BeginChild("Video Streams", ImVec2(0, 0), false);
+        drawRight();
+        ImGui::EndChild();
 
         ImGui::End();
     }
 
     void onShutdown() override {
-        widget.onShutdown();
+        video_top.onShutdown();
+        video_bottom_left.onShutdown();
+        video_bottom_right.onShutdown();
     }
 
 private:
-    VideoWidget widget;
+    VideoWidget video_top;
+    VideoWidget video_bottom_left;
+    VideoWidget video_bottom_right;
+
+    static void drawLeft() {
+        ImGui::Text("TODO");
+    }
+
+    void drawRight() {
+        // TODO 2026-05-05 (Will Free): give the streams proper names
+
+        // TODO 2026-05-06 (Will Free): vertically center windows.
+        //  this can be done in two ways:
+        //  1. compute the size of all the children manually and just that to set the cursor position
+        //  2. render in two passes: a first invisible pass which is used to get the height, and a second pass to render.
+
+        const auto available = ImGui::GetContentRegionAvail();
+
+        ImGui::BeginChild("Top Stream", ImVec2(0, available.y * 0.5f), 0);
+        drawStream(video_top);
+        drawCenteredLabel("Top");
+        ImGui::EndChild();
+
+        ImGui::BeginChild("Bottom Left Stream", ImVec2(available.x * 0.5f, 0), 0);
+        drawCenteredLabel("Bottom Left");
+        drawStream(video_bottom_left);
+        ImGui::EndChild();
+
+        ImGui::SameLine();
+
+        ImGui::BeginChild("Bottom Right Stream", ImVec2(0, 0), 0);
+        drawCenteredLabel("Bottom Right");
+        drawStream(video_bottom_right);
+        ImGui::EndChild();
+    }
+
+    static void drawCenteredLabel(const std::string& label) {
+        const auto available_x = ImGui::GetContentRegionAvail().x;
+
+        const auto label_size = ImGui::CalcTextSize(label);
+
+        const auto off = (available_x - label_size.x) / 2;
+        ImGui::SetCursorPosX(ImGui::GetCursorPosX() + off);
+
+        ImGui::TextUnformatted(label);
+    }
+
+    static void drawStream(VideoWidget& video_widget) {
+        video_widget.onFrame();
+    }
 };
 
 int main(const int argc, char const* const* argv) {
