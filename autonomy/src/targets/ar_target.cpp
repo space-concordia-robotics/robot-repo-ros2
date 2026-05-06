@@ -16,14 +16,14 @@ namespace autonomy {
             }
         );
 
-        aruco_subscription = node.create_subscription<ArucoDetection>(
+        aruco_subscription = node.create_subscription<ArucoDetections>(
             "/aruco",
             10,
-            [this](const ArucoDetection::UniquePtr& msg) {
+            [this](const ArucoDetections::UniquePtr& msg) {
                 const auto matched_tag = std::ranges::any_of(
                     msg->markers,
-                    [&](const aruco_opencv_msgs::msg::MarkerPose& marker) {
-                        return marker.marker_id == this->tag_id;
+                    [&](const ArucoMarker& marker) {
+                        return marker.id == this->tag_id;
                     }
                 );
 
@@ -192,8 +192,8 @@ namespace autonomy {
 
         const auto tag_iterator = std::ranges::find_if(
             aruco_detection->markers,
-            [&](const aruco_opencv_msgs::msg::MarkerPose& marker) {
-                return marker.marker_id == this->tag_id;
+            [&](const ArucoMarker& marker) {
+                return marker.id == this->tag_id;
             }
         );
 
