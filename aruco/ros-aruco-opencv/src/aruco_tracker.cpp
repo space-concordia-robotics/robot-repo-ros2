@@ -348,6 +348,11 @@ namespace ros_aruco_opencv {
 
             detector_->estimate_marker_poses(marker_ids, marker_corners, detections.markers, rotations_final, translations_final);
 
+            for (auto& marker : detections.markers) {
+                marker.header.frame_id = cv_ptr->header.frame_id;
+                marker.header.stamp = cv_ptr->header.stamp;
+            }
+
             detector_->estimate_board_poses(marker_ids, marker_corners, detections.boards, rotations_final, translations_final);
 
             detections.rejected_markers.resize(rejected_corners.size());
@@ -355,7 +360,7 @@ namespace ros_aruco_opencv {
                 const auto& corners = rejected_corners[i];
 
                 for (auto j = 0u; j < corners.size(); ++j) {
-                    const auto& point = corners.at(i);
+                    const auto& point = corners.at(j);
                     auto& corner = detections.rejected_markers[i].corners[j];
                     corner.x = point.x;
                     corner.y = point.y;
