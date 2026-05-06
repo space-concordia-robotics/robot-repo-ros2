@@ -24,16 +24,16 @@ void MiniMapOverlay::onDraw(ImDrawList* draw_list, const ImRect& bounds) {
 
     // TODO 2026-05-04 (Will Free): scale compass with size of bounds
 
-    const auto size = std::min(bounds.GetWidth(), bounds.GetHeight()) * 0.2;
+    const auto size = std::min(bounds.GetWidth(), bounds.GetHeight()) * 0.3;
     const auto radius = size / 2;
-    const auto margin = 0.0;
+    const auto margin = radius / 4;
 
     const auto min = ImVec2(top_right.x - size - margin, top_right.y + margin);
     const auto max = ImVec2(top_right.x - margin, top_right.y + size + margin);
 
     const auto center = ImVec2((min.x + max.x) / 2, (min.y + max.y) / 2);
 
-    draw_list->AddCircle(center, radius, ImGui::ImColor(50, 60, 80, 200), 0, 4.0);
+    draw_list->AddCircle(center, radius, ImGui::ImColor(50, 60, 80, 200), 0, radius / 24);
     draw_list->AddCircleFilled(center, radius, ImGui::ImColor(50, 60, 80, 128));
 
     // TODO 2026-05-04 (Will Free): add the following sub-overlays:
@@ -93,31 +93,35 @@ void MiniMapOverlay::drawRobotAtCenter(ImDrawList* draw_list, const double radiu
     };
     draw_list->AddConvexPolyFilled(points, std::size(points), body);
 
-    draw_list->AddPolyline(points, std::size(points), accent, 0, radius / 32);
+    draw_list->AddPolyline(points, std::size(points), accent, 0, radius / 48);
 }
 
 void MiniMapOverlay::drawCompass(ImDrawList* draw_list, const double radius, const ImVec2& center, const double robot_yaw) {
-    static constexpr int COMPASS_TICKS = 16;
+    static constexpr int COMPASS_TICKS_PER_QUADRANT = 4;
 
-    const auto major_tick_length = radius * 0.10;
+    const auto major_tick_length = radius * 0.12;
     const auto minor_tick_length = radius * 0.05;
 
-    static constexpr ImU32 tick_color = ImGui::ImColor(200, 200, 200, 120);
-    static constexpr ImU32 label_color = ImGui::ImColor(240, 240, 240, 220);
+    static constexpr ImU32 MAJOR_TICK_COLOR = ImGui::ImColor(255, 0, 0, 120);
+    static constexpr ImU32 TICK_COLOR = ImGui::ImColor(200, 200, 200, 120);
+    static constexpr ImU32 LABEL_COLOR = ImGui::ImColor(240, 240, 240, 220);
 
     const auto angle_offset = -robot_yaw;
 
-    for (int i = 0; i < COMPASS_TICKS; ++i) {
+    for (int i = 0; i < COMPASS_TICKS_PER_QUADRANT * 4; ++i) {
         const auto len = i % 2 == 0 ? major_tick_length : minor_tick_length;
 
-        const auto angle = static_cast<double>(i) / COMPASS_TICKS * 2.0 * std::numbers::pi;
+        const auto angle = static_cast<double>(i) / (COMPASS_TICKS_PER_QUADRANT * 4) * 2.0 * std::numbers::pi;
         const auto angle_cos = std::cos(angle + angle_offset);
         const auto angle_sin = std::sin(angle + angle_offset);
+        const auto direction = ImVec2(angle_cos, angle_sin);
 
-        const auto outer = ImVec2(center.x + angle_cos * (radius - 4.0), center.y + angle_sin * (radius - 4.0));
-        const auto inner = ImVec2(center.x + angle_cos * (radius - 4.0 - len), center.y + angle_sin * (radius - 4.0 - len));
+        const auto outer_offset = radius - len / 2;
+        const auto inner_offset = radius + len / 2;
+        const auto outer = center + direction * outer_offset;
+        const auto inner = center + direction * inner_offset;
 
-        draw_list->AddLine(outer, inner, tick_color, i % 2 == 0 ? 2.0 : 1.0);
+        draw_list->AddLine(outer, inner, i % 4 == 0 ? MAJOR_TICK_COLOR : TICK_COLOR, i % 2 == 0 ? 2.0 : 1.0);
     }
 
     auto placeLabel = [&](const std::string& text, const double angle) {
@@ -125,16 +129,21 @@ void MiniMapOverlay::drawCompass(ImDrawList* draw_list, const double radius, con
 
         const auto angle_cos = std::cos(angle + angle_offset);
         const auto angle_sin = std::sin(angle + angle_offset);
+        const auto direction = ImVec2(angle_cos, angle_sin);
 
         const auto text_size = ImGui::CalcTextSize(text);
 
-        const auto pos = ImVec2(center.x + angle_cos * labelOffset - text_size.x * 0.5f, center.y + angle_sin * labelOffset - text_size.y * 0.5f);
+        const auto pos = center + direction * labelOffset - text_size * 0.5;
 
-        draw_list->AddText(pos, label_color, text.c_str());
+        draw_list->AddText(pos, LABEL_COLOR, text.c_str());
     };
+
+    ImGui::PushFont(nullptr, radius / 4);
 
     placeLabel("N", 0.0);
     placeLabel("E", std::numbers::pi / 2);
     placeLabel("S", std::numbers::pi);
     placeLabel("W", -std::numbers::pi / 2);
+
+    ImGui::PopFont();
 }
