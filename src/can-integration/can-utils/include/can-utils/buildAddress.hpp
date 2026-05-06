@@ -1,5 +1,8 @@
 #pragma once 
 
+#include <algorithm>
+#include <cstring>
+
 #include "can-utils/can_interface.hpp"
 #include "prefixes.hpp"
 
@@ -26,6 +29,10 @@ namespace buildAddress{
             static constexpr uint32_t SEVERITY_VALUE_MASK = 0x3u;      //2bits
             static constexpr uint32_t INSTRUCTION_MASK = 0xFFu; // 8 bits
             static constexpr uint32_t DEVICE_ID_MASK = 0x3Fu;    // 6 bits
+
+            /// Arm motor velocity payload: IEEE-754 float, DLC 4, clamped to this range before send.
+            static constexpr float ARM_MOTOR_VELOCITY_MIN = -1024.0F;
+            static constexpr float ARM_MOTOR_VELOCITY_MAX = 1024.0F;
 
             
             /*
@@ -88,6 +95,28 @@ namespace buildAddress{
                     memcpy(frame.data, &payload, sizeof(PayloadT));
 
                     return manager_->sendBlockingFrame(frame); 
+            }
+
+            /*
+            *  @brief Arm motor command frame: 29-bit ID plus data length 4 (32-bit float velocity).
+            *  @details Velocity is clamped to ARM_MOTOR_VELOCITY_MIN / ARM_MOTOR_VELOCITY_MAX.
+            */
+            uint32_t buildArmMotorVelocityFrame(uint32_t deviceType,
+                                                uint32_t manufacturerCode,
+                                                uint32_t SEVERITY,
+                                                uint32_t inst,
+                                                uint32_t deviceID,
+                                                float velocity_rads) {
+                struct can_frame frame{};
+                const float clamped =
+                    std::clamp(velocity_rads, ARM_MOTOR_VELOCITY_MIN, ARM_MOTOR_VELOCITY_MAX);
+                const uint32_t canID =
+                    buildCANID(deviceType, manufacturerCode, SEVERITY, inst, deviceID);
+                frame.can_id = canID | CAN_EFF_FLAG;
+                frame.len = 4;
+                std::memset(frame.data, 0, sizeof(frame.data));
+                std::memcpy(frame.data, &clamped, sizeof(float));
+                return manager_->sendBlockingFrame(frame);
             }
 
             

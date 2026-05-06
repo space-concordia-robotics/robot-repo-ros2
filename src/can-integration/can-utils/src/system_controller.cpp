@@ -42,11 +42,12 @@ void SystemFrameBuilder::sendArmMotorVelocity(deviceType::DeviceType deviceT,
                                               DeviceId::ID device_id, 
                                               float velocity_rads){
                                                 
-    builder_.buildAddress(static_cast<uint32_t>(deviceT), 
-                          Manufacturer::ARM_MOTOR_CONTROLLER, 
-                          severity::SEV_STATUS, 
-                          static_cast<uint32_t>(motor_id), 
-                          static_cast<uint32_t>(device_id), velocity_rads); 
+    builder_.buildArmMotorVelocityFrame(static_cast<uint32_t>(deviceT),
+                                        Manufacturer::ARM_MOTOR_CONTROLLER,
+                                        severity::SEV_STATUS,
+                                        static_cast<uint32_t>(motor_id),
+                                        static_cast<uint32_t>(device_id),
+                                        velocity_rads);
 }
 
 void SystemFrameBuilder::sendForceStop(deviceType::DeviceType DeviceType, DeviceId::ID deviceID){

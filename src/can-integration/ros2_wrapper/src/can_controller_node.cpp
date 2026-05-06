@@ -1,6 +1,11 @@
 #include "ros2_wrapper/can_controller_node.hpp"
+#include "can-utils/buildAddress.hpp"
 #include "can-utils/prefixes.hpp"
+#include <algorithm>
+#include <array>
 #include <cmath>
+ // add #include <thread>
+  // add #include <chrono>
 
 
 CanControllerNode::CanControllerNode(const rclcpp::NodeOptions& options) : 
@@ -8,7 +13,6 @@ CanControllerNode::CanControllerNode(const rclcpp::NodeOptions& options) :
 
         this->declare_parameter("can_path", "can0");
         multiplier = this->declare_parameter("multiplier", 500);
-        arm_velocity_scale_ = this->declare_parameter("arm_velocity_scale", 4096.0);
         can_send_rate_hz_ = this->declare_parameter("can_send_rate_hz", 10);
 
         can_interface_ = this->declare_parameter<std::string>("can_interface", "can0");
@@ -28,14 +32,6 @@ CanControllerNode::CanControllerNode(const rclcpp::NodeOptions& options) :
 
         multiplier_callback_handle = parameter_event_handler->add_parameter_callback("multiplier", multiplier_callback);
 
-        auto arm_scale_callback = [this](const rclcpp::Parameter& parameter) {
-            if (parameter.get_name() == "arm_velocity_scale") {
-                arm_velocity_scale_ = parameter.as_double();
-            }
-        };
-        arm_velocity_scale_callback_handle_ =
-            parameter_event_handler->add_parameter_callback("arm_velocity_scale", arm_scale_callback);
-        
         frame_builder_ = std::make_unique<SystemFrameBuilder>(can_controller_);
 
         twist_msgs_ = this->create_subscription<geometry_msgs::msg::Twist>("/cmd_vel", rclcpp::SystemDefaultsQoS(), [this]
@@ -177,25 +173,29 @@ void CanControllerNode::sendCanFrames(){
         };
         static constexpr size_t ARM_MOTOR_COUNT = sizeof(MOTOR_MAP) / sizeof(MOTOR_MAP[0]);
 
+        std::array<float, ARM_MOTOR_COUNT> cmd_sent{};
         for(size_t i = 0; i < ARM_MOTOR_COUNT; i++){
             const double raw = joint_state->velocity[i];
             constexpr double DEADZONE = 0.05;
             float velocities = (std::abs(raw) < DEADZONE)
                 ? 0.0f
-                : static_cast<float>(raw * arm_velocity_scale_);
+                : static_cast<float>(raw * buildAddress::BuildAddress::ARM_MOTOR_VELOCITY_MAX);
                 // motor 4 is a special case, it needs to be scaled down to 50% of the other motors because it is faster
             if (i == 3) {
                 velocities *= 0.5f;
             }
-            frame_builder_->sendArmMotorVelocity(deviceType::DeviceType::ARM_MOTOR_CONTROLLER, MOTOR_MAP[i], DeviceId::ID::ARM_MOTOR_CONTROLLER, velocities); 
-            RCLCPP_DEBUG(this->get_logger(), "Motor %zu → %.3f", i + 1, velocities);
+            const float payload = std::clamp(
+                velocities,
+                buildAddress::BuildAddress::ARM_MOTOR_VELOCITY_MIN,
+                buildAddress::BuildAddress::ARM_MOTOR_VELOCITY_MAX);
+            cmd_sent[i] = payload;
+            frame_builder_->sendArmMotorVelocity(
+                deviceType::DeviceType::ARM_MOTOR_CONTROLLER, MOTOR_MAP[i], DeviceId::ID::ARM_MOTOR_CONTROLLER, payload);
+            // std::this_thread::sleep_for(std::chrono::milliseconds(1));  // add #include <thread> if uncommented
+            RCLCPP_DEBUG(this->get_logger(), "Motor %zu → %.3f (payload)", i + 1, payload);
         }
-        RCLCPP_INFO(this->get_logger(), "Arm motor commands sent: Motor 1 = %.2f, Motor 2 = %.2f, Motor 3 = %.2f, Motor 4 = %.2f, Motor 5 = %.2f", 
-            static_cast<float>(joint_state->velocity[0]),
-            static_cast<float>(joint_state->velocity[1]),
-            static_cast<float>(joint_state->velocity[2]),
-            static_cast<float>(joint_state->velocity[3]),
-            static_cast<float>(joint_state->velocity[4]));
+        RCLCPP_INFO(this->get_logger(), "Arm motor commands sent: Motor 1 = %.2f, Motor 2 = %.2f, Motor 3 = %.2f, Motor 4 = %.2f, Motor 5 = %.2f",
+            cmd_sent[0], cmd_sent[1], cmd_sent[2], cmd_sent[3], cmd_sent[4]);
     }
 }
 

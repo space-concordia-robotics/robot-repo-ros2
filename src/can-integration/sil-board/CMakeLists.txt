@@ -9,6 +9,7 @@ endif()
 
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(sensor_msgs REQUIRED)
 find_package(can-utils REQUIRED)
 find_package(ros2_fmt_logger REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
@@ -31,7 +32,20 @@ ament_target_dependencies(sil_board_node
 rosidl_get_typesupport_target(cpp_typesupport_target ${PROJECT_NAME} rosidl_typesupport_cpp)
 target_link_libraries(sil_board_node ${cpp_typesupport_target})
 
-install(TARGETS sil_board_node
+add_executable(compat_board_node
+  src/compat_board_node.cpp
+)
+target_include_directories(compat_board_node PRIVATE
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+)
+ament_target_dependencies(compat_board_node
+  rclcpp
+  sensor_msgs
+  can-utils
+  ros2_fmt_logger
+)
+
+install(TARGETS sil_board_node compat_board_node
   DESTINATION lib/${PROJECT_NAME}
 )
 
