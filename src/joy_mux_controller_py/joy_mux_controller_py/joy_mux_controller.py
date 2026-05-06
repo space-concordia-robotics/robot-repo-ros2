@@ -43,7 +43,7 @@ class JoyMuxController(Node):
     def __init__(self):
         super().__init__('joy_mux_controller')
 
-        max_cmd_publish_hz = self.declare_parameter("max_cmd_publish_hz", 20.0).value
+        max_cmd_publish_hz = self.declare_parameter("max_cmd_publish_hz", 100.0).value
         self._skip_identical = self.declare_parameter("skip_identical", True).value
         self._epsilon = self.declare_parameter("identical_epsilon", 1e-3).value
 

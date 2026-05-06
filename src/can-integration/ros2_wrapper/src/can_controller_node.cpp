@@ -9,9 +9,9 @@ CanControllerNode::CanControllerNode(const rclcpp::NodeOptions& options) :
         this->declare_parameter("can_path", "can0");
         multiplier = this->declare_parameter("multiplier", 500);
         arm_velocity_scale_ = this->declare_parameter("arm_velocity_scale", 4096.0);
-        can_send_rate_hz_ = this->declare_parameter("can_send_rate_hz", 9);
+        can_send_rate_hz_ = this->declare_parameter("can_send_rate_hz", 10);
 
-        can_interface_ = this->declare_parameter<std::string>("can_interface", "vcan0");
+        can_interface_ = this->declare_parameter<std::string>("can_interface", "can0");
 
         can_controller_ = std::make_shared<can_util::CANController>(can_interface_, this->get_logger());
         if (!can_controller_->configureCan()) {
@@ -180,9 +180,12 @@ void CanControllerNode::sendCanFrames(){
         for(size_t i = 0; i < ARM_MOTOR_COUNT; i++){
             const double raw = joint_state->velocity[i];
             constexpr double DEADZONE = 0.05;
-            const float velocities = (std::abs(raw) < DEADZONE)
+            float velocities = (std::abs(raw) < DEADZONE)
                 ? 0.0f
                 : static_cast<float>(raw * arm_velocity_scale_);
+            if (i == 3) {
+                velocities *= 0.5f;
+            }
             frame_builder_->sendArmMotorVelocity(deviceType::DeviceType::ARM_MOTOR_CONTROLLER, MOTOR_MAP[i], DeviceId::ID::ARM_MOTOR_CONTROLLER, velocities); 
             RCLCPP_DEBUG(this->get_logger(), "Motor %zu → %.3f", i + 1, velocities);
         }
