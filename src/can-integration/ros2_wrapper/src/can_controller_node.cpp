@@ -75,17 +75,17 @@ void CanControllerNode::getjoyfeedback(const sensor_msgs::msg::Joy::ConstSharedP
     bool force_stop_wheels = msg->buttons[FORCE_STOP_WHEELS] == 1; 
     bool restart_wheels = msg->buttons[RESTART_WHEEL_MOTORS] == 1;
 
-    if(force_stop_compat && !arm_force_stop){
-        arm_force_stop = true; 
-        inhibit_arm_cmds = false; 
-        frame_builder_->sendForceStop(deviceType::DeviceType::COMPAT, DeviceId::ID::COMPAT_BOARD_ID); 
-        logger.info("Sending force stop command to arm motors");  
-    }else if(restart_arm_pressed && arm_force_stop){
-        arm_force_stop = false; 
-        inhibit_arm_cmds = true; 
-        frame_builder_->sendResume(deviceType::DeviceType::COMPAT, DeviceId::ID::COMPAT_BOARD_ID); 
-        logger.info("Sending restart request to arm motors"); 
-    }
+    // if(force_stop_compat && !arm_force_stop){
+    //     arm_force_stop = true; 
+    //     inhibit_arm_cmds = false; 
+    //     frame_builder_->sendForceStop(deviceType::DeviceType::COMPAT, DeviceId::ID::COMPAT_BOARD_ID); 
+    //     logger.info("Sending force stop command to arm motors");  
+    // }else if(restart_arm_pressed && arm_force_stop){
+    //     arm_force_stop = false; 
+    //     inhibit_arm_cmds = true; 
+    //     frame_builder_->sendResume(deviceType::DeviceType::COMPAT, DeviceId::ID::COMPAT_BOARD_ID); 
+    //     logger.info("Sending restart request to arm motors"); 
+    // }
 
     if(force_stop_wheels && !wheel_force_stop){
         wheel_force_stop = true; 
@@ -183,6 +183,7 @@ void CanControllerNode::sendCanFrames(){
             float velocities = (std::abs(raw) < DEADZONE)
                 ? 0.0f
                 : static_cast<float>(raw * arm_velocity_scale_);
+                // motor 4 is a special case, it needs to be scaled down to 50% of the other motors because it is faster
             if (i == 3) {
                 velocities *= 0.5f;
             }
