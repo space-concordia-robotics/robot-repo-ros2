@@ -4,23 +4,29 @@
 #include <opencv2/videoio.hpp>
 #include <SDL3/SDL_opengl.h>
 
+#include "foc2-gui/overlays/aruco_video_overlay.hpp"
 #include "foc2-gui/overlays/crosshair_overlay.hpp"
+#include "foc2-gui/overlays/minimap.hpp"
 #include "foc2-gui/overlays/video_stats_overlay.hpp"
 
 VideoWidget::VideoWidget(ImApplication& application) : UiWidget(application) {
     addOverlay(std::make_shared<CrosshairOverlay>(application));
     video_stats_overlay = std::make_shared<VideoStatsOverlay>(application);
     addOverlay(video_stats_overlay);
+    addOverlay(std::make_shared<MiniMapOverlay>(application));
+    addOverlay(std::make_shared<ArucoVideoOverlay>(application, "/rover/ffc/front/image_raw", "ffc_front_camera"));
 }
 
 void VideoWidget::onInit() {
     UiWidget::onInit();
+    UiOverlayable::onInit();
 
     video_thread = std::thread(std::bind(&VideoWidget::videoThread, this));
 }
 
 void VideoWidget::onShutdown() {
     UiWidget::onShutdown();
+    UiOverlayable::onShutdown();
 
     running = false;
     video_thread.join();
@@ -59,7 +65,7 @@ void VideoWidget::draw() {
 
 void VideoWidget::videoThread() {
     auto video_capture = cv::VideoCapture(
-        "rtspsrc location=rtsp://127.0.0.1:8554/test ! decodebin ! videoconvert "
+        "rtspsrc location=rtsp://127.0.0.1:8554/test latency=100 ! decodebin ! videoconvert "
         "! video/x-raw,format=RGBA ! appsink drop=true max-buffers=1 sync=true",
         cv::CAP_GSTREAMER
     );

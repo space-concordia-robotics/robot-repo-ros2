@@ -17,6 +17,8 @@ public:
             child->onInit();
     }
 
+    // TODO 2026-05-05 (Will Free): wrap ImDrawList, so that I can provide add useful functions to it
+    // TODO 2026-05-05 (Will Free): get rid of things like ImRect (part of imgui_internal.h) & replace it with eigen
     virtual void onDraw(ImDrawList* draw_list, const ImRect& bounds) = 0;
 
     virtual void onShutdown() {

@@ -12,8 +12,19 @@ class UiOverlayable {
 public:
     virtual ~UiOverlayable() = default;
 
+    virtual void onInit() {
+        for (const auto& overlay : overlays)
+            overlay->onInit();
+    }
+
+    virtual void onShutdown() {
+        for (const auto& overlay : overlays)
+            overlay->onShutdown();
+    }
+
 protected:
     void drawOverlays(ImDrawList* dl, const ImRect& rect) const {
+        // TODO 2026-05-05 (Will Free): adjust clipping rectangle
         for (const auto& overlay : overlays) {
             overlay->onDraw(dl, rect);
         }
