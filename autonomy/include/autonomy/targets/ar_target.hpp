@@ -33,14 +33,14 @@ namespace autonomy {
         const GeoPoint center;
         const double radius;
         const int tag_id;
-        std::optional<ArucoDetection> aruco_detection;
+        std::optional<ArucoDetections> aruco_detection;
         /**
          * whether or not the aruco tag has been detected
          */
         bool ar_detected = false;
 
         Subscription<NavSatFix>::SharedPtr navsat_topic;
-        Subscription<ArucoDetection>::SharedPtr aruco_subscription;
+        Subscription<ArucoDetections>::SharedPtr aruco_subscription;
         ActionClient<NavigateThroughPoses>::SharedPtr nav_client;
         ActionClient<FollowGPSWaypoints>::SharedPtr gps_client;
 

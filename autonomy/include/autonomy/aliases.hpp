@@ -1,7 +1,6 @@
 #pragma once
 
-#include <aruco_opencv_msgs/msg/aruco_detection.hpp>
-#include <aruco_opencv_msgs/msg/marker_pose.hpp>
+#include <ros_aruco_opencv_msgs/msg/aruco_detections.hpp>
 #include <geographic_msgs/msg/geo_pose.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
@@ -21,8 +20,8 @@ namespace autonomy {
     using Node = rclcpp::Node;
 
     using GeoPoint = geographic_msgs::msg::GeoPoint;
-    using ArucoDetection = aruco_opencv_msgs::msg::ArucoDetection;
-    using MarkerPose = aruco_opencv_msgs::msg::MarkerPose;
+    using ArucoDetections = ros_aruco_opencv_msgs::msg::ArucoDetections;
+    using ArucoMarker = ros_aruco_opencv_msgs::msg::ArucoMarker;
     using Pose = geometry_msgs::msg::Pose;
     using PoseStamped = geometry_msgs::msg::PoseStamped;
     using PoseWithCovarianceStamped = geometry_msgs::msg::PoseWithCovarianceStamped;
