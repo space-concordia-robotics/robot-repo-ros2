@@ -72,11 +72,11 @@ target_include_directories(${PROJECT_NAME} PRIVATE
 target_link_libraries(${PROJECT_NAME} PUBLIC ${DEPENDENCY_TARGETS})
 
 rclcpp_components_register_node(${PROJECT_NAME}
-        PLUGIN "aruco_opencv::ArucoTracker"
+        PLUGIN "ros_aruco_opencv::ArucoTracker"
         EXECUTABLE "aruco_tracker"
 )
 rclcpp_components_register_node(${PROJECT_NAME}
-        PLUGIN "aruco_opencv::ArucoTrackerAutostart"
+        PLUGIN "ros_aruco_opencv::ArucoTrackerAutostart"
         EXECUTABLE "aruco_tracker_autostart"
 )
 
