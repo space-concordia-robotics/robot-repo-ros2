@@ -18,8 +18,11 @@
     <depend>ros_aruco_opencv_msgs</depend>
     <depend>rover_msgs</depend>
 
+    <depend>tf2_ros</depend>
+    <depend>image_transport</depend>
     <depend>ros2_fmt_logger</depend>
 
+    <depend>GeographicLib</depend>
     <depend>OpenCV</depend>
     <depend>OpenGL</depend>
     <depend>Freetype</depend>

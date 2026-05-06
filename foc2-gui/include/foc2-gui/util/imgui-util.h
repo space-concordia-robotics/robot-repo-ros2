@@ -13,6 +13,6 @@ namespace ImGui {
     }
 
     inline ImVec2 CalcTextSize(const std::string& text, const bool hide_text_after_double_hash = false, const float wrap_width = -1.0f) {
-        return CalcTextSize(text.c_str(), nullptr, hide_text_after_double_hash, wrap_width);
+        return CalcTextSize(text.c_str(), text.c_str() + text.length(), hide_text_after_double_hash, wrap_width);
     }
 };
