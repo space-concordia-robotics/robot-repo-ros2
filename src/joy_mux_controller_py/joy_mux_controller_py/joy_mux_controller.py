@@ -67,6 +67,12 @@ class JoyMuxController(Node):
         self._last_twist_vals: tuple[float, ...] | None = None
         self._last_joint_vals: tuple[float, ...] | None = None
 
+        # Zero-burst: keep publishing stop commands for this duration after deadman release
+        self._stop_burst_until: float = 0.0
+        self._stop_burst_duration_s = self.declare_parameter(
+            "stop_burst_duration_s", 0.5
+        ).value
+
         self.get_logger().info(
             f"joy_mux_controller ready — max_cmd_publish_hz={max_cmd_publish_hz}, "
             f"skip_identical={self._skip_identical}, epsilon={self._epsilon}"
@@ -82,6 +88,11 @@ class JoyMuxController(Node):
         self.arm_pub.publish(stopped)
         self._last_twist_vals = None
         self._last_joint_vals = None
+
+    @staticmethod
+    def _trigger_axis(t: float) -> float:
+        """Normalise a trigger axis (rests at +1, fully pulled at -1) to 0..1."""
+        return (1.0 - t) * 0.5
 
     def _floats_equal(self, a: tuple[float, ...], b: tuple[float, ...] | None) -> bool:
         if b is None or len(a) != len(b):
@@ -120,25 +131,36 @@ class JoyMuxController(Node):
             else:
                 joint_state = JointState()
                 joint_state.name = [f'joint{i+1}' for i in range(7)]
+                m4 = (self._trigger_axis(msg.axes[Axes.RIGHT_TRIGGER])
+                      - self._trigger_axis(msg.axes[Axes.LEFT_TRIGGER]))
                 joint_state.velocity = [
                     float(msg.axes[Axes.D_PAD_X]),
                     float(msg.axes[Axes.D_PAD_Y]),
                     float(msg.axes[Axes.RIGHT_STICK_X]),
-                    float((1 if msg.buttons[Buttons.X] else 0) - (1 if msg.buttons[Buttons.TRIANGLE] else 0)),
+                    float(m4),
                     float(msg.axes[Axes.LEFT_STICK_Y]),
-                    float(msg.axes[Axes.LEFT_STICK_X]),
-                    float((1 if msg.buttons[Buttons.CIRCLE] else 0) - (1 if msg.buttons[Buttons.SQUARE] else 0))
+                    float((1 if msg.buttons[Buttons.TRIANGLE] else 0) - (1 if msg.buttons[Buttons.X] else 0)),
+                    float((1 if msg.buttons[Buttons.CIRCLE] else 0) - (1 if msg.buttons[Buttons.SQUARE] else 0)),
                 ]
                 joint_state.position = []
                 joint_state.effort = []
                 self._cached_joint = joint_state
         elif self._prev_deadman:
+            self._stop_burst_until = (
+                self.get_clock().now().nanoseconds * 1e-9
+                + self._stop_burst_duration_s
+            )
             self._publish_all_stop()
 
         self._prev_deadman = self._deadman_held
 
     def _tick(self):
+        now_s = self.get_clock().now().nanoseconds * 1e-9
+        in_stop_burst = now_s < self._stop_burst_until
+
         if not self._deadman_held:
+            if in_stop_burst:
+                self._publish_all_stop()
             return
 
         if self.current_mode == 0:
