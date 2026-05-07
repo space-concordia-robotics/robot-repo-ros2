@@ -10,18 +10,10 @@ The current setup requires depthAI v3, which can be installed with:
 
 **requires python3 (can be installed with `sudo apt install python3`)**
 ```
-git clone https://github.com/luxonis/depthai-core.git && cd depthai-core
-
-python3 -m venv venv
-
 source venv/bin/activate (use activate.fish if using a fish terminal)
 
 # Installs library and requirements
-python3 examples/python/install_requirements.py
-
-# Additional libraries needed for depth model
-pip install depthai-nodes
-pip install opencv-python
+pip install requirements.txt
 ```
 
 ### Set usb rules
@@ -39,20 +31,19 @@ the most common ip addressive ive found have been 192.168.0.100, and 192.168.0.1
 
 To run the camera:
 ```
-python3 main.py --mode [PipelineType] -d [MXID or IP](optional)
+python3 main.py --mode [PipelineType] -d [MXID or IP]
 ```
 
 The available modes are:
-mode       -> bitrate(b/ps)   -> fps
-------------------------------
-ffc_all    -> 2000000   -> 30
-ffc_front  -> 7000000   -> 30
-fc_back    -> 7000000   -> 30
-ffc_right  -> 7000000   -> 30
-ffc_left,  -> 7000000   -> 30
-oakd_all,  -> 1000000   -> 5
-oakd_rgb,  -> 7000000   -> 30
-oakd_depth -> 1000000   -> 5
+mode       ->   bitrate(b/ps)   -> fps  ->  link    
+--------------------------------------
+ffc_all    ->   2000000         -> 30   ->  N/A
+ffc_front  ->   7000000         -> 30   ->  rtsp://localhost:8554/FRONT
+fc_back    ->   7000000         -> 30   ->  rtsp://localhost:8554/BACK
+ffc_right  ->   7000000         -> 30   ->  rtsp://localhost:8554/RIGHT
+ffc_left,  ->   7000000         -> 30   ->  rtsp://localhost:8554/LEFT
+oakd_rgb,  ->   7000000         -> 30   ->  rtsp://localhost:8554/RGB
+oakd_depth ->   1000000         -> 5    ->  rtsp://localhost:8554/DEPTH
 
 ### While a pipeline is running
 

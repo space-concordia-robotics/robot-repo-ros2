@@ -1,0 +1,6 @@
+depthai==3.6.0
+depthai-nodes==0.3.4
+numpy>=1.22
+opencv-python-headless~=4.10.0
+requests
+tqdm
