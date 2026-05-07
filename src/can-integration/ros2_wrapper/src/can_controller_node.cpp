@@ -12,7 +12,7 @@ CanControllerNode::CanControllerNode(const rclcpp::NodeOptions& options) :
     Node("can_controller_node", options), logger(this->get_logger().get_child("can_controller_node")){
 
         this->declare_parameter("can_path", "can0");
-        multiplier = this->declare_parameter("multiplier", 500);
+        multiplier = this->declare_parameter("multiplier", 2000);
         can_send_rate_hz_ = this->declare_parameter("can_send_rate_hz", 10);
 
         can_interface_ = this->declare_parameter<std::string>("can_interface", "can0");
@@ -34,7 +34,7 @@ CanControllerNode::CanControllerNode(const rclcpp::NodeOptions& options) :
 
         frame_builder_ = std::make_unique<SystemFrameBuilder>(can_controller_);
 
-        twist_msgs_ = this->create_subscription<geometry_msgs::msg::Twist>("/cmd_vel", rclcpp::SystemDefaultsQoS(), [this]
+        twist_msgs_ = this->create_subscription<geometry_msgs::msg::Twist>("cmd_vel", rclcpp::SystemDefaultsQoS(), [this]
         (const geometry_msgs::msg::Twist::ConstSharedPtr& msg) {getTwistMessages(msg);});
         joint_state_msgs_ = this->create_subscription<sensor_msgs::msg::JointState>("/arm_xyz_cmd", rclcpp::SensorDataQoS(), [this]
         (const sensor_msgs::msg::JointState::ConstSharedPtr& msg) {getJointStateMessages(msg);});
@@ -46,6 +46,7 @@ CanControllerNode::CanControllerNode(const rclcpp::NodeOptions& options) :
 
         uint64_t mask = 0x7E;
         frame_builder_->startMotors(mask); 
+        frame_builder_->requestStatusFrame();
 
         logger.info("All subscriptions initialized, CAN send rate = {} Hz", can_send_rate_hz_); 
 }
@@ -158,6 +159,8 @@ void CanControllerNode::sendCanFrames(){
         frame_builder_->sendWheelMotorVelocity(DeviceId::ID::WHEEL_MOT4, left_wheel_velocity_rpm);
         frame_builder_->sendWheelMotorVelocity(DeviceId::ID::WHEEL_MOT5, left_wheel_velocity_rpm);
         frame_builder_->sendWheelMotorVelocity(DeviceId::ID::WHEEL_MOT6, left_wheel_velocity_rpm);
+
+        frame_builder_->startMotors(0x7E);
 
         logger.info("Wheel Motor Commands Sent: Right RPM = {:.2f}, Left RPM = {:.2f}", 
                 right_wheel_velocity_rpm, left_wheel_velocity_rpm);

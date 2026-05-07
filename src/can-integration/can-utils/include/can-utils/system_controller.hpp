@@ -18,6 +18,8 @@ class SystemFrameBuilder{
 
         uint32_t startMotors(uint32_t mask); 
 
+        void requestStatusFrame();
+
         uint32_t sendWheelMotorVelocity(DeviceId::ID device_id, float velocity_payload);
 
         //Function to send arm motor velocity to each motor

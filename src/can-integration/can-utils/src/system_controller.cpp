@@ -24,6 +24,14 @@ uint32_t SystemFrameBuilder::startMotors(uint32_t mask){
 
 }
 
+void SystemFrameBuilder::requestStatusFrame(){
+    struct can_frame frame{};
+    frame.can_id = 0x000502C0 | CAN_EFF_FLAG;
+    frame.len = 1;
+    frame.data[0] = 1;
+    can_manager_->sendBlockingFrame(frame);
+}
+
 uint32_t SystemFrameBuilder::sendWheelMotorVelocity(DeviceId::ID device_id, float velocity_payload){
 
     static_assert(sizeof(float) <= 8, "Error: Payload must be 8 bytes or less");
