@@ -1,4 +1,6 @@
 import argparse
+import os
+import subprocess
 import threading
 import time
 import depthai as dai
@@ -154,7 +156,15 @@ def main():
 
     print_help()
 
+
     try:
+        subprocess.Popen(
+            ["bash", "run_cameras.sh", args.mode],
+            stdin=subprocess.DEVNULL,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            start_new_session=True,
+        )
         while True:
             try:
                 line = input("> ").strip()
@@ -199,6 +209,13 @@ def main():
                 try:
                     session.start(mode, device_id)
                     print(f"Started: {mode}")
+                    subprocess.Popen(
+                        ["bash", "run_cameras.sh", mode],
+                        stdin=subprocess.DEVNULL,
+                        stdout=subprocess.DEVNULL,
+                        stderr=subprocess.DEVNULL,
+                        start_new_session=True,
+                    )
                 except RuntimeError as e:
                     print(f"Failed: {e}")
             else:
