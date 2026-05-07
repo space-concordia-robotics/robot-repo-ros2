@@ -123,10 +123,9 @@ class JoyMuxController(Node):
         if self._deadman_held:
             if self.current_mode == 0:
                 twist = Twist()
-                twist.linear.x = msg.axes[Axes.LEFT_STICK_X]
-                twist.angular.z = msg.axes[Axes.LEFT_STICK_Y]
-                twist.linear.y = msg.axes[Axes.RIGHT_STICK_X]
-                twist.linear.z = msg.axes[Axes.RIGHT_STICK_Y]
+                twist.linear.x = msg.axes[Axes.LEFT_STICK_Y]
+                twist.angular.z = msg.axes[Axes.LEFT_STICK_X]
+
                 self._cached_twist = twist
             else:
                 joint_state = JointState()
@@ -167,7 +166,7 @@ class JoyMuxController(Node):
             tw = self._cached_twist
             if tw is None:
                 return
-            vals = (tw.linear.x, tw.linear.y, tw.linear.z, tw.angular.z)
+            vals = (tw.linear.x, tw.angular.z)
             if self._skip_identical and self._floats_equal(vals, self._last_twist_vals):
                 return
             self.rover_pub.publish(tw)

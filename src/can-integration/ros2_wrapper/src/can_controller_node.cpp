@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <array>
 #include <cmath>
+#include <limits>
 #include <thread>
 #include <chrono>
 
@@ -14,6 +15,8 @@ CanControllerNode::CanControllerNode(const rclcpp::NodeOptions& options) :
         this->declare_parameter("can_path", "can0");
         multiplier = this->declare_parameter("multiplier", 2000);
         can_send_rate_hz_ = this->declare_parameter("can_send_rate_hz", 10);
+        wheel_rpm_slew_rate_ = static_cast<float>(
+            this->declare_parameter("wheel_rpm_slew_rate", 1500.0));
 
         can_interface_ = this->declare_parameter<std::string>("can_interface", "can0");
 
@@ -139,31 +142,73 @@ void CanControllerNode::sendCanFrames(){
     }
 
     if(send_twist && inhibit_wheel_cmds){
-        auto linear_y = twist->linear.x; 
-        auto angular_z = twist->angular.z;
+        constexpr float DEADZONE = 0.05f;
+        constexpr float kPureAxisEps = 1e-5f;
 
-        linear_y *= linear_y * linear_y; 
-        angular_z *= angular_z * angular_z; 
+        auto linear_x = static_cast<float>(twist->linear.x);
+        auto angular_z = static_cast<float>(twist->angular.z);
 
-        float distance_between_wheels = 1.2f;
-        float right_wheel_velocity = -(linear_y - (-angular_z * distance_between_wheels * 0.5f)); 
-        float left_wheel_velocity = -(linear_y + (-angular_z * distance_between_wheels * 0.5f)); 
+        if(std::abs(linear_x) < DEADZONE) linear_x = 0.0f;
+        if(std::abs(angular_z) < DEADZONE) angular_z = 0.0f;
 
-        float right_wheel_velocity_rpm = static_cast<float>(right_wheel_velocity) * multiplier;
-        float left_wheel_velocity_rpm = static_cast<float>(left_wheel_velocity) * multiplier;
+        const float half_track = 1.2f * 0.5f;
+        float right_cmd = 0.F;
+        float left_cmd = 0.F;
 
-        frame_builder_->sendWheelMotorVelocity(DeviceId::ID::WHEEL_MOT1, right_wheel_velocity_rpm);
-        frame_builder_->sendWheelMotorVelocity(DeviceId::ID::WHEEL_MOT2, right_wheel_velocity_rpm);
-        frame_builder_->sendWheelMotorVelocity(DeviceId::ID::WHEEL_MOT3, right_wheel_velocity_rpm);
+        const bool yaw_only = std::abs(linear_x) < kPureAxisEps;
+        const bool translate_only = std::abs(angular_z) < kPureAxisEps;
 
-        frame_builder_->sendWheelMotorVelocity(DeviceId::ID::WHEEL_MOT4, left_wheel_velocity_rpm);
-        frame_builder_->sendWheelMotorVelocity(DeviceId::ID::WHEEL_MOT5, left_wheel_velocity_rpm);
-        frame_builder_->sendWheelMotorVelocity(DeviceId::ID::WHEEL_MOT6, left_wheel_velocity_rpm);
+        if(translate_only && yaw_only){
+            right_cmd = 0.F;
+            left_cmd = 0.F;
+        }else if(translate_only){
+            right_cmd = -linear_x;
+            left_cmd = -linear_x;
+        }else if(yaw_only){
+            right_cmd = -(-angular_z * half_track);
+            left_cmd = -((-angular_z * half_track));
+        }else{
+            right_cmd = -(linear_x - (-angular_z * half_track));
+            left_cmd = -(linear_x + (-angular_z * half_track));
+        }
+
+        const float mult = static_cast<float>(multiplier);
+        const std::array<float, 6> target_rpm = {
+            right_cmd * mult,
+            right_cmd * mult,
+            right_cmd * mult,
+            left_cmd * mult,
+            left_cmd * mult,
+            left_cmd * mult,
+        };
+
+        const float dt = 1.F / static_cast<float>(std::max(1, can_send_rate_hz_));
+        const float max_step = (wheel_rpm_slew_rate_ > 0.F)
+            ? wheel_rpm_slew_rate_ * dt
+            : std::numeric_limits<float>::max();
+
+        static constexpr std::array<DeviceId::ID, 6> kWheelIds = {
+            DeviceId::ID::WHEEL_MOT1,
+            DeviceId::ID::WHEEL_MOT2,
+            DeviceId::ID::WHEEL_MOT3,
+            DeviceId::ID::WHEEL_MOT4,
+            DeviceId::ID::WHEEL_MOT5,
+            DeviceId::ID::WHEEL_MOT6,
+        };
+
+        for(size_t i = 0; i < kWheelIds.size(); ++i){
+            float delta = target_rpm[i] - wheel_rpm_smoothed_[i];
+            if(delta > max_step) delta = max_step;
+            if(delta < -max_step) delta = -max_step;
+            wheel_rpm_smoothed_[i] += delta;
+            frame_builder_->sendWheelMotorVelocity(kWheelIds[i], wheel_rpm_smoothed_[i]);
+        }
 
         frame_builder_->startMotors(0x7E);
 
-        logger.info("Wheel Motor Commands Sent: Right RPM = {:.2f}, Left RPM = {:.2f}", 
-                right_wheel_velocity_rpm, left_wheel_velocity_rpm);
+        logger.info("Wheel Motor Commands Sent: Right RPM = {:.2f}, Left RPM = {:.2f} (targets {:.2f}/{:.2f})",
+                wheel_rpm_smoothed_[0], wheel_rpm_smoothed_[3],
+                target_rpm[0], target_rpm[3]);
         RCLCPP_INFO(
             this->get_logger(),
             "candump wheel velocity frame IDs (29-bit hex): "

@@ -7,6 +7,7 @@
 #include "std_msgs/msg/string.hpp"
 #include "can-utils/system_controller.hpp"
 #include "can-utils/can_interface.hpp"
+#include <array>
 #include <memory>
 #include <chrono>
 #include <mutex>
@@ -50,5 +51,8 @@ class CanControllerNode : public rclcpp::Node{
         sensor_msgs::msg::JointState::ConstSharedPtr latest_joint_state_;
         bool twist_dirty_{false};
         bool joint_state_dirty_{false};
+
+        float wheel_rpm_slew_rate_{0.F};
+        std::array<float, 6> wheel_rpm_smoothed_{};
 }; 
 
