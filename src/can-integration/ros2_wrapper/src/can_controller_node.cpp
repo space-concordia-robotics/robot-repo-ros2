@@ -4,8 +4,8 @@
 #include <algorithm>
 #include <array>
 #include <cmath>
- // add #include <thread>
-  // add #include <chrono>
+#include <thread>
+#include <chrono>
 
 
 CanControllerNode::CanControllerNode(const rclcpp::NodeOptions& options) : 
@@ -213,7 +213,7 @@ void CanControllerNode::sendCanFrames(){
             cmd_sent[i] = payload;
             frame_builder_->sendArmMotorVelocity(
                 deviceType::DeviceType::ARM_MOTOR_CONTROLLER, MOTOR_MAP[i], DeviceId::ID::ARM_MOTOR_CONTROLLER, payload);
-            // std::this_thread::sleep_for(std::chrono::milliseconds(1));  // add #include <thread> if uncommented
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));  // add #include <thread> if uncommented
             RCLCPP_DEBUG(this->get_logger(), "Motor %zu → %.3f (payload)", i + 1, payload);
         }
         RCLCPP_INFO(this->get_logger(), "Arm motor commands sent: Motor 1 = %.2f, Motor 2 = %.2f, Motor 3 = %.2f, Motor 4 = %.2f, Motor 5 = %.2f",
