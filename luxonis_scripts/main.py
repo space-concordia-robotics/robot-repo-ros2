@@ -65,9 +65,10 @@ class StreamMetrics:
 
 
 class PipelineSession:
-    def __init__(self, server, metrics):
+    def __init__(self, server, metrics, visualizer):
         self._server = server
         self._metrics = metrics
+        self._visualizer = visualizer
         self._lock = threading.Lock()
         self._stop_event = threading.Event()
         self._ready_event = threading.Event()
@@ -129,8 +130,9 @@ class PipelineSession:
 
             device = dai.Device(dai.DeviceInfo(device_id))
             with dai.Pipeline(device) as pipeline:
-                bitstream_queues, extra_queues = build_pipeline(pipeline, mode, fps, bitrate)
+                bitstream_queues, extra_queues = build_pipeline(pipeline, mode, fps, bitrate, self._visualizer)
                 pipeline.start()
+                self._visualizer.registerPipeline(pipeline)
                 self._ready_event.set()
 
                 detection_queue = extra_queues.get("detections")
@@ -143,7 +145,7 @@ class PipelineSession:
                     if detection_queue is not None and detection_queue.has():
                         with self._detection_lock:
                             self._latest_detections = detection_queue.get()
-                    time.sleep(0.001)
+                    self._visualizer.waitKey(1)
         except Exception as e:
             self._error = str(e)
         finally:
@@ -156,8 +158,9 @@ def main():
 
     server = RtspServer(stream_names=STREAM_NAMES)
     metrics = StreamMetrics()
-    session = PipelineSession(server, metrics)
-
+    visualizer = dai.RemoteConnection(webSocketPort=8765, httpPort=8082)
+    session = PipelineSession(server, metrics, visualizer)
+    
     if args.mode:
         device_id = resolve_device(args.mode, args.device)
         print(f"Connecting to {kit_name(args.mode).upper()} ({device_id})...")
@@ -171,13 +174,6 @@ def main():
 
 
     try:
-        subprocess.Popen(
-            ["bash", "run_cameras.sh", args.mode],
-            stdin=subprocess.DEVNULL,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-            start_new_session=True,
-        )
         while True:
             try:
                 line = input("> ").strip()
@@ -249,16 +245,8 @@ def main():
                 try:
                     session.start(mode, device_id)
                     print(f"Started: {mode}")
-                    subprocess.Popen(
-                        ["bash", "run_cameras.sh", mode],
-                        stdin=subprocess.DEVNULL,
-                        stdout=subprocess.DEVNULL,
-                        stderr=subprocess.DEVNULL,
-                        start_new_session=True,
-                    )
                 except RuntimeError as e:
                     print(f"Failed: {e}")
-                    subprocess.Popen(["pkill", "-f", "run_cameras.sh"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     except KeyboardInterrupt:
         pass
     finally:
@@ -334,7 +322,7 @@ def parse_args():
     return parser.parse_args()
 
 
-def build_pipeline(pipeline, mode, maxFps, bitrate):
+def build_pipeline(pipeline, mode, maxFps, bitrate, visualizer):
     uses_yolo = (mode == "ffc_yolo" or mode == "oakd_yolo")
     sockets = []
     if mode == "ffc_all" or mode == "ffc_yolo":
@@ -373,6 +361,9 @@ def build_pipeline(pipeline, mode, maxFps, bitrate):
         cam_out.link(enc.input)
         bitstream_queues[name] = enc.out.createOutputQueue(maxSize=30, blocking=True)
 
+        viz_out = cam.requestOutput((640, 400), fps=maxFps)
+        visualizer.addTopic(name, viz_out, "img")
+
     extra_queues = {}
     if mode == "oakd_yolo":
         cam_rgb   = pipeline.create(dai.node.Camera).build(dai.CameraBoardSocket.CAM_A, sensorFps=maxFps)
@@ -410,6 +401,10 @@ def build_pipeline(pipeline, mode, maxFps, bitrate):
         extra_queues = {
             "detections": spatial_nn.out.createOutputQueue(maxSize=4, blocking=False),
         }
+
+        visualizer.addTopic("RGB", spatial_nn.passthrough, "img")
+        visualizer.addTopic("Depth", spatial_nn.passthroughDepth, "img")
+        visualizer.addTopic("Detections", spatial_nn.out, "img")
 
     return bitstream_queues, extra_queues
     
