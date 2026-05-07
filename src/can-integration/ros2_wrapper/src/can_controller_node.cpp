@@ -161,6 +161,28 @@ void CanControllerNode::sendCanFrames(){
 
         logger.info("Wheel Motor Commands Sent: Right RPM = {:.2f}, Left RPM = {:.2f}", 
                 right_wheel_velocity_rpm, left_wheel_velocity_rpm);
+        RCLCPP_INFO_ONCE(
+            this->get_logger(),
+            "candump wheel velocity frame IDs (29-bit hex): "
+            "W1=%08X W2=%08X W3=%08X W4=%08X W5=%08X W6=%08X",
+            static_cast<unsigned>(
+                (COMMAND_PREFIX_VELOCITY_CONTROL << 8) |
+                (static_cast<uint32_t>(DeviceId::ID::WHEEL_MOT1) + 0x80u)),
+            static_cast<unsigned>(
+                (COMMAND_PREFIX_VELOCITY_CONTROL << 8) |
+                (static_cast<uint32_t>(DeviceId::ID::WHEEL_MOT2) + 0x80u)),
+            static_cast<unsigned>(
+                (COMMAND_PREFIX_VELOCITY_CONTROL << 8) |
+                (static_cast<uint32_t>(DeviceId::ID::WHEEL_MOT3) + 0x80u)),
+            static_cast<unsigned>(
+                (COMMAND_PREFIX_VELOCITY_CONTROL << 8) |
+                (static_cast<uint32_t>(DeviceId::ID::WHEEL_MOT4) + 0x80u)),
+            static_cast<unsigned>(
+                (COMMAND_PREFIX_VELOCITY_CONTROL << 8) |
+                (static_cast<uint32_t>(DeviceId::ID::WHEEL_MOT5) + 0x80u)),
+            static_cast<unsigned>(
+                (COMMAND_PREFIX_VELOCITY_CONTROL << 8) |
+                (static_cast<uint32_t>(DeviceId::ID::WHEEL_MOT6) + 0x80u)));
     }
 
     if(send_arm && inhibit_arm_cmds){
@@ -196,6 +218,35 @@ void CanControllerNode::sendCanFrames(){
         }
         RCLCPP_INFO(this->get_logger(), "Arm motor commands sent: Motor 1 = %.2f, Motor 2 = %.2f, Motor 3 = %.2f, Motor 4 = %.2f, Motor 5 = %.2f",
             cmd_sent[0], cmd_sent[1], cmd_sent[2], cmd_sent[3], cmd_sent[4]);
+        RCLCPP_INFO_ONCE(
+            this->get_logger(),
+            "candump arm velocity frame IDs (29-bit hex, matches socketcan EFF id): "
+            "m3=%08X",
+            buildAddress::BuildAddress::buildCANID(
+                static_cast<uint32_t>(deviceType::DeviceType::ARM_MOTOR_CONTROLLER),
+                Manufacturer::ARM_MOTOR_CONTROLLER, severity::SEV_STATUS,
+                static_cast<uint32_t>(MOTOR_MAP[0]),
+                static_cast<uint32_t>(DeviceId::ID::ARM_MOTOR_CONTROLLER)),
+            buildAddress::BuildAddress::buildCANID(
+                static_cast<uint32_t>(deviceType::DeviceType::ARM_MOTOR_CONTROLLER),
+                Manufacturer::ARM_MOTOR_CONTROLLER, severity::SEV_STATUS,
+                static_cast<uint32_t>(MOTOR_MAP[1]),
+                static_cast<uint32_t>(DeviceId::ID::ARM_MOTOR_CONTROLLER)),
+            buildAddress::BuildAddress::buildCANID(
+                static_cast<uint32_t>(deviceType::DeviceType::ARM_MOTOR_CONTROLLER),
+                Manufacturer::ARM_MOTOR_CONTROLLER, severity::SEV_STATUS,
+                static_cast<uint32_t>(MOTOR_MAP[2]),
+                static_cast<uint32_t>(DeviceId::ID::ARM_MOTOR_CONTROLLER)),
+            buildAddress::BuildAddress::buildCANID(
+                static_cast<uint32_t>(deviceType::DeviceType::ARM_MOTOR_CONTROLLER),
+                Manufacturer::ARM_MOTOR_CONTROLLER, severity::SEV_STATUS,
+                static_cast<uint32_t>(MOTOR_MAP[3]),
+                static_cast<uint32_t>(DeviceId::ID::ARM_MOTOR_CONTROLLER)),
+            buildAddress::BuildAddress::buildCANID(
+                static_cast<uint32_t>(deviceType::DeviceType::ARM_MOTOR_CONTROLLER),
+                Manufacturer::ARM_MOTOR_CONTROLLER, severity::SEV_STATUS,
+                static_cast<uint32_t>(MOTOR_MAP[4]),
+                static_cast<uint32_t>(DeviceId::ID::ARM_MOTOR_CONTROLLER)));
     }
 }
 
