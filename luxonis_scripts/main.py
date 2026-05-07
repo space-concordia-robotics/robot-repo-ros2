@@ -24,9 +24,45 @@ class PipelineType:
     MODE_OAKD_DEPTH = {"name": "oakd_depth", "bitrate": 1000000, "fps": 5}
 
 
+class StreamMetrics:
+    def __init__(self):
+        self._lock = threading.Lock()
+        self._bytes = {}
+        self._frames = {}
+        self._last_sample = time.monotonic()
+
+    def record(self, name, byte_count):
+        with self._lock:
+            self._bytes[name] = self._bytes.get(name, 0) + byte_count
+            self._frames[name] = self._frames.get(name, 0) + 1
+
+    def sample(self):
+        with self._lock:
+            now = time.monotonic()
+            elapsed = max(now - self._last_sample, 1e-6)
+            snap = {
+                name: {
+                    "mbps": (self._bytes[name] * 8 / elapsed) / 1e6,
+                    "fps": self._frames[name] / elapsed,
+                }
+                for name in self._frames
+            }
+            self._bytes.clear()
+            self._frames.clear()
+            self._last_sample = now
+            return snap, elapsed
+
+    def reset(self):
+        with self._lock:
+            self._bytes.clear()
+            self._frames.clear()
+            self._last_sample = time.monotonic()
+
+
 class PipelineSession:
-    def __init__(self, server):
+    def __init__(self, server, metrics):
         self._server = server
+        self._metrics = metrics
         self._lock = threading.Lock()
         self._stop_event = threading.Event()
         self._ready_event = threading.Event()
@@ -91,10 +127,12 @@ class PipelineSession:
                         if q.has():
                             data = q.get().getData()
                             self._server.factories[name].push(data)
+                            self._metrics.record(name, len(data))
                     time.sleep(0.001)
         except Exception as e:
             self._error = str(e)
         finally:
+            self._metrics.reset()
             self._ready_event.set()
 
 
@@ -102,7 +140,8 @@ def main():
     args = parse_args()
 
     server = RtspServer(stream_names=STREAM_NAMES)
-    session = PipelineSession(server)
+    metrics = StreamMetrics()
+    session = PipelineSession(server, metrics)
 
     if args.mode:
         device_id = resolve_device(args.mode, args.device)
@@ -139,6 +178,14 @@ def main():
                     print(f"Running: {session.current_mode()}")
                 else:
                     print("Idle.")
+            elif cmd == "bw":
+                if not session.is_running():
+                    print("Idle.")
+                    continue
+                print_bandwidth(metrics, session.current_mode())
+            elif cmd == "watch":
+                interval = float(parts[1]) if len(parts) >= 2 else 1.0
+                watch_bandwidth(metrics, session, interval)
             elif cmd == "mode":
                 if len(parts) < 2:
                     print("Usage: mode <name> [device_id]")
@@ -175,12 +222,41 @@ def kit_name(mode):
 
 def print_help():
     print("Commands:")
-    print("  mode <name> [device_id]  switch pipeline (omit device_id to use kit MXID or --device)")
+    print("  mode <name> [device_id]  switch pipeline, device_id/IP is optional.  For the black mydlink router, 192.168.0.100, and 192.168.0.102 were usually either the OAK-D or FFC")
     print("  stop                     stop current pipeline")
     print("  status                   show current state")
-    print("  help / ?                 show this")
+    print("  bw                       bandwidth + fps per stream")
+    print("  watch [interval]         monitor bandwidth at intervals")
     print("  quit / exit / q          shut down")
     print(f"Modes: {', '.join(ALL_MODES)}")
+
+
+## RUN bw to print the current bandwidth and fps
+def print_bandwidth(metrics, mode):
+    snap, elapsed = metrics.sample()
+    if not snap:
+        print(f"[{mode}] no traffic in last {elapsed:.2f}s")
+        return
+    configured = profile_for(mode)["bitrate"] / 1e6 if mode else 0.0
+    total_mbps = sum(s["mbps"] for s in snap.values())
+    print(f"[{mode}] window={elapsed:.2f}s  configured={configured:.1f} Mbps/stream  total={total_mbps:.2f} Mbps")
+    print(f"  {'stream':<8} {'mbps':>7}  {'fps':>6}")
+    for name in sorted(snap):
+        s = snap[name]
+        print(f"  {name:<8} {s['mbps']:>7.2f}  {s['fps']:>6.1f}")
+
+
+## RUN watch [interval] to print bandwidth at set interval (in seconds)
+def watch_bandwidth(metrics, session, interval):
+    metrics.sample() 
+    try:
+        while session.is_running():
+            time.sleep(interval)
+            print_bandwidth(metrics, session.current_mode())
+    except KeyboardInterrupt:
+        print() # Create a new line after CTRL+C
+    if not session.is_running():
+        print("Idle.")
 
 
 def parse_args():
@@ -189,12 +265,12 @@ def parse_args():
         "--mode",
         choices=ALL_MODES,
         default="ffc_all",
-        help="Initial pipeline mode (can be changed at runtime via the mode command)"
+        help="Initial pipeline mode"
     )
     parser.add_argument(
         "-d", "--device",
         default=None,
-        help="Default device MxId or IP override (useful for PoE; can be overridden per-mode)"
+        help="Default device MxId or IP"
     )
     return parser.parse_args()
 
