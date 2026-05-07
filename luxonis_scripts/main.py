@@ -12,7 +12,7 @@ OAKD_MXID = "1944301001EDE12E00"
 STREAM_NAMES = ["FRONT", "RIGHT", "LEFT", "BACK", "RGB", "DEPTH"]
 ALL_MODES = [
     "ffc_all", "ffc_front", "ffc_back", "ffc_right", "ffc_left",
-    "oakd_all", "oakd_rgb", "oakd_depth", "ffc_yolo", "oakd_yolo"
+    "oakd_rgb", "oakd_yolo"
 ]
 MODEL_PATH = os.path.join(os.path.dirname(__file__), "best_190_Epoch.rvc2.tar.xz")
 
@@ -22,10 +22,7 @@ class PipelineType:
     MODE_FFC_BACK = {"name": "ffc_back", "bitrate": 7000000, "fps": 30}
     MODE_FFC_RIGHT = {"name": "ffc_right", "bitrate": 7000000, "fps": 30}
     MODE_FFC_LEFT = {"name": "ffc_left", "bitrate": 7000000, "fps": 30}
-    MODE_OAK_ALL = {"name": "oakd_all", "bitrate": 1000000, "fps": 5}
     MODE_OAKD_RGB = {"name": "oakd_rgb", "bitrate": 7000000, "fps": 30}
-    MODE_OAKD_DEPTH = {"name": "oakd_depth", "bitrate": 1000000, "fps": 5}
-    MODE_FFC_YOLO = {"name": "ffc_yolo", "bitrate": 2000000, "fps": 30}
     MODE_OAKD_YOLO = {"name": "oakd_yolo", "bitrate": 4000000, "fps": 15}
 
 
@@ -323,7 +320,6 @@ def parse_args():
 
 
 def build_pipeline(pipeline, mode, maxFps, bitrate, visualizer):
-    uses_yolo = (mode == "ffc_yolo" or mode == "oakd_yolo")
     sockets = []
     if mode == "ffc_all" or mode == "ffc_yolo":
         sockets = [
@@ -341,10 +337,6 @@ def build_pipeline(pipeline, mode, maxFps, bitrate, visualizer):
     elif mode == "ffc_left":
         sockets = [(dai.CameraBoardSocket.CAM_C, "LEFT")]
     elif mode == "oakd_rgb":
-        sockets = [(dai.CameraBoardSocket.CAM_A, "RGB")]
-    elif mode == "oakd_depth":
-        sockets = [(dai.CameraBoardSocket.CAM_B, "DEPTH")]
-    elif mode == "oakd_all":
         sockets = [(dai.CameraBoardSocket.CAM_A, "RGB")]
 
     bitstream_queues = {}
