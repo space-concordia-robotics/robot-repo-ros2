@@ -15,6 +15,6 @@ elif [ "$mode" = "ffc_right" ]; then
     vlc --no-one-instance rtsp://localhost:8554/RIGHT 
 elif [ "$mode" = "ffc_back" ]; then
     vlc --no-one-instance rtsp://localhost:8554/BACK
-elif [ "$mode" = "oakd_rgb" ]; then
+elif [ "$mode" = "oakd_rgb" or "$mode" = "oakd_yolo" ]; then
     vlc --no-one-instance rtsp://localhost:8554/RGB
 fi

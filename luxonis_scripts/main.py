@@ -12,8 +12,9 @@ OAKD_MXID = "1944301001EDE12E00"
 STREAM_NAMES = ["FRONT", "RIGHT", "LEFT", "BACK", "RGB", "DEPTH"]
 ALL_MODES = [
     "ffc_all", "ffc_front", "ffc_back", "ffc_right", "ffc_left",
-    "oakd_all", "oakd_rgb", "oakd_depth",
+    "oakd_all", "oakd_rgb", "oakd_depth", "ffc_yolo", "oakd_yolo"
 ]
+MODEL_PATH = os.path.join(os.path.dirname(__file__), "best_190_Epoch.rvc2.tar.xz")
 
 class PipelineType:
     MODE_FFC_ALL = {"name": "ffc_all", "bitrate": 2000000, "fps": 30}
@@ -24,6 +25,8 @@ class PipelineType:
     MODE_OAK_ALL = {"name": "oakd_all", "bitrate": 1000000, "fps": 5}
     MODE_OAKD_RGB = {"name": "oakd_rgb", "bitrate": 7000000, "fps": 30}
     MODE_OAKD_DEPTH = {"name": "oakd_depth", "bitrate": 1000000, "fps": 5}
+    MODE_FFC_YOLO = {"name": "ffc_yolo", "bitrate": 2000000, "fps": 30}
+    MODE_OAKD_YOLO = {"name": "oakd_yolo", "bitrate": 4000000, "fps": 15}
 
 
 class StreamMetrics:
@@ -71,6 +74,8 @@ class PipelineSession:
         self._thread = None
         self._mode = None
         self._error = None
+        self._detection_lock = threading.Lock()
+        self._latest_detections = None
 
     def start(self, mode, device_id):
         with self._lock:
@@ -112,6 +117,10 @@ class PipelineSession:
         self._thread = None
         self._mode = None
 
+    def latest_detections(self):
+        with self._detection_lock:
+            return self._latest_detections
+
     def _worker(self, mode, device_id):
         try:
             profile = profile_for(mode)
@@ -120,16 +129,20 @@ class PipelineSession:
 
             device = dai.Device(dai.DeviceInfo(device_id))
             with dai.Pipeline(device) as pipeline:
-                bitstream_queues, _ = build_pipeline(pipeline, mode, fps, bitrate)
+                bitstream_queues, extra_queues = build_pipeline(pipeline, mode, fps, bitrate)
                 pipeline.start()
                 self._ready_event.set()
 
+                detection_queue = extra_queues.get("detections")
                 while pipeline.isRunning() and not self._stop_event.is_set():
                     for name, q in bitstream_queues.items():
                         if q.has():
                             data = q.get().getData()
                             self._server.factories[name].push(data)
                             self._metrics.record(name, len(data))
+                    if detection_queue is not None and detection_queue.has():
+                        with self._detection_lock:
+                            self._latest_detections = detection_queue.get()
                     time.sleep(0.001)
         except Exception as e:
             self._error = str(e)
@@ -196,6 +209,33 @@ def main():
             elif cmd == "watch":
                 interval = float(parts[1]) if len(parts) >= 2 else 1.0
                 watch_bandwidth(metrics, session, interval)
+            elif cmd == "detections":
+                detections = session.latest_detections()
+                if detections is None:
+                    print("No detections yet.")
+                else:
+                    for d in detections.detections:
+                        print(f"  {d.labelName:<16} conf={d.confidence:.2f}  "
+                            f"X={d.spatialCoordinates.x:>7.0f}mm  "
+                            f"Y={d.spatialCoordinates.y:>7.0f}mm  "
+                            f"Z={d.spatialCoordinates.z:>7.0f}mm")   
+            elif cmd == "watch_detections":
+                interval = float(parts[1]) if len(parts) >= 2 else 1.0
+                try:
+                    while session.is_running():
+                        detections = session.latest_detections()
+                        if detections is not None:
+                            print(f"\n[{session.current_mode()}] Detections:")
+                            for d in detections.detections:
+                                print(f"  {d.labelName:<16} conf={d.confidence:.2f}  "
+                                    f"X={d.spatialCoordinates.x:>7.0f}mm  "
+                                    f"Y={d.spatialCoordinates.y:>7.0f}mm  "
+                                    f"Z={d.spatialCoordinates.z:>7.0f}mm")   
+                        else:
+                            print(f"\n[{session.current_mode()}] No detections yet.")
+                        time.sleep(interval)
+                except KeyboardInterrupt:
+                    print() # Create a new line after CTRL+C
             elif cmd == "mode":
                 if len(parts) < 2:
                     print("Usage: mode <name> [device_id]")
@@ -218,13 +258,13 @@ def main():
                     )
                 except RuntimeError as e:
                     print(f"Failed: {e}")
-            else:
-                print(f"Unknown command: {cmd} (type ? for help)")
+                    subprocess.Popen(["pkill", "-f", "run_cameras.sh"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     except KeyboardInterrupt:
         pass
     finally:
         print("\nShutting down.")
         session.stop()
+        subprocess.Popen(["pkill", "-f", "run_cameras.sh"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
 
 def resolve_device(mode, override):
@@ -244,6 +284,8 @@ def print_help():
     print("  status                   show current state")
     print("  bw                       bandwidth + fps per stream")
     print("  watch [interval]         monitor bandwidth at intervals")
+    print("  detections               show latest detections (FFC YOLO or OAK-D YOLO modes only)")
+    print("  watch_detections [interval]   monitor detections at intervals")
     print("  quit / exit / q          shut down")
     print(f"Modes: {', '.join(ALL_MODES)}")
 
@@ -293,7 +335,9 @@ def parse_args():
 
 
 def build_pipeline(pipeline, mode, maxFps, bitrate):
-    if mode == "ffc_all":
+    uses_yolo = (mode == "ffc_yolo" or mode == "oakd_yolo")
+    sockets = []
+    if mode == "ffc_all" or mode == "ffc_yolo":
         sockets = [
             (dai.CameraBoardSocket.CAM_A, "FRONT"),
             (dai.CameraBoardSocket.CAM_B, "RIGHT"),
@@ -330,18 +374,42 @@ def build_pipeline(pipeline, mode, maxFps, bitrate):
         bitstream_queues[name] = enc.out.createOutputQueue(maxSize=30, blocking=True)
 
     extra_queues = {}
-    if mode == "oakd_all":
-        left_cam = pipeline.create(dai.node.Camera).build(dai.CameraBoardSocket.CAM_B)
-        right_cam = pipeline.create(dai.node.Camera).build(dai.CameraBoardSocket.CAM_C)
-
+    if mode == "oakd_yolo":
+        cam_rgb   = pipeline.create(dai.node.Camera).build(dai.CameraBoardSocket.CAM_A, sensorFps=maxFps)
+        mono_left = pipeline.create(dai.node.Camera).build(dai.CameraBoardSocket.CAM_B, sensorFps=maxFps)
+        mono_right= pipeline.create(dai.node.Camera).build(dai.CameraBoardSocket.CAM_C, sensorFps=maxFps)
+        
         stereo = pipeline.create(dai.node.StereoDepth)
         stereo.setRectification(True)
         stereo.setLeftRightCheck(True)
+        stereo.setExtendedDisparity(True) #helps with close up objects
 
-        left_cam.requestFullResolutionOutput().link(stereo.left)
-        right_cam.requestFullResolutionOutput().link(stereo.right)
+        mono_left.requestOutput((640, 400)).link(stereo.left)
+        mono_right.requestOutput((640, 400)).link(stereo.right)
 
-        extra_queues["depth"] = stereo.depth.createOutputQueue(maxSize=4, blocking=False)
+        archive = dai.NNArchive(MODEL_PATH) # Gets yolo model
+
+        spatial_nn = pipeline.create(dai.node.SpatialDetectionNetwork).build(cam_rgb, stereo, archive)
+        spatial_nn.input.setBlocking(False)
+        spatial_nn.setConfidenceThreshold(0.5)
+        spatial_nn.setDepthLowerThreshold(200)  # sets cutoff distance to < 20 cm
+        spatial_nn.setDepthUpperThreshold(8000) # sets cutoff distance > 8 m
+
+        rgb_out = cam_rgb.requestOutput((1920, 1080), fps=maxFps, type=dai.ImgFrame.Type.NV12) # encode rgb cam output for rtsp server
+        
+        enc = pipeline.create(dai.node.VideoEncoder)
+        enc.setDefaultProfilePreset(maxFps, dai.VideoEncoderProperties.Profile.H264_MAIN)
+        enc.setRateControlMode(dai.VideoEncoderProperties.RateControlMode.CBR)
+        enc.setBitrate(bitrate)
+        enc.setKeyframeFrequency(maxFps)
+
+        rgb_out.link(enc.input)
+        
+        bitstream_queues = {"RGB": enc.out.createOutputQueue(maxSize=30, blocking=True)}
+
+        extra_queues = {
+            "detections": spatial_nn.out.createOutputQueue(maxSize=4, blocking=False),
+        }
 
     return bitstream_queues, extra_queues
     
