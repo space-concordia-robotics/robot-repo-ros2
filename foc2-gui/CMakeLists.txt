@@ -9,6 +9,8 @@ if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     add_compile_options(-Wall -Wextra -Wpedantic)
 endif ()
 
+## DEPENDENCIES
+
 # statically link SDL
 set(SDL_STATIC ON)
 set(SDL_SHARED OFF)
@@ -29,6 +31,7 @@ set(DEPENDENCIES
         ros2_fmt_logger
 
         fmt
+        X11
         OpenCV
         OpenGL
         Freetype
@@ -57,7 +60,24 @@ foreach (dependency IN ITEMS ${DEPENDENCIES})
     find_package(${dependency} REQUIRED)
 endforeach ()
 
-list(APPEND DEPENDENCY SDL3)
+find_package(PkgConfig REQUIRED)
+
+pkg_check_modules(GSTREAMER REQUIRED gstreamer-1.0)
+pkg_check_modules(GSTREAMER_APP REQUIRED gstreamer-app-1.0)
+pkg_check_modules(GSTREAMER_RTSP REQUIRED
+        gstreamer-sdp-1.0
+        gstreamer-net-1.0
+        gstreamer-rtp-1.0
+        gstreamer-rtsp-1.0
+)
+
+list(APPEND DEPENDENCIES GSTREAMER GSTREAMER_APP GSTREAMER_RTSP)
+
+find_package(Boost REQUIRED CONFIG COMPONENTS)
+
+list(APPEND DEPENDENCIES Boost)
+
+## TARGETS
 
 # TODO 2026-05-05 (Will Free): split these out into multiple libraries to improve compile times.
 
@@ -68,6 +88,7 @@ add_executable(${PROJECT_NAME}
         # overlays
         src/overlays/aruco_video_overlay.cpp
         src/overlays/minimap.cpp
+        src/overlays/video_stats_overlay.cpp
 
         # widgets
         src/widgets/video_widget.cpp
@@ -76,6 +97,7 @@ add_executable(${PROJECT_NAME}
 ament_target_dependencies(${PROJECT_NAME} PUBLIC ${DEPENDENCIES})
 
 target_link_libraries(${PROJECT_NAME} PUBLIC
+        SDL3::SDL3
         imgui
         implot
         implot3d

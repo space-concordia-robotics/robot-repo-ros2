@@ -1,27 +1,34 @@
 #define IMGUI_USER_CONFIG "foc2-gui/imgui_user.hpp"
 
 #include <imgui.h>
+#include <implot.h>
 #include <rclcpp/executors.hpp>
 #include <rclcpp/utilities.hpp>
-#include <misc/cpp/imgui_stdlib.h>
 
 #include "foc2-gui/im_application.hpp"
 #include "foc2-gui/widgets/video_widget.hpp"
 
 class FOC2Application : public ImApplication {
 public:
-    FOC2Application() : ImApplication("test_app", "Test App"), video_top(*this), video_bottom_left(*this), video_bottom_right(*this) {}
+    FOC2Application() : ImApplication("test_app", "Test App") {}
 
 protected:
     void onInit() override {
-        video_top.onInit();
-        video_bottom_left.onInit();
-        video_bottom_right.onInit();
+        video_top = std::make_shared<VideoWidget>(*this);
+        video_bottom_left = std::make_shared<VideoWidget>(*this);
+        video_bottom_right = std::make_shared<VideoWidget>(*this);
+
+        video_top->onInit();
+        video_bottom_left->onInit();
+        video_bottom_right->onInit();
 
         auto& style = ImGui::GetStyle();
         style.WindowPadding = ImVec2(4.0, 4.0);
         style.Colors[ImGuiCol_WindowBg] = ImVec4(0.12, 0.12, 0.12, 1.0);
         style.Colors[ImGuiCol_ChildBg] = ImVec4(0.16, 0.16, 0.16, 1.0);
+
+        style.AntiAliasedLines = true;
+        style.AntiAliasedLinesUseTex = true;
     }
 
     void onFrame() override {
@@ -74,15 +81,15 @@ protected:
     }
 
     void onShutdown() override {
-        video_top.onShutdown();
-        video_bottom_left.onShutdown();
-        video_bottom_right.onShutdown();
+        video_top->onShutdown();
+        video_bottom_left->onShutdown();
+        video_bottom_right->onShutdown();
     }
 
 private:
-    VideoWidget video_top;
-    VideoWidget video_bottom_left;
-    VideoWidget video_bottom_right;
+    std::shared_ptr<VideoWidget> video_top;
+    std::shared_ptr<VideoWidget> video_bottom_left;
+    std::shared_ptr<VideoWidget> video_bottom_right;
 
     static void drawLeft() {
         ImGui::Text("TODO");
@@ -127,12 +134,15 @@ private:
         ImGui::TextUnformatted(label);
     }
 
-    static void drawStream(VideoWidget& video_widget) {
-        video_widget.onFrame();
+    static void drawStream(const std::shared_ptr<VideoWidget>& video_widget) {
+        video_widget->onFrame();
     }
 };
 
-int main(const int argc, char const* const* argv) {
+int main(int argc, char* * argv) {
+    // initialize gstreamer
+    gst_init(&argc, &argv);
+
     rclcpp::init(argc, argv);
     const auto node = std::make_shared<FOC2Application>();
 
