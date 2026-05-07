@@ -22,6 +22,7 @@
     <depend>image_transport</depend>
     <depend>ros2_fmt_logger</depend>
 
+    <depend>gstreamer</depend>
     <depend>GeographicLib</depend>
     <depend>OpenCV</depend>
     <depend>OpenGL</depend>

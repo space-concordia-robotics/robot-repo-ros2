@@ -1,6 +1,8 @@
 #pragma once
 
-#include <opencv2/videoio.hpp>
+#include <thread>
+#include <gst/gstelement.h>
+#include <gst/app/gstappsink.h>
 #include <opencv2/core/mat.hpp>
 
 #include "foc2-gui/overlayable.hpp"
@@ -15,19 +17,29 @@ public:
     void onInit() override;
     void onShutdown() override;
 
-    ImVec2 expectedSize(ImVec2 available) const;
+    [[nodiscard]] ImVec2 expectedSize(ImVec2 available) const;
 
 protected:
     void draw() override;
 
 private:
-    std::thread video_thread;
+    rclcpp::TimerBase::SharedPtr stats_timer;
+
+    std::thread gst_thread;
     std::atomic<bool> running = true;
     cv::Mat next_frame;
     cv::Mat current_frame;
     std::mutex frame_mutex;
-    std::shared_ptr<cv::VideoCapture> video_capture;
 
+    GstElement* pipeline = nullptr;
+    GstAppSink* appsink = nullptr;
+    GstElement* jitterbuffer = nullptr;
+
+    std::mutex stats_mutex;
+    std::chrono::time_point<std::chrono::steady_clock> last_probe;
+    std::chrono::time_point<std::chrono::steady_clock> last_frame;
+
+    VideoStatsOverlay::VideoStats video_stats;
     std::shared_ptr<VideoStatsOverlay> video_stats_overlay;
 
     bool new_frame_available = false;
@@ -38,5 +50,6 @@ private:
 
     void videoThread();
 
+    GstFlowReturn onNewSample(GstAppSink* sink);
     void updateTexture();
 };

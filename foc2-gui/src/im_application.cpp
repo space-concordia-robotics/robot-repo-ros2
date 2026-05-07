@@ -2,17 +2,16 @@
 
 #include <chrono>
 #include <cmath>
+#include <imfonts.h>
 #include <imgui.h>
 #include <implot.h>
 #include <implot3d.h>
 #include <iostream>
 #include <backends/imgui_impl_opengl3.h>
 #include <backends/imgui_impl_sdl3.h>
-#include <fmt/core.h>
+#include <rclcpp/rate.hpp>
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_opengl.h>
-#include <imfonts.h>
-#include <rclcpp/rate.hpp>
 
 // Based on Dear ImGui example "Dear ImGui: standalone example application for
 // GLFW + OpenGL 3, using programmable pipeline"
@@ -61,7 +60,7 @@ void ImApplication::init() {
     }
 
     // Create window with graphics context
-    window = SDL_CreateWindow("Dear ImGui + SDL3 Example", 1280, 720, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
+    window = SDL_CreateWindow("Dear ImGui + SDL3 Example", 1280, 720, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_MAXIMIZED);
     if (!window) {
         logger.error("Error: SDL_CreateWindow(): {}", SDL_GetError());
         return;
