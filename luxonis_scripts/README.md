@@ -31,3 +31,37 @@ echo 'SUBSYSTEM=="usb", ATTRS{idVendor}=="03e7", MODE="0666"' | sudo tee /etc/ud
 
 sudo udevadm control --reload-rules && sudo udevadm trigger
 ```
+
+### How to run the program
+
+The most reliable way that I've found to connect to devices from PoE is to connnect directly to their IP.  For the black mydlink router,
+the most common ip addressive ive found have been 192.168.0.100, and 192.168.0.102.  Switching depending on how the devices are connected (just FFC vs FFC+OAKD, just OAKD)
+
+To run the camera:
+```
+python3 main.py --mode [PipelineType] -d [MXID or IP](optional)
+```
+
+The available modes are:
+mode       -> bitrate(b/ps)   -> fps
+------------------------------
+ffc_all    -> 2000000   -> 30
+ffc_front  -> 7000000   -> 30
+fc_back    -> 7000000   -> 30
+ffc_right  -> 7000000   -> 30
+ffc_left,  -> 7000000   -> 30
+oakd_all,  -> 1000000   -> 5
+oakd_rgb,  -> 7000000   -> 30
+oakd_depth -> 1000000   -> 5
+
+### While a pipeline is running
+
+To stop a pipeline run `stop` in the same terminal that ran it
+
+To start a new pipeline, first run `stop`, then run `mode [mode_name]` to switch to the desired mode.
+
+To check bandwidth run `bw`
+
+To continuously check bandwidth run `watch [interval(s)]`
+
+To check status run `status`
