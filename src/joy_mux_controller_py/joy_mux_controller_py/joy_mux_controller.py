@@ -57,6 +57,7 @@ _JOY_MIN_BUTTONS = 13
 _JOY_MIN_AXES = 8
 
 
+
 class JoyMuxController(Node):
 
     def __init__(self):
@@ -75,6 +76,10 @@ class JoyMuxController(Node):
 
         self.current_mode = 0
         self.last_toggle = 0
+        self._last_mode_toggle_at_s = -1e9
+        self._mode_toggle_cooldown_s = self.declare_parameter(
+            "mode_toggle_cooldown_s", 0.35
+        ).value
         self._deadman_held = False
         self._prev_deadman = False
 
@@ -91,10 +96,18 @@ class JoyMuxController(Node):
         self._stop_burst_duration_s = self.declare_parameter(
             "stop_burst_duration_s", 0.5
         ).value
+        # Keep button-driven arm commands active briefly to improve tap reliability.
+        self._arm_button_min_hold_s = self.declare_parameter(
+            "arm_button_min_hold_s", 0.08
+        ).value
+        self._m4_latched_cmd = 0.0
+        self._m4_hold_until = 0.0
 
         self.get_logger().info(
             f"joy_mux_controller ready — max_cmd_publish_hz={max_cmd_publish_hz}, "
-            f"skip_identical={self._skip_identical}, epsilon={self._epsilon}"
+            f"skip_identical={self._skip_identical}, epsilon={self._epsilon}, "
+            f"arm_button_min_hold_s={self._arm_button_min_hold_s}, "
+            f"mode_toggle_cooldown_s={self._mode_toggle_cooldown_s}"
         )
 
     def _publish_all_stop(self) -> None:
@@ -107,11 +120,6 @@ class JoyMuxController(Node):
         self.arm_pub.publish(stopped)
         self._last_twist_vals = None
         self._last_joint_vals = None
-
-    @staticmethod
-    def _trigger_axis(t: float) -> float:
-        """Normalise a trigger axis (rests at +1, fully pulled at -1) to 0..1."""
-        return (1.0 - t) * 0.5
 
     def _floats_equal(self, a: tuple[float, ...], b: tuple[float, ...] | None) -> bool:
         if b is None or len(a) != len(b):
@@ -130,33 +138,54 @@ class JoyMuxController(Node):
             self._publish_all_stop()
             return
 
-        if msg.buttons[VKBButtonLayout.A2] == 1 and self.last_toggle == 0:
+        now_s = self.get_clock().now().nanoseconds * 1e-9
+        home_down = msg.buttons[VKBButtonLayout.A2] == 1
+        home_rising = home_down and self.last_toggle == 0
+        if (
+            home_rising
+            and (now_s - self._last_mode_toggle_at_s) >= self._mode_toggle_cooldown_s
+        ):
             self.current_mode = 1 - self.current_mode
+            self._last_mode_toggle_at_s = now_s
             self._last_twist_vals = None
             self._last_joint_vals = None
             self.get_logger().info(f"Switched to {'Arm' if self.current_mode else 'Rover'} mode")
-        self.last_toggle = msg.buttons[VKBButtonLayout.A2]
+        self.last_toggle = 1 if home_down else 0
 
         self._deadman_held = msg.buttons[VKBButtonLayout.D1] == 1
 
         if self._deadman_held:
             if self.current_mode == 0:
                 twist = Twist()
+                # Rotate joystick mapping to correct rover cardinal directions.
                 twist.linear.x = msg.axes[VKBAxesLayout.STICK_Y]
                 twist.angular.z = msg.axes[VKBAxesLayout.STICK_Z]
-
+                tank_turn = (1 if msg.buttons[VKBButtonLayout.A4_LEFT] else 0) - (1 if msg.buttons[VKBButtonLayout.A4_RIGHT] else 0)
+                if tank_turn != 0:
+                    # Tank turn override: spin in place with opposite wheel directions.
+                    twist.linear.x = 0.0
+                    twist.angular.z = float(tank_turn)
                 self._cached_twist = twist
             else:
                 joint_state = JointState()
                 joint_state.name = [f'joint{i+1}' for i in range(7)]
+                m4_raw = float(msg.axes[VKBAxesLayout.STICK_X])
+                if m4_raw != 0.0:
+                    self._m4_latched_cmd = m4_raw
+                    self._m4_hold_until = now_s + self._arm_button_min_hold_s
+                elif now_s < self._m4_hold_until:
+                    m4_raw = self._m4_latched_cmd
+                else:
+                    self._m4_latched_cmd = 0.0
+                m4 = m4_raw
                 joint_state.velocity = [
                     float(msg.axes[VKBAxesLayout.STICK_Z]), #M1
-                    float(msg.buttons[VKBButtonLayout.A3_UP] - msg.buttons[VKBButtonLayout.A3_DOWN]), #M2
+                    float(msg.axes[VKBButtonLayout.A3_UP] - msg.axes[VKBButtonLayout.A3_DOWN]), #M2
                     float(msg.axes[VKBAxesLayout.STICK_Y]), #M3
-                    float(msg.axes[VKBAxesLayout.STICK_X]), #M4
+                    m4, #M4
                     float(msg.buttons[VKBButtonLayout.A3_LEFT] - msg.buttons[VKBButtonLayout.A3_RIGHT]), #M5
-                    # float((1 if msg.buttons[Buttons.TRIANGLE] else 0) - (1 if msg.buttons[Buttons.X] else 0)), #M6
-                    # float((1 if msg.buttons[Buttons.CIRCLE] else 0) - (1 if msg.buttons[Buttons.SQUARE] else 0)), #M7
+                    # float((1 if msg.buttons[Buttons.TRIANGLE] else 0) - (1 if msg.buttons[Buttons.X] else 0)),
+                    # float((1 if msg.buttons[Buttons.SQUARE] else 0) - (1 if msg.buttons[Buttons.CIRCLE] else 0)),
                 ]
                 joint_state.position = []
                 joint_state.effort = []
@@ -183,9 +212,8 @@ class JoyMuxController(Node):
             tw = self._cached_twist
             if tw is None:
                 return
-            vals = (tw.linear.x, tw.angular.z)
-            if self._skip_identical and self._floats_equal(vals, self._last_twist_vals):
-                return
+            vals = (tw.linear.x, tw.linear.y, tw.linear.z, tw.angular.z)
+            # Wheels benefit from a steady frame stream while deadman is held.
             self.rover_pub.publish(tw)
             self._last_twist_vals = vals
         else:
@@ -193,8 +221,7 @@ class JoyMuxController(Node):
             if js is None:
                 return
             vals = tuple(js.velocity)
-            if self._skip_identical and self._floats_equal(vals, self._last_joint_vals):
-                return
+            # Arm button control is more reliable when we continuously stream held/release values.
             self.arm_pub.publish(js)
             self._last_joint_vals = vals
 
