@@ -56,6 +56,10 @@ class JoyMuxController(Node):
 
         self.current_mode = 0
         self.last_toggle = 0
+        self._last_mode_toggle_at_s = -1e9
+        self._mode_toggle_cooldown_s = self.declare_parameter(
+            "mode_toggle_cooldown_s", 0.35
+        ).value
         self._deadman_held = False
         self._prev_deadman = False
 
@@ -82,7 +86,8 @@ class JoyMuxController(Node):
         self.get_logger().info(
             f"joy_mux_controller ready — max_cmd_publish_hz={max_cmd_publish_hz}, "
             f"skip_identical={self._skip_identical}, epsilon={self._epsilon}, "
-            f"arm_button_min_hold_s={self._arm_button_min_hold_s}"
+            f"arm_button_min_hold_s={self._arm_button_min_hold_s}, "
+            f"mode_toggle_cooldown_s={self._mode_toggle_cooldown_s}"
         )
 
     def _publish_all_stop(self) -> None:
@@ -113,12 +118,19 @@ class JoyMuxController(Node):
             self._publish_all_stop()
             return
 
-        if msg.buttons[Buttons.TOGGLE] == 1 and self.last_toggle == 0:
+        now_s = self.get_clock().now().nanoseconds * 1e-9
+        home_down = msg.buttons[Buttons.HOME] == 1
+        home_rising = home_down and self.last_toggle == 0
+        if (
+            home_rising
+            and (now_s - self._last_mode_toggle_at_s) >= self._mode_toggle_cooldown_s
+        ):
             self.current_mode = 1 - self.current_mode
+            self._last_mode_toggle_at_s = now_s
             self._last_twist_vals = None
             self._last_joint_vals = None
             self.get_logger().info(f"Switched to {'Arm' if self.current_mode else 'Rover'} mode")
-        self.last_toggle = msg.buttons[Buttons.TOGGLE]
+        self.last_toggle = 1 if home_down else 0
 
         self._deadman_held = msg.buttons[Buttons.DEADMAN] == 1
 
@@ -137,7 +149,6 @@ class JoyMuxController(Node):
             else:
                 joint_state = JointState()
                 joint_state.name = [f'joint{i+1}' for i in range(7)]
-                now_s = self.get_clock().now().nanoseconds * 1e-9
                 m4_raw = float((1 if msg.buttons[Buttons.CIRCLE] else 0) - (1 if msg.buttons[Buttons.SQUARE] else 0))
                 if m4_raw != 0.0:
                     self._m4_latched_cmd = m4_raw
