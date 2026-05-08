@@ -30,6 +30,15 @@ class SystemFrameBuilder{
         void sendForceStop(deviceType::DeviceType DeviceType, DeviceId::ID deviceID);
         void sendResume(deviceType::DeviceType DeviceType, DeviceId::ID deviceID);
 
+        // Servo commands (spin / clamp). Position values are in rad, speed in rad/s.
+        // The payload selector byte (ServoSelector::SPIN / ::CLAMP) and the CAN
+        // device_ID (DeviceId::ID::SPIN_SERVO / ::CLAMP_SERVO) are paired per
+        // servo; flip the selectors in prefixes.hpp if the firmware expects 4/5.
+        uint32_t sendSpinServoPosition(float position_rad);
+        uint32_t sendSpinServoSpeed(float speed_rad_s);
+        uint32_t sendClampServoPosition(float position_rad);
+        uint32_t sendClampServoSpeed(float speed_rad_s);
+
         ~SystemFrameBuilder(){std::cout << "System frame builder destructor called" << std::endl; }
 
     private: 

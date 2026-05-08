@@ -36,6 +36,14 @@ class CanControllerNode : public rclcpp::Node{
         int multiplier; 
         int can_send_rate_hz_;
 
+        // Servo shaping (joystick [-1,1] -> rad or rad/s).
+        std::string spin_servo_mode_;
+        std::string clamp_servo_mode_;
+        float spin_servo_max_rad_{0.0f};
+        float spin_servo_max_rad_s_{0.0f};
+        float clamp_servo_max_rad_{0.0f};
+        float clamp_servo_max_rad_s_{0.0f};
+
         std::shared_ptr<rclcpp::ParameterEventHandler> parameter_event_handler;
         rclcpp::ParameterCallbackHandle::SharedPtr multiplier_callback_handle;
 

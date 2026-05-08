@@ -17,6 +17,15 @@ CanControllerNode::CanControllerNode(const rclcpp::NodeOptions& options) :
 
         can_interface_ = this->declare_parameter<std::string>("can_interface", "can0");
 
+        // Servo command shaping: pick instruction mode and scale joystick [-1,1]
+        // to physical units (rad for position, rad/s for speed) without recompiling.
+        spin_servo_mode_  = this->declare_parameter<std::string>("spin_servo_mode",  "speed");
+        clamp_servo_mode_ = this->declare_parameter<std::string>("clamp_servo_mode", "speed");
+        spin_servo_max_rad_   = static_cast<float>(this->declare_parameter("spin_servo_max_rad",   3.14159265));
+        spin_servo_max_rad_s_ = static_cast<float>(this->declare_parameter("spin_servo_max_rad_s", 3.14159265));
+        clamp_servo_max_rad_   = static_cast<float>(this->declare_parameter("clamp_servo_max_rad",   1.5707963));
+        clamp_servo_max_rad_s_ = static_cast<float>(this->declare_parameter("clamp_servo_max_rad_s", 1.5707963));
+
         can_controller_ = std::make_shared<can_util::CANController>(can_interface_, this->get_logger());
         if (!can_controller_->configureCan()) {
             logger.fatal("Failed to configure CAN on interface {}", can_interface_); 
@@ -107,7 +116,7 @@ void CanControllerNode::getTwistMessages(const geometry_msgs::msg::Twist::ConstS
 
 void CanControllerNode::getJointStateMessages(const sensor_msgs::msg::JointState::ConstSharedPtr& joint_state_msg){
     if(joint_state_msg->velocity.size() < 5){
-        logger.error("Received joint state messages with insufficient velocity data. joint size is {}, expected at least 5", joint_state_msg->velocity.size()); 
+        logger.error("Received joint state messages with insufficient velocity data. joint size is {}, expected at least 5 (and 7 for servos)", joint_state_msg->velocity.size()); 
         return; 
     }
     std::lock_guard<std::mutex> lock(cmd_mutex_);
@@ -221,6 +230,41 @@ void CanControllerNode::sendCanFrames(){
         }
         RCLCPP_INFO(this->get_logger(), "Arm motor commands sent: Motor 1 = %.2f, Motor 2 = %.2f, Motor 3 = %.2f, Motor 4 = %.2f, Motor 5 = %.2f",
             cmd_sent[0], cmd_sent[1], cmd_sent[2], cmd_sent[3], cmd_sent[4]);
+
+        if(joint_state->velocity.size() >= 7){
+            constexpr double SERVO_DEADZONE = 0.05;
+            constexpr size_t SPIN_IDX  = 5;
+            constexpr size_t CLAMP_IDX = 6;
+
+            const auto shape_input = [](double raw) -> float {
+                return (std::abs(raw) < SERVO_DEADZONE) ? 0.0f : static_cast<float>(raw);
+            };
+            const float spin_in  = shape_input(joint_state->velocity[SPIN_IDX]);
+            const float clamp_in = shape_input(joint_state->velocity[CLAMP_IDX]);
+
+            const float spin_payload = std::clamp(spin_in, -1.0f, 1.0f) *
+                ((spin_servo_mode_ == "position") ? spin_servo_max_rad_ : spin_servo_max_rad_s_);
+            if(spin_servo_mode_ == "position"){
+                frame_builder_->sendSpinServoPosition(spin_payload);
+            } else {
+                frame_builder_->sendSpinServoSpeed(spin_payload);
+            }
+            std::this_thread::sleep_for(std::chrono::microseconds(400));
+
+            const float clamp_payload = std::clamp(clamp_in, -1.0f, 1.0f) *
+                ((clamp_servo_mode_ == "position") ? clamp_servo_max_rad_ : clamp_servo_max_rad_s_);
+            if(clamp_servo_mode_ == "position"){
+                frame_builder_->sendClampServoPosition(clamp_payload);
+            } else {
+                frame_builder_->sendClampServoSpeed(clamp_payload);
+            }
+            std::this_thread::sleep_for(std::chrono::microseconds(400));
+
+            RCLCPP_INFO(this->get_logger(),
+                "Servo commands sent: spin (%s) = %.3f, clamp (%s) = %.3f",
+                spin_servo_mode_.c_str(),  spin_payload,
+                clamp_servo_mode_.c_str(), clamp_payload);
+        }
     }
 }
 

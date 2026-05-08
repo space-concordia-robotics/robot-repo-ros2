@@ -45,6 +45,12 @@ namespace Instructions{
         STOP_COMMAND = 0x01,
         RESUME_COMMAND = 0x02, 
 
+        // Servo commands (spin / clamp). Same numeric values as STOP/RESUME above
+        // but used in a different device context (DeviceType::ENCODER).
+        SERVO_MOVE_TO_POSITION = 0x01, // payload float = position in rad
+        SERVO_MOVE_AT_SPEED    = 0x02, // payload float = speed in rad/s
+
+
         CUT_PDS_OUTPUTS = 0x8F,
         AUTOMATIC_RAIL_SHUTDOWN = 0x02, 
 
@@ -87,6 +93,10 @@ namespace DeviceId{
         WRIST_ENCODER = 0X0B,
         SPIN_SERVO_ENCODER = 0X0C,
         CLAMP_SERVO_ENCODER = 0X0D, 
+        // Aliases used when issuing servo move commands (same wire device IDs).
+        SPIN_SERVO  = 0X0C,  // 0b001100 in the 6-bit device_ID field
+        CLAMP_SERVO = 0X0D,  // 0b001101 in the 6-bit device_ID field
+
 
         HUB = 0X0E,
         ARM_MOTOR_CONTROLLER = 0X0C,
@@ -101,4 +111,13 @@ namespace DeviceId{
     }; 
 } //namespace DeviceId
 
+namespace ServoSelector {
+    // Payload byte 0 selector tag for servo commands. This is the firmware's
+    // payload-side servo identifier, NOT the 6-bit CAN device_ID field. The two
+    // are paired per servo but are distinct values.
+    //
+    // Switch here if the firmware ends up expecting 0x04 / 0x05 instead.
+    constexpr uint8_t SPIN  = 0x05;
+    constexpr uint8_t CLAMP = 0x06;
+} // namespace ServoSelector
 

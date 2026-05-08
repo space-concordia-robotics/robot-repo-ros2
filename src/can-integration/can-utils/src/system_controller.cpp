@@ -65,3 +65,35 @@ void SystemFrameBuilder::sendResume(deviceType::DeviceType DeviceType, DeviceId:
     builder_.sendRestartCommand(static_cast<uint32_t>(DeviceType), static_cast<uint32_t>(deviceID));
 }
 
+uint32_t SystemFrameBuilder::sendSpinServoPosition(float position_rad){
+    return builder_.buildServoFrame(
+        static_cast<uint32_t>(Instructions::Inst::SERVO_MOVE_TO_POSITION),
+        static_cast<uint32_t>(DeviceId::ID::SPIN_SERVO),
+        ServoSelector::SPIN,
+        position_rad);
+}
+
+uint32_t SystemFrameBuilder::sendSpinServoSpeed(float speed_rad_s){
+    return builder_.buildServoFrame(
+        static_cast<uint32_t>(Instructions::Inst::SERVO_MOVE_AT_SPEED),
+        static_cast<uint32_t>(DeviceId::ID::SPIN_SERVO),
+        ServoSelector::SPIN,
+        speed_rad_s);
+}
+
+uint32_t SystemFrameBuilder::sendClampServoPosition(float position_rad){
+    return builder_.buildServoFrame(
+        static_cast<uint32_t>(Instructions::Inst::SERVO_MOVE_TO_POSITION),
+        static_cast<uint32_t>(DeviceId::ID::CLAMP_SERVO),
+        ServoSelector::CLAMP,
+        position_rad);
+}
+
+uint32_t SystemFrameBuilder::sendClampServoSpeed(float speed_rad_s){
+    return builder_.buildServoFrame(
+        static_cast<uint32_t>(Instructions::Inst::SERVO_MOVE_AT_SPEED),
+        static_cast<uint32_t>(DeviceId::ID::CLAMP_SERVO),
+        ServoSelector::CLAMP,
+        speed_rad_s);
+}
+

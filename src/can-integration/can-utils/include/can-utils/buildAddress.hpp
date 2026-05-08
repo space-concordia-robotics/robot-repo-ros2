@@ -34,6 +34,11 @@ namespace buildAddress{
             static constexpr float ARM_MOTOR_VELOCITY_MIN = -1024.0F;
             static constexpr float ARM_MOTOR_VELOCITY_MAX = 1024.0F;
 
+            /// Servo command frame layout (candidate B):
+            ///   data[0] = ServoSelector (0x05 spin / 0x06 clamp), DLC = 5,
+            ///   data[1..4] = IEEE-754 float32 (rad for position, rad/s for speed).
+            static constexpr uint8_t SERVO_FRAME_DLC = 5;
+
             
             /*
             *  @brief Helper function used to build CAN frame id  
@@ -116,6 +121,34 @@ namespace buildAddress{
                 frame.len = 4;
                 std::memset(frame.data, 0, sizeof(frame.data));
                 std::memcpy(frame.data, &clamped, sizeof(float));
+                return manager_->sendBlockingFrame(frame);
+            }
+
+            /*
+            *  @brief Servo command frame: 29-bit ID built from the standard
+            *         (DeviceType::ENCODER, Manufacturer::TEAM_USE, severity::SEV_CNTRL)
+            *         prefix plus a per-servo INSTRUCTION_ID and DEVICE_ID.
+            *  @details Payload is candidate-B layout: data[0] = selector tag,
+            *           data[1..4] = IEEE-754 float32 in rad (position) or rad/s (speed).
+            *           DLC = 5. Note the selector byte and the CAN device_ID are paired
+            *           per servo but are NOT the same numeric value.
+            */
+            uint32_t buildServoFrame(uint32_t instructionId,
+                                     uint32_t deviceID,
+                                     uint8_t  selector,
+                                     float    value) {
+                struct can_frame frame{};
+                const uint32_t canID = buildCANID(
+                    static_cast<uint32_t>(deviceType::DeviceType::ENCODER),
+                    Manufacturer::TEAM_USE,
+                    severity::SEV_CNTRL,
+                    instructionId,
+                    deviceID);
+                frame.can_id = canID | CAN_EFF_FLAG;
+                frame.len = SERVO_FRAME_DLC;
+                std::memset(frame.data, 0, sizeof(frame.data));
+                frame.data[0] = selector;
+                std::memcpy(&frame.data[1], &value, sizeof(float));
                 return manager_->sendBlockingFrame(frame);
             }
 
