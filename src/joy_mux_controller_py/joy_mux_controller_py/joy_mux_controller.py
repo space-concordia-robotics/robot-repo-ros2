@@ -119,20 +119,26 @@ class JoyMuxController(Node):
             if self.current_mode == 0:
                 twist = Twist()
                 # Rotate joystick mapping to correct rover cardinal directions.
-                twist.linear.x = -msg.axes[Axes.LEFT_STICK_Y]
+                twist.linear.x = msg.axes[Axes.LEFT_STICK_Y]
                 twist.angular.z = msg.axes[Axes.LEFT_STICK_X]
+                tank_turn = (1 if msg.buttons[Buttons.SQUARE] else 0) - (1 if msg.buttons[Buttons.CIRCLE] else 0)
+                if tank_turn != 0:
+                    # Tank turn override: spin in place with opposite wheel directions.
+                    twist.linear.x = 0.0
+                    twist.angular.z = float(tank_turn)
                 self._cached_twist = twist
             else:
                 joint_state = JointState()
                 joint_state.name = [f'joint{i+1}' for i in range(7)]
+                m4 = float((1 if msg.buttons[Buttons.CIRCLE] else 0) - (1 if msg.buttons[Buttons.SQUARE] else 0))
                 joint_state.velocity = [
                     float(msg.axes[Axes.D_PAD_X]),
                     float(msg.axes[Axes.D_PAD_Y]),
-                    float(msg.axes[Axes.RIGHT_STICK_X]),
                     float(msg.axes[Axes.RIGHT_STICK_Y]),
+                    m4,
                     float(msg.axes[Axes.LEFT_STICK_Y]),
                     float((1 if msg.buttons[Buttons.TRIANGLE] else 0) - (1 if msg.buttons[Buttons.X] else 0)),
-                    float((1 if msg.buttons[Buttons.CIRCLE] else 0) - (1 if msg.buttons[Buttons.SQUARE] else 0)),
+                    float((1 if msg.buttons[Buttons.SQUARE] else 0) - (1 if msg.buttons[Buttons.CIRCLE] else 0)),
                 ]
                 joint_state.position = []
                 joint_state.effort = []
@@ -160,8 +166,7 @@ class JoyMuxController(Node):
             if tw is None:
                 return
             vals = (tw.linear.x, tw.linear.y, tw.linear.z, tw.angular.z)
-            if self._skip_identical and self._floats_equal(vals, self._last_twist_vals):
-                return
+            # Wheels benefit from a steady frame stream while deadman is held.
             self.rover_pub.publish(tw)
             self._last_twist_vals = vals
         else:
