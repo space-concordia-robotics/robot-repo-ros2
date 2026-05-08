@@ -19,4 +19,8 @@ namespace ImGui {
     inline void TextUnformatted(const std::string& text) {
         TextUnformatted(text.c_str(), text.c_str() + text.length());
     }
+
+    inline void TextUnformatted(const std::string_view& text) {
+        TextUnformatted(text.data(), text.data() + text.length());
+    }
 }

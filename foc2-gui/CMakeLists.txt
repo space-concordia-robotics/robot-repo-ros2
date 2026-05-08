@@ -51,6 +51,7 @@ set(DEPENDENCIES
 include(../cmake/CPM.cmake)
 
 # find dependencies
+CPMAddPackage("gh:fmtlib/fmt#11.2.0")
 CPMAddPackage("gh:Neargye/magic_enum#v0.9.7")
 
 find_package(ament_cmake REQUIRED)
@@ -91,12 +92,14 @@ add_executable(${PROJECT_NAME}
         src/overlays/video_stats_overlay.cpp
 
         # widgets
+        src/widgets/logs_widget.cpp
         src/widgets/video_widget.cpp
 )
 
 ament_target_dependencies(${PROJECT_NAME} PUBLIC ${DEPENDENCIES})
 
 target_link_libraries(${PROJECT_NAME} PUBLIC
+        magic_enum::magic_enum
         SDL3::SDL3
         imgui
         implot

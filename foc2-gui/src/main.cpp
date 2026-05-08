@@ -6,6 +6,7 @@
 #include <rclcpp/utilities.hpp>
 
 #include "foc2-gui/im_application.hpp"
+#include "foc2-gui/widgets/logs_widget.hpp"
 #include "foc2-gui/widgets/video_widget.hpp"
 
 class FOC2Application : public ImApplication {
@@ -18,9 +19,13 @@ protected:
         video_bottom_left = std::make_shared<VideoWidget>(*this);
         video_bottom_right = std::make_shared<VideoWidget>(*this);
 
+        logs = std::make_shared<RosLogWidget>(*this);
+
         video_top->onInit();
         video_bottom_left->onInit();
         video_bottom_right->onInit();
+
+        logs->onInit();
 
         auto& style = ImGui::GetStyle();
         style.WindowPadding = ImVec2(4.0, 4.0);
@@ -90,12 +95,25 @@ private:
     std::shared_ptr<VideoWidget> video_top;
     std::shared_ptr<VideoWidget> video_bottom_left;
     std::shared_ptr<VideoWidget> video_bottom_right;
+    std::shared_ptr<RosLogWidget> logs;
 
-    static void drawLeft() {
+    void drawLeft() const {
         ImGui::Text("TODO");
+
+        ImGui::Separator();
+
+        const auto avail = ImGui::GetContentRegionAvail();
+
+        // TODO 2026-05-07 (Will Free): make this a percent
+
+        ImGui::SetCursorPosY(ImGui::GetCursorPosY() + avail.y - 240);
+
+        ImGui::BeginChild("ROS Logs", ImVec2(0, 240), 0);
+        logs->onFrame();
+        ImGui::EndChild();
     }
 
-    void drawRight() {
+    void drawRight() const {
         // TODO 2026-05-05 (Will Free): give the streams proper names
 
         // TODO 2026-05-06 (Will Free): vertically center windows.
