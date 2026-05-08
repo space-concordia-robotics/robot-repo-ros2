@@ -89,11 +89,6 @@ class JoyMuxController(Node):
         self._last_twist_vals = None
         self._last_joint_vals = None
 
-    @staticmethod
-    def _trigger_axis(t: float) -> float:
-        """Normalise a trigger axis (rests at +1, fully pulled at -1) to 0..1."""
-        return (1.0 - t) * 0.5
-
     def _floats_equal(self, a: tuple[float, ...], b: tuple[float, ...] | None) -> bool:
         if b is None or len(a) != len(b):
             return False
@@ -123,21 +118,18 @@ class JoyMuxController(Node):
         if self._deadman_held:
             if self.current_mode == 0:
                 twist = Twist()
-                twist.linear.x = msg.axes[Axes.LEFT_STICK_X]
-                twist.angular.z = msg.axes[Axes.LEFT_STICK_Y]
-                twist.linear.y = msg.axes[Axes.RIGHT_STICK_X]
-                twist.linear.z = msg.axes[Axes.RIGHT_STICK_Y]
+                # Rotate joystick mapping to correct rover cardinal directions.
+                twist.linear.x = -msg.axes[Axes.LEFT_STICK_Y]
+                twist.angular.z = msg.axes[Axes.LEFT_STICK_X]
                 self._cached_twist = twist
             else:
                 joint_state = JointState()
                 joint_state.name = [f'joint{i+1}' for i in range(7)]
-                m4 = (self._trigger_axis(msg.axes[Axes.RIGHT_TRIGGER])
-                      - self._trigger_axis(msg.axes[Axes.LEFT_TRIGGER]))
                 joint_state.velocity = [
                     float(msg.axes[Axes.D_PAD_X]),
                     float(msg.axes[Axes.D_PAD_Y]),
                     float(msg.axes[Axes.RIGHT_STICK_X]),
-                    float(m4),
+                    float(msg.axes[Axes.RIGHT_STICK_Y]),
                     float(msg.axes[Axes.LEFT_STICK_Y]),
                     float((1 if msg.buttons[Buttons.TRIANGLE] else 0) - (1 if msg.buttons[Buttons.X] else 0)),
                     float((1 if msg.buttons[Buttons.CIRCLE] else 0) - (1 if msg.buttons[Buttons.SQUARE] else 0)),
