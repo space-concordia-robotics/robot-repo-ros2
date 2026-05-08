@@ -13,12 +13,9 @@ CanControllerNode::CanControllerNode(const rclcpp::NodeOptions& options) :
     Node("can_controller_node", options), logger(this->get_logger().get_child("can_controller_node")){
 
         this->declare_parameter("can_path", "can0");
-        multiplier = this->declare_parameter("multiplier", 2000);
-        can_send_rate_hz_ = this->declare_parameter("can_send_rate_hz", 10);
-        wheel_rpm_slew_rate_ = static_cast<float>(
-            this->declare_parameter("wheel_rpm_slew_rate", 1500.0));
-
-        can_interface_ = this->declare_parameter<std::string>("can_interface", "can0");
+        multiplier = this->declare_parameter("multiplier", 500);
+        arm_velocity_scale_ = this-> declare_parameter("arm_velocity_scale",2.0);
+        can_interface_ = this->declare_parameter<std::string>("can_interface", "vcan0");
 
         can_controller_ = std::make_shared<can_util::CANController>(can_interface_, this->get_logger());
         if (!can_controller_->configureCan()) {
@@ -34,7 +31,12 @@ CanControllerNode::CanControllerNode(const rclcpp::NodeOptions& options) :
         };
 
         multiplier_callback_handle = parameter_event_handler->add_parameter_callback("multiplier", multiplier_callback);
-
+        auto arm_scale_callback = [this](const rclcpp::Parameter& parameter){
+            if(parameter.get_name() == "arm_velocity_scale"){
+                arm_velocity_scale_ = parameter.as_double();
+            }
+        };
+        arm_velocity_scale_callback_handle = parameter_event_handler->add_parameter_callback("arm_velocity_scale", arm_scale_callback);
         frame_builder_ = std::make_unique<SystemFrameBuilder>(can_controller_);
 
         twist_msgs_ = this->create_subscription<geometry_msgs::msg::Twist>("cmd_vel", rclcpp::SystemDefaultsQoS(), [this]
@@ -113,9 +115,33 @@ void CanControllerNode::getJointStateMessages(const sensor_msgs::msg::JointState
         logger.error("Received joint state messages with insufficient velocity data. joint size is {}, expected at least 5", joint_state_msg->velocity.size()); 
         return; 
     }
-    std::lock_guard<std::mutex> lock(cmd_mutex_);
-    latest_joint_state_ = joint_state_msg;
-    joint_state_dirty_ = true;
+
+    static constexpr Instructions::Inst MOTOR_MAP[5] = {
+        Instructions::Inst::ARM_MOTOR_1,
+        Instructions::Inst::ARM_MOTOR_2,
+        Instructions::Inst::ARM_MOTOR_3,
+        Instructions::Inst::ARM_MOTOR_4,
+        Instructions::Inst::ARM_MOTOR_5,
+    };
+    static constexpr size_t ARM_MOTOR_COUNT = sizeof(MOTOR_MAP) / sizeof(MOTOR_MAP[0]);
+
+    if(inhibit_arm_cmds){
+        // sendMotorVelocity() takes in: 1. device type, 2. instruction, 3. device id, 4. payload (velocities) 
+        logger.info("Extracting joint state data");
+        for(size_t i = 0; i < ARM_MOTOR_COUNT; i++){
+
+            const float velocities = static_cast<float>(joint_state_msg->velocity[i]) * static_cast<float>(arm_velocity_scale_); 
+            frame_builder_->sendArmMotorVelocity(deviceType::DeviceType::ARM_MOTOR_CONTROLLER, MOTOR_MAP[i], DeviceId::ID::ARM_MOTOR_CONTROLLER, velocities); 
+ 
+            RCLCPP_DEBUG(this->get_logger(), "Motor %zu → %.3f rad/s", i + 1, velocities);
+        }
+        RCLCPP_INFO(this->get_logger(), "Arm motor commands sent: Motor 1 = %.2f\n, Motor 2 = %.2f\n, Motor 3 = %.2f\n, Motor 4 = %.2f\n, Motor 5 = %.2f", 
+            static_cast<float>(joint_state_msg->velocity[0]),
+            static_cast<float>(joint_state_msg->velocity[1]),
+            static_cast<float>(joint_state_msg->velocity[2]),
+            static_cast<float>(joint_state_msg->velocity[3]),
+            static_cast<float>(joint_state_msg->velocity[4]));
+    }
 }
 
 //------------------------------ Timer: send cached commands at fixed rate -------------------------------- 

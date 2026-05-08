@@ -5,32 +5,51 @@ from geometry_msgs.msg import Twist
 from enum import IntEnum
 
 
-class Buttons(IntEnum):
-        
-    DEADMAN = 4
-    TOGGLE = 10
-    X = 0
-    CIRCLE = 1
-    TRIANGLE = 2
-    SQUARE = 3
-    LEFT_BUMPER = 4
-    RIGHT_BUMPER = 5
-    CHANGE_VIEW = 6
-    SHARE = 8
-    HOME = 10
-    LEFT_STICK_CLICK = 11
-    RIGHT_STICK_CLICK = 12
+"""Button configurations for VKB joystick."""
+class VKBButtonLayout(IntEnum):
 
-class Axes(IntEnum):
+    FIRST_FIRE = 0
+    SECOND_FIRE = 1
+    A2 = 2
+    B2 = 3
+    D1 = 4
+    A3_UP = 5
+    A3_RIGHT = 6
+    A3_DOWN = 7
+    A3_LEFT = 8
+    A3_PRESS = 9
+    A4_UP = 10
+    A4_RIGHT = 11
+    A4_DOWN = 12
+    A4_LEFT = 13
+    A4_PRESS = 14
+    C1_UP = 15
+    C1_RIGHT = 16
+    C1_DOWN = 17
+    C1_LEFT = 18
+    C1_PRESS = 19
+    TRIGGER_UP = 20
+    TRIGGER_DOWN = 21
+    EN1_UP = 22
+    EN1_DOWN = 23
+    EN2_UP = 24
+    EN2_DOWN = 25
+    F1 = 26
+    F2 = 27
+    F3 = 28
 
-    LEFT_STICK_X = 0
-    LEFT_STICK_Y = 1
-    LEFT_TRIGGER = 2
-    RIGHT_TRIGGER = 5
-    RIGHT_STICK_X = 3
-    RIGHT_STICK_Y = 4
-    D_PAD_X = 6
-    D_PAD_Y = 7
+
+"""Axes configuration for VKB joystick."""
+class VKBAxesLayout(IntEnum):
+
+    STICK_X = 0
+    STICK_Y = 1
+    STICK_Z = 5
+    MIDDLE_SCROLL = 2
+    A1_X_LED_ON = 3
+    A1_Y_LED_ON = 4
+    A1_X_LED_OFF = 8
+    A1_Y_LED_OFF = 9
 
 
 # Largest indices used in this node: buttons[12], axes[7] → need lengths 13 and 8.
@@ -111,35 +130,33 @@ class JoyMuxController(Node):
             self._publish_all_stop()
             return
 
-        if msg.buttons[Buttons.TOGGLE] == 1 and self.last_toggle == 0:
+        if msg.buttons[VKBButtonLayout.A2] == 1 and self.last_toggle == 0:
             self.current_mode = 1 - self.current_mode
             self._last_twist_vals = None
             self._last_joint_vals = None
             self.get_logger().info(f"Switched to {'Arm' if self.current_mode else 'Rover'} mode")
-        self.last_toggle = msg.buttons[Buttons.TOGGLE]
+        self.last_toggle = msg.buttons[VKBButtonLayout.A2]
 
-        self._deadman_held = msg.buttons[Buttons.DEADMAN] == 1
+        self._deadman_held = msg.buttons[VKBButtonLayout.D1] == 1
 
         if self._deadman_held:
             if self.current_mode == 0:
                 twist = Twist()
-                twist.linear.x = msg.axes[Axes.LEFT_STICK_Y]
-                twist.angular.z = msg.axes[Axes.LEFT_STICK_X]
+                twist.linear.x = msg.axes[VKBAxesLayout.STICK_Y]
+                twist.angular.z = msg.axes[VKBAxesLayout.STICK_Z]
 
                 self._cached_twist = twist
             else:
                 joint_state = JointState()
                 joint_state.name = [f'joint{i+1}' for i in range(7)]
-                m4 = (self._trigger_axis(msg.axes[Axes.RIGHT_TRIGGER])
-                      - self._trigger_axis(msg.axes[Axes.LEFT_TRIGGER]))
                 joint_state.velocity = [
-                    float(msg.axes[Axes.D_PAD_X]),
-                    float(msg.axes[Axes.D_PAD_Y]),
-                    float(msg.axes[Axes.RIGHT_STICK_X]),
-                    float(m4),
-                    float(msg.axes[Axes.LEFT_STICK_Y]),
-                    float((1 if msg.buttons[Buttons.TRIANGLE] else 0) - (1 if msg.buttons[Buttons.X] else 0)),
-                    float((1 if msg.buttons[Buttons.CIRCLE] else 0) - (1 if msg.buttons[Buttons.SQUARE] else 0)),
+                    float(msg.axes[VKBAxesLayout.STICK_Z]), #M1
+                    float(msg.buttons[VKBButtonLayout.A3_UP] - msg.buttons[VKBButtonLayout.A3_DOWN]), #M2
+                    float(msg.axes[VKBAxesLayout.STICK_Y]), #M3
+                    float(msg.axes[VKBAxesLayout.STICK_X]), #M4
+                    float(msg.buttons[VKBButtonLayout.A3_LEFT] - msg.buttons[VKBButtonLayout.A3_RIGHT]), #M5
+                    # float((1 if msg.buttons[Buttons.TRIANGLE] else 0) - (1 if msg.buttons[Buttons.X] else 0)), #M6
+                    # float((1 if msg.buttons[Buttons.CIRCLE] else 0) - (1 if msg.buttons[Buttons.SQUARE] else 0)), #M7
                 ]
                 joint_state.position = []
                 joint_state.effort = []
