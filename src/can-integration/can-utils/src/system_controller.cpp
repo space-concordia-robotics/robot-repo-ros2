@@ -26,7 +26,7 @@ uint32_t SystemFrameBuilder::startMotors(uint32_t mask){
 
 void SystemFrameBuilder::requestStatusFrame(){
     struct can_frame frame{};
-    frame.can_id = 0x000502C0 | CAN_EFF_FLAG;
+    frame.can_id = 0x100502C0 | CAN_EFF_FLAG;
     frame.len = 1;
     frame.data[0] = 1;
     can_manager_->sendBlockingFrame(frame);
