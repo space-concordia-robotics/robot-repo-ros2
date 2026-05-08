@@ -7,74 +7,74 @@ from enum import IntEnum
 """Button configurations for VKB joystick."""
 class VKBButtonLayout(IntEnum):
 
-    FIRST_FIRE: int = 0
-    SECOND_FIRE: int = 1
-    A2: int = 2
-    B2: int = 3
-    D1: int = 4
-    A5_UP: int = 5
-    A5_RIGHT: int = 6
-    A5_DOWN: int = 7
-    A5_LEFT: int = 8
-    A5_PRESS: int = 9
-    A4_UP: int = 10
-    A4_RIGHT: int = 11
-    A4_DOWN: int = 12
-    A4_LEFT: int = 13
-    A4_PRESS: int = 14
-    C1_UP: int = 15
-    C1_RIGHT: int = 16
-    C1_DOWN: int = 17
-    C1_LEFT: int = 18
-    C1_PRESS: int = 19
-    TRIGGER_UP: int = 20
-    TRIGGER_DOWN: int = 21
-    EN1_UP: int = 22
-    EN1_DOWN: int = 23
-    EN2_UP: int = 24
-    EN2_DOWN: int = 25
-    F1: int = 26
-    F2: int = 27
-    F3: int = 28
+    FIRST_FIRE = 0
+    SECOND_FIRE = 1
+    A2 = 2
+    B2 = 3
+    D1 = 4
+    A5_UP = 5
+    A5_RIGHT = 6
+    A5_DOWN = 7
+    A5_LEFT = 8
+    A5_PRESS = 9
+    A4_UP = 10
+    A4_RIGHT = 11
+    A4_DOWN = 12
+    A4_LEFT = 13
+    A4_PRESS = 14
+    C1_UP = 15
+    C1_RIGHT = 16
+    C1_DOWN = 17
+    C1_LEFT = 18
+    C1_PRESS = 19
+    TRIGGER_UP = 20
+    TRIGGER_DOWN = 21
+    EN1_UP = 22
+    EN1_DOWN = 23
+    EN2_UP = 24
+    EN2_DOWN = 25
+    F1 = 26
+    F2 = 27
+    F3 = 28
 
 
 """Axes configuration for VKB joystick."""
 class VKBAxesLayout(IntEnum):
 
-    STICK_X: int = 0
-    STICK_Y: int = 1
-    STICK_Z: int = 5
-    MIDDLE_SCROLL: int = 2
-    A1_X_LED_ON: int = 3
-    A1_Y_LED_ON: int = 4
-    A1_X_LED_OFF: int = 8
-    A1_Y_LED_OFF: int = 9
+    STICK_X = 0
+    STICK_Y = 1
+    STICK_Z = 5
+    MIDDLE_SCROLL = 2
+    A1_X_LED_ON = 3
+    A1_Y_LED_ON = 4
+    A1_X_LED_OFF = 8
+    A1_Y_LED_OFF = 9
 
 """Button configuration for Logitech joystick."""
 class LGTButtonLayout(IntEnum):
         
-    ONE: int = 0
-    TWO: int = 1
-    THREE: int = 2
-    FOUR: int = 3
-    FIVE: int = 4
-    SIX: int = 5
-    SEVEN: int = 6
-    EIGHT: int = 7
-    NEIN: int = 8
-    TEN: int = 9
-    ELEVEN: int = 10
-    TWELVE: int = 11
+    ONE = 0
+    TWO = 1
+    THREE = 2
+    FOUR = 3
+    FIVE = 4
+    SIX = 5
+    SEVEN = 6
+    EIGHT = 7
+    NEIN = 8
+    TEN = 9
+    ELEVEN = 10
+    TWELVE = 11
 
 """Axes configuration for Logitech joystick."""
 class LGTAxesLayout(IntEnum):
 
-    STICK_X: int = 0
-    STICK_Y: int = 1
-    STICK_Z: int = 2
-    SWITCH: int = 5
-    JOY_X: int = 3
-    JOY_Y: int = 4
+    STICK_X = 0
+    STICK_Y = 1
+    STICK_Z = 2
+    SWITCH = 5
+    JOY_X = 3
+    JOY_Y = 4
  
 
 
