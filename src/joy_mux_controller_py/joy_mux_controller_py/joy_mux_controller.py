@@ -72,10 +72,17 @@ class JoyMuxController(Node):
         self._stop_burst_duration_s = self.declare_parameter(
             "stop_burst_duration_s", 0.5
         ).value
+        # Keep button-driven arm commands active briefly to improve tap reliability.
+        self._arm_button_min_hold_s = self.declare_parameter(
+            "arm_button_min_hold_s", 0.08
+        ).value
+        self._m4_latched_cmd = 0.0
+        self._m4_hold_until = 0.0
 
         self.get_logger().info(
             f"joy_mux_controller ready — max_cmd_publish_hz={max_cmd_publish_hz}, "
-            f"skip_identical={self._skip_identical}, epsilon={self._epsilon}"
+            f"skip_identical={self._skip_identical}, epsilon={self._epsilon}, "
+            f"arm_button_min_hold_s={self._arm_button_min_hold_s}"
         )
 
     def _publish_all_stop(self) -> None:
@@ -130,7 +137,16 @@ class JoyMuxController(Node):
             else:
                 joint_state = JointState()
                 joint_state.name = [f'joint{i+1}' for i in range(7)]
-                m4 = float((1 if msg.buttons[Buttons.CIRCLE] else 0) - (1 if msg.buttons[Buttons.SQUARE] else 0))
+                now_s = self.get_clock().now().nanoseconds * 1e-9
+                m4_raw = float((1 if msg.buttons[Buttons.CIRCLE] else 0) - (1 if msg.buttons[Buttons.SQUARE] else 0))
+                if m4_raw != 0.0:
+                    self._m4_latched_cmd = m4_raw
+                    self._m4_hold_until = now_s + self._arm_button_min_hold_s
+                elif now_s < self._m4_hold_until:
+                    m4_raw = self._m4_latched_cmd
+                else:
+                    self._m4_latched_cmd = 0.0
+                m4 = m4_raw
                 joint_state.velocity = [
                     float(msg.axes[Axes.D_PAD_X]),
                     float(msg.axes[Axes.D_PAD_Y]),
@@ -174,8 +190,7 @@ class JoyMuxController(Node):
             if js is None:
                 return
             vals = tuple(js.velocity)
-            if self._skip_identical and self._floats_equal(vals, self._last_joint_vals):
-                return
+            # Arm button control is more reliable when we continuously stream held/release values.
             self.arm_pub.publish(js)
             self._last_joint_vals = vals
 

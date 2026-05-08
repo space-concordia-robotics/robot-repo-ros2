@@ -13,7 +13,7 @@ CanControllerNode::CanControllerNode(const rclcpp::NodeOptions& options) :
 
         this->declare_parameter("can_path", "can0");
         multiplier = this->declare_parameter("multiplier", 2000);
-        can_send_rate_hz_ = this->declare_parameter("can_send_rate_hz", 10);
+        can_send_rate_hz_ = this->declare_parameter("can_send_rate_hz", 50);
 
         can_interface_ = this->declare_parameter<std::string>("can_interface", "can0");
 
@@ -216,21 +216,11 @@ void CanControllerNode::sendCanFrames(){
             cmd_sent[i] = payload;
             frame_builder_->sendArmMotorVelocity(
                 deviceType::DeviceType::ARM_MOTOR_CONTROLLER, MOTOR_MAP[i], DeviceId::ID::ARM_MOTOR_CONTROLLER, payload);
-            std::this_thread::sleep_for(std::chrono::microseconds(300));
+            std::this_thread::sleep_for(std::chrono::microseconds(400));
             RCLCPP_DEBUG(this->get_logger(), "Motor %zu → %.3f (payload)", i + 1, payload);
         }
         RCLCPP_INFO(this->get_logger(), "Arm motor commands sent: Motor 1 = %.2f, Motor 2 = %.2f, Motor 3 = %.2f, Motor 4 = %.2f, Motor 5 = %.2f",
             cmd_sent[0], cmd_sent[1], cmd_sent[2], cmd_sent[3], cmd_sent[4]);
-        RCLCPP_INFO(
-            this->get_logger(),
-            "candump arm velocity frame IDs (29-bit hex, matches socketcan EFF id): "
-            "m3=%08X",
-            buildAddress::BuildAddress::buildCANID(
-                static_cast<uint32_t>(deviceType::DeviceType::ARM_MOTOR_CONTROLLER),
-                Manufacturer::ARM_MOTOR_CONTROLLER, severity::SEV_STATUS,
-                static_cast<uint32_t>(MOTOR_MAP[2]),
-                static_cast<uint32_t>(DeviceId::ID::ARM_MOTOR_CONTROLLER))
-            );
     }
 }
 
