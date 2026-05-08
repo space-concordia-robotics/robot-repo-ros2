@@ -1,0 +1,171 @@
+# Currently not used at all, as
+rtsp_camera:
+  port:
+    type: int
+    default_value: 8445
+    description: "The port used for the RTSP server"
+    validation:
+      bounds<>: [ 1024, 65535 ]
+
+
+  templates:
+    v4l2:
+      type: string
+      default_value: "v4l2src do-timestamp=1"
+      description: "The partial pipeline used for v4l2 cameras"
+      validation:
+        not_empty<>: [ ]
+
+    appsink:
+      pipeline:
+        type: string
+        default_value: "appsink"
+        description: "The partial pipeline used for appsinks"
+        validation:
+          not_empty<>: [ ]
+      name:
+        type: string
+        default_value: "imagesink"
+        description: "The name given to an appsink"
+        validation:
+          not_empty<>: [ ]
+
+    appsrc:
+      pipeline:
+        type: string
+        default_value: "appsrc name=imagesrc do-timestamp=true min-latency=0 max-latency=0 max-bytes=1000 is-live=true"
+        description: "The partial pipeline used for appsrcs"
+        validation:
+          not_empty<>: [ ]
+      name:
+        type: string
+        default_value: "imagesrc"
+        description: "The name given to an appsrc"
+        validation:
+          not_empty<>: [ ]
+
+    test:
+      type: string
+      default_value: "videotestsrc"
+      description: "The partial pipeline used for testing"
+      validation:
+        not_empty<>: [ ]
+
+    encode:
+      encoders:
+        type: string_array
+        default_value: [ ]
+        description: "The names of the partial encoder pipelines"
+        validation:
+          not_empty<>: [ ]
+
+      __map_templates.encode.encoders:
+        encoder:
+          type: string
+          description: "The element used for this encoder"
+          validation:
+            not_empty<>: [ ]
+        bitrate_param:
+          type: string
+          description: "The name of the bitrate parameter for this encoder"
+          validation:
+            not_empty<>: [ ]
+        pipeline:
+          type: string
+          description: "An extra partial pipeline used for this encoder"
+          validation:
+            not_empty<>: [ ]
+        rtp_pay:
+          type: string
+          description: "The rtp*pay element used for this encoder"
+          validation:
+            not_empty<>: [ ]
+
+
+  enabled_streams:
+    type: string_array
+    default_value: [ ]
+    description: "The names of the partial encoder pipelines"
+    validation:
+      not_empty<>: [ ]
+
+  streams:
+    __map_enabled_streams:
+      stream_type:
+        type: string
+        description: "The stream type"
+        validation:
+          one_of<>: [ [ "CAMERA", "camera", "TOPIC","topic", "TEST", "test" ] ]
+      source:
+        type: string
+        description: "The source of this stream; for camera streams this is a block device, for topic streams this is the topic name, for test streams this is empty"
+      mountpoint:
+        type: string
+        description: "The mountpoint for this rtsp stream"
+        validation:
+          not_empty<>: [ ]
+      encoder:
+        type: string
+        description: "The encoder used for this stream"
+        additional_constraints: "Must be declared in the encoders"
+        validation:
+          not_empty<>: [ ]
+      bitrate:
+        type: int
+        description: "The bitrate used for encoding this stream"
+        validation:
+          gt<>: [ 0 ]
+      fps:
+        type: int
+        description: "The framerate to sample this stream at"
+        validation:
+          gt<>: [ 0 ]
+      width:
+        type: int
+        description: "The width to resize this stream to"
+        validation:
+          gt<>: [ 0 ]
+      height:
+        type: int
+        description: "The height to resize this stream to"
+        validation:
+          gt<>: [ 0 ]
+      image_topic_enabled:
+        type: bool
+        description: "If the image topic is enabled for this stream"
+      image_topic:
+        scale:
+          type: double
+          default_value: 1.0
+          description: "The amount to scale the image topic of this stream by"
+          validation:
+            gt<>: [ 0 ]
+        name:
+          type: string
+          description: "The name of the topic to publish this stream at"
+          validation:
+            not_empty<>: [ ]
+        uncompressed:
+          type: bool
+          default_value: true
+          description: "If the uncompressed image topic is enabled for this stream"
+        compressed:
+          type: bool
+          default_value: true
+          description: "If the compressed image topic is enabled for this stream"
+        fps:
+          type: int
+          description: "The framerate to sample the image topic of this stream at"
+          validation:
+            gt<>: [ 0 ]
+        format:
+          type: string
+          description: "The pixel format of this stream"
+          validation:
+            one_of<>: [ [ "RGB" ] ]
+        use_sensor_data_qos:
+          type: bool
+          description: "If the sensor data QoS should be used for the image topic of this stream"
+          validation:
+            gt<>: [ 0 ]
+
