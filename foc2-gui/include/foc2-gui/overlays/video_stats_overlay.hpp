@@ -4,7 +4,7 @@
 
 #include "foc2-gui/overlay.hpp"
 #include "foc2-gui/util/circular_buffer.hpp"
-#include "foc2-gui/util/imgui_util.h"
+#include "foc2-gui/util/imgui_util.hpp"
 
 
 class VideoStatsOverlay : public UiOverlay {
