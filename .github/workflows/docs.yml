@@ -3,9 +3,10 @@ name: Build Docs
 on:
   push:
     paths:
-      - 'src/**'
+      - 'docs/**'
     branches:
       - main
+  workflow_dispatch:
 
 permissions:
   contents: write
