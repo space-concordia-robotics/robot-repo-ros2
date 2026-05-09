@@ -147,6 +147,10 @@ void CanControllerNode::sendCanFrames(){
         }
     }
 
+    if(inhibit_wheel_cmds){
+        frame_builder_->startMotors(0x7E);
+    }
+
     if(send_twist && inhibit_wheel_cmds){
         auto linear_y = twist->linear.x; 
         auto angular_z = twist->angular.z;
@@ -168,8 +172,6 @@ void CanControllerNode::sendCanFrames(){
         frame_builder_->sendWheelMotorVelocity(DeviceId::ID::WHEEL_MOT4, left_wheel_velocity_rpm);
         frame_builder_->sendWheelMotorVelocity(DeviceId::ID::WHEEL_MOT5, left_wheel_velocity_rpm);
         frame_builder_->sendWheelMotorVelocity(DeviceId::ID::WHEEL_MOT6, left_wheel_velocity_rpm);
-
-        frame_builder_->startMotors(0x7E);
 
         logger.info("Wheel Motor Commands Sent: Right RPM = {:.2f}, Left RPM = {:.2f}", 
                 right_wheel_velocity_rpm, left_wheel_velocity_rpm);
