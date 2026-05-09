@@ -3,8 +3,12 @@ import os
 import subprocess
 import threading
 import time
-import depthai as dai
 
+import cv2
+import depthai as dai
+import numpy as np
+
+from arucotag_detector import ArucoTagDetector
 from rtsp_server import RtspServer
 
 FFC_MXID = "14442C10014791D700"
@@ -74,6 +78,8 @@ class PipelineSession:
         self._error = None
         self._detection_lock = threading.Lock()
         self._latest_detections = None
+        self._rgb_lock = threading.Lock()
+        self._latest_rgb = None
 
     def start(self, mode, device_id):
         with self._lock:
@@ -119,6 +125,10 @@ class PipelineSession:
         with self._detection_lock:
             return self._latest_detections
 
+    def latest_rgb_frame(self):
+        with self._rgb_lock:
+            return None if self._latest_rgb is None else self._latest_rgb
+
     def _worker(self, mode, device_id):
         try:
             profile = profile_for(mode)
@@ -126,6 +136,14 @@ class PipelineSession:
             bitrate = profile["bitrate"]
 
             device = dai.Device(dai.DeviceInfo(device_id))
+
+            if mode in ("oakd_yolo", "oakd_depth", "oakd_all"):
+                try:
+                    device.setIrLaserDotProjectorIntensity(1.0)
+                    device.setIrFloodLightIntensity(1.0)
+                except Exception:
+                    pass
+
             with dai.Pipeline(device) as pipeline:
                 bitstream_queues, extra_queues = build_pipeline(pipeline, mode, fps, bitrate, self._visualizer)
                 pipeline.start()
@@ -133,6 +151,7 @@ class PipelineSession:
                 self._ready_event.set()
 
                 detection_queue = extra_queues.get("detections")
+                aruco_queue = extra_queues.get("aruco_jpeg")
                 while pipeline.isRunning() and not self._stop_event.is_set():
                     for name, q in bitstream_queues.items():
                         if q.has():
@@ -142,6 +161,15 @@ class PipelineSession:
                     if detection_queue is not None and detection_queue.has():
                         with self._detection_lock:
                             self._latest_detections = detection_queue.get()
+                    if aruco_queue is not None and aruco_queue.has():
+                        jpeg_bytes = aruco_queue.get().getData()
+                        frame = cv2.imdecode(
+                            np.frombuffer(jpeg_bytes, np.uint8),
+                            cv2.IMREAD_COLOR,
+                        )
+                        if frame is not None:
+                            with self._rgb_lock:
+                                self._latest_rgb = frame
                     self._visualizer.waitKey(1)
         except Exception as e:
             self._error = str(e)
@@ -157,6 +185,7 @@ def main():
     metrics = StreamMetrics()
     visualizer = dai.RemoteConnection(webSocketPort=8765, httpPort=8082)
     session = PipelineSession(server, metrics, visualizer)
+    aruco_detector = ArucoTagDetector()
     
     if args.mode:
         device_id = resolve_device(args.mode, args.device)
@@ -194,6 +223,32 @@ def main():
                     print(f"Running: {session.current_mode()}")
                 else:
                     print("Idle.")
+            elif cmd == "aruco":
+                if not session.is_running():
+                    print("Idle.")
+                    continue
+                latest_rgb = session.latest_rgb_frame()
+                if latest_rgb is None:
+                    print("No RGB frames yet.")
+                    continue
+                corners, ids = aruco_detector.detect_tags(latest_rgb)
+                print(f"Detected {len(corners)} ArUco tags with IDs: {ids.flatten().tolist() if ids is not None else []}")
+            elif cmd == "watch_aruco":
+                interval = float(parts[1]) if len(parts) >= 2 else 1.0
+                if not session.is_running():
+                    print("Idle.")
+                    continue
+                print("Watching for ArUco tags. Press Ctrl+C to stop.")
+                try:
+                    while session.is_running():
+                        latest_rgb = session.latest_rgb_frame()
+                        if latest_rgb is not None:
+                            corners, ids = aruco_detector.detect_tags(latest_rgb)
+                            if ids is not None and len(ids) > 0:
+                                print(f"Detected {len(corners)} ArUco tags with IDs: {ids.flatten().tolist()}")
+                        time.sleep(interval)
+                except KeyboardInterrupt:
+                    print()
             elif cmd == "bw":
                 if not session.is_running():
                     print("Idle.")
@@ -267,6 +322,8 @@ def print_help():
     print("  mode <name> [device_id]  switch pipeline, device_id/IP is optional.  For the black mydlink router, 192.168.0.100, and 192.168.0.102 were usually either the OAK-D or FFC")
     print("  stop                     stop current pipeline")
     print("  status                   show current state")
+    print("  aruco                    run ArUco tag detection (All modes but YOLO)")
+    print("  watch_aruco [interval]   monitor ArUco detections at intervals (All modes but YOLO)")
     print("  bw                       bandwidth + fps per stream")
     print("  watch [interval]         monitor bandwidth at intervals")
     print("  detections               show latest detections (FFC YOLO or OAK-D YOLO modes only)")
@@ -340,7 +397,9 @@ def build_pipeline(pipeline, mode, maxFps, bitrate, visualizer):
         sockets = [(dai.CameraBoardSocket.CAM_A, "RGB")]
 
     bitstream_queues = {}
-    for socket, name in sockets:
+    extra_queues = {}
+
+    for idx, (socket, name) in enumerate(sockets):
         cam = pipeline.create(dai.node.Camera).build(socket)
         cam_out = cam.requestOutput((1920, 1080), fps=maxFps, type=dai.ImgFrame.Type.NV12)
 
@@ -349,14 +408,18 @@ def build_pipeline(pipeline, mode, maxFps, bitrate, visualizer):
         enc.setRateControlMode(dai.VideoEncoderProperties.RateControlMode.CBR)
         enc.setBitrate(bitrate)
         enc.setKeyframeFrequency(maxFps)
-
         cam_out.link(enc.input)
         bitstream_queues[name] = enc.out.createOutputQueue(maxSize=30, blocking=True)
 
-        viz_out = cam.requestOutput((640, 400), fps=maxFps)
-        visualizer.addTopic(name, viz_out, "img")
+        mjpeg = pipeline.create(dai.node.VideoEncoder)
+        mjpeg.setDefaultProfilePreset(maxFps, dai.VideoEncoderProperties.Profile.MJPEG)
+        cam_out.link(mjpeg.input)
+        visualizer.addTopic(name, mjpeg.out, "img")
 
-    extra_queues = {}
+        if idx == 0:
+            extra_queues["aruco_jpeg"] = mjpeg.out.createOutputQueue(maxSize=1, blocking=False)
+
+
     if mode == "oakd_yolo":
         cam_rgb   = pipeline.create(dai.node.Camera).build(dai.CameraBoardSocket.CAM_A, sensorFps=maxFps)
         mono_left = pipeline.create(dai.node.Camera).build(dai.CameraBoardSocket.CAM_B, sensorFps=maxFps)
