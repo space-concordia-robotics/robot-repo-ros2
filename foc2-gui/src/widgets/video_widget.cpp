@@ -14,12 +14,17 @@
 using namespace std::chrono;
 using namespace std::chrono_literals;
 
-VideoWidget::VideoWidget(ImApplication& application) : UiWidget(application) {
+VideoWidget::VideoWidget(ImApplication& application, const std::string& source_url, const bool minimap)
+    : UiWidget(application),
+      source_url(source_url), minimap(minimap) {
     addOverlay(std::make_shared<CrosshairOverlay>(application));
     video_stats_overlay = std::make_shared<VideoStatsOverlay>(application);
-    addOverlay(video_stats_overlay);
-    addOverlay(std::make_shared<MiniMapOverlay>(application));
     addOverlay(std::make_shared<ArucoVideoOverlay>(application, "/rover/ffc/front/image_raw", "ffc_front_camera"));
+
+    addOverlay(video_stats_overlay);
+
+    if (minimap)
+        addOverlay(std::make_shared<MiniMapOverlay>(application));
 
     // if this 50ms value is changed, also update the value in the video stats overlay
     stats_timer = this->application.create_timer(50ms, [this] {
@@ -109,18 +114,20 @@ void VideoWidget::videoThread() {
     // TODO 2026-05-07 (Will Free): replace this pipeline string with creating each of the elements individually
     //  via gst_element_factory_make(), then linking them together.
 
-    static constexpr auto pipeline_desc =
-        "rtspsrc name=src location=rtsp://127.0.0.1:8554/test latency=500 ! "
-        "rtpjitterbuffer name=jitter ! "
+    const auto pipeline_desc = fmt::format(
+        "rtspsrc name=src location={} latency=100 ! "
+        "rtpjitterbuffer name=jitter latency=50 ! "
         "rtph264depay ! "
         "decodebin ! "
         "videoconvert ! "
         "video/x-raw,format=RGBA ! "
-        "appsink name=appsink sync=true"; // is sync needed here?
+        "appsink name=appsink sync=true", // is sync needed here?
+        source_url
+    );
 
     while (running) {
         GError* error = nullptr;
-        pipeline = gst_parse_launch(pipeline_desc, &error);
+        pipeline = gst_parse_launch(pipeline_desc.c_str(), &error);
 
         if (!pipeline || error) {
             logger.error("Failed to create GStreamer pipeline: {}", error ? error->message : "unknown");

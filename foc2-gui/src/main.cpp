@@ -15,9 +15,9 @@ public:
 
 protected:
     void onInit() override {
-        video_top = std::make_shared<VideoWidget>(*this);
-        video_bottom_left = std::make_shared<VideoWidget>(*this);
-        video_bottom_right = std::make_shared<VideoWidget>(*this);
+        video_top = std::make_shared<VideoWidget>(*this, "rtsp://10.240.0.10:8554/RGB", true);
+        video_bottom_left = std::make_shared<VideoWidget>(*this, "rtsp://10.240.0.10:8445/arm", false);
+        video_bottom_right = std::make_shared<VideoWidget>(*this, "rtsp://10.240.0.10:8445/left", false);
 
         logs = std::make_shared<RosLogWidget>(*this);
 
@@ -123,20 +123,17 @@ private:
 
         const auto available = ImGui::GetContentRegionAvail();
 
-        ImGui::BeginChild("Top Stream", ImVec2(0, available.y * 0.5f), 0);
+        ImGui::BeginChild("Top Stream", ImVec2(0, available.y * 0.6f), 0);
         drawStream(video_top);
-        drawCenteredLabel("Top");
         ImGui::EndChild();
 
         ImGui::BeginChild("Bottom Left Stream", ImVec2(available.x * 0.5f, 0), 0);
-        drawCenteredLabel("Bottom Left");
         drawStream(video_bottom_left);
         ImGui::EndChild();
 
         ImGui::SameLine();
 
         ImGui::BeginChild("Bottom Right Stream", ImVec2(0, 0), 0);
-        drawCenteredLabel("Bottom Right");
         drawStream(video_bottom_right);
         ImGui::EndChild();
     }
