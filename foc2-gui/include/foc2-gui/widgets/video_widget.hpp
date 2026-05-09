@@ -12,7 +12,7 @@
 
 class VideoWidget : public UiWidget, public UiOverlayable {
 public:
-    explicit VideoWidget(ImApplication& application);
+    explicit VideoWidget(ImApplication& application, const std::string& source_url, bool minimap);
 
     void onInit() override;
     void onShutdown() override;
@@ -23,6 +23,9 @@ protected:
     void draw() override;
 
 private:
+    std::string source_url;
+    bool minimap;
+
     rclcpp::TimerBase::SharedPtr stats_timer;
 
     std::thread gst_thread;
