@@ -49,6 +49,7 @@ class CanControllerNode : public rclcpp::Node{
         rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr joint_state_msgs_; 
 
         rclcpp::TimerBase::SharedPtr can_send_timer_; 
+        int can_send_rate_hz_{100};
 
         std::mutex cmd_mutex_;
         geometry_msgs::msg::Twist::ConstSharedPtr latest_twist_;

@@ -45,7 +45,7 @@ CanControllerNode::CanControllerNode(const rclcpp::NodeOptions& options) :
         (const sensor_msgs::msg::JointState::ConstSharedPtr& msg) {getJointStateMessages(msg);});
         joy_msgs_ = this->create_subscription<sensor_msgs::msg::Joy>("/joy", rclcpp::SystemDefaultsQoS(), [this]
         (const sensor_msgs::msg::Joy::ConstSharedPtr& msg){getjoyfeedback(msg);});
-
+        can_send_rate_hz_ = this->declare_parameter("can_send_rate_hz", 100);
         const auto period = std::chrono::milliseconds(1000 / can_send_rate_hz_);
         can_send_timer_ = this->create_wall_timer(period, [this]{ sendCanFrames(); });
 
@@ -232,31 +232,32 @@ void CanControllerNode::sendCanFrames(){
 
         frame_builder_->startMotors(0x7E);
 
-        logger.info("Wheel Motor Commands Sent: Right RPM = {:.2f}, Left RPM = {:.2f} (targets {:.2f}/{:.2f})",
-                wheel_rpm_smoothed_[0], wheel_rpm_smoothed_[3],
-                target_rpm[0], target_rpm[3]);
-        RCLCPP_INFO(
-            this->get_logger(),
-            "candump wheel velocity frame IDs (29-bit hex): "
-            "W1=%08X W2=%08X W3=%08X W4=%08X W5=%08X W6=%08X",
-            static_cast<unsigned>(
-                (COMMAND_PREFIX_VELOCITY_CONTROL << 8) |
-                (static_cast<uint32_t>(DeviceId::ID::WHEEL_MOT1) + 0x80u)),
-            static_cast<unsigned>(
-                (COMMAND_PREFIX_VELOCITY_CONTROL << 8) |
-                (static_cast<uint32_t>(DeviceId::ID::WHEEL_MOT2) + 0x80u)),
-            static_cast<unsigned>(
-                (COMMAND_PREFIX_VELOCITY_CONTROL << 8) |
-                (static_cast<uint32_t>(DeviceId::ID::WHEEL_MOT3) + 0x80u)),
-            static_cast<unsigned>(
-                (COMMAND_PREFIX_VELOCITY_CONTROL << 8) |
-                (static_cast<uint32_t>(DeviceId::ID::WHEEL_MOT4) + 0x80u)),
-            static_cast<unsigned>(
-                (COMMAND_PREFIX_VELOCITY_CONTROL << 8) |
-                (static_cast<uint32_t>(DeviceId::ID::WHEEL_MOT5) + 0x80u)),
-            static_cast<unsigned>(
-                (COMMAND_PREFIX_VELOCITY_CONTROL << 8) |
-                (static_cast<uint32_t>(DeviceId::ID::WHEEL_MOT6) + 0x80u)));
+        // logger.info("Wheel Motor Commands Sent: Right RPM = {:.2f}, Left RPM = {:.2f} (targets {:.2f}/{:.2f})",
+        //         wheel_rpm_smoothed_[0], wheel_rpm_smoothed_[3],
+        //         target_rpm[0], target_rpm[3]);
+    //     RCLCPP_INFO(
+    //         this->get_logger(),
+    //         "candump wheel velocity frame IDs (29-bit hex): "
+    //         "W1=%08X W2=%08X W3=%08X W4=%08X W5=%08X W6=%08X",
+    //         static_cast<unsigned>(
+    //             (COMMAND_PREFIX_VELOCITY_CONTROL << 8) |
+    //             (static_cast<uint32_t>(DeviceId::ID::WHEEL_MOT1) + 0x80u)),
+    //         static_cast<unsigned>(
+    //             (COMMAND_PREFIX_VELOCITY_CONTROL << 8) |
+    //             (static_cast<uint32_t>(DeviceId::ID::WHEEL_MOT2) + 0x80u)),
+    //         static_cast<unsigned>(
+    //             (COMMAND_PREFIX_VELOCITY_CONTROL << 8) |
+    //             (static_cast<uint32_t>(DeviceId::ID::WHEEL_MOT3) + 0x80u)),
+    //         static_cast<unsigned>(
+    //             (COMMAND_PREFIX_VELOCITY_CONTROL << 8) |
+    //             (static_cast<uint32_t>(DeviceId::ID::WHEEL_MOT4) + 0x80u)),
+    //         static_cast<unsigned>(
+    //             (COMMAND_PREFIX_VELOCITY_CONTROL << 8) |
+    //             (static_cast<uint32_t>(DeviceId::ID::WHEEL_MOT5) + 0x80u)),
+        //         static_cast<unsigned>(
+        //             (COMMAND_PREFIX_VELOCITY_CONTROL << 8) |
+        //             (static_cast<uint32_t>(DeviceId::ID::WHEEL_MOT6) + 0x80u)));
+        // }
     }
 
     if(send_arm && inhibit_arm_cmds){
@@ -292,16 +293,16 @@ void CanControllerNode::sendCanFrames(){
         }
         RCLCPP_INFO(this->get_logger(), "Arm motor commands sent: Motor 1 = %.2f, Motor 2 = %.2f, Motor 3 = %.2f, Motor 4 = %.2f, Motor 5 = %.2f",
             cmd_sent[0], cmd_sent[1], cmd_sent[2], cmd_sent[3], cmd_sent[4]);
-        RCLCPP_INFO(
-            this->get_logger(),
-            "candump arm velocity frame IDs (29-bit hex, matches socketcan EFF id): "
-            "m3=%08X",
-            buildAddress::BuildAddress::buildCANID(
-                static_cast<uint32_t>(deviceType::DeviceType::ARM_MOTOR_CONTROLLER),
-                Manufacturer::ARM_MOTOR_CONTROLLER, severity::SEV_STATUS,
-                static_cast<uint32_t>(MOTOR_MAP[2]),
-                static_cast<uint32_t>(DeviceId::ID::ARM_MOTOR_CONTROLLER))
-            );
+        // RCLCPP_INFO(
+        //     this->get_logger(),
+        //     "candump arm velocity frame IDs (29-bit hex, matches socketcan EFF id): "
+        //     "m3=%08X",
+        //     buildAddress::BuildAddress::buildCANID(
+        //         static_cast<uint32_t>(deviceType::DeviceType::ARM_MOTOR_CONTROLLER),
+        //         Manufacturer::ARM_MOTOR_CONTROLLER, severity::SEV_STATUS,
+        //         static_cast<uint32_t>(MOTOR_MAP[2]),
+        //         static_cast<uint32_t>(DeviceId::ID::ARM_MOTOR_CONTROLLER))
+        //     );
     }
 }
 
