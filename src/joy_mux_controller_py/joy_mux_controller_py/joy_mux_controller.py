@@ -180,10 +180,10 @@ class JoyMuxController(Node):
                 m4 = m4_raw
                 joint_state.velocity = [
                     float(msg.axes[VKBAxesLayout.STICK_Z]), #M1
-                    float(msg.buttons[VKBButtonLayout.A3_UP] - msg.buttons[VKBButtonLayout.A3_DOWN]), #M2
-                    float(msg.axes[VKBAxesLayout.STICK_Y]), #M3
-                    m4, #M4
-                    float(msg.buttons[VKBButtonLayout.A3_LEFT] - msg.buttons[VKBButtonLayout.A3_RIGHT]), #M5
+                    (float(msg.buttons[VKBButtonLayout.A3_UP] - msg.buttons[VKBButtonLayout.A3_DOWN]))*0.4, #M2
+                    (float(msg.axes[VKBAxesLayout.STICK_Y]))*0.7, #M3
+                    (m4)*0.7, #M4
+                    (float(msg.buttons[VKBButtonLayout.A3_LEFT] - msg.buttons[VKBButtonLayout.A3_RIGHT]))*0.8, #M5
                     # float((1 if msg.buttons[Buttons.TRIANGLE] else 0) - (1 if msg.buttons[Buttons.X] else 0)),
                     # float((1 if msg.buttons[Buttons.SQUARE] else 0) - (1 if msg.buttons[Buttons.CIRCLE] else 0)),
                 ]
