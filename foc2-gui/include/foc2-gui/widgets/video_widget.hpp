@@ -4,6 +4,7 @@
 #include <gst/gstelement.h>
 #include <gst/app/gstappsink.h>
 #include <opencv2/core/mat.hpp>
+#include <SDL3/SDL_opengl.h>
 
 #include "foc2-gui/overlayable.hpp"
 #include "foc2-gui/widget.hpp"

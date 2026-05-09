@@ -6,11 +6,9 @@
 #include <imgui.h>
 #include <implot.h>
 #include <implot3d.h>
-#include <iostream>
 #include <backends/imgui_impl_opengl3.h>
 #include <backends/imgui_impl_sdl3.h>
 #include <rclcpp/rate.hpp>
-#include <SDL3/SDL.h>
 #include <SDL3/SDL_opengl.h>
 
 // Based on Dear ImGui example "Dear ImGui: standalone example application for
@@ -21,9 +19,9 @@
 // io.BackendFlags |= ImGuiBackendFlags_RendererHasVtxOffset' and handle
 // ImDrawCmd::VtxOffset #define ImDrawIdx unsigned int
 
-ImApplication::ImApplication(const std::string& node_name, const std::string& title) : Node(node_name), title(title), logger(this->get_logger()) {
-    init();
-}
+ImApplication::ImApplication(const std::string& node_name, const std::string& title)
+    : Node(node_name),
+      logger(this->get_logger()), title(title) {}
 
 ImApplication::~ImApplication() {}
 
@@ -51,19 +49,18 @@ int ImApplication::run() {
 
 void ImApplication::onFrame() {}
 
-void ImApplication::init() {
+int ImApplication::init() {
     // Setup window
     if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMEPAD)) {
         logger.error("Error: SDL_Init(): {}", SDL_GetError());
-        std::cout << "sdl init error" << std::endl;
-        return;
+        return -1;
     }
 
     // Create window with graphics context
-    window = SDL_CreateWindow("Dear ImGui + SDL3 Example", 1280, 720, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_MAXIMIZED);
+    window = SDL_CreateWindow(title.c_str(), 1280, 720, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_MAXIMIZED);
     if (!window) {
         logger.error("Error: SDL_CreateWindow(): {}", SDL_GetError());
-        return;
+        return -1;
     }
 
     gl_context = SDL_GL_CreateContext(window);
@@ -71,6 +68,8 @@ void ImApplication::init() {
     SDL_GL_SetSwapInterval(1); // Enable vsync
 
     SDL_ShowWindow(window);
+
+    onWindow();
 
     // Setup Dear ImGui context
     IMGUI_CHECKVERSION();
@@ -115,6 +114,8 @@ void ImApplication::init() {
         &font_config,
         io.Fonts->GetGlyphRangesCyrillic()
     );
+
+    return 0;
 }
 
 void ImApplication::frame() {

@@ -1,19 +1,55 @@
 #define IMGUI_USER_CONFIG "foc2-gui/imgui_user.hpp"
 
+#include <filesystem>
 #include <imgui.h>
-#include <implot.h>
+#include <lunasvg.h>
+#include <ament_index_cpp/get_package_share_directory.hpp>
 #include <rclcpp/executors.hpp>
 #include <rclcpp/utilities.hpp>
+#include <SDL3/SDL.h>
 
 #include "foc2-gui/im_application.hpp"
+#include "foc2-gui/resources.hpp"
 #include "foc2-gui/widgets/logs_widget.hpp"
 #include "foc2-gui/widgets/video_widget.hpp"
 
+SDL_Surface* loadSvgSurface(const std::filesystem::path& path, const int width = 0, const int height = 0) {
+    auto doc = lunasvg::Document::loadFromFile(path);
+    if (!doc)
+        throw std::runtime_error(fmt::format("Failed to load SVG: {}", path.string()));
+    const auto svg = std::move(doc);
+
+    const auto bitmap = svg->renderToBitmap(width, height);
+
+    // TODO 2026-05-09 (Will Free): this is load bearing. I do not know why, and it disturbs me.
+    [[maybe_unused]] const auto ignored = bitmap.writeToPng(std::filesystem::temp_directory_path() / "foc2-gui-IGNORED.png");
+
+    return SDL_CreateSurfaceFrom(
+        bitmap.width(),
+        bitmap.height(),
+        SDL_PIXELFORMAT_BGRA32,
+        bitmap.data(),
+        bitmap.width() * 4
+    );
+}
+
+
 class FOC2Application : public ImApplication {
 public:
-    FOC2Application() : ImApplication("test_app", "Test App") {}
+    FOC2Application() : ImApplication("foc2_gui", "SCRB C2 Station") {}
 
 protected:
+    void onWindow() override {
+        const auto share_dir = ament_index_cpp::get_package_share_directory(FOC2_PACKAGE_NAME);
+
+        const auto icon = loadSvgSurface(std::filesystem::path(share_dir) / "resources" / "icon.svg", 64, 64);
+
+        if (!SDL_SetWindowIcon(window, icon)) {
+            logger.warn("Error: SDL_CreateWindow(): {}", SDL_GetError());
+        }
+        SDL_DestroySurface(icon);
+    }
+
     void onInit() override {
         video_top = std::make_shared<VideoWidget>(*this, "rtsp://10.240.0.10:8554/RGB", true);
         video_bottom_left = std::make_shared<VideoWidget>(*this, "rtsp://10.240.0.10:8445/arm", false);
@@ -165,11 +201,14 @@ int main(int argc, char* * argv) {
         rclcpp::spin(node);
     });
 
-    node->run();
+    if (const auto result = node->init(); result != 0)
+        return result;
+
+    const auto result = node->run();
 
     rclcpp::shutdown();
 
     ros_thread.join();
 
-    return 0;
+    return result;
 }

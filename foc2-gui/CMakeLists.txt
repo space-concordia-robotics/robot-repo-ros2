@@ -24,6 +24,7 @@ set(DEPENDENCIES
         rclcpp
         rclcpp_components
         rclcpp_action
+        ament_index_cpp
 
         tf2_ros
         tf2_eigen
@@ -106,6 +107,7 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
         implot3d
         imfonts
         stb
+        lunasvg
 )
 
 # fixes issue with mold
@@ -119,6 +121,12 @@ target_include_directories(${PROJECT_NAME} PUBLIC
         $<INSTALL_INTERFACE:include>
 )
 
+set(GENERATED_INCLUDE_DIR ${CMAKE_CURRENT_BINARY_DIR}/generated)
+
+configure_file(cmake/resources.hpp.in ${GENERATED_INCLUDE_DIR}/foc2-gui/resources.hpp @ONLY)
+
+target_include_directories(${PROJECT_NAME} PRIVATE ${GENERATED_INCLUDE_DIR})
+
 ## INSTALL
 
 install(
@@ -127,11 +135,17 @@ install(
 )
 
 install(
+        DIRECTORY resources
+        DESTINATION share/${PROJECT_NAME}
+)
+
+install(
         TARGETS ${PROJECT_NAME}
         EXPORT export_${PROJECT_NAME}
         ARCHIVE DESTINATION lib
         LIBRARY DESTINATION lib
         RUNTIME DESTINATION bin
+        INCLUDES DESTINATION include
 )
 
 ## EXPORTS

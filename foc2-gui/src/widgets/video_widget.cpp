@@ -3,7 +3,6 @@
 #include <imgui.h>
 #include <gst/gstbin.h>
 #include <gst/app/gstappsink.h>
-#include <SDL3/SDL_opengl.h>
 
 #include "foc2-gui/overlays/aruco_video_overlay.hpp"
 #include "foc2-gui/overlays/crosshair_overlay.hpp"
