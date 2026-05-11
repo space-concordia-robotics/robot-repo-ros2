@@ -71,26 +71,31 @@ void BAB::handleFrames(const uint32_t id, const std::vector<uint8_t>& data){
 
 
         }else if(receivedFrameID == validateFrameID(severity::SEV_STATUS, Instructions::Inst::RELAY_STATUS)){
-
-
+                // ASKING ELEC: Split Assignments into individual IF's for expandablility if needed. 
+                relayTelem.RelayNum = static.cast<int>(raw_value & 0x01);
+                relayTelem.status = static.cast<int>((raw_value >> 1) & 0x01);
         }
 
+        // TODO: The Remaining GETTTERS  - Luca
 
 }
 
 
 float BAB::getBatteryVoltageLevel() const{
-
+        std::lock_guard<std::mutex>lock(mtx);
+        return BatteryTelem.voltage;
 }
 
 
 float BAB::getBatteryCurrentLevel() const{
-
+        std::lock_guard<std::mutex>lock(mtx);
+        return BatteryTelem.current;
 } 
 
 
 float BAB::getBatteryTemp() const{
-
+        std::lock_guard<std::mutex>lock(mtx);
+        return BatteryTelem.temperature; 
 }
 
 
@@ -104,35 +109,47 @@ float BAB::getTCUStatus() const{
 }
 
 std::string BAB::getBMSHealth() const{
-
+        std::lock_guard<std::mutex>lock(mtx);
+        return BatteryTelem.voltage < 10.0f && BatteryTelem.voltage > 0.5f{
+                return "CRITICAL LOW VOLTAGE"; 
+        }
+        return "NORMAL VOLTAGE (HEALTHY)";
 }
 
 std::string BAB::getRelayStatus() const{
-
+        std::lock_guard<std::mutex>lock(mtx);
+        return RealayTelem.status ? "Relay Closed (ON)" : "Relay OPEN (OFF)"; 
 }
 
-
 std::string BAB::getBABStatus() const{
-
+        std::lock_guard lock(mtx);
+        retunr "NORMAL";
 }
 
 
 bool BAB::sendKYSCommand(){
-
+        uint32_t id = validateFrameID(0, Instructions::Inst::CUT_PDS_OUTOUTS);
+        std::vector<uint8_t data = {0x00, 0x00};;
+        return can_controller.sendFrame(id,data); 
 }
 
 bool BAB::cutFanPower(DeviceId::ID fanID){
-
+        uint32_t id = validateFrameID(severity::SEV_CNTRL. Instructions::Inst::TURN_OFF_FAN);
+        std::vector<uint8_t> data(0,0);
+        return can_controller.sendFrame(id,data);
 }
 
 
 bool BAB::CutRelayCommand(DeviceId::ID relayID){
-
+        uint32__t id = validateFrameID(severity::SEV_CNTRL, Instructions::Inst::TURN_OFF_RELAY);
+        std::vector<uint8_t>data(0,0);
+        data[0] = (relayID == DeviceId::ID::JMSB) ? 0x0F : 0xF0; 
+        return can_controller.sendFrame(id,data);
 }
 
 
 bool BAB::sendManualPowerCommands(DeviceId::ID selectRailID){
-    
+
 } 
 
     
