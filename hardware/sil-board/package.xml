@@ -12,7 +12,7 @@
 
   <depend>rclcpp</depend>
   <depend>rclpy</depend>
-  <depend>can-utils</depend>
+  <depend>can_util</depend>
   <depend>ros2_fmt_logger</depend>
   <depend>sensor_msgs</depend>
 

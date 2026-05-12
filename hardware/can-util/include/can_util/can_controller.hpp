@@ -21,6 +21,9 @@ namespace can_util {
 
         std::shared_ptr<CANFrameCallback> registerFrameCallback(CANFrameCallback callback);
 
+        template <std::size_t N>
+        bool sendBlockingFrame(uint32_t id, const std::array<uint8_t, N>& data) const requires (N <= 8);
+
         bool sendBlockingFrame(uint32_t id, const std::vector<uint8_t>& data) const;
 
         // TODO 2026-02-25 (Will Free): add a way to read can frames with a specific id, ignoring all others?
