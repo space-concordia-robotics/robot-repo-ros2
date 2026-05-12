@@ -63,7 +63,8 @@ namespace Instructions{
         TCU_TELEM = 0x03,  
 
 
-        RELAY_STATUS = 0x08
+        RELAY_STATUS = 0x08,
+        TCU_STATUS = 0x00
 
 
 

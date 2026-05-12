@@ -10,12 +10,14 @@ endif ()
 # find dependencies
 set(DEPENDENCIES
         rclcpp
+        can-utils
         ros2_fmt_logger
 )
 
 find_package(ament_cmake REQUIRED)
 find_package(ament_cmake_ros REQUIRED)
 find_package(backward_ros REQUIRED)
+find_package(can-utils REQUIRED)
 
 foreach (dependency IN ITEMS ${DEPENDENCIES})
     find_package(${dependency} REQUIRED)

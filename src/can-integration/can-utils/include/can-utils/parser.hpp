@@ -1,7 +1,7 @@
 #pragma once
 
 #include "prefixes.hpp"
-#include <array>
+#include <vector>
 
 
 // Container for the decoded message components
