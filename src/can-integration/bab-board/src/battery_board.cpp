@@ -93,6 +93,28 @@ float BAB::getBatteryTemp() const{
 
 }
 
+float BAB::getRailVoltageLevel() const{
+
+
+}
+
+
+float BAB::getRailCurrent() const{
+
+
+}
+
+
+float BAB::getRailTemp() const{
+
+
+}
+
+
+float BAB::getRailPower() const{
+
+}
+
 
 float BAB::getPDSTelemetry() const{
 

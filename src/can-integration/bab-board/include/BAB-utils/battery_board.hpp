@@ -116,6 +116,25 @@ class BAB{
         float getBatteryTemp() const;
 
 
+        //TODO(Michael): Add function description. 
+
+        float getRailVoltageLevel() const; 
+
+
+
+        float getRailCurrent() const; 
+
+
+
+        float getRailTemp() const; 
+
+
+
+        float getRailPower() const;
+
+
+
+
 
 
         /*
