@@ -107,7 +107,7 @@ namespace wheels_interface {
 
         const auto can_path = info_.hardware_parameters["can_path"];
 
-        can_controller = CANController::make_shared(can_path, rcl_logger);
+        can_controller = can_util::CANController::make_shared(can_path, rcl_logger);
 
         for (auto i = 0u; i < info.joints.size(); i++) {
             const auto& joint = info.joints[i];

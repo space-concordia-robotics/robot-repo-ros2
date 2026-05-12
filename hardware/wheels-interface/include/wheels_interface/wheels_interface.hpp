@@ -12,7 +12,7 @@
 #include <rclcpp_lifecycle/state.hpp>
 #include <rclcpp_lifecycle/node_interfaces/lifecycle_node_interface.hpp>
 #include <ros2_fmt_logger/logger.hpp>
-#include <wheels_interface/can_controller.hpp>
+#include <can_util/can_controller.hpp>
 
 #include "../../../transducer-imu/external/EasyProfile/BasicTypes.h"
 #include "spark/spark_max.hpp"
@@ -68,7 +68,7 @@ namespace wheels_interface {
 
     private:
         std::shared_ptr<ros2_fmt_logger::Logger> logger;
-        CANController::SharedPtr can_controller;
+        can_util::CANController::SharedPtr can_controller;
         std::shared_ptr<diagnostic_updater::Updater> diagnostic_updater;
         rclcpp::TimerBase::SharedPtr heartbeat_timer;
         double multiplier;

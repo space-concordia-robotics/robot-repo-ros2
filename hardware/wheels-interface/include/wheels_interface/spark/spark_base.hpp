@@ -7,8 +7,9 @@
 #include <thread>
 #include <variant>
 #include <vector>
+#include <rclcpp/logger.hpp>
 
-#include "wheels_interface/can_controller.hpp"
+#include "can_util/can_controller.hpp"
 
 /**
  * This code is largely based on sparkcan
@@ -313,16 +314,16 @@ namespace wheels_interface {
          * - CAN bus not initialized
          * - Interface already bound to another program
          */
-        SparkBase(rclcpp::Logger& logger, CANController& can_controller, uint8_t deviceId);
+        SparkBase(rclcpp::Logger& logger, can_util::CANController& can_controller, uint8_t deviceId);
 
         virtual ~SparkBase() = default;
 
     private:
         ros2_fmt_logger::Logger logger;
-        CANController& can_controller;
+        can_util::CANController& can_controller;
         uint8_t device_id; ///< Device ID for the SPARK controller on the CAN bus
 
-        std::shared_ptr<CANFrameCallback> frame_callback;
+        std::shared_ptr<can_util::CANFrameCallback> frame_callback;
 
         mutable std::mutex mtx;
 
