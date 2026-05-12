@@ -185,7 +185,6 @@ bool BAB::cutFanPower(DeviceId::ID fanID) {
     );
 }
 
-//TODO: Same goes for here as mentioned in lines 202-203
 bool BAB::CutRelayCommand(DeviceId::ID relayID) {
     uint16_t payload = (relayID == DeviceId::ID::JMSB) ? 0x000F : 0x00F0;
 
@@ -199,8 +198,6 @@ bool BAB::CutRelayCommand(DeviceId::ID relayID) {
     );
 }
 
-//TODO: remove payload_val. No need to send a payload value when sending instructions to the canbus. Only the can frame is needed
-// The 0x000F and 0x00F0 are the particular instructions we send in order to shut off the arm, tis not a payload. 
 bool BAB::sendManualPowerCommands(DeviceId::ID selectRailID, bool turnOn) {
     Instructions::Inst inst = turnOn ? Instructions::Inst::COMMAND_ON : Instructions::Inst::COMMAND_OFF;
     uint16_t payload_val = (selectRailID == DeviceId::ID::ARM_EMERGENCY_INTERVENTION) ? 0x000F : 0x00F0;
