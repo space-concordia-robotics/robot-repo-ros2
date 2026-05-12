@@ -222,7 +222,7 @@ class BAB{
         *  @param: DeviceId::ID railID 
         *  @return: True for success
         */
-        bool sendManualPowerCommands(DeviceId::ID selectRailID); 
+        bool sendManualPowerCommands(DeviceId::ID selectRailID, bool turnOn); 
 
     
     private:
