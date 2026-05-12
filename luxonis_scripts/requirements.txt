@@ -1,4 +1,6 @@
 depthai==3.6.1
 depthai-nodes==0.5.0
-numpy>=1.22
-opencv-python-headless~=4.10.0
+numpy==1.22
+opencv-contrib-python-headless
+pgi==0.0.11.2
+PyGObject==3.56.2
