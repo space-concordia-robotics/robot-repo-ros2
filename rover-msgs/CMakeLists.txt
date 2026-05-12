@@ -18,9 +18,23 @@ foreach (dependency IN ITEMS ${DEPENDENCIES})
     find_package(${dependency} REQUIRED)
 endforeach ()
 
-rosidl_generate_interfaces(${PROJECT_NAME}
+set(MESSAGE_DEFINITIONS
         "msg/ImageDetection.msg"
         "msg/ImageDetectionArray.msg"
+)
+
+set(SERVICE_DEFINITIONS
+        # empty
+)
+
+set(ACTION_DEFINITIONS
+        "action/ScienceSpectrometerScan.action"
+)
+
+rosidl_generate_interfaces(${PROJECT_NAME}
+        ${MESSAGE_DEFINITIONS}
+        ${SERVICE_DEFINITIONS}
+        ${ACTION_DEFINITIONS}
         DEPENDENCIES ${DEPENDENCIES}
 )
 
