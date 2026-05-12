@@ -109,6 +109,17 @@ namespace can_util {
         return shared_pointer;
     }
 
+    template <std::size_t N>
+    bool CANController::sendBlockingFrame(const uint32_t id, const std::array<uint8_t, N>& data) const requires (N <= 8) {
+        auto frame = can_frame{};
+        frame.can_id = id | CAN_EFF_FLAG;
+
+        frame.len = static_cast<uint8_t>(data.size());
+        memcpy(frame.data, data.data(), data.size());
+
+        return sendBlockingFrame(frame);
+    }
+
     bool CANController::sendBlockingFrame(const uint32_t id, const std::vector<uint8_t>& data) const {
         if (data.size() > 8) {
             logger.error("CAN frame too large");
