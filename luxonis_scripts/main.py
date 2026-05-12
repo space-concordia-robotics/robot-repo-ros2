@@ -140,7 +140,7 @@ class PipelineSession:
             if mode in ("oakd_yolo", "oakd_depth", "oakd_all"):
                 try:
                     device.setIrLaserDotProjectorIntensity(1.0)
-                    device.setIrFloodLightIntensity(1.0)
+                    device.setIrFloodLightIntensity(0.5)
                 except Exception:
                     pass
 
