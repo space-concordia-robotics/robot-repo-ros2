@@ -6,9 +6,24 @@
 #include <mutex>
 #include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/msg/joy.hpp>
-#include <ros2_fmt_logger/rclcpp_formatters.hpp>
 
 #include "can_util/can_controller.hpp"
+
+template <typename T>
+struct RateFormatter : fmt::formatter<double> {
+    auto format(const T& rate, fmt::format_context& ctx) const {
+        using namespace std::chrono_literals;
+
+        const auto hz = 1.0s / rate.period();
+        return fmt::format_to(formatter::format(static_cast<double>(hz), ctx), "Hz");
+    }
+};
+
+template <>
+struct fmt::formatter<rclcpp::Rate> : RateFormatter<rclcpp::Rate> {};
+
+template <>
+struct fmt::formatter<rclcpp::WallRate> : RateFormatter<rclcpp::WallRate> {};
 
 namespace {
     // SCRB motor board — host→board IDs from Compat-README.md (29-bit extended, MAKE_ID layout).
