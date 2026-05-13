@@ -1,6 +1,6 @@
 #!/bin/bash
 
-mode=$1
+mode="$1"
 
 if [ "$mode" = "ffc_all" ]; then
     vlc --no-one-instance rtsp://localhost:8554/FRONT &

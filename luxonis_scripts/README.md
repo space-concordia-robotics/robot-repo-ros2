@@ -60,20 +60,3 @@ To check status run `status`
 
 To check for aruco tags run `aruco`
 To check continuously for aruco tags run `watch_aruco`
-
-### USB CAMERAS (Backup only)
-
-```
-sudo zypper install \
-          gstreamer-plugins-good \
-          gstreamer-plugins-bad \
-          gstreamer-plugins-ugly \
-          gstreamer-plugins-libav \
-          v4l-utils
-```
-
-python3 usb_cameras.py \\
-    --camera "FRONT=/dev/video0,1280x720,30,mjpeg" \\
-    --camera "RIGHT=/dev/video2,960x600,10,yuyv" \\
-    --camera "LEFT=/dev/video4,960x600,10,yuyv" \\
-    --camera "BACK=/dev/video6,960x600,10,yuyv"

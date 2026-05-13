@@ -27,7 +27,11 @@ class RtspFactory(GstRtspServer.RTSPMediaFactory):
         try:
             self.queue.put_nowait(data)
         except queue.Full:
-            pass  # drop if client is too slow
+            try:
+                self.queue.get_nowait()
+            except queue.Empty:
+                pass
+            self.queue.put_nowait(data)
 
     def do_create_element(self, url):
         return Gst.parse_launch(self.launch_string)
@@ -35,8 +39,6 @@ class RtspFactory(GstRtspServer.RTSPMediaFactory):
     def do_configure(self, rtsp_media):
         appsrc = rtsp_media.get_element().get_child_by_name("source")
 
-        # RTSP live mode (avoids 503 with many clients)
-        appsrc.set_property("is-live", True)
         appsrc.set_property("format", Gst.Format.TIME)
         appsrc.set_property("do-timestamp", True)
 
