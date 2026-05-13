@@ -1,5 +1,4 @@
-#include <cstring>
-#include <can_util/can_controller.hpp>
+#include <can_util/can_util.hpp>
 #include <rclcpp/rclcpp.hpp>
 
 #include "sil_board/msg/led_command.hpp"
@@ -35,7 +34,7 @@ public:
 
 private:
     void onLedCommand(const sil_board::msg::LedCommand::UniquePtr& msg) const {
-        if (!can_controller->sendBlockingFrame(raw_can_id, createSILCanData(msg->r, msg->g, msg->b, msg->brightness))) {
+        if (const auto data = createSILCanData(msg->r, msg->g, msg->b, msg->brightness); !can_controller->sendBlockingFrame(raw_can_id, data)) {
             using namespace std::chrono_literals;
             logger.warn_throttle(1s, "Failed to send LED CAN frame");
         }
