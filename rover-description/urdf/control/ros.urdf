@@ -61,6 +61,36 @@
         <xacro:back_wheels id_left="6" id_right="1"/>
     </ros2_control>
 
+    <!-- TODO 2026-05-12 (Will Free): use an actual correctly positioned link -->
+    <!-- dummy link for SIL -->
+    <link name="sil_link"/>
+
+    <joint name="sil_joint" type="fixed">
+        <parent link="base_link"/>
+        <child link="sil_link"/>
+    </joint>
+
+    <!-- TODO 2026-05-12 (Will Free): add simulated SIL -->
+    <xacro:if value="${production}">
+        <ros2_control name="SIL" type="system">
+            <hardware>
+                <plugin>sil_interface/SILSystemHardware</plugin>
+                <param name="can_path">can0</param>
+            </hardware>
+
+            <joint name="sil">
+                <command_interface name="red"/>
+                <command_interface name="green"/>
+                <command_interface name="blue"/>
+                <command_interface name="brightness"/>
+
+                <!-- TODO 2026-05-13 (Will Free): make this not hardcoded -->
+                <param name="device_id">0x0009001E</param>
+            </joint>
+        </ros2_control>
+    </xacro:if>
+
+
     <!-- TODO 2025-10-01 (Will Free): Add rover ros2 control plugin -->
     <!-- <xacro:production> -->
     <!--     <ros2_control name="RealRobot" type="system"> -->

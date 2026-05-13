@@ -24,7 +24,7 @@ set(MESSAGE_DEFINITIONS
 )
 
 set(SERVICE_DEFINITIONS
-        # empty
+        "srv/SetSILStatus.srv"
 )
 
 set(ACTION_DEFINITIONS
