@@ -77,6 +77,9 @@ class SciencePayload(Node):
 
         # TODO 2026-05-12 (Will Free): add code to turn light on before measurement & off afterwards?
 
+        if request.integration_time != 0:
+            self.spectrometer.f.spectrometer.set_integration_time_micros(request.integration_time_ms * 1000)
+
         wavelengths: NDArray[numpy.float64] = self.spectrometer.wavelengths().astype(numpy.float64)
 
         scan_start = time.time()
