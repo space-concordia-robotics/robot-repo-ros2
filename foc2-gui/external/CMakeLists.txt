@@ -8,7 +8,7 @@ add_subdirectory(imfonts)
 add_subdirectory(lunasvg)
 
 # SDL
-add_subdirectory(sdl)
+#add_subdirectory(sdl)
 
 # stb headers
 add_subdirectory(stb)

@@ -12,11 +12,14 @@ endif ()
 ## DEPENDENCIES
 
 # statically link SDL
-set(SDL_STATIC ON)
-set(SDL_SHARED OFF)
+# TODO 2026-05-13 (Will Free): compiling SDL from source seems to break things with compilation database projects in CLion,
+#   see: https://youtrack.jetbrains.com/issue/CPP-50040/
+#   when this gets resolved, uncomment these two lines & the line in external/CMakeLists.txt
+#set(SDL_STATIC ON)
+#set(SDL_SHARED OFF)
 
 # I'm compiling SDL3 from source so I don't need this
-# find_package(SDL3 REQUIRED)
+find_package(SDL3 REQUIRED)
 
 add_subdirectory(external)
 
