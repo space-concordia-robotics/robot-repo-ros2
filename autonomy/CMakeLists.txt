@@ -36,6 +36,9 @@ set(DEPENDENCIES
         ros2_fmt_logger
 )
 
+# Geographiclib installs FindGeographicLib.cmake to this non-standard location on Ubuntu
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "/usr/share/cmake/geographiclib/")
+
 include(../cmake/CPM.cmake)
 
 # find dependencies
