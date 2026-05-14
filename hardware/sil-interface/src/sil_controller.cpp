@@ -2,6 +2,15 @@
 
 // TODO 2026-05-13 (Will Free): tbh, I'm not sure if this is the best implementation. I just kinda bodged this together.
 namespace sil_interface {
+    template <typename F, typename I>
+    constexpr F normalize(I value) noexcept {
+        static_assert(std::is_integral_v<I>, "I must be an integral type");
+        static_assert(std::is_unsigned_v<I>, "I must be an unsigned integral type"); // TODO 2026-05-13 (Will Free): support signed types
+        static_assert(std::is_floating_point_v<F>, "T must be floating point type");
+
+        return static_cast<F>(value) / std::numeric_limits<I>::max();
+    }
+
     void resetStatus(const std::shared_ptr<SILStatus>& status) {
         status->red = 0;
         status->blue = 0;
@@ -12,6 +21,8 @@ namespace sil_interface {
     SILController::SILController() {}
 
     controller_interface::CallbackReturn SILController::on_init() {
+        logger = std::make_shared<ros2_fmt_logger::Logger>(get_node()->get_logger());
+
         return controller_interface::CallbackReturn::SUCCESS;
     }
 
@@ -66,7 +77,7 @@ namespace sil_interface {
         auto success = true;
         for (auto& interface : command_interfaces_) {
             // ReSharper disable once CppDFAUnusedValue
-            success &= interface.set_value<uint8_t>(0);
+            success &= interface.set_value(0);
         }
 
         if (!success)
@@ -85,10 +96,10 @@ namespace sil_interface {
 
         auto success = true;
         // TODO 2026-05-13 (Will Free): make the indexes for this not hardcoded
-        success &= command_interfaces_[0].set_value<uint8_t>(status->red);
-        success &= command_interfaces_[1].set_value<uint8_t>(status->green);
-        success &= command_interfaces_[2].set_value<uint8_t>(status->blue);
-        success &= command_interfaces_[3].set_value<uint8_t>(status->brightness);
+        success &= command_interfaces_[0].set_value(normalize<double>(status->red));
+        success &= command_interfaces_[1].set_value(normalize<double>(status->green));
+        success &= command_interfaces_[2].set_value(normalize<double>(status->blue));
+        success &= command_interfaces_[3].set_value(normalize<double>(status->brightness));
 
         if (!success)
             return controller_interface::return_type::ERROR;

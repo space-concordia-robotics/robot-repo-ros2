@@ -38,4 +38,5 @@ rosidl_generate_interfaces(${PROJECT_NAME}
         DEPENDENCIES ${DEPENDENCIES}
 )
 
+ament_export_dependencies(rosidl_default_runtime geometry_msgs)
 ament_package()

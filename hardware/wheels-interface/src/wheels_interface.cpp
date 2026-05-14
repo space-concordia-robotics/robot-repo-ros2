@@ -4,10 +4,10 @@
 #include <cmath>
 #include <memory>
 #include <vector>
+#include <boost/algorithm/string.hpp>
 #include <hardware_interface/lexical_casts.hpp>
 #include <hardware_interface/types/hardware_interface_type_values.hpp>
 #include <rclcpp/rclcpp.hpp>
-#include <boost/algorithm/string.hpp>
 
 namespace wheels_interface {
     constexpr auto HW_IF_VELOCITY = hardware_interface::HW_IF_VELOCITY;
@@ -73,23 +73,14 @@ namespace wheels_interface {
 
     CallbackReturn RoverSystemWheelsHardware::on_init(const hardware_interface::HardwareComponentInterfaceParams& params) {
         const auto& info = params.hardware_info;
-        const auto& executor = params.executor;
 
         if (SystemInterface::on_init(params) != CallbackReturn::SUCCESS)
             return CallbackReturn::ERROR;
 
         auto rcl_logger = get_logger();
 
-        const auto node = get_node();
-
-        // TODO 2026-03-12 (Will Free): re-enable
-        diagnostic_updater = std::make_shared<diagnostic_updater::Updater>(node);
+        diagnostic_updater = std::make_shared<diagnostic_updater::Updater>(get_node());
         diagnostic_updater->setHardwareID(get_hardware_info().name);
-
-        if (!node) {
-            logger->fatal("Could not get/initialize node");
-            return CallbackReturn::ERROR;
-        }
 
         logger = std::make_shared<ros2_fmt_logger::Logger>(rcl_logger);
 
@@ -111,31 +102,38 @@ namespace wheels_interface {
 
         for (auto i = 0u; i < info.joints.size(); i++) {
             const auto& joint = info.joints[i];
-            // DiffBotSystem has exactly two states and one command interface on each joint
+
+            auto hasInterface = [&](const std::vector<InterfaceInfo>& interfaces, const std::string& name) {
+                return std::ranges::any_of(
+                    interfaces,
+                    [&](const auto& iface) {
+                        return iface.name == name;
+                    }
+                );
+            };
+
             if (joint.command_interfaces.size() != 1) {
-                logger->fatal("Joint '{}' has {} command interfaces found. 1 expected.", joint.name, joint.command_interfaces.size());
+                logger->fatal("Joint '{}' has {} command interface, 1 expected.", joint.name, joint.state_interfaces.size());
                 return CallbackReturn::ERROR;
             }
 
-            // TODO 2026-02-25 (Will Free): look at gazebo's hardware interface to see how it handles different orderings of the interfaces?
-
-            if (joint.command_interfaces[0].name != HW_IF_VELOCITY) {
-                logger->fatal("Joint '{}' has {} command interface. '{}' expected.", joint.name, joint.command_interfaces[0].name.c_str(), HW_IF_VELOCITY);
+            if (!hasInterface(joint.command_interfaces, HW_IF_VELOCITY)) {
+                logger->fatal("Joint '{}' must have '{}' command interface.", joint.name, HW_IF_VELOCITY);
                 return CallbackReturn::ERROR;
             }
 
             if (joint.state_interfaces.size() != 2) {
-                logger->fatal("Joint '{}' has {} state interface. 2 expected.", joint.name, joint.state_interfaces.size());
+                logger->fatal("Joint '{}' has {} state interface, 2 expected.", joint.name, joint.state_interfaces.size());
                 return CallbackReturn::ERROR;
             }
 
-            if (joint.state_interfaces[0].name != HW_IF_POSITION) {
-                logger->fatal("Joint '{}' has '{}' as first state interface. '{}' expected.", joint.name, joint.state_interfaces[0].name, HW_IF_POSITION);
+            if (!hasInterface(joint.state_interfaces, HW_IF_POSITION)) {
+                logger->fatal("Joint '{}' must have '{}' state interface.", joint.name, HW_IF_POSITION);
                 return CallbackReturn::ERROR;
             }
 
-            if (joint.state_interfaces[1].name != HW_IF_VELOCITY) {
-                logger->fatal("Joint '{}' has '{}' as second state interface. '{}' expected.", joint.name, joint.state_interfaces[1].name, HW_IF_VELOCITY);
+            if (!hasInterface(joint.state_interfaces, HW_IF_VELOCITY)) {
+                logger->fatal("Joint '{}' must have '{}' state interface.", joint.name, HW_IF_VELOCITY);
                 return CallbackReturn::ERROR;
             }
 
@@ -162,8 +160,12 @@ namespace wheels_interface {
 
             wheels.push_back(wheel);
 
-            const auto diagnosticCallback = std::bind(&RoverSystemWheelsHardware::produce_diagnostics, std::placeholders::_1, std::placeholders::_2, wheel);
-            diagnostic_updater->add(fmt::format("{} Motor {} Status", info.name, i), [&](auto& stat) {
+            diagnostic_updater->add(fmt::format("{} Motor {} Status", info.name, i), [&, i](auto& stat) {
+                // ReSharper disable once CppDeclarationHidesLocal
+                const auto wheel = wheels[i];
+                if (!wheel)
+                    return;
+
                 produce_diagnostics(stat, wheel);
             });
         }
@@ -203,7 +205,9 @@ namespace wheels_interface {
 
         // TODO 2026-03-01 (Will Free): is 20ms a correct value for the heartbeat period here?
         constexpr auto HEARTBEAT_PERIOD = 20ms;
-        heartbeat_timer = get_node()->create_wall_timer(HEARTBEAT_PERIOD, std::bind(&RoverSystemWheelsHardware::heartbeat, this));
+        heartbeat_timer = get_node()->create_wall_timer(HEARTBEAT_PERIOD, [this] {
+            heartbeat();
+        });
 
         logger->info("Successfully activated");
 
@@ -211,9 +215,14 @@ namespace wheels_interface {
     }
 
     // TODO 2026-03-01 (Will Free): rolling has stuff like init_hardware_status_message, look at that
-    void RoverSystemWheelsHardware::produce_diagnostics(diagnostic_updater::DiagnosticStatusWrapper& stat,
-                                                        const WheelDescription::ConstSharedPtr& wheel) const {
+    void RoverSystemWheelsHardware::produce_diagnostics(
+        diagnostic_updater::DiagnosticStatusWrapper& stat,
+        const WheelDescription::ConstSharedPtr& wheel
+    ) const {
         using namespace diagnostic_msgs::msg;
+
+        if (!wheel)
+            return;
 
         const auto& motor = wheel->motor;
 
@@ -302,7 +311,7 @@ namespace wheels_interface {
         try {
             heartbeat_timer->reset();
             heartbeat_timer->cancel();
-        } catch (std::runtime_error e) {
+        } catch (const std::runtime_error& e) {
             logger->error("Failure to deactivate while stopping heartbeat");
             return CallbackReturn::ERROR;
         }

@@ -13,9 +13,9 @@
 using namespace std::chrono;
 using namespace std::chrono_literals;
 
-VideoWidget::VideoWidget(ImApplication& application, const std::string& source_url, const bool minimap)
+VideoWidget::VideoWidget(ImApplication& application, const std::string& source_url, const bool minimap, const std::string& videoflip)
     : UiWidget(application),
-      source_url(source_url), minimap(minimap) {
+      source_url(source_url), minimap(minimap), videoflip(videoflip) {
     addOverlay(std::make_shared<CrosshairOverlay>(application));
     video_stats_overlay = std::make_shared<VideoStatsOverlay>(application);
     addOverlay(std::make_shared<ArucoVideoOverlay>(application, "/rover/ffc/front/image_raw", "ffc_front_camera"));
@@ -119,9 +119,10 @@ void VideoWidget::videoThread() {
         "rtph264depay ! "
         "decodebin ! "
         "videoconvert ! "
+        "videoflip method={} ! "
         "video/x-raw,format=RGBA ! "
         "appsink name=appsink sync=true", // is sync needed here?
-        source_url
+        source_url, videoflip
     );
 
     while (running) {

@@ -48,6 +48,7 @@ ament_target_dependencies(${PROJECT_NAME} PUBLIC ${DEPENDENCIES})
 
 # Export hardware plugins
 pluginlib_export_plugin_description_file(hardware_interface sil_interface.xml)
+pluginlib_export_plugin_description_file(controller_interface sil_interface.xml)
 
 ## INSTALL
 
@@ -64,29 +65,7 @@ install(
         RUNTIME DESTINATION bin
 )
 
-
 ## EXPORTS
 ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
 ament_export_dependencies(${DEPENDENCIES})
 ament_package()
-
-
-# Add sil_example library related compile commands
-#generate_parameter_library(sil_example_parameters
-#  src/sil_example.yaml
-#  include/sil_interface/validate_sil_example_parameters.hpp
-#)
-#add_library(
-#  sil_example
-#  SHARED
-#  src/sil_example.cpp
-#)
-#target_include_directories(sil_example PUBLIC
-#  "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>"
-#  "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>")
-#target_link_libraries(sil_example sil_example_parameters)
-#ament_target_dependencies(sil_example ${THIS_PACKAGE_INCLUDE_DEPENDS})
-#
-#ament_export_libraries(
-#  sil_example
-#)

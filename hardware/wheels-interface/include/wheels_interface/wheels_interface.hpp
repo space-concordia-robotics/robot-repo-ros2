@@ -19,6 +19,7 @@
 namespace wheels_interface {
     using CallbackReturn = hardware_interface::CallbackReturn;
     using HardwareInfo = hardware_interface::HardwareInfo;
+    using InterfaceInfo = hardware_interface::InterfaceInfo;
     using StateInterface = hardware_interface::StateInterface;
     using CommandInterface = hardware_interface::CommandInterface;
     using return_type = hardware_interface::return_type;

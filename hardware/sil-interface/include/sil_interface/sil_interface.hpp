@@ -1,7 +1,6 @@
 #pragma once
 
 #include <memory>
-#include <vector>
 #include <can_util/can_controller.hpp>
 #include <diagnostic_updater/diagnostic_updater.hpp>
 #include <hardware_interface/handle.hpp>
@@ -17,14 +16,14 @@
 namespace sil_interface {
     using CallbackReturn = hardware_interface::CallbackReturn;
     using HardwareInfo = hardware_interface::HardwareInfo;
+    using InterfaceInfo = hardware_interface::InterfaceInfo;
     using StateInterface = hardware_interface::StateInterface;
     using CommandInterface = hardware_interface::CommandInterface;
     using return_type = hardware_interface::return_type;
 
     class SILSystemHardware : public hardware_interface::SystemInterface {
     public:
-        RCLCPP_SMART_PTR_DEFINITIONS(SILSystemHardware);
-
+        RCLCPP_SMART_PTR_DEFINITIONS(SILSystemHardware)
 
         SILSystemHardware();
 
