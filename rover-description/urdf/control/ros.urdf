@@ -65,7 +65,7 @@
     <!-- dummy link for SIL -->
     <link name="sil_link"/>
 
-    <joint name="sil_joint" type="fixed">
+    <joint name="sil" type="continuous">
         <parent link="base_link"/>
         <child link="sil_link"/>
     </joint>
@@ -79,6 +79,11 @@
             </hardware>
 
             <joint name="sil">
+                <!--
+                    TODO 2026-05-14 (Will Free): I think these can all have an optional data_type to specify what kind of data it accepts,
+                        see: https://control.ros.org/rolling/doc/ros2_control/hardware_interface/doc/hardware_interface_types_userdoc.html#data-types
+                        eventually, we should move all of these from using doubles on the range [0, 1] to uint8
+                -->
                 <command_interface name="red"/>
                 <command_interface name="green"/>
                 <command_interface name="blue"/>

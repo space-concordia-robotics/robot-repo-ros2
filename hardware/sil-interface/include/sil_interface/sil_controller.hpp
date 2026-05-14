@@ -3,6 +3,7 @@
 #include <memory>
 #include <controller_interface/controller_interface.hpp>
 #include <realtime_tools/realtime_buffer.hpp>
+#include <ros2_fmt_logger/logger.hpp>
 
 #include "rover_msgs/srv/set_sil_status.hpp"
 
@@ -33,6 +34,8 @@ namespace sil_interface {
         controller_interface::return_type update(const rclcpp::Time& time, const rclcpp::Duration& period) override;
 
     private:
+        std::shared_ptr<ros2_fmt_logger::Logger> logger;
+
         rclcpp::Service<rover_msgs::srv::SetSILStatus>::SharedPtr sil_status_service;
 
         realtime_tools::RealtimeBuffer<std::shared_ptr<SILStatus>> status_ref;

@@ -13,7 +13,7 @@
 
 class VideoWidget : public UiWidget, public UiOverlayable {
 public:
-    explicit VideoWidget(ImApplication& application, const std::string& source_url, bool minimap);
+    explicit VideoWidget(ImApplication& application, const std::string& source_url, bool minimap, const std::string& videoflip);
 
     void onInit() override;
     void onShutdown() override;
@@ -26,6 +26,7 @@ protected:
 private:
     std::string source_url;
     bool minimap;
+    std::string videoflip;
 
     rclcpp::TimerBase::SharedPtr stats_timer;
 

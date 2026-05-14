@@ -51,9 +51,9 @@ protected:
     }
 
     void onInit() override {
-        video_top = std::make_shared<VideoWidget>(*this, "rtsp://10.240.0.10:8554/RGB", true);
-        video_bottom_left = std::make_shared<VideoWidget>(*this, "rtsp://10.240.0.10:8445/arm", false);
-        video_bottom_right = std::make_shared<VideoWidget>(*this, "rtsp://10.240.0.10:8445/left", false);
+        video_top = std::make_shared<VideoWidget>(*this, "rtsp://10.240.0.10:8554/RGB", true, "rotate-180");
+        video_bottom_left = std::make_shared<VideoWidget>(*this, "rtsp://10.240.0.10:8445/arm", false, "none");
+        video_bottom_right = std::make_shared<VideoWidget>(*this, "rtsp://10.240.0.10:8445/left", false, "none");
 
         logs = std::make_shared<RosLogWidget>(*this);
 
@@ -93,26 +93,26 @@ protected:
 
         // TODO 2026-05-05 (Will Free): figure out what to put on the left side
 
-        ImGui::BeginChild("Left", ImVec2(left_width, 0), false);
-        drawLeft();
-        ImGui::EndChild();
-
-        ImGui::SameLine();
-
-        {
-            const auto draw_list = ImGui::GetWindowDrawList();
-            const auto cursor_pos = ImGui::GetCursorScreenPos();
-
-            const auto top = ImGui::GetWindowPos().y;
-            const auto bottom = top + ImGui::GetWindowSize().y;
-
-            draw_list->AddLine(
-                ImVec2(cursor_pos.x, top + 8),
-                ImVec2(cursor_pos.x, bottom - 8),
-                ImGui::ImColor(200, 200, 200, 40),
-                2.0
-            );
-        }
+        // ImGui::BeginChild("Left", ImVec2(left_width, 0), false);
+        // drawLeft();
+        // ImGui::EndChild();
+        //
+        // ImGui::SameLine();
+        //
+        // {
+        //     const auto draw_list = ImGui::GetWindowDrawList();
+        //     const auto cursor_pos = ImGui::GetCursorScreenPos();
+        //
+        //     const auto top = ImGui::GetWindowPos().y;
+        //     const auto bottom = top + ImGui::GetWindowSize().y;
+        //
+        //     draw_list->AddLine(
+        //         ImVec2(cursor_pos.x, top + 8),
+        //         ImVec2(cursor_pos.x, bottom - 8),
+        //         ImGui::ImColor(200, 200, 200, 40),
+        //         2.0
+        //     );
+        // }
 
         ImGui::BeginChild("Video Streams", ImVec2(0, 0), false);
         drawRight();

@@ -3,6 +3,21 @@
 #include "sil_interface/hardware_interface_util.hpp"
 
 namespace sil_interface {
+    constexpr auto HW_IF_RED = hardware_interface::HW_IF_RED;
+    constexpr auto HW_IF_GREEN = hardware_interface::HW_IF_GREEN;
+    constexpr auto HW_IF_BLUE = hardware_interface::HW_IF_BLUE;
+    constexpr auto HW_IF_BRIGHTNESS = hardware_interface::HW_IF_BRIGHTNESS;
+
+    template <typename I, typename F>
+    I denormalize(F value) noexcept {
+        static_assert(std::is_integral_v<I>, "I must be an integral type");
+        static_assert(std::is_unsigned_v<I>, "I must be an unsigned integral type"); // TODO 2026-05-13 (Will Free): support signed types
+        static_assert(std::is_floating_point_v<F>, "T must be floating point type");
+
+        const auto rounded = static_cast<I>(std::numeric_limits<I>::min() + std::lround(std::clamp(value, 0.0, 1.0) * std::numeric_limits<I>::max()));
+        return std::clamp(rounded, std::numeric_limits<I>::min(), std::numeric_limits<I>::max());
+    }
+
     /**
      * Create the CAN data for SIL
      * @param r red channel
@@ -76,43 +91,32 @@ namespace sil_interface {
             return CallbackReturn::ERROR;
         }
 
+        auto hasInterface = [&](const std::vector<InterfaceInfo>& interfaces, const std::string& name) {
+            return std::ranges::any_of(
+                interfaces,
+                [&](const auto& iface) {
+                    return iface.name == name;
+                }
+            );
+        };
+
         if (joint.command_interfaces.size() != 4) {
-            logger->fatal("Joint '{}' has {} command interfaces found. 4 expected.", joint.name, joint.command_interfaces.size());
+            logger->fatal("Joint '{}' has {} command interface, 4 expected.", joint.name, joint.command_interfaces.size());
             return CallbackReturn::ERROR;
         }
 
-        // TODO 2026-02-25 (Will Free): look at gazebo's hardware interface to see how it handles different orderings of the interfaces?
+        static constexpr auto EXPECTED_COMMAND_INTERFACES = std::array{
+            HW_IF_RED,
+            HW_IF_GREEN,
+            HW_IF_BLUE,
+            HW_IF_BRIGHTNESS,
+        };
 
-        if (joint.command_interfaces[0].name != hardware_interface::HW_IF_RED) {
-            logger->fatal(
-                "Joint '{}' has {} command interface. '{}' expected.",
-                joint.name, joint.command_interfaces[0].name.c_str(), hardware_interface::HW_IF_RED
-            );
-            return CallbackReturn::ERROR;
-        }
-
-        if (joint.command_interfaces[1].name != hardware_interface::HW_IF_GREEN) {
-            logger->fatal(
-                "Joint '{}' has {} command interface. '{}' expected.",
-                joint.name, joint.command_interfaces[1].name.c_str(), hardware_interface::HW_IF_GREEN
-            );
-            return CallbackReturn::ERROR;
-        }
-
-        if (joint.command_interfaces[2].name != hardware_interface::HW_IF_BLUE) {
-            logger->fatal(
-                "Joint '{}' has {} command interface. '{}' expected.",
-                joint.name, joint.command_interfaces[2].name.c_str(), hardware_interface::HW_IF_BLUE
-            );
-            return CallbackReturn::ERROR;
-        }
-
-        if (joint.command_interfaces[3].name != hardware_interface::HW_IF_BRIGHTNESS) {
-            logger->fatal(
-                "Joint '{}' has {} command interface. '{}' expected.",
-                joint.name, joint.command_interfaces[3].name.c_str(), hardware_interface::HW_IF_BRIGHTNESS
-            );
-            return CallbackReturn::ERROR;
+        for (const auto& interface : EXPECTED_COMMAND_INTERFACES) {
+            if (!hasInterface(joint.command_interfaces, interface)) {
+                logger->fatal("Joint '{}' must have '{}' command interface.", joint.name, interface);
+                return CallbackReturn::ERROR;
+            }
         }
 
         auto parameters = joint.parameters;
@@ -124,8 +128,9 @@ namespace sil_interface {
         // TODO 2026-02-14 (Will Free): properly handle errors here
 
         // TODO 2026-05-13 (Will Free): move away from using the raw canbus id to instead only specifying the device id and constructing it from that.
-        device_id = hardware_interface::stoui32(parameters["device_id"]);
+        device_id = hardware_interface::stoui32(parameters["device_id"], 16);
 
+        // TODO 2026-05-14 (Will Free): add diagnostics for SIL (does it have a heartbeat it returns to us?)
         // const auto diagnosticCallback = std::bind(&RoverSystemWheelsHardware::produce_diagnostics, std::placeholders::_1, std::placeholders::_2, wheel);
         // diagnostic_updater->add(fmt::format("{} Motor {} Status", info.name, i), [&](auto& stat) {
         //     produce_diagnostics(stat, wheel);
@@ -137,7 +142,7 @@ namespace sil_interface {
     CallbackReturn SILSystemHardware::on_configure(const rclcpp_lifecycle::State& previous_state) {
         // reset values always when configuring hardware
         for (const auto& [name, descr] : joint_command_interfaces_) {
-            set_command<uint8_t>(name, 0);
+            set_command(name, 0.0);
         }
 
         return SystemInterface::on_configure(previous_state);
@@ -165,10 +170,10 @@ namespace sil_interface {
     }
 
     return_type SILSystemHardware::write(const rclcpp::Time& /*time*/, const rclcpp::Duration& /*period*/) {
-        const auto red = get_command<uint8_t>("sil/red");
-        const auto green = get_command<uint8_t>("sil/green");
-        const auto blue = get_command<uint8_t>("sil/blue");
-        const auto brightness = get_command<uint8_t>("sil/brightness");
+        const auto red = denormalize<uint8_t>(get_command("sil/red"));
+        const auto green = denormalize<uint8_t>(get_command("sil/green"));
+        const auto blue = denormalize<uint8_t>(get_command("sil/blue"));
+        const auto brightness = denormalize<uint8_t>(get_command("sil/brightness"));
 
         if (const auto data = createSILCanData(red, green, blue, brightness); !can_controller->sendBlockingFrame(device_id, data)) {
             using namespace std::chrono_literals;

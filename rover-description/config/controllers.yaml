@@ -10,7 +10,7 @@
       type: diff_drive_controller/DiffDriveController
 
     sil_controller:
-      sil_interface/SILController
+      type: sil_interface/SILController
 
 /**/joint_state_broadcaster:
   ros__parameters:
@@ -80,5 +80,4 @@
         min_jerk: .NAN
 
 /**/sil_controller:
-  ros__parameters:
-
+  ros__parameters: { }
