@@ -100,8 +100,12 @@ namespace ros_aruco_opencv {
         std::vector<std::vector<cv::Point2f>>& rejected_corners
     ) const {
         // TODO 2026-04-30 (Will Free): store this as an instance variable
+#if CV_VERSION_MAJOR > 4 || CV_VERSION_MAJOR == 4 && CV_VERSION_MINOR >= 7
         const auto detector = cv::aruco::ArucoDetector(*dictionary_, *aruco_parameters_);
         detector.detectMarkers(image, marker_corners, marker_ids, rejected_corners);
+#else
+        cv::aruco::detectMarkers(image, dictionary_, marker_corners, marker_ids, aruco_parameters_, rejected_corners);
+#endif
         // TODO 2026-04-30 (Will Free): refine detected markers
     }
 
@@ -266,6 +270,7 @@ namespace ros_aruco_opencv {
             cv::Vec3d rotation, translation;
             cv::Mat objPoints, imgPoints;
 
+#if CV_VERSION_MAJOR > 4 || CV_VERSION_MAJOR == 4 && CV_VERSION_MINOR >= 7
             board->matchImagePoints(marker_corners, marker_ids, objPoints, imgPoints);
 
             // empty
@@ -273,8 +278,12 @@ namespace ros_aruco_opencv {
                 continue;
 
             cv::solvePnP(objPoints, imgPoints, camera_matrix, distortion_coeffs, rotation, translation);
+            const auto valid = objPoints.total();
+#else
+            const auto valid = cv::aruco::estimatePoseBoard(marker_corners, marker_ids, board, camera_matrix, distortion_coeffs, rotations, translations);
+#endif
 
-            if (objPoints.total() > 0) {
+            if (valid > 0) {
                 ros_aruco_opencv_msgs::msg::BoardPose bpose;
                 bpose.board_name = name;
                 bpose.pose = convert_to_pose(rotation, translation);
