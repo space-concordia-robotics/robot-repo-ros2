@@ -41,6 +41,7 @@ void BAB::handleFrames(const uint32_t id, const std::vector<uint8_t>& data){
 
         std::lock_guard lock(mtx); 
 
+        //Battery Telemetry
         if(receivedFrameID == validateFrameID(severity::SEV_STATUS, Instructions::Inst::BATTERY_TELEM)){
 
                 batteryTelem.BatteryNum = static_cast<int>(raw_value >> 31 & 0x01);
@@ -49,6 +50,7 @@ void BAB::handleFrames(const uint32_t id, const std::vector<uint8_t>& data){
                 batteryTelem.temperature = static_cast<int>(raw_value & 0x3F) - 20;   
                 batteryTelem.timestamp = now; 
 
+        // Rail Telemetry
         }else if(receivedFrameID == validateFrameID(severity::SEV_STATUS, Instructions::Inst::RAIL_TELEM)){
 
                 railTelem.RailNum = static_cast<int>(raw_value >> 43 & 0x01); 
@@ -69,15 +71,26 @@ void BAB::handleFrames(const uint32_t id, const std::vector<uint8_t>& data){
                 railTelem.voltage = static_cast<float>(raw_value >> 30 & 0x3FFFFFFF) / VOLTAGE_MULTIPLIER; 
                 railTelem.power = static_cast<float>(raw_value >> 16 & 0xFFFF) / POWER_MULTIPLIER;
 
-
-        }else if(receivedFrameID == validateFrameID(severity::SEV_STATUS, Instructions::Inst::RELAY_STATUS)){
+        // Relay Telemetry
+        }
+        else if(receivedFrameID == validateFrameID(severity::SEV_STATUS, Instructions::Inst::RELAY_STATUS)){
                 // ASKING ELEC: Split Assignments into individual IF's for expandablility if needed. 
                 relayTelem.RelayNum = static.cast<int>(raw_value & 0x01);
                 relayTelem.status = static.cast<int>((raw_value >> 1) & 0x01);
         }
-
-        // TODO: The Remaining GETTTERS  - Luca
-
+        //TCU Telemetry
+        // TCU Temperature
+        else if(receivedFrameId == validateFrameID(severity::SEV_STATUS, Instruction:Inst::TCU_TELEM)){
+                float temp;
+                std::memcpy(&temp ,data.data(), sizeof(float));
+                tcuTelem.temperature = temp;
+                tcuTeleme.timestamp = now; 
+        }
+        //TCU Status
+        else if(receivedFrameId == validateFrameID(severity::SEV_STATUS, Instruction:Inst:TCU_STATUS)){
+                tcuTelem.fanStatus = static_cast<bool>(raw_value & 0x01);
+                tcuTelem.timestamp = now; 
+        }
 }
 
 
@@ -100,18 +113,20 @@ float BAB::getBatteryTemp() const{
 
 
 float BAB::getPDSTelemetry() const{
-
+        std::lock_guard<std::mutex> lock(mtx);
+        return railTelem.power; 
 }
 
 
 float BAB::getTCUStatus() const{
-
+        std::lock_guard lock(mtx);
+        return tcuTelem.fanstatus ? 1.0f : 0.0f; 
 }
 
 std::string BAB::getBMSHealth() const{
         std::lock_guard<std::mutex>lock(mtx);
-        return BatteryTelem.voltage < 10.0f && BatteryTelem.voltage > 0.5f{
-                return "CRITICAL LOW VOLTAGE"; 
+        if(batteryTelem.voltage < 10.0f && batteryTelem.voltage > 0.5f){
+                return "CRITICAL LOW VOLTAGE";         
         }
         return "NORMAL VOLTAGE (HEALTHY)";
 }
@@ -127,29 +142,57 @@ std::string BAB::getBABStatus() const{
 }
 
 
-bool BAB::sendKYSCommand(){
-        uint32_t id = validateFrameID(0, Instructions::Inst::CUT_PDS_OUTOUTS);
-        std::vector<uint8_t data = {0x00, 0x00};;
-        return can_controller.sendFrame(id,data); 
+bool BAB::sendKYSCommand() {
+    uint16_t payload = 0x0000; 
+
+    return build_frame.buildAddress(
+        static_cast<uint32_t>(deviceType::DeviceType::BAB),
+        Manufacturer::TEAM_USE,
+        severity::SEV_MAN_INTERVENTION, 
+        static_cast<uint32_t>(Instructions::Inst::CUT_PDS_OUTPUTS),
+        static_cast<uint32_t>(DeviceId::ID::BAB),
+        payload
+    );
 }
 
-bool BAB::cutFanPower(DeviceId::ID fanID){
-        uint32_t id = validateFrameID(severity::SEV_CNTRL. Instructions::Inst::TURN_OFF_FAN);
-        std::vector<uint8_t> data(0,0);
-        return can_controller.sendFrame(id,data);
+bool BAB::cutFanPower(DeviceId::ID fanID) {
+    uint16_t payload = 0x0000;
+
+    return build_frame.buildAddress(
+        static_cast<uint32_t>(deviceType::DeviceType::BAB),
+        Manufacturer::TEAM_USE,
+        severity::SEV_CNTRL,
+        static_cast<uint32_t>(Instructions::Inst::TURN_OFF_FAN),
+        static_cast<uint32_t>(DeviceId::ID::BAB),
+        payload
+    );
 }
 
+bool BAB::CutRelayCommand(DeviceId::ID relayID) {
+    uint16_t payload = (relayID == DeviceId::ID::JMSB) ? 0x000F : 0x00F0;
 
-bool BAB::CutRelayCommand(DeviceId::ID relayID){
-        uint32__t id = validateFrameID(severity::SEV_CNTRL, Instructions::Inst::TURN_OFF_RELAY);
-        std::vector<uint8_t>data(0,0);
-        data[0] = (relayID == DeviceId::ID::JMSB) ? 0x0F : 0xF0; 
-        return can_controller.sendFrame(id,data);
+    return build_frame.buildAddress(
+        static_cast<uint32_t>(deviceType::DeviceType::BAB),
+        Manufacturer::TEAM_USE,
+        severity::SEV_CNTRL,
+        static_cast<uint32_t>(Instructions::Inst::TURN_OFF_RELAY),
+        static_cast<uint32_t>(DeviceId::ID::BAB),
+        payload
+    );
 }
 
-
-bool BAB::sendManualPowerCommands(DeviceId::ID selectRailID){
-
-} 
+bool BAB::sendManualPowerCommands(DeviceId::ID selectRailID, bool turnOn) {
+    Instructions::Inst inst = turnOn ? Instructions::Inst::COMMAND_ON : Instructions::Inst::COMMAND_OFF;
+    uint16_t payload_val = (selectRailID == DeviceId::ID::ARM_EMERGENCY_INTERVENTION) ? 0x000F : 0x00F0;
+   
+    return build_frame.buildAddress(
+        static_cast<uint32_t>(deviceType::DeviceType::BAB),
+        Manufacturer::TEAM_USE,
+        severity::SEV_CNTRL,
+        static_cast<uint32_t>(inst),
+        static_cast<uint32_t>(DeviceId::ID::BAB),
+        payload_val
+    );
+}
 
     
