@@ -1,13 +1,19 @@
 cmake_minimum_required(VERSION 3.22)
 project(encoder-boards)
 
+# Placeholder package -- actual encoder-board firmware glue is not implemented
+# yet. The previous skeleton referenced src/can_interface.cpp and
+# src/system_controller.cpp which don't exist in this directory, breaking the
+# whole workspace build. Until the encoder-side work lands, this package
+# installs nothing and only declares its dependencies so colcon picks it up
+# in topological order.
+
 set(CMAKE_CXX_STANDARD 23)
 
 if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     add_compile_options(-Wall -Wextra -Wpedantic)
 endif ()
 
-# find dependencies
 set(DEPENDENCIES
         rclcpp
         sensor_msgs
@@ -16,46 +22,11 @@ set(DEPENDENCIES
 )
 
 find_package(ament_cmake REQUIRED)
-find_package(ament_cmake_ros REQUIRED)
-find_package(backward_ros REQUIRED)
 
 foreach (dependency IN ITEMS ${DEPENDENCIES})
     find_package(${dependency} REQUIRED)
 endforeach ()
 
-## COMPILE
-
-add_library(
-        encoder_boardz
-        SHARED
-        src/can_interface.cpp
-        src/system_controller.cpp
-)
-target_include_directories(can_util
-        PUBLIC
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-        $<INSTALL_INTERFACE:include>
-)
-ament_target_dependencies(encoder_boardz PUBLIC ${DEPENDENCIES})
-
-## INSTALL
-
-install(
-        DIRECTORY include/
-        DESTINATION include
-)
-
-install(
-        TARGETS encoder_boardz
-        EXPORT export_${PROJECT_NAME}
-        ARCHIVE DESTINATION lib
-        LIBRARY DESTINATION lib
-        RUNTIME DESTINATION bin
-)
-
-ament_export_include_directories("include/${PROJECT_NAME}")
-ament_export_libraries(encoder_boardz)
-ament_export_targets(export_${PROJECT_NAME})
 ament_export_dependencies(${DEPENDENCIES})
 
 ament_package()

@@ -65,9 +65,11 @@ namespace Instructions{
         TURN_ON_FAN = 0X0A,
 
 
-        BATTERY_TELEM = 0x00, 
-        RAIL_TELEM = 0x01, 
-        TCU_TELEM = 0x03,  
+        // BAB telemetry instruction bytes -- see src/can-integration/docs/BAB-docs.md.
+        // RAIL_TELEM is 0x02 in the BAB firmware; the previous 0x01 value was a typo.
+        BATTERY_TELEM = 0x00,
+        RAIL_TELEM = 0x02,
+        TCU_TELEM = 0x03,
 
 
         RELAY_STATUS = 0x08

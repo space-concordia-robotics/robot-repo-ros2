@@ -28,6 +28,7 @@ add_library(
         SHARED
         src/can_interface.cpp
         src/system_controller.cpp
+        src/spark_max_feedback.cpp
 )
 target_include_directories(can_util
         PUBLIC
