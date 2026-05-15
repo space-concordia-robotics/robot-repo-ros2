@@ -45,10 +45,11 @@ namespace Instructions{
         STOP_COMMAND = 0x01,
         RESUME_COMMAND = 0x02, 
 
-        // Servo commands (spin / clamp). Same numeric values as STOP/RESUME above
-        // but used in a different device context (DeviceType::ENCODER).
+        // Servo commands (spin / clamp) on DeviceType::ENCODER. Instruction bytes are
+        // distinct from STOP_COMMAND / RESUME_COMMAND despite some duplicate numeric
+        // tags elsewhere in this enum for other device contexts.
         SERVO_MOVE_TO_POSITION = 0x01, // payload float = position in rad
-        SERVO_MOVE_AT_SPEED    = 0x02, // payload float = speed in rad/s
+        SERVO_MOVE_AT_SPEED    = 0x04, // payload float = speed in rad/s
 
 
         CUT_PDS_OUTPUTS = 0x8F,
