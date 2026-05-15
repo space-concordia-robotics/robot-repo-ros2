@@ -1,0 +1,11 @@
+<library path="wheel_can_interface">
+    <class name="wheel_can_hardware/WheelCanInterface"
+           type="wheel_can_hardware::WheelCanInterface"
+           base_class_type="hardware_interface::SystemInterface">
+        <description>
+            CAN-based ros2_control SystemInterface plugin for the rover's six
+            SPARK MAX wheel motors. Provides STATUS_2 velocity/position
+            feedback and optional per-wheel anti-slip differential.
+        </description>
+    </class>
+</library>

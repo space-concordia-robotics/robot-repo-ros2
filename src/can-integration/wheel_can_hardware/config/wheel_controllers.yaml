@@ -1,0 +1,33 @@
+# Example controller_manager configuration for the rover wheel stack.
+#
+# Uses ros2_controllers/forward_command_controller for direct per-wheel
+# velocity control (matching the joystick-driven rover behaviour) plus
+# joint_state_broadcaster so wheel_odometry_node has a /joint_states stream
+# to integrate.
+#
+# If you eventually move to a single 2-wheel diff_drive_controller, swap
+# `velocity_controller` below for the diff_drive_controller config (which
+# only addresses two of the six wheels) and drive the remaining four with
+# either a forward_command_controller for the unused side or by configuring
+# them as followers.
+
+controller_manager:
+  ros__parameters:
+    update_rate: 100  # Hz
+
+    joint_state_broadcaster:
+      type: joint_state_broadcaster/JointStateBroadcaster
+
+    velocity_controller:
+      type: forward_command_controller/ForwardCommandController
+
+velocity_controller:
+  ros__parameters:
+    joints:
+      - wheel_right_front
+      - wheel_right_mid
+      - wheel_right_rear
+      - wheel_left_front
+      - wheel_left_mid
+      - wheel_left_rear
+    interface_name: velocity

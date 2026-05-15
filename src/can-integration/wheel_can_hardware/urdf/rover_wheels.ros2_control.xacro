@@ -1,0 +1,99 @@
+<?xml version="1.0"?>
+<!--
+  ros2_control block for the rover's six wheel motors. Include this from your
+  top-level rover xacro and instantiate the macro:
+
+    <xacro:include filename="$(find wheel_can_hardware)/urdf/rover_wheels.ros2_control.xacro"/>
+    <xacro:rover_wheels_ros2_control name="RoverWheels"/>
+
+  Per-joint device_id values match WHEEL_MOT1..WHEEL_MOT6 in
+  src/can-integration/can-utils/include/can-utils/prefixes.hpp.
+
+  Layout (looking down at the rover):
+    Right side (motors 1-3): WHEEL_MOT1 = front, WHEEL_MOT2 = mid, WHEEL_MOT3 = rear
+    Left  side (motors 4-6): WHEEL_MOT4 = front, WHEEL_MOT5 = mid, WHEEL_MOT6 = rear
+
+  The right side motors are physically inverted, so direction = -1.0 keeps
+  "positive command -> rover moves forward" consistent.
+
+  gear_ratio default 1.0 means STATUS_2 RPM/rotations are reported at the
+  wheel directly. If your drivetrain has a reduction (e.g. 20:1 hub motor),
+  set gear_ratio="20.0" so feedback comes back in true wheel units.
+-->
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <xacro:macro name="rover_wheels_ros2_control" params="name:='RoverWheels' can_interface:='can0'">
+    <ros2_control name="${name}" type="system">
+      <hardware>
+        <plugin>wheel_can_hardware/WheelCanInterface</plugin>
+        <param name="can_interface">${can_interface}</param>
+        <param name="send_heartbeat_on_activate">true</param>
+        <param name="heartbeat_motor_mask">0x7E</param>
+        <!-- anti_slip_mode: off | clamp | pid | current_pid -->
+        <param name="anti_slip_mode">pid</param>
+        <param name="slip_threshold">0.30</param>
+        <param name="slip_kp">0.10</param>
+        <param name="max_slip_correction">0.50</param>
+        <param name="feedback_freshness_ms">50.0</param>
+        <!-- Only consulted by current_pid mode -->
+        <param name="stall_current_a">30.0</param>
+        <param name="stall_relief_factor">0.50</param>
+      </hardware>
+
+      <joint name="wheel_right_front">
+        <param name="device_id">1</param>
+        <param name="side">right</param>
+        <param name="direction">-1.0</param>
+        <param name="gear_ratio">1.0</param>
+        <command_interface name="velocity"/>
+        <state_interface name="velocity"/>
+        <state_interface name="position"/>
+      </joint>
+      <joint name="wheel_right_mid">
+        <param name="device_id">2</param>
+        <param name="side">right</param>
+        <param name="direction">-1.0</param>
+        <param name="gear_ratio">1.0</param>
+        <command_interface name="velocity"/>
+        <state_interface name="velocity"/>
+        <state_interface name="position"/>
+      </joint>
+      <joint name="wheel_right_rear">
+        <param name="device_id">3</param>
+        <param name="side">right</param>
+        <param name="direction">-1.0</param>
+        <param name="gear_ratio">1.0</param>
+        <command_interface name="velocity"/>
+        <state_interface name="velocity"/>
+        <state_interface name="position"/>
+      </joint>
+
+      <joint name="wheel_left_front">
+        <param name="device_id">4</param>
+        <param name="side">left</param>
+        <param name="direction">1.0</param>
+        <param name="gear_ratio">1.0</param>
+        <command_interface name="velocity"/>
+        <state_interface name="velocity"/>
+        <state_interface name="position"/>
+      </joint>
+      <joint name="wheel_left_mid">
+        <param name="device_id">5</param>
+        <param name="side">left</param>
+        <param name="direction">1.0</param>
+        <param name="gear_ratio">1.0</param>
+        <command_interface name="velocity"/>
+        <state_interface name="velocity"/>
+        <state_interface name="position"/>
+      </joint>
+      <joint name="wheel_left_rear">
+        <param name="device_id">6</param>
+        <param name="side">left</param>
+        <param name="direction">1.0</param>
+        <param name="gear_ratio">1.0</param>
+        <command_interface name="velocity"/>
+        <state_interface name="velocity"/>
+        <state_interface name="position"/>
+      </joint>
+    </ros2_control>
+  </xacro:macro>
+</robot>
