@@ -29,7 +29,7 @@ import os
 
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, RegisterEventHandler
+from launch.actions import DeclareLaunchArgument, RegisterEventHandler, TimerAction
 from launch.conditions import IfCondition
 from launch.event_handlers import OnProcessStart
 from launch.substitutions import Command, LaunchConfiguration
@@ -51,6 +51,14 @@ def generate_launch_description():
         'launch_odometry',
         default_value='false',
         description='If true, also start wheel_odometry_node.',
+    )
+    spawn_after_arg = DeclareLaunchArgument(
+        'spawn_controller_delay',
+        default_value='8.0',
+        description=(
+            'Seconds after ros2_control_node starts before spawning controllers '
+            '(hardware plugins + CAN need time before list_controllers exists).'
+        ),
     )
 
     robot_description = ParameterValue(
@@ -82,6 +90,13 @@ def generate_launch_description():
         output='screen',
     )
 
+    # Give controller_manager time to load URDF plugins and open CAN before
+    # list_controllers is advertised (matches arm_hardware.launch.py pattern).
+    delayed_control_node = TimerAction(
+        period=3.0,
+        actions=[control_node],
+    )
+
     jsb_spawner = Node(
         package='controller_manager',
         executable='spawner',
@@ -89,6 +104,8 @@ def generate_launch_description():
             'joint_state_broadcaster',
             '--controller-manager',
             '/controller_manager',
+            '--controller-manager-timeout',
+            '120',
         ],
         output='screen',
     )
@@ -100,6 +117,8 @@ def generate_launch_description():
             'velocity_controller',
             '--controller-manager',
             '/controller_manager',
+            '--controller-manager-timeout',
+            '120',
         ],
         output='screen',
     )
@@ -107,7 +126,12 @@ def generate_launch_description():
     delayed_spawners = RegisterEventHandler(
         event_handler=OnProcessStart(
             target_action=control_node,
-            on_start=[jsb_spawner, vel_spawner],
+            on_start=[
+                TimerAction(
+                    period=LaunchConfiguration('spawn_controller_delay'),
+                    actions=[jsb_spawner, vel_spawner],
+                ),
+            ],
         )
     )
 
@@ -130,8 +154,9 @@ def generate_launch_description():
         [
             can_interface_arg,
             launch_odom_arg,
+            spawn_after_arg,
             robot_state_publisher,
-            control_node,
+            delayed_control_node,
             delayed_spawners,
             wheel_odometry_node,
         ]
