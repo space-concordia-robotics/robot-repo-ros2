@@ -5,37 +5,57 @@ from geometry_msgs.msg import Twist
 from enum import IntEnum
 
 
-class Buttons(IntEnum):
-        
-    DEADMAN = 4
-    TOGGLE = 10
-    X = 0
-    CIRCLE = 1
-    TRIANGLE = 2
-    SQUARE = 3
-    LEFT_BUMPER = 4
-    RIGHT_BUMPER = 5
-    CHANGE_VIEW = 6
-    SHARE = 8
-    HOME = 10
-    LEFT_STICK_CLICK = 11
-    RIGHT_STICK_CLICK = 12
+"""Button configurations for VKB joystick."""
+class VKBButtonLayout(IntEnum):
 
-class Axes(IntEnum):
+    FIRST_FIRE = 0
+    SECOND_FIRE = 1
+    A2 = 2
+    B2 = 3
+    D1 = 4
+    A3_UP = 5
+    A3_RIGHT = 6
+    A3_DOWN = 7
+    A3_LEFT = 8
+    A3_PRESS = 9
+    A4_UP = 10
+    A4_RIGHT = 11
+    A4_DOWN = 12
+    A4_LEFT = 13
+    A4_PRESS = 14
+    C1_UP = 15
+    C1_RIGHT = 16
+    C1_DOWN = 17
+    C1_LEFT = 18
+    C1_PRESS = 19
+    TRIGGER_UP = 20
+    TRIGGER_DOWN = 21
+    EN1_UP = 22
+    EN1_DOWN = 23
+    EN2_UP = 24
+    EN2_DOWN = 25
+    F1 = 26
+    F2 = 27
+    F3 = 28
 
-    LEFT_STICK_X = 0
-    LEFT_STICK_Y = 1
-    LEFT_TRIGGER = 2
-    RIGHT_TRIGGER = 5
-    RIGHT_STICK_X = 3
-    RIGHT_STICK_Y = 4
-    D_PAD_X = 6
-    D_PAD_Y = 7
+
+"""Axes configuration for VKB joystick."""
+class VKBAxesLayout(IntEnum):
+
+    STICK_X = 0
+    STICK_Y = 1
+    STICK_Z = 5
+    MIDDLE_SCROLL = 2
+    A1_X_LED_ON = 3
+    A1_Y_LED_ON = 4
+    A1_X_LED_OFF = 8
+    A1_Y_LED_OFF = 9
 
 
 # Largest indices used in this node: buttons[12], axes[7] → need lengths 13 and 8.
 _JOY_MIN_BUTTONS = 13
 _JOY_MIN_AXES = 8
+
 
 
 class JoyMuxController(Node):
@@ -119,7 +139,7 @@ class JoyMuxController(Node):
             return
 
         now_s = self.get_clock().now().nanoseconds * 1e-9
-        home_down = msg.buttons[Buttons.HOME] == 1
+        home_down = msg.buttons[VKBButtonLayout.A2] == 1
         home_rising = home_down and self.last_toggle == 0
         if (
             home_rising
@@ -132,15 +152,15 @@ class JoyMuxController(Node):
             self.get_logger().info(f"Switched to {'Arm' if self.current_mode else 'Rover'} mode")
         self.last_toggle = 1 if home_down else 0
 
-        self._deadman_held = msg.buttons[Buttons.DEADMAN] == 1
+        self._deadman_held = msg.buttons[VKBButtonLayout.D1] == 1
 
         if self._deadman_held:
             if self.current_mode == 0:
                 twist = Twist()
                 # Rotate joystick mapping to correct rover cardinal directions.
-                twist.linear.x = msg.axes[Axes.LEFT_STICK_Y]
-                twist.angular.z = msg.axes[Axes.LEFT_STICK_X]
-                tank_turn = (1 if msg.buttons[Buttons.SQUARE] else 0) - (1 if msg.buttons[Buttons.CIRCLE] else 0)
+                twist.linear.x = msg.axes[VKBAxesLayout.STICK_Y]
+                twist.angular.z = msg.axes[VKBAxesLayout.STICK_Z]
+                tank_turn = (1 if msg.buttons[VKBButtonLayout.A4_LEFT] else 0) - (1 if msg.buttons[VKBButtonLayout.A4_RIGHT] else 0)
                 if tank_turn != 0:
                     # Tank turn override: spin in place with opposite wheel directions.
                     twist.linear.x = 0.0
@@ -149,7 +169,7 @@ class JoyMuxController(Node):
             else:
                 joint_state = JointState()
                 joint_state.name = [f'joint{i+1}' for i in range(7)]
-                m4_raw = float((1 if msg.buttons[Buttons.CIRCLE] else 0) - (1 if msg.buttons[Buttons.SQUARE] else 0))
+                m4_raw = float(msg.axes[VKBAxesLayout.STICK_X])
                 if m4_raw != 0.0:
                     self._m4_latched_cmd = m4_raw
                     self._m4_hold_until = now_s + self._arm_button_min_hold_s
@@ -159,13 +179,13 @@ class JoyMuxController(Node):
                     self._m4_latched_cmd = 0.0
                 m4 = m4_raw
                 joint_state.velocity = [
-                    float(msg.axes[Axes.D_PAD_X]),
-                    float(msg.axes[Axes.D_PAD_Y]),
-                    float(msg.axes[Axes.RIGHT_STICK_Y]),
-                    m4,
-                    float(msg.axes[Axes.LEFT_STICK_Y]),
-                    float((1 if msg.buttons[Buttons.TRIANGLE] else 0) - (1 if msg.buttons[Buttons.X] else 0)),
-                    float((1 if msg.buttons[Buttons.SQUARE] else 0) - (1 if msg.buttons[Buttons.CIRCLE] else 0)),
+                    float(msg.axes[VKBAxesLayout.STICK_Z]), #M1
+                    (float(msg.buttons[VKBButtonLayout.A3_UP] - msg.buttons[VKBButtonLayout.A3_DOWN]))*0.4, #M2
+                    (float(msg.axes[VKBAxesLayout.STICK_Y]))*0.7, #M3
+                    (m4)*0.7, #M4
+                    (float(msg.buttons[VKBButtonLayout.A3_LEFT] - msg.buttons[VKBButtonLayout.A3_RIGHT]))*0.8, #M5
+                    # float((1 if msg.buttons[Buttons.TRIANGLE] else 0) - (1 if msg.buttons[Buttons.X] else 0)),
+                    # float((1 if msg.buttons[Buttons.SQUARE] else 0) - (1 if msg.buttons[Buttons.CIRCLE] else 0)),
                 ]
                 joint_state.position = []
                 joint_state.effort = []
