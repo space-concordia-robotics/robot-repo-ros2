@@ -96,6 +96,15 @@ class JoyMuxController(Node):
         self._stop_burst_duration_s = self.declare_parameter(
             "stop_burst_duration_s", 0.5
         ).value
+        # Mode-switch stop window: when we toggle from arm <-> rover we keep
+        # publishing zeros for the mode we just left even while deadman is
+        # still held, so the previous stack actually halts. Without this the
+        # firmware on the just-left side keeps the last commanded velocity
+        # because no new frames are sent and there's no on-board watchdog.
+        self._mode_switch_stop_until: float = 0.0
+        self._mode_switch_stop_duration_s = self.declare_parameter(
+            "mode_switch_stop_duration_s", 0.5
+        ).value
         # Keep button-driven arm commands active briefly to improve tap reliability.
         self._arm_button_min_hold_s = self.declare_parameter(
             "arm_button_min_hold_s", 0.08
@@ -149,6 +158,18 @@ class JoyMuxController(Node):
             self._last_mode_toggle_at_s = now_s
             self._last_twist_vals = None
             self._last_joint_vals = None
+            # Drop the stale payload for *both* modes so a tick that races us
+            # never re-publishes the previous-mode command.
+            self._cached_twist = None
+            self._cached_joint = None
+            self._m4_latched_cmd = 0.0
+            self._m4_hold_until = 0.0
+            # Send one immediate stop for both stacks so the just-left motors
+            # halt within this callback, then arm a brief window during which
+            # _tick() keeps publishing zeros for the mode we left in case the
+            # first stop frame is dropped.
+            self._mode_switch_stop_until = now_s + self._mode_switch_stop_duration_s
+            self._publish_all_stop()
             self.get_logger().info(f"Switched to {'Arm' if self.current_mode else 'Rover'} mode")
         self.last_toggle = 1 if home_down else 0
 
@@ -202,6 +223,24 @@ class JoyMuxController(Node):
     def _tick(self):
         now_s = self.get_clock().now().nanoseconds * 1e-9
         in_stop_burst = now_s < self._stop_burst_until
+        in_mode_switch_stop = now_s < self._mode_switch_stop_until
+
+        # Keep stopping the *previous* mode for a short window after a switch,
+        # regardless of whether deadman is held. The mode we just left is
+        # `1 - current_mode`; only that side gets a zero so the new mode can
+        # still be driven normally below.
+        if in_mode_switch_stop:
+            if self.current_mode == 0:
+                stopped = JointState()
+                stopped.name = [f'joint{i+1}' for i in range(7)]
+                stopped.velocity = [0.0] * 7
+                stopped.position = []
+                stopped.effort = []
+                self.arm_pub.publish(stopped)
+                self._last_joint_vals = None
+            else:
+                self.rover_pub.publish(Twist())
+                self._last_twist_vals = None
 
         if not self._deadman_held:
             if in_stop_burst:
