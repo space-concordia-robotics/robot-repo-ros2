@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<!--
+  Minimal robot + ros2_control block for bench-testing WheelCanInterface.
+  Launch via:
+    ros2 launch wheel_can_hardware ros2_control_wheels.launch.py can_interface:=can0
+-->
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="test_rover_wheels">
+  <xacro:arg name="can_interface" default="can0"/>
+
+  <link name="base_link"/>
+
+  <xacro:include filename="$(find wheel_can_hardware)/urdf/rover_wheels.ros2_control.xacro"/>
+  <xacro:rover_wheels_ros2_control name="RoverWheels" can_interface="$(arg can_interface)"/>
+</robot>
