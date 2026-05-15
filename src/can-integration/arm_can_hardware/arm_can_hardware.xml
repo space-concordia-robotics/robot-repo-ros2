@@ -1,0 +1,10 @@
+<library path="arm_can_interface">
+    <class name="arm_can_hardware/ArmCanInterface"
+           type="arm_can_hardware::ArmCanInterface"
+           base_class_type="hardware_interface::SystemInterface">
+        <description>
+            CAN-based ros2_control SystemInterface plugin for the rover arm
+            motors and gripper servos. Replaces the legacy serial arm_interface.
+        </description>
+    </class>
+</library>
