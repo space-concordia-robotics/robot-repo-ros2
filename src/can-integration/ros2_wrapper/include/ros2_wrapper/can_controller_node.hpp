@@ -3,11 +3,12 @@
 #include "rclcpp/rclcpp.hpp"
 #include "geometry_msgs/msg/twist.hpp"
 #include "sensor_msgs/msg/joint_state.hpp"
-#include "sensor_msgs/msg/joy.hpp"
+#include "std_msgs/msg/bool.hpp"
 #include "std_msgs/msg/string.hpp"
 #include "can-utils/system_controller.hpp"
 #include "can-utils/can_interface.hpp"
 #include <array>
+#include <atomic>
 #include <memory>
 #include <chrono>
 #include <mutex>
@@ -22,9 +23,8 @@ class CanControllerNode : public rclcpp::Node{
     public:
         explicit CanControllerNode(const rclcpp::NodeOptions& options = rclcpp::NodeOptions());
 
-        void getTwistMessages(const geometry_msgs::msg::Twist::ConstSharedPtr& twist_msg); 
+        void getTwistMessages(const geometry_msgs::msg::Twist::ConstSharedPtr& twist_msg);
         void getJointStateMessages(const sensor_msgs::msg::JointState::ConstSharedPtr& joint_state_msg);
-        void getjoyfeedback(const sensor_msgs::msg::Joy::ConstSharedPtr& msg); 
 
     private: 
 
@@ -52,9 +52,17 @@ class CanControllerNode : public rclcpp::Node{
         rclcpp::ParameterCallbackHandle::SharedPtr multiplier_callback_handle;
         rclcpp::ParameterCallbackHandle::SharedPtr arm_velocity_scale_callback_handle;        
 
-        rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr twist_msgs_; 
-        rclcpp::Subscription<sensor_msgs::msg::Joy>::SharedPtr joy_msgs_; 
-        rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr joint_state_msgs_; 
+        rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr twist_msgs_;
+        rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr joint_state_msgs_;
+        rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr wheel_stopped_sub_;
+
+        // Inhibit flags driven by /can_safety/wheel_stopped (latched). The
+        // legacy node initialised these to true so commands flowed by default;
+        // we keep that behaviour. The arm flag is no longer toggled by the
+        // joystick (the stop logic was already a no-op) but stays around so
+        // future safety wiring can re-enable it without touching control flow.
+        std::atomic_bool inhibit_arm_cmds_{true};
+        std::atomic_bool inhibit_wheel_cmds_{true};
 
         rclcpp::TimerBase::SharedPtr can_send_timer_; 
         int can_send_rate_hz_{100};

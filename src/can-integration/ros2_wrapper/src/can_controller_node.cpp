@@ -54,8 +54,17 @@ CanControllerNode::CanControllerNode(const rclcpp::NodeOptions& options) :
         (const geometry_msgs::msg::Twist::ConstSharedPtr& msg) {getTwistMessages(msg);});
         joint_state_msgs_ = this->create_subscription<sensor_msgs::msg::JointState>("/arm_xyz_cmd", rclcpp::SensorDataQoS(), [this]
         (const sensor_msgs::msg::JointState::ConstSharedPtr& msg) {getJointStateMessages(msg);});
-        joy_msgs_ = this->create_subscription<sensor_msgs::msg::Joy>("/joy", rclcpp::SystemDefaultsQoS(), [this]
-        (const sensor_msgs::msg::Joy::ConstSharedPtr& msg){getjoyfeedback(msg);});
+
+        // The wheel force-stop / resume joystick logic moved to the standalone
+        // can_safety_node package. We still subscribe to /joy but only to keep
+        // the wheel_stopped status in sync; the actual STOP/RESUME CAN frames
+        // are emitted from the safety node.
+        wheel_stopped_sub_ = this->create_subscription<std_msgs::msg::Bool>(
+            "/can_safety/wheel_stopped",
+            rclcpp::QoS(1).reliable().transient_local(),
+            [this](const std_msgs::msg::Bool::ConstSharedPtr & msg){
+                inhibit_wheel_cmds_ = !msg->data;
+            });
 
         const auto period = std::chrono::milliseconds(1000 / can_send_rate_hz_);
         can_send_timer_ = this->create_wall_timer(period, [this]{ sendCanFrames(); });
@@ -65,40 +74,6 @@ CanControllerNode::CanControllerNode(const rclcpp::NodeOptions& options) :
         frame_builder_->requestStatusFrame();
 
         logger.info("All subscriptions initialized, CAN send rate = {} Hz", can_send_rate_hz_);
-}
-
-static bool inhibit_arm_cmds = true;
-static bool inhibit_wheel_cmds = true;
-
-//------------------------------ Obtaining Joystick input from controller -------------------------------
-
-void CanControllerNode::getjoyfeedback(const sensor_msgs::msg::Joy::ConstSharedPtr& msg){
-
-    constexpr int FORCE_STOP_COMPAT = 3;
-    constexpr int RESTART_ARM_MOTORS = 2;
-    constexpr int FORCE_STOP_WHEELS = 6;
-    constexpr int RESTART_WHEEL_MOTORS = 7;
-
-    static bool arm_force_stop = false;
-    static bool wheel_force_stop = false;
-
-    bool force_stop_compat = msg->buttons[FORCE_STOP_COMPAT] == 1;
-    bool restart_arm_pressed = msg->buttons[RESTART_ARM_MOTORS] == 1;
-
-    bool force_stop_wheels = msg->buttons[FORCE_STOP_WHEELS] == 1;
-    bool restart_wheels = msg->buttons[RESTART_WHEEL_MOTORS] == 1;
-
-    if(force_stop_wheels && !wheel_force_stop){
-        wheel_force_stop = true;
-        inhibit_wheel_cmds = false;
-        frame_builder_->sendForceStop(deviceType::DeviceType::RELAY, DeviceId::ID::HUB);
-        logger.info("Sending force stop command to wheel motors");
-    }else if(restart_wheels && wheel_force_stop){
-        wheel_force_stop = false;
-        inhibit_wheel_cmds = true;
-        frame_builder_->sendResume(deviceType::DeviceType::RELAY, DeviceId::ID::HUB);
-        logger.info("Sending restart command to wheel motors");
-    }
 }
 
 //------------------------------ Cache incoming topic data (no CAN I/O here) --------------------------------
@@ -142,11 +117,11 @@ void CanControllerNode::sendCanFrames(){
         }
     }
 
-    if(inhibit_wheel_cmds){
+    if(inhibit_wheel_cmds_){
         frame_builder_->startMotors(0x7E);
     }
 
-    if(send_twist && inhibit_wheel_cmds){
+    if(send_twist && inhibit_wheel_cmds_){
         constexpr float DEADZONE = 0.05f;
         constexpr float kPureAxisEps = 1e-5f;
 
@@ -212,7 +187,7 @@ void CanControllerNode::sendCanFrames(){
         frame_builder_->startMotors(0x7E);
     }
 
-    if(send_arm && inhibit_arm_cmds){
+    if(send_arm && inhibit_arm_cmds_){
         static constexpr Instructions::Inst MOTOR_MAP[5] = {
             Instructions::Inst::ARM_MOTOR_1,
             Instructions::Inst::ARM_MOTOR_2,
