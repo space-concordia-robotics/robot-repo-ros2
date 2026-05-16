@@ -9,8 +9,16 @@
         <color rgba="1 0 0 1"/>
     </material>
 
+    <material name="plastic-yellow">
+        <color rgba="1 1 0.25 1"/>
+    </material>
+
     <material name="plastic-black">
         <color rgba="0 0 0 1"/>
+    </material>
+
+    <material name="plastic-white">
+        <color rgba="1 1 1 1"/>
     </material>
 
     <material name="aluminum">
@@ -30,10 +38,22 @@
                         <diffuse>1 0 0 1</diffuse>
                     </material>
                 </xacro:if>
+                <xacro:if value="${color == 'plastic-yellow'}">
+                    <material>
+                        <ambient>1 1 0.25 1</ambient>
+                        <diffuse>1 1 0.25 1</diffuse>
+                    </material>
+                </xacro:if>
                 <xacro:if value="${color == 'plastic-black'}">
                     <material>
                         <ambient>0 0 0 1</ambient>
                         <diffuse>0 0 0 1</diffuse>
+                    </material>
+                </xacro:if>
+                <xacro:if value="${color == 'plastic-white'}">
+                    <material>
+                        <ambient>1 1 1 1</ambient>
+                        <diffuse>1 1 1 1</diffuse>
                     </material>
                 </xacro:if>
                 <xacro:if value="${color == 'aluminum'}">

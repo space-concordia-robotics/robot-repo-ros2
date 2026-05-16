@@ -27,7 +27,7 @@
     <xacro:property name="body_width" value="0.3047"/>
     <xacro:property name="body_height" value="0.175"/>
     <xacro:property name="wheel_radius" value="0.150"/>
-    <xacro:property name="wheel_inner_radius" value="0.09525"/>
+    <xacro:property name="wheel_inner_radius" value="0.055"/>
     <xacro:property name="wheel_thickness" value="0.127"/>
     <xacro:property name="visual_adjustment" value="0.001"/>
 
@@ -85,16 +85,16 @@
 
     <!-- region Red Body Panels (Visual) -->
     <xacro:macro name="base_link_panel" params="axis">
-        <xacro:property name="panel_length" value="${body_length - (0 if axis == 'x' else 0.02)}"/>
-        <xacro:property name="panel_width" value="${body_width - (0 if axis == 'y' else 0.02)}"/>
-        <xacro:property name="panel_height" value="${body_height - (0 if axis == 'z' else 0.02)}"/>
+        <xacro:property name="panel_length" value="${body_length - (0 if axis == 'x' else 0.02)*2}"/>
+        <xacro:property name="panel_width" value="${body_width - (0 if axis == 'y' else 0.02)*2}"/>
+        <xacro:property name="panel_height" value="${body_height - (0 if axis == 'z' else 0.02)*2}"/>
 
         <link name="base_red_${axis}_panel">
             <visual>
                 <geometry>
                     <box size="${panel_length} ${panel_width} ${panel_height}"/>
                 </geometry>
-                <material name="plastic-red"/>
+                <material name="plastic-white"/>
             </visual>
         </link>
 
@@ -104,7 +104,7 @@
             <origin xyz="${body_length/2} 0 -${body_height/2}"/>
         </joint>
 
-        <xacro:gazebo_color reference="base_red_${axis}_panel" color="plastic-red"/>
+        <xacro:gazebo_color reference="base_red_${axis}_panel" color="plastic-white"/>
     </xacro:macro>
 
 
@@ -141,7 +141,7 @@
                 <geometry>
                     <box size="${battery_size} ${battery_size} ${battery_height}"/>
                 </geometry>
-                <material name="plastic-black"/>
+                <material name="plastic-red"/>
             </visual>
             <collision>
                 <origin xyz="${battery_size/2} ${battery_size/2*reflect} ${battery_height/2}"/>
@@ -151,7 +151,7 @@
             </collision>
         </link>
 
-        <xacro:gazebo_color reference="${side}_battery" color="plastic-black"/>
+        <xacro:gazebo_color reference="${side}_battery" color="plastic-red"/>
     </xacro:macro>
 
     <xacro:battery side="right"/>
@@ -260,7 +260,7 @@
                 <geometry>
                     <box size="${antenna_block_depth} ${antenna_block_size} ${antenna_block_size}"/>
                 </geometry>
-                <material name="plastic-red"/>
+                <material name="plastic-yellow"/>
             </visual>
             <collision>
                 <origin xyz="${antenna_a_x_offset + antenna_b_x_offset} 0 0"/>
@@ -270,7 +270,7 @@
             </collision>
         </link>
 
-        <xacro:gazebo_color reference="antenna_block" color="plastic-red"/>
+        <xacro:gazebo_color reference="antenna_block" color="plastic-yellow"/>
     </xacro:macro>
 
     <xacro:pole/>

@@ -4,7 +4,6 @@
        xmlns:xacro="https://ros.org/wiki/xacro"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="https://www.ros.org ../../urdf.xsd https://ros.org/wiki/xacro ../../xacro.xsd">
-    <!-- region Wheels -->
     <xacro:macro name="wheel" params="prefix x y z mirror">
         <!-- TODO: wtf is this from? it was in the wheel geometry... -->
         <!-- <box size=".40 .408 .20"/> -->
@@ -15,7 +14,7 @@
                 <geometry>
                     <cylinder radius="${wheel_radius}" length="${wheel_thickness}"/>
                 </geometry>
-                <material name="plastic-red"/>
+                <material name="plastic-white"/>
             </visual>
             <collision>
                 <origin xyz="${x} ${(wheel_thickness/2 + y) * mirror} ${z}" rpy="${pi/2} 0 0"/>
@@ -37,7 +36,7 @@
             <xacro:default_inertial mass="0.2"/>
         </link>
 
-        <xacro:gazebo_color reference="${prefix}_wheel" color="plastic-red"/>
+        <xacro:gazebo_color reference="${prefix}_wheel" color="plastic-white"/>
 
         <joint name="${prefix}_parent_to_inner_wheel" type="fixed">
             <parent link="${prefix}_wheel"/>
@@ -95,7 +94,7 @@
                 <geometry>
                     <box size="${bogey_base_length} ${bogey_base_width} ${bogey_base_height}"/>
                 </geometry>
-                <material name="aluminum"/>
+                <material name="plastic-red"/>
             </visual>
             <collision>
                 <origin xyz="0 ${bogey_base_width/2 * reflect} -${bogey_base_height/2}"/>
@@ -107,7 +106,7 @@
             <xacro:default_inertial mass="0.1"/>
         </link>
 
-        <xacro:gazebo_color reference="front_${side}_bogey" color="aluminum"/>
+        <xacro:gazebo_color reference="front_${side}_bogey" color="plastic-red"/>
 
         <xacro:property name="bogey_bar_radius" value="0.0127"/>
         <xacro:property name="bogey_bar_length" value="0.25117"/>
@@ -275,5 +274,4 @@
     <xacro:front_bogey side="right"/>
 
     <xacro:back_bogey/>
-    <!-- endregion -->
 </robot>
