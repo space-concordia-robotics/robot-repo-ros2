@@ -11,7 +11,7 @@ struct DecodedFrame {
         uint8_t severity;
         uint16_t instruction;
         uint8_t deviceId;
-        std::array<uint8_t, 8> data;  // Appends th DATA to an array 
+        std::vector<uint8_t> data; 
     };
 
 
@@ -21,7 +21,7 @@ public:
      * @brief Extracts protocol fields from a raw 29-bit CAN ID.
      * Inverse logic of BuildAddress::buildCANID.
      */
-    static DecodedFrame parse(uint32_t raw_id, const std::vector<uint8_t>& raw_data) {
+    static DecodedFrame parse(const uint32_t raw_id, const std::vector<uint8_t>& raw_data) {
         DecodedFrame decoded;
 
         // Shift right to reach the field, then AND with mask to isolate it

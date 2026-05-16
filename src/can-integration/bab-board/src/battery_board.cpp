@@ -134,10 +134,14 @@ float BAB::getRailPower() const{
 }
 
 
-
-float BAB::getTCUStatus() const{
+float BAB::getTCUTemp() const{
         std::lock_guard lock(mtx);
-        return tcuTelem.fan_status ? 1.0f : 0.0f; 
+        return tcuTelem.temperature; 
+}
+
+std::string BAB::getTCUStatus() const{
+        std::lock_guard lock(mtx);
+        return tcuTelem.fan_status ? "TCU ON" : "TCU OFF";
 }
 
 std::string BAB::getBMSHealth() const{
@@ -153,10 +157,10 @@ std::string BAB::getRelayStatus() const{
         return relayTelem.status ? "Relay Closed (ON)" : "Relay OPEN (OFF)"; 
 }
 
-std::string BAB::getBABStatus() const{
-        std::lock_guard lock(mtx);
-        return "NORMAL";
-}
+// std::string BAB::getBABStatus() const{
+//         std::lock_guard lock(mtx);
+//         return "NORMAL";
+// }
 
 
 bool BAB::sendKYSCommand() {
@@ -180,7 +184,7 @@ bool BAB::cutFanPower(DeviceId::ID fanID) {
         Manufacturer::TEAM_USE,
         severity::SEV_CNTRL,
         static_cast<uint32_t>(Instructions::Inst::TURN_OFF_FAN),
-        static_cast<uint32_t>(DeviceId::ID::BAB),
+        static_cast<uint32_t>(fanID),
         payload
     );
 }

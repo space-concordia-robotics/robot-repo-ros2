@@ -133,9 +133,6 @@ class BAB{
 
 
 
-
-
-
         /*
         *  @brief Gets the power distribution system telemetry 
         *  @param: None
@@ -145,12 +142,13 @@ class BAB{
 
 
 
+        float getTCUTemp() const;
         /*
         *  @brief Sends report to user if TCU is no longer operational
         *  @param: None
         * 
         */
-        float getTCUStatus() const; 
+        std::string getTCUStatus() const; 
 
 
         /*
@@ -184,7 +182,7 @@ class BAB{
         * @param: None
         *  
         */
-        std::string getBABStatus() const; 
+        //std::string getBABStatus() const; 
 
 
         /*
