@@ -10,26 +10,13 @@
 namespace wheels_interface {
     SparkBase::SparkBase(rclcpp::Logger& logger, can_util::CANController& can_controller, const uint8_t deviceId)
         : logger(logger.get_child("spark_max")), can_controller(can_controller), device_id(deviceId) {
-        frame_callback = can_controller.registerFrameCallback([this](const uint32_t id, const std::vector<uint8_t>& data) {
+        frame_callback = can_controller.registerFrameCallback([this](const auto id, const auto& data) {
             handleFrame(id, data);
         });
 
         // Ensure deviceId_ is within valid range
         if (deviceId > 62)
             throw std::out_of_range("Invalid CAN bus ID. Must be between 0 and 62.");
-    }
-
-    bool SparkBase::sendCanFrame(const APICommand cmd, const std::vector<uint8_t>& data) const {
-        return sendCanFrame(createArbId(cmd), data);
-    }
-
-    bool SparkBase::sendCanFrame(const uint32_t arbId, const std::vector<uint8_t>& data) const {
-        const auto status = can_controller.sendBlockingFrame(arbId, data);
-
-        if (!status)
-            logger.error("Could not send CAN frame");
-
-        return status;
     }
 
     bool SparkBase::sendControlMessage(
@@ -45,7 +32,7 @@ namespace wheels_interface {
         if (minValue && maxValue && (value < *minValue || value > *maxValue))
             throw std::out_of_range(commandName + " must be between " + std::to_string(*minValue) + " and " + std::to_string(*maxValue));
 
-        std::vector<uint8_t> data(8, 0);
+        auto data = std::array<uint8_t, 8>{};
         std::memcpy(data.data(), &value, sizeof(value));
         return sendCanFrame(cmd, data);
     }
@@ -144,7 +131,7 @@ namespace wheels_interface {
         };
 
         // Create CAN data and arbitration ID
-        std::vector<uint8_t> data(5, 0);
+        auto data = std::array<uint8_t, 5>{};
         const uint32_t arbId = createParamArbId(parameterId);
 
         // Process the value based on its type and fill CAN data
@@ -177,7 +164,7 @@ namespace wheels_interface {
 
     std::optional<std::variant<float, uint32_t, bool>> SparkBase::readParameter(const Parameter parameterId) const {
         const uint32_t requestArbId = createParamArbId(parameterId);
-        if (!can_controller.sendBlockingFrame(requestArbId, {})) {
+        if (!can_controller.sendBlockingFrame(requestArbId, std::array<uint8_t, 0>{})) {
             logger.error("Error sending CAN message");
             return std::nullopt;
         }
@@ -288,37 +275,37 @@ namespace wheels_interface {
     }
 
     bool SparkBase::heartbeat() const {
-        const std::vector<uint8_t> data(8, 0xFF);
+        static constexpr auto data = std::array<uint8_t, 8>{0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
         return sendCanFrame(APICommand::Heartbeat, data);
     }
 
     bool SparkBase::resetFaults() const {
-        const std::vector<uint8_t> data(8, 0x00);
+        static constexpr auto data = std::array<uint8_t, 8>{};
         return sendCanFrame(APICommand::ClearFaults, data);
     }
 
     bool SparkBase::clearStickyFaults() const {
-        const std::vector<uint8_t> data(8, 0x00);
+        static constexpr auto data = std::array<uint8_t, 8>{};
         return sendCanFrame(APICommand::ClearFaults, data);
     }
 
     bool SparkBase::burnFlash() const {
-        const std::vector<uint8_t> data = {0xA3, 0x3A};
+        static constexpr auto data = std::to_array<uint8_t>({0xA3, 0x3A});
         return sendCanFrame(APICommand::BurnFlash, data);
     }
 
     bool SparkBase::factoryDefaults() const {
-        const std::vector<uint8_t> data = {0x01};
+        static constexpr auto data = std::to_array<uint8_t>({0x01});
         return sendCanFrame(APICommand::FactoryDefaults, data);
     }
 
     bool SparkBase::factoryReset() const {
-        const std::vector<uint8_t> data = {0x01};
+        static constexpr auto data = std::to_array<uint8_t>({0x01});
         return sendCanFrame(APICommand::FactoryReset, data);
     }
 
     bool SparkBase::identify() const {
-        const std::vector<uint8_t> data(8, 0x00);
+        static constexpr auto data = std::array<uint8_t, 8>{};
         return sendCanFrame(APICommand::Identify, data);
     }
 
@@ -358,37 +345,42 @@ namespace wheels_interface {
     // Status //
 
     bool SparkBase::setPeriodicStatus0Period(const uint16_t period) const {
-        std::vector<uint8_t> data(2, 0x00);
-        data[0] = static_cast<uint8_t>(period & 0xFF);
-        data[1] = static_cast<uint8_t>(period >> 8 & 0xFF);
+        const auto data = std::to_array({
+            static_cast<uint8_t>(period & 0xFF),
+            static_cast<uint8_t>(period >> 8 & 0xFF)
+        });
         return sendCanFrame(APICommand::Period0, data);
     }
 
     bool SparkBase::setPeriodicStatus1Period(const uint16_t period) const {
-        std::vector<uint8_t> data(2, 0x00);
-        data[0] = static_cast<uint8_t>(period & 0xFF);
-        data[1] = static_cast<uint8_t>(period >> 8 & 0xFF);
+        const auto data = std::to_array({
+            static_cast<uint8_t>(period & 0xFF),
+            static_cast<uint8_t>(period >> 8 & 0xFF)
+        });
         return sendCanFrame(APICommand::Period1, data);
     }
 
     bool SparkBase::setPeriodicStatus2Period(const uint16_t period) const {
-        std::vector<uint8_t> data(2, 0x00);
-        data[0] = static_cast<uint8_t>(period & 0xFF);
-        data[1] = static_cast<uint8_t>(period >> 8 & 0xFF);
+        const auto data = std::to_array({
+            static_cast<uint8_t>(period & 0xFF),
+            static_cast<uint8_t>(period >> 8 & 0xFF)
+        });
         return sendCanFrame(APICommand::Period2, data);
     }
 
     bool SparkBase::setPeriodicStatus3Period(const uint16_t period) const {
-        std::vector<uint8_t> data(2, 0x00);
-        data[0] = static_cast<uint8_t>(period & 0xFF);
-        data[1] = static_cast<uint8_t>(period >> 8 & 0xFF);
+        const auto data = std::to_array({
+            static_cast<uint8_t>(period & 0xFF),
+            static_cast<uint8_t>(period >> 8 & 0xFF)
+        });
         return sendCanFrame(APICommand::Period3, data);
     }
 
     bool SparkBase::setPeriodicStatus4Period(const uint16_t period) const {
-        std::vector<uint8_t> data(2, 0x00);
-        data[0] = static_cast<uint8_t>(period & 0xFF);
-        data[1] = static_cast<uint8_t>(period >> 8 & 0xFF);
+        const auto data = std::to_array({
+            static_cast<uint8_t>(period & 0xFF),
+            static_cast<uint8_t>(period >> 8 & 0xFF)
+        });
         return sendCanFrame(APICommand::Period4, data);
     }
 
