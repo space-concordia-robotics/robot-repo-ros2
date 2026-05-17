@@ -36,7 +36,7 @@
 #ifndef EASYOBJECTDICTIONARY_H
 #define EASYOBJECTDICTIONARY_H
 
-#include "BasicTypes.h"
+#include "EasyProfile/BasicTypes.h"
 
 
 //--------------------------------------------------------------

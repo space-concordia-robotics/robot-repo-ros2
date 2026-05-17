@@ -37,8 +37,8 @@
 #define EASYPROTOCOL_H
 
 
-#include "EasyQueue.h"
-#include "BasicTypes.h"
+#include "EasyProfile/BasicTypes.h"
+#include "EasyProfile/EasyQueue.h"
 
 
 //------------------------------------------------------------------------------

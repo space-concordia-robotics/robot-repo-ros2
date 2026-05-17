@@ -3,7 +3,7 @@
  * @author COPYRIGHT(c) 2017 SYD Dynamics ApS
  * @see    EasyProtocol.h for more comments
  */
-#include "EasyProtocol.h"
+#include "EasyProfile/EasyProtocol.h"
 
 
 EasyProtocol::EasyProtocol() {
