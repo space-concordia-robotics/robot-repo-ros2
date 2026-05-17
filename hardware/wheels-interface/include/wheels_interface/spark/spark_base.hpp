@@ -340,7 +340,10 @@ namespace wheels_interface {
          * @param cmd The API command associated with the CAN frame
          * @param data The data payload to send in the CAN frame
          */
-        [[nodiscard]] bool sendCanFrame(APICommand cmd, const std::vector<uint8_t>& data) const;
+        template <std::size_t N>
+        [[nodiscard]] bool sendCanFrame(const APICommand cmd, const std::array<uint8_t, N>& data) const {
+            return sendCanFrame(createArbId(cmd), data);
+        }
 
         /**
          * @brief Sends a CAN frame with a custom arbitration ID
@@ -348,7 +351,40 @@ namespace wheels_interface {
          * @param arbId The full CAN arbitration ID
          * @param data The data payload to send in the CAN frame
          */
-        [[nodiscard]] bool sendCanFrame(uint32_t arbId, const std::vector<uint8_t>& data) const;
+        template <std::size_t N>
+        [[nodiscard]] bool sendCanFrame(const uint32_t arbId, const std::array<uint8_t, N>& data) const {
+            const auto status = can_controller.sendBlockingFrame(arbId, data);
+
+            if (!status)
+                logger.error("Could not send CAN frame");
+
+            return status;
+        }
+
+        /**
+         * @brief Sends a CAN frame
+         *
+         * @param cmd The API command associated with the CAN frame
+         * @param data The data payload to send in the CAN frame
+         */
+        [[nodiscard]] bool sendCanFrame(const APICommand cmd, const std::vector<uint8_t>& data) const {
+            return sendCanFrame(createArbId(cmd), data);
+        }
+
+        /**
+         * @brief Sends a CAN frame with a custom arbitration ID
+         *
+         * @param arbId The full CAN arbitration ID
+         * @param data The data payload to send in the CAN frame
+         */
+        [[nodiscard]] bool sendCanFrame(const uint32_t arbId, const std::vector<uint8_t>& data) const {
+            const auto status = can_controller.sendBlockingFrame(arbId, data);
+
+            if (!status)
+                logger.error("Could not send CAN frame");
+
+            return status;
+        }
 
         /**
          * @brief Sends a control message to the SPARK controller

@@ -156,8 +156,7 @@ namespace can_util {
         return true;
     }
 
-    // TODO 2026-02-14 (Will Free): what is this? what is it doing? why do we need it?
-    bool CANController::sendBlockingFrame(const can_frame& frame) const {
+    bool CANController::trySendBlockingFrame(const can_frame& frame) const {
         constexpr auto WAIT_TIME = std::chrono::microseconds(1);
         constexpr int MAX_ATTEMPTS = 32;
 

@@ -29,7 +29,12 @@ namespace can_util {
             frame.len = static_cast<uint8_t>(data.size());
             memcpy(frame.data, data.data(), data.size());
 
-            return sendBlockingFrame(frame);
+            return trySendBlockingFrame(frame);
+        }
+
+        template <std::size_t N>
+        bool sendBlockingFrame(const uint32_t id, const uint8_t (&data)[N]) const requires (N <= 8) {
+            return sendBlockingFrame(id, std::to_array(data));
         }
 
         bool sendBlockingFrame(const uint32_t id, const std::vector<uint8_t>& data) const {
@@ -44,7 +49,7 @@ namespace can_util {
             frame.len = static_cast<uint8_t>(data.size());
             memcpy(frame.data, data.data(), data.size());
 
-            return sendBlockingFrame(frame);
+            return trySendBlockingFrame(frame);
         }
 
         // TODO 2026-02-25 (Will Free): add a way to read can frames with a specific id, ignoring all others?
@@ -53,7 +58,7 @@ namespace can_util {
         bool readFrame(can_frame& frame) const;
 
     private:
-        bool sendBlockingFrame(const can_frame& frame) const;
+        bool trySendBlockingFrame(const can_frame& frame) const;
 
         bool sendFrame(const can_frame& frame) const;
 
