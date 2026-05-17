@@ -31,9 +31,9 @@
 #ifndef EASYPROFILE_H
 #define EASYPROFILE_H
 
-#include "BasicTypes.h"
-#include "EasyProtocol.h"
-#include "EasyObjectDictionary.h"
+#include "EasyProfile/BasicTypes.h"
+#include "EasyProfile/EasyObjectDictionary.h"
+#include "EasyProfile/EasyProtocol.h"
 #ifdef EP_PLATFORM_QT5_
 #include <QtCore>
 #endif
