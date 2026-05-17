@@ -59,22 +59,20 @@
 //#define DEBUG_EASY_QUEUE_
 
 #ifdef DEBUG_EASY_QUEUE_
-#   include <stdio.h>
+#include <stdio.h>
 #endif
 
 #include <stdlib.h> // for calloc(), free()
 
 
-template<typename QueueDataType>
-class EasyQueue
-{
+template <typename QueueDataType>
+class EasyQueue {
 public:
-    EasyQueue()
-    {
-        queueSize = 32+1;
-        queueStart= 0;
-        queueEnd  = 0;
-        queueData = (QueueDataType*)calloc(queueSize, sizeof(QueueDataType) );
+    EasyQueue() {
+        queueSize = 32 + 1;
+        queueStart = 0;
+        queueEnd = 0;
+        queueData = static_cast<QueueDataType*>(calloc(queueSize, sizeof(QueueDataType)));
     }
 
 
@@ -82,18 +80,17 @@ public:
       * Resize Queue
       * @return 1:Succ 0:fail
       */
-    int resize(int bufSize)
-    {
-        queueSize = bufSize+1;
-        queueStart= 0;
-        queueEnd  = 0;
-        queueData = (QueueDataType*)realloc(queueData, queueSize * sizeof(QueueDataType));
-        if(queueData) return 1;
+    int resize(const int bufSize) {
+        queueSize = bufSize + 1;
+        queueStart = 0;
+        queueEnd = 0;
+        queueData = static_cast<QueueDataType*>(realloc(queueData, queueSize * sizeof(QueueDataType)));
+        if (queueData) return 1;
         else return 0;
     }
 
 
-    ~EasyQueue(){
+    ~EasyQueue() {
         free(queueData);
     }
 
@@ -102,15 +99,15 @@ public:
      * @return  0  The queue is not full
      *          1  The queue is full. Queue Head maybe overwritten.
      */
-    int push(QueueDataType data){
+    int push(QueueDataType data) {
         int full = 0;
 
         queueData[queueEnd++] = data;
 
-        if(queueEnd >= queueSize) queueEnd = 0;
-        if(queueEnd == queueStart){
+        if (queueEnd >= queueSize) queueEnd = 0;
+        if (queueEnd == queueStart) {
             full = 1;
-            if((++queueStart) >= queueSize) queueStart = 0;
+            if (++queueStart >= queueSize) queueStart = 0;
         }
         return full;
     }
@@ -121,8 +118,8 @@ public:
      * @return  1  Is empty
      *          0  Is not empty
      */
-    int empty(void){
-        if(queueEnd == queueStart) return 1;
+    int empty() const {
+        if (queueEnd == queueStart) return 1;
         else return 0;
     }
 
@@ -131,7 +128,7 @@ public:
      * Read Queue head (without deleting it)
      * @return  The queue head
      */
-    QueueDataType front(void){
+    QueueDataType front() {
         return queueData[queueStart];
     }
 
@@ -139,41 +136,40 @@ public:
     /**
      * Delete Queue head. (If queue is empty, nothing happens)
      */
-    void pop(void){
-        if(empty()) return;
-        if((++queueStart) >= queueSize) queueStart = 0;
+    void pop() {
+        if (empty()) return;
+        if (++queueStart >= queueSize) queueStart = 0;
     }
 
     /*
     * return queueSize
     */
-    int Size(void){
-        return (queueSize-1);
+    int Size() const {
+        return queueSize - 1;
     }
-    
+
     /**
      * Debug Print
      */
-    void print(void){
-    #   ifdef DEBUG_EASY_QUEUE_
+    void print() {
+#ifdef DEBUG_EASY_QUEUE_
         int i;
         printf("\nQueue: ");
 
-        for(i=0; i<queueSize; i++){
-            if(i==queueStart)
+        for (i = 0; i < queueSize; i++) {
+            if (i == queueStart)
                 printf(" [");
             printf(" %d ", (int)(queueData[i]));
-            if(i==queueEnd)
+            if (i == queueEnd)
                 printf("] ");
         }
 
-        if( Queue_Empty() ){
+        if (Queue_Empty()) {
             printf(" Empty ");
         }
         printf("\n ");
-    #   endif
+#endif
     }
-
 
 private:
     QueueDataType* queueData;

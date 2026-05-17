@@ -51,12 +51,13 @@
 #define EP_ID_BITS_            (11)
 #define EP_ID_MASK_   (0x000007ffu)
 
-typedef struct{
-    uint32      cmd  : EP_CMD_BITS_;      // Command Identifier (e.g. EP_CMD_RPY_ is one of the possible Command Identifier).
-    uint32      qos  : EP_QOS_BITS_;      // Quality-of-Service of the source device (only available on certain Models).
-    uint32    fromId : EP_ID_BITS_;       // The Device Short-ID indicating the source of the data being delivered.
-    uint32      toId : EP_ID_BITS_;       // The Device Short-ID indicating the destination of the data being delivered.
+typedef struct {
+    uint32 cmd : EP_CMD_BITS_; // Command Identifier (e.g. EP_CMD_RPY_ is one of the possible Command Identifier).
+    uint32 qos : EP_QOS_BITS_; // Quality-of-Service of the source device (only available on certain Models).
+    uint32 fromId : EP_ID_BITS_; // The Device Short-ID indicating the source of the data being delivered.
+    uint32 toId : EP_ID_BITS_; // The Device Short-ID indicating the destination of the data being delivered.
 } Ep_Header;
+
 // Header
 //--------------------------------------------------------------
 
@@ -66,7 +67,7 @@ typedef struct{
 #define EP_ID_BROADCAST_          ((EP_ID_TYPE_) 0x0000)
 #define EP_ID_UNSPECIFIED_        ((EP_ID_TYPE_) 0x0001)
 #define EP_ID_HOST_               ((EP_ID_TYPE_) 0x0002)  // HOST refers to PCs or similar
-                                                          //   e.g. the Host is the PC running ImuAssistant
+//   e.g. the Host is the PC running ImuAssistant
 // Common ID Definition
 //--------------------------------------------------------------
 
@@ -95,117 +96,118 @@ typedef struct{
 //--------------------------------------------------------------
 
 
-typedef struct{
-    Ep_Header         header;
-    EP_CMD_TYPE_      cmdAck;      // The command it acknowledges to
+typedef struct {
+    Ep_Header header;
+    EP_CMD_TYPE_ cmdAck; // The command it acknowledges to
 } Ep_Ack;
 
-typedef struct{
-    Ep_Header         header;
-    EP_CMD_TYPE_  cmdRequest;      // The command requested
+typedef struct {
+    Ep_Header header;
+    EP_CMD_TYPE_ cmdRequest; // The command requested
 } Ep_Request;
 
 typedef struct {
-    Ep_Header      header;
-    uint32      timeStamp;         // Timestamp              (Unit: uS)
-    float32   temperature;         // Sensor temperature     (Unit: Celcius)
-    uint16     updateRate;         // Internal sampling rate (Unit: Hz)
+    Ep_Header header;
+    uint32 timeStamp; // Timestamp              (Unit: uS)
+    float32 temperature; // Sensor temperature     (Unit: Celcius)
+    uint16 updateRate; // Internal sampling rate (Unit: Hz)
 } Ep_Status;
 
-typedef struct{
-    Ep_Header      header;
-    uint32      timeStamp;         // Timestamp when the data is sampled (Unit: uS)
-    float32       gyro[3];         // Gyro raw data         (Unit: rad/s)
-    float32        acc[3];         // Accel raw data        (Unit: g)
-    float32        mag[3];         // Magnetometer raw data (Unit: one earth magnetic field)
+typedef struct {
+    Ep_Header header;
+    uint32 timeStamp; // Timestamp when the data is sampled (Unit: uS)
+    float32 gyro[3]; // Gyro raw data         (Unit: rad/s)
+    float32 acc[3]; // Accel raw data        (Unit: g)
+    float32 mag[3]; // Magnetometer raw data (Unit: one earth magnetic field)
 } Ep_Raw_GyroAccMag;
 
-typedef union{
+typedef union {
     uint16 all_Bits;
-    struct{
-        uint16 qos  : 3;  // Quality of Service.
-                          // 0: Service unavailable due to boot or in sleep mode.
-                          // 1: Service unavailable due to System Fault.
-                          // 2: Limited Service -- Some functions are not available / Very limited measurement accuracy
-                          //                    (e.g. After Dynamic Boot)
-                          // 3: Basic Service   -- All functions available and providing basic performance.
-                          //                    (e.g. After Static Boot)
-                          // 4: Fine Service    -- All function available and providing fine performance.
-                          //                    (e.g. DynamicGyroCalib success 30 seconds after boot)
-                          // 5: Very Good Service -- All function available and providing very good performance.
-                          //                    (e.g. Two DynamicGyroCalib success after 5 minutes)
-                          // 6: Reserved.
-                          // 7: Use extended QoS definition.
-        uint16      :13;  // Unused Bits
-    }bits;
+
+    struct {
+        uint16 qos : 3; // Quality of Service.
+        // 0: Service unavailable due to boot or in sleep mode.
+        // 1: Service unavailable due to System Fault.
+        // 2: Limited Service -- Some functions are not available / Very limited measurement accuracy
+        //                    (e.g. After Dynamic Boot)
+        // 3: Basic Service   -- All functions available and providing basic performance.
+        //                    (e.g. After Static Boot)
+        // 4: Fine Service    -- All function available and providing fine performance.
+        //                    (e.g. DynamicGyroCalib success 30 seconds after boot)
+        // 5: Very Good Service -- All function available and providing very good performance.
+        //                    (e.g. Two DynamicGyroCalib success after 5 minutes)
+        // 6: Reserved.
+        // 7: Use extended QoS definition.
+        uint16  : 13; // Unused Bits
+    } bits;
 } Ep_Status_SysState;
 
-typedef struct{
-    Ep_Header            header;
-    uint32            timeStamp;   // Timestamp when the data is sampled (Unit: uS)
-    Ep_Status_SysState sysState;   // It includes Quality of Service (Refer to the above Ep_Status_SysState definition)
-    int16          roll;           // Unit: 0.01 degree
-    int16          pitch;          // Unit: 0.01 degree
-    uint16         yaw;            // Unit: 0.01 degree
-    int32          q1;             // Quaternion in (w,x,y,z)format. Must convert unit before use: q1*(1e-7f)
-    int32          q2;             // Quaternion in (w,x,y,z)format. Must convert unit before use: q2*(1e-7f)
-    int32          q3;             // Quaternion in (w,x,y,z)format. Must convert unit before use: q3*(1e-7f)
-    int32          q4;             // Quaternion in (w,x,y,z)format. Must convert unit before use: q4*(1e-7f)
-    int32          wx;             // Gyroscope. Unit: 0.00001 rad/s 
-    int32          wy;             // Gyroscope. Unit: 0.00001 rad/s 
-    int32          wz;             // Gyroscope. Unit: 0.00001 rad/s 
-    int32          ax;             // Accelerometer. Unit: 0.00001 g   ( 1g = 9.794m/(s^2) )
-    int32          ay;             // Accelerometer. Unit: 0.00001 g   ( 1g = 9.794m/(s^2) )
-    int32          az;             // Accelerometer. Unit: 0.00001 g   ( 1g = 9.794m/(s^2) )
-    int16          mx;             // Must convert unit before use: mx*(1e-3f)
-    int16          my;             // Must convert unit before use: my*(1e-3f)
-    int16          mz;             // Must convert unit before use: mz*(1e-3f)
-    int8           temperature;    // Unit: Celcius
-    uint8          updateRate;     // Unit: 10 Hz
-    uint16         reserved1;      
-    uint16         simpleChecksum; // Sum of the Ep_Combo data structure byte per byte except simpleChecksum itself. (see main_example.c for how to use it)
+typedef struct {
+    Ep_Header header;
+    uint32 timeStamp; // Timestamp when the data is sampled (Unit: uS)
+    Ep_Status_SysState sysState; // It includes Quality of Service (Refer to the above Ep_Status_SysState definition)
+    int16 roll; // Unit: 0.01 degree
+    int16 pitch; // Unit: 0.01 degree
+    uint16 yaw; // Unit: 0.01 degree
+    int32 q1; // Quaternion in (w,x,y,z)format. Must convert unit before use: q1*(1e-7f)
+    int32 q2; // Quaternion in (w,x,y,z)format. Must convert unit before use: q2*(1e-7f)
+    int32 q3; // Quaternion in (w,x,y,z)format. Must convert unit before use: q3*(1e-7f)
+    int32 q4; // Quaternion in (w,x,y,z)format. Must convert unit before use: q4*(1e-7f)
+    int32 wx; // Gyroscope. Unit: 0.00001 rad/s
+    int32 wy; // Gyroscope. Unit: 0.00001 rad/s
+    int32 wz; // Gyroscope. Unit: 0.00001 rad/s
+    int32 ax; // Accelerometer. Unit: 0.00001 g   ( 1g = 9.794m/(s^2) )
+    int32 ay; // Accelerometer. Unit: 0.00001 g   ( 1g = 9.794m/(s^2) )
+    int32 az; // Accelerometer. Unit: 0.00001 g   ( 1g = 9.794m/(s^2) )
+    int16 mx; // Must convert unit before use: mx*(1e-3f)
+    int16 my; // Must convert unit before use: my*(1e-3f)
+    int16 mz; // Must convert unit before use: mz*(1e-3f)
+    int8 temperature; // Unit: Celcius
+    uint8 updateRate; // Unit: 10 Hz
+    uint16 reserved1;
+    uint16 simpleChecksum; // Sum of the Ep_Combo data structure byte per byte except simpleChecksum itself. (see main_example.c for how to use it)
 } Ep_Combo;
 
-typedef struct{
-    Ep_Header      header;
-    uint32      timeStamp;         // Timestamp when the Quaternion is calculated (Unit: uS)
-    float32          q[4];         // Quaternion representing the rotation from the current sensor frame to the initial (power-on) sensor frame.
+typedef struct {
+    Ep_Header header;
+    uint32 timeStamp; // Timestamp when the Quaternion is calculated (Unit: uS)
+    float32 q[4]; // Quaternion representing the rotation from the current sensor frame to the initial (power-on) sensor frame.
 } Ep_Q_s1_s;
 
-typedef struct{
-    Ep_Header      header;
-    uint32      timeStamp;         // Timestamp when the Quaternion is calculated (Unit: uS)
-    float32          q[4];         // Quaternion representing the rotation from the current sensor frame to the Earth frame.
+typedef struct {
+    Ep_Header header;
+    uint32 timeStamp; // Timestamp when the Quaternion is calculated (Unit: uS)
+    float32 q[4]; // Quaternion representing the rotation from the current sensor frame to the Earth frame.
 } Ep_Q_s1_e;
 
-typedef struct{
-    Ep_Header      header;
-    uint32      timeStamp;         // Timestamp when the Eular angles are calculated (Unit: uS)
-    float32           psi;         // Eular angle (psi)   from the current sensor frame to the initial (power-on) sensor frame (Unit: degree)
-    float32         theta;         // Eular angle (theta) from the current sensor frame to the initial (power-on) sensor frame (Unit: degree)
-    float32           phi;         // Eular angle (phi)   from the current sensor frame to the initial (power-on) sensor frame (Unit: degree)
+typedef struct {
+    Ep_Header header;
+    uint32 timeStamp; // Timestamp when the Eular angles are calculated (Unit: uS)
+    float32 psi; // Eular angle (psi)   from the current sensor frame to the initial (power-on) sensor frame (Unit: degree)
+    float32 theta; // Eular angle (theta) from the current sensor frame to the initial (power-on) sensor frame (Unit: degree)
+    float32 phi; // Eular angle (phi)   from the current sensor frame to the initial (power-on) sensor frame (Unit: degree)
 } Ep_Euler_s1_s;
 
-typedef struct{
-    Ep_Header      header;
-    uint32      timeStamp;         // Timestamp when the Eular angles are calculated (Unit: uS)
-    float32           psi;         // Eular angle (psi)   from the current sensor frame to the Earth frame (Unit: degree)
-    float32         theta;         // Eular angle (theta) from the current sensor frame to the Earth frame (Unit: degree)
-    float32           phi;         // Eular angle (phi)   from the current sensor frame to the Earth frame (Unit: degree)
+typedef struct {
+    Ep_Header header;
+    uint32 timeStamp; // Timestamp when the Eular angles are calculated (Unit: uS)
+    float32 psi; // Eular angle (psi)   from the current sensor frame to the Earth frame (Unit: degree)
+    float32 theta; // Eular angle (theta) from the current sensor frame to the Earth frame (Unit: degree)
+    float32 phi; // Eular angle (phi)   from the current sensor frame to the Earth frame (Unit: degree)
 } Ep_Euler_s1_e;
 
-typedef struct{
-    Ep_Header      header;
-    uint32      timeStamp;          // Timestamp when the Roll Pitch Yaw angles are calculated (Unit: uS)
-    float32          roll;          // Roll                (Unit: degree)
-    float32         pitch;          // Pitch               (Unit: degree)
-    float32           yaw;          // Yaw (i.e. Heading)  (Unit: degree)
+typedef struct {
+    Ep_Header header;
+    uint32 timeStamp; // Timestamp when the Roll Pitch Yaw angles are calculated (Unit: uS)
+    float32 roll; // Roll                (Unit: degree)
+    float32 pitch; // Pitch               (Unit: degree)
+    float32 yaw; // Yaw (i.e. Heading)  (Unit: degree)
 } Ep_RPY;
 
-typedef struct{
-    Ep_Header      header;
-    uint32      timeStamp;          // Timestamp when the Gravity Vector is calculated (Unit: uS)
-    float32          g[3];          // (g[0], g[1], g[2]) represents the vector of Earth Gravity in the sensor frame (Unit: g)
+typedef struct {
+    Ep_Header header;
+    uint32 timeStamp; // Timestamp when the Gravity Vector is calculated (Unit: uS)
+    float32 g[3]; // (g[0], g[1], g[2]) represents the vector of Earth Gravity in the sensor frame (Unit: g)
 } Ep_Gravity;
 
 
@@ -225,20 +227,19 @@ Q_DECLARE_METATYPE(Ep_Combo)
 #endif
 
 
-
 //------------------------------------------------------------------------
 // Object Items Database
 
 #define EOD_DB_SIZE_    (11)
 
-typedef struct{
-    EP_CMD_TYPE_         cmd;
-    uint16              size;
+typedef struct {
+    EP_CMD_TYPE_ cmd;
+    uint16 size;
 } EOD_DB_Static;
 
-typedef struct{
-    void*               data;
-    __IO uint8         mutex;
+typedef struct {
+    void* data;
+    __IO uint8 mutex;
 } EOD_DB_Dynamic;
 
 #define EOD_MUTEX_LOCKED_        (0x1u)
@@ -246,22 +247,22 @@ typedef struct{
 #define EOD_MUTEX_WRITE_PROTECT_ (0x4u)
 #define EOD_MUTEX_READ_PROTECT_  (0x8u)
 
-    // The Static DataBase:
-const EOD_DB_Static   eOD_DB_Static[ EOD_DB_SIZE_ ] = {
-    {EP_CMD_REQUEST_,         sizeof(Ep_Request)         },
-    {EP_CMD_ACK_,             sizeof(Ep_Ack)             },
-    {EP_CMD_STATUS_,          sizeof(Ep_Status)          },
-    {EP_CMD_Raw_GYRO_ACC_MAG_,sizeof(Ep_Raw_GyroAccMag)  },
-    {EP_CMD_Q_S1_S_,          sizeof(Ep_Q_s1_s)          },
-    {EP_CMD_Q_S1_E_,          sizeof(Ep_Q_s1_e)          },
-    {EP_CMD_EULER_S1_S_,      sizeof(Ep_Euler_s1_s)      },
-    {EP_CMD_EULER_S1_E_,      sizeof(Ep_Euler_s1_e)      },
-    {EP_CMD_RPY_,             sizeof(Ep_RPY)             },
-    {EP_CMD_GRAVITY_,         sizeof(Ep_Gravity)         },
-    {EP_CMD_COMBO_,           sizeof(Ep_Combo)           }
+// The Static DataBase:
+const EOD_DB_Static eOD_DB_Static[EOD_DB_SIZE_] = {
+    {EP_CMD_REQUEST_, sizeof(Ep_Request)},
+    {EP_CMD_ACK_, sizeof(Ep_Ack)},
+    {EP_CMD_STATUS_, sizeof(Ep_Status)},
+    {EP_CMD_Raw_GYRO_ACC_MAG_, sizeof(Ep_Raw_GyroAccMag)},
+    {EP_CMD_Q_S1_S_, sizeof(Ep_Q_s1_s)},
+    {EP_CMD_Q_S1_E_, sizeof(Ep_Q_s1_e)},
+    {EP_CMD_EULER_S1_S_, sizeof(Ep_Euler_s1_s)},
+    {EP_CMD_EULER_S1_E_, sizeof(Ep_Euler_s1_e)},
+    {EP_CMD_RPY_, sizeof(Ep_RPY)},
+    {EP_CMD_GRAVITY_, sizeof(Ep_Gravity)},
+    {EP_CMD_COMBO_, sizeof(Ep_Combo)}
 };
 
-    // The Dynamic DataBase:
+// The Dynamic DataBase:
 #define EOD_DB_DYNAMIC_INIT    {\
     {&ep_Request,         EOD_MUTEX_UNLOCKED_      },\
     {&ep_Ack,             EOD_MUTEX_UNLOCKED_      },\
@@ -279,107 +280,108 @@ const EOD_DB_Static   eOD_DB_Static[ EOD_DB_SIZE_ ] = {
 //------------------------------------------------------------------------
 
 
-
 #ifdef EP_PLATFORM_QT5_
 class EasyObjectDictionary : public QObject {
     Q_OBJECT
 #else
 class EasyObjectDictionary {
 #endif
+
 public:
     EasyObjectDictionary();
     ~EasyObjectDictionary();
 
-//------------------------------------------------------------------------
-// Basic Read & Write
+    //------------------------------------------------------------------------
+    // Basic Read & Write
 public:
     // Whole Object:
-    int Write(char* dataIn, int lengthIn, Ep_Header* headerOut);        // ByteArray -> OD
-    int Read(EP_CMD_TYPE_ cmdIn, char** dataOut, int* lengthOut);       // ByteArray <= OD
+    int Write(char* dataIn, int lengthIn, Ep_Header* headerOut); // ByteArray -> OD
+    int Read(EP_CMD_TYPE_ cmdIn, char** dataOut, int* lengthOut); // ByteArray <= OD
 
     // Only Header:
-    int Write_Header(EP_CMD_TYPE_ cmdIn, Ep_Header headerIn);           // headerIn  -> OD
-    int Write_Header_toId(EP_CMD_TYPE_ cmdIn, EP_ID_TYPE_ toIdIn);      // toIdIn    -> OD
-    int Read_Header(EP_CMD_TYPE_ cmdIn, Ep_Header* headerOut);          // headerOut <- OD
-    int Read_Header(char* dataIn,  int lengthIn, Ep_Header* headerOut); // headerOut <- ByteArray
-// Basic Read & Write 
-//------------------------------------------------------------------------
+    int Write_Header(EP_CMD_TYPE_ cmdIn, Ep_Header headerIn); // headerIn  -> OD
+    int Write_Header_toId(EP_CMD_TYPE_ cmdIn, EP_ID_TYPE_ toIdIn); // toIdIn    -> OD
+    int Read_Header(EP_CMD_TYPE_ cmdIn, Ep_Header* headerOut); // headerOut <- OD
+    int Read_Header(char* dataIn, int lengthIn, Ep_Header* headerOut); // headerOut <- ByteArray
+    // Basic Read & Write
+    //------------------------------------------------------------------------
 
 
-// Maximum Size of Object Data:
+    // Maximum Size of Object Data:
 public:
-    int Get_MaxSize();
+    int Get_MaxSize() const;
+
 private:
     int maxSize;
 
 
-// Object Data:
+    // Object Data:
 private:
-    Ep_Request        ep_Request;
-    Ep_Ack            ep_Ack;
-    Ep_Status         ep_Status;
+    Ep_Request ep_Request;
+    Ep_Ack ep_Ack;
+    Ep_Status ep_Status;
     Ep_Raw_GyroAccMag ep_Raw_GyroAccMag;
-    Ep_Q_s1_s         ep_Q_s1_s;
-    Ep_Q_s1_e         ep_Q_s1_e;
-    Ep_Euler_s1_s     ep_Euler_s1_s;
-    Ep_Euler_s1_e     ep_Euler_s1_e;
-    Ep_RPY            ep_RPY;
-    Ep_Gravity        ep_Gravity;
-    Ep_Combo          ep_Combo;
+    Ep_Q_s1_s ep_Q_s1_s;
+    Ep_Q_s1_e ep_Q_s1_e;
+    Ep_Euler_s1_s ep_Euler_s1_s;
+    Ep_Euler_s1_e ep_Euler_s1_e;
+    Ep_RPY ep_RPY;
+    Ep_Gravity ep_Gravity;
+    Ep_Combo ep_Combo;
 
 
-//------------------------------------------------------------------------
-// Advanced Read & Write
+    //------------------------------------------------------------------------
+    // Advanced Read & Write
 public:
-    int Write_Ep_Ack(   EP_ID_TYPE_ toId, EP_CMD_TYPE_ cmdAck); 
+    int Write_Ep_Ack(EP_ID_TYPE_ toId, EP_CMD_TYPE_ cmdAck);
     int Write_Ep_Status(EP_ID_TYPE_ toId, uint32 timeStamp, float32 temperature, uint16 updateRate);
     int Write_Ep_Raw_GyroAccMag(EP_ID_TYPE_ toId, uint32 timeStamp,
                                 float wx, float wy, float wz,
                                 float ax, float ay, float az,
                                 float mx, float my, float mz);
-    int Write_Ep_Q_s1_s(    EP_ID_TYPE_ toId, uint32 timeStamp, float q1, float q2, float q3, float q4);
+    int Write_Ep_Q_s1_s(EP_ID_TYPE_ toId, uint32 timeStamp, float q1, float q2, float q3, float q4);
     int Write_Ep_Euler_s1_s(EP_ID_TYPE_ toId, uint32 timeStamp, float psi, float theta, float phi);
-    int Write_Ep_Q_s1_e(    EP_ID_TYPE_ toId, uint32 timeStamp, float q1, float q2, float q3, float q4);
+    int Write_Ep_Q_s1_e(EP_ID_TYPE_ toId, uint32 timeStamp, float q1, float q2, float q3, float q4);
     int Write_Ep_Euler_s1_e(EP_ID_TYPE_ toId, uint32 timeStamp, float psi, float theta, float phi);
-    int Write_Ep_RPY(       EP_ID_TYPE_ toId, uint32 timeStamp, float roll, float pitch, float yaw);
-    int Write_Ep_Gravity(   EP_ID_TYPE_ toId, uint32 timeStamp, float gravityX, float gravityY, float gravityZ);
-    int Write_Ep_Request(   EP_ID_TYPE_ toId, EP_CMD_TYPE_ cmdRequest);
-    int Write_Ep_Combo(     EP_ID_TYPE_ toId, uint32 timeStamp,
-                                Ep_Status_SysState sys, 
-                                int16 roll,int16 pitch, uint16 yaw,
-                                int32 q1, int32 q2, int32 q3, int32 q4,
-                                int32 wx, int32 wy, int32 wz,
-                                int32 ax, int32 ay, int32 az,
-                                int16 mx, int16 my, int16 mz,
-                                int8 temperature,uint8 updateRate,uint16 reserved1,uint16 simpleChecksum);
+    int Write_Ep_RPY(EP_ID_TYPE_ toId, uint32 timeStamp, float roll, float pitch, float yaw);
+    int Write_Ep_Gravity(EP_ID_TYPE_ toId, uint32 timeStamp, float gravityX, float gravityY, float gravityZ);
+    int Write_Ep_Request(EP_ID_TYPE_ toId, EP_CMD_TYPE_ cmdRequest);
+    int Write_Ep_Combo(EP_ID_TYPE_ toId, uint32 timeStamp,
+                       Ep_Status_SysState sys,
+                       int16 roll, int16 pitch, uint16 yaw,
+                       int32 q1, int32 q2, int32 q3, int32 q4,
+                       int32 wx, int32 wy, int32 wz,
+                       int32 ax, int32 ay, int32 az,
+                       int16 mx, int16 my, int16 mz,
+                       int8 temperature, uint8 updateRate, uint16 reserved1, uint16 simpleChecksum);
 
 
-    int Read_Ep_Request(    Ep_Request*    dataOut);
-    int Read_Ep_Ack(        Ep_Ack*        dataOut);
-    int Read_Ep_Status(     Ep_Status*     dataOut);                      
+    int Read_Ep_Request(Ep_Request* dataOut);
+    int Read_Ep_Ack(Ep_Ack* dataOut);
+    int Read_Ep_Status(Ep_Status* dataOut);
     int Read_Ep_Raw_GyroAccMag(Ep_Raw_GyroAccMag* dataOut);
-    int Read_Ep_Q_s1_s(     Ep_Q_s1_s*     dataOut);
-    int Read_Ep_Euler_s1_s( Ep_Euler_s1_s* dataOut);
-    int Read_Ep_Q_s1_e(     Ep_Q_s1_e*     dataOut);
-    int Read_Ep_Euler_s1_e( Ep_Euler_s1_e* dataOut);
-    int Read_Ep_RPY(        Ep_RPY*        dataOut);
-    int Read_Ep_Gravity(    Ep_Gravity*    dataOut);
-    int Read_Ep_Combo(      Ep_Combo*      dataOut);
-// Advanced Read & Write 
-//------------------------------------------------------------------------
+    int Read_Ep_Q_s1_s(Ep_Q_s1_s* dataOut);
+    int Read_Ep_Euler_s1_s(Ep_Euler_s1_s* dataOut);
+    int Read_Ep_Q_s1_e(Ep_Q_s1_e* dataOut);
+    int Read_Ep_Euler_s1_e(Ep_Euler_s1_e* dataOut);
+    int Read_Ep_RPY(Ep_RPY* dataOut);
+    int Read_Ep_Gravity(Ep_Gravity* dataOut);
+    int Read_Ep_Combo(Ep_Combo* dataOut);
+    // Advanced Read & Write
+    //------------------------------------------------------------------------
 
 
-//------------------------------------------------------------------------
-// Object Items Database
+    //------------------------------------------------------------------------
+    // Object Items Database
 public:
-    int  EOD_DB_SetWriteProtect(EP_CMD_TYPE_ cmdIn, bool enable);
-    int  EOD_DB_SetReadProtect(EP_CMD_TYPE_ cmdIn, bool enable);
-protected:
-    int  EOD_DB_FindKey(EP_CMD_TYPE_ cmdIn);
-    EOD_DB_Dynamic   eOD_DB_Dynamic[ EOD_DB_SIZE_ ];
-// Object Items Database
-//------------------------------------------------------------------------
+    int EOD_DB_SetWriteProtect(EP_CMD_TYPE_ cmdIn, bool enable);
+    int EOD_DB_SetReadProtect(EP_CMD_TYPE_ cmdIn, bool enable);
 
+protected:
+    int EOD_DB_FindKey(EP_CMD_TYPE_ cmdIn);
+    EOD_DB_Dynamic eOD_DB_Dynamic[EOD_DB_SIZE_];
+    // Object Items Database
+    //------------------------------------------------------------------------
 };
 
 
