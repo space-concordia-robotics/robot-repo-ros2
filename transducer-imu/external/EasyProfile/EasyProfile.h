@@ -2,7 +2,7 @@
  * Easy Profile
  *
  * @brief  Managing the user-logic for sending and receiving Objects (items of the
- *         Object Dictionary (OD)). 
+ *         Object Dictionary (OD)).
  *
  * @version 1.1.9     - Jul 02, 2016
  *          1.1.9 (R) - Jul 27, 2016 - Release Version
@@ -45,25 +45,26 @@ class EasyProfile : public QObject {
 #else
 class EasyProfile {
 #endif
+
 public:
-    EasyProfile(EasyObjectDictionary *eOD_i);
+    EasyProfile(EasyObjectDictionary* eOD_i);
     ~EasyProfile();
 
-// Send & Recv Pkg:
+    // Send & Recv Pkg:
 public:
-    int   On_SendPkg(EP_CMD_TYPE_ txPkgCmd, EP_ID_TYPE_ *toId, char **pkgData, int *pkgSize);
-    int   On_RecvPkg(char* data, int dataSize, Ep_Header* header);
+    int On_SendPkg(EP_CMD_TYPE_ txPkgCmd, EP_ID_TYPE_* toId, char** pkgData, int* pkgSize) const;
+    int On_RecvPkg(char* data, int dataSize, Ep_Header* header) const;
 
-// External Object Dictionary:
+    // External Object Dictionary:
 protected:
     EasyObjectDictionary* eOD;
 
-// Easy Protocol:
+    // Easy Protocol:
 protected:
-    EasyProtocol *eP;
+    EasyProtocol* eP;
 
 #ifdef EP_PLATFORM_QT5_
-signals:
+    signals  :
     void Sig_RX_Data(const Ep_Request& ep_Request);
     void Sig_RX_Data(const Ep_Ack& ep_Ack);
     void Sig_RX_Data(const Ep_Status& ep_Status);

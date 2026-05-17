@@ -36,111 +36,111 @@
 
 //---------------------------------------------------
 //Select Platform
-    //#define EP_PLATFORM_QT5_
-    //#define EP_PLATFORM_STM32F10x_KEIL_
-    //#define EP_PLATFORM_STM8_IAR_
-    #define SA_PLATFORM_DEFAULT_
+//#define EP_PLATFORM_QT5_
+//#define EP_PLATFORM_STM32F10x_KEIL_
+//#define EP_PLATFORM_STM8_IAR_
+#define SA_PLATFORM_DEFAULT_
 //Select Platform
 //---------------------------------------------------
 
-    /// Basic Type Definition
-    #ifdef SA_PLATFORM_DEFAULT_
-        #include "stdint.h"
-        typedef uint32_t      uint32;
-        typedef int32_t       int32;
-        typedef uint16_t      uint16;
-        typedef int16_t       int16;
-        typedef uint8_t       uint8;
-        typedef int8_t        int8;
-        typedef float         float32;
-        #ifndef __IO
-        #define __IO          volatile
-        #endif
-    #endif
+/// Basic Type Definition
+#ifdef SA_PLATFORM_DEFAULT_
+#include "stdint.h"
+typedef uint32_t uint32;
+typedef int32_t int32;
+typedef uint16_t uint16;
+typedef int16_t int16;
+typedef uint8_t uint8;
+typedef int8_t int8;
+typedef float float32;
+#ifndef __IO
+#define __IO          volatile
+#endif
+#endif
 
-    #ifdef EP_PLATFORM_QT5_
-        #include <QtGlobal>
-        #include <QtCore>
-        typedef quint64       uint64;
-        typedef qint64        int64;
-        typedef quint32       uint32;
-        typedef qint32        int32;
-        typedef quint16       uint16;
-        typedef qint16        int16;
-        typedef quint8        uint8;
-        typedef qint8         int8;
-        typedef float         float32;
-        typedef double        float64;
-        #ifndef __IO
-        #define __IO volatile
-        #endif
-    #endif
+#ifdef EP_PLATFORM_QT5_
+#include <QtGlobal>
+#include <QtCore>
+typedef quint64 uint64;
+typedef qint64 int64;
+typedef quint32 uint32;
+typedef qint32 int32;
+typedef quint16 uint16;
+typedef qint16 int16;
+typedef quint8 uint8;
+typedef qint8 int8;
+typedef float float32;
+typedef double float64;
+#ifndef __IO
+#define __IO volatile
+#endif
+#endif
 
-    #if defined(ARDUINO)
-        typedef unsigned long uint32;
-        typedef long          int32;
-        typedef unsigned int  uint16;
-        typedef int           int16;
-        typedef unsigned char uint8;
-        typedef char          int8;
-        typedef float         float32;
-    #endif
+#if defined(ARDUINO)
+typedef unsigned long uint32;
+typedef long int32;
+typedef unsigned int uint16;
+typedef int int16;
+typedef unsigned char uint8;
+typedef char int8;
+typedef float float32;
+#endif
 
-    #ifdef EP_PLATFORM_STM8_IAR_
-        typedef unsigned long uint32;
-        typedef long          int32;
-        typedef unsigned int  uint16;
-        typedef int           int16;
-        typedef unsigned char uint8;
-        typedef char          int8;
-        typedef float         float32;
-    #endif
+#ifdef EP_PLATFORM_STM8_IAR_
+typedef unsigned long uint32;
+typedef long int32;
+typedef unsigned int uint16;
+typedef int int16;
+typedef unsigned char uint8;
+typedef char int8;
+typedef float float32;
+#endif
 
-    #ifdef EP_PLATFORM_STM32F10x_KEIL_
-        #include "stm32f1xx_hal.h"
-        typedef uint32_t     uint32;
-        typedef int32_t      int32;
-        typedef uint16_t     uint16;
-        typedef int16_t      int16;
-        typedef uint8_t      uint8;
-        typedef int8_t       int8;
-        typedef float        float32;
-    #endif
-
-
-    /// Return Values
-    #ifndef EP_FAIL_
-    #define EP_FAIL_         ((int16)1)
-    #endif
-    #ifndef EP_NORMAL_EXIT_
-    #define EP_NORMAL_EXIT_  ((int16)2)
-    #endif
-    #ifndef EP_SUCC_
-    #define EP_SUCC_         ((int16)4)
-    #endif
-    #ifndef EP_BUSY_
-    #define EP_BUSY_         ((int16)8)
-    #endif
-    #ifndef EP_TIMEOUT_
-    #define EP_TIMEOUT_      ((int16)16)
-    #endif
-    #ifndef EP_QUEUE_EMPTY_
-    #define EP_QUEUE_EMPTY_  ((int16)32)
-    #endif
-    #ifndef EP_MUTEX_LOCKED_
-    #define EP_MUTEX_LOCKED_  ((int16)64)
-    #endif
+#ifdef EP_PLATFORM_STM32F10x_KEIL_
+#include "stm32f1xx_hal.h"
+typedef uint32_t uint32;
+typedef int32_t int32;
+typedef uint16_t uint16;
+typedef int16_t int16;
+typedef uint8_t uint8;
+typedef int8_t int8;
+typedef float float32;
+#endif
 
 
-    /// Checksum Options
-    #ifndef EP_CHECKSUM_1_BYTE_SUM_
-    #define EP_CHECKSUM_1_BYTE_SUM_   ((int8) 1)
-    #endif
-    #ifndef EP_CHECKSUM_2_BYTES_SUM_
-    #define EP_CHECKSUM_2_BYTES_SUM_  ((int8) 2)
-    #endif
-    #ifndef EP_CHECKSUM_2_BYTES_CRC_
-    #define EP_CHECKSUM_2_BYTES_CRC_  ((int8) 4)
-    #endif
+/// Return Values
+#ifndef EP_FAIL_
+#define EP_FAIL_         ((int16)1)
+#endif
+#ifndef EP_NORMAL_EXIT_
+#define EP_NORMAL_EXIT_  ((int16)2)
+#endif
+#ifndef EP_SUCC_
+#define EP_SUCC_         ((int16)4)
+#endif
+#ifndef EP_BUSY_
+#define EP_BUSY_         ((int16)8)
+#endif
+#ifndef EP_TIMEOUT_
+#define EP_TIMEOUT_      ((int16)16)
+#endif
+#ifndef EP_QUEUE_EMPTY_
+#define EP_QUEUE_EMPTY_  ((int16)32)
+#endif
+#ifndef EP_MUTEX_LOCKED_
+#define EP_MUTEX_LOCKED_  ((int16)64)
+#endif
+
+
+/// Checksum Options
+#ifndef EP_CHECKSUM_1_BYTE_SUM_
+#define EP_CHECKSUM_1_BYTE_SUM_   ((int8) 1)
+#endif
+#ifndef EP_CHECKSUM_2_BYTES_SUM_
+#define EP_CHECKSUM_2_BYTES_SUM_  ((int8) 2)
+#endif
+#ifndef EP_CHECKSUM_2_BYTES_CRC_
+#define EP_CHECKSUM_2_BYTES_CRC_  ((int8) 4)
+#endif
 
 #endif // BASICTYPES_H
