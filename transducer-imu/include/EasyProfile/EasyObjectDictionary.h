@@ -293,22 +293,20 @@ public:
 
     //------------------------------------------------------------------------
     // Basic Read & Write
-public:
     // Whole Object:
-    int Write(char* dataIn, int lengthIn, Ep_Header* headerOut); // ByteArray -> OD
+    int Write(const char* dataIn, int lengthIn, Ep_Header* headerOut); // ByteArray -> OD
     int Read(EP_CMD_TYPE_ cmdIn, char** dataOut, int* lengthOut); // ByteArray <= OD
 
     // Only Header:
     int Write_Header(EP_CMD_TYPE_ cmdIn, Ep_Header headerIn); // headerIn  -> OD
     int Write_Header_toId(EP_CMD_TYPE_ cmdIn, EP_ID_TYPE_ toIdIn); // toIdIn    -> OD
     int Read_Header(EP_CMD_TYPE_ cmdIn, Ep_Header* headerOut); // headerOut <- OD
-    int Read_Header(char* dataIn, int lengthIn, Ep_Header* headerOut); // headerOut <- ByteArray
+    static int Read_Header(const char* dataIn, int lengthIn, Ep_Header* headerOut); // headerOut <- ByteArray
     // Basic Read & Write
     //------------------------------------------------------------------------
 
 
     // Maximum Size of Object Data:
-public:
     int Get_MaxSize() const;
 
 private:
@@ -378,7 +376,7 @@ public:
     int EOD_DB_SetReadProtect(EP_CMD_TYPE_ cmdIn, bool enable);
 
 protected:
-    int EOD_DB_FindKey(EP_CMD_TYPE_ cmdIn);
+    static int EOD_DB_FindKey(EP_CMD_TYPE_ cmdIn);
     EOD_DB_Dynamic eOD_DB_Dynamic[EOD_DB_SIZE_];
     // Object Items Database
     //------------------------------------------------------------------------

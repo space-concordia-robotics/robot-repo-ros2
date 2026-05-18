@@ -67,9 +67,10 @@ EasyObjectDictionary::EasyObjectDictionary() {
 
     // Initialize Dynamic Database of Object Items:
     {
-        const EOD_DB_Dynamic arr[EOD_DB_SIZE_] = EOD_DB_DYNAMIC_INIT;
+        // ReSharper disable once CppLocalVariableMayBeConst
+        EOD_DB_Dynamic arr[EOD_DB_SIZE_] = EOD_DB_DYNAMIC_INIT;
         for (int i = 0; i < static_cast<signed>(EOD_DB_SIZE_ * sizeof(EOD_DB_Dynamic)); i++) {
-            *(reinterpret_cast<char*>(eOD_DB_Dynamic) + i) = *((char*)arr + i);
+            *(reinterpret_cast<char*>(eOD_DB_Dynamic) + i) = *(reinterpret_cast<const char*>(arr) + i);
         }
     }
 }
@@ -97,175 +98,188 @@ int EasyObjectDictionary::Get_MaxSize() const {
  */
 
 int EasyObjectDictionary::Write_Ep_Ack(
-    EP_ID_TYPE_ toId, ///< [INPUT] Destination ID of the package when it is to be sent
-    EP_CMD_TYPE_ cmdAck ///< [INPUT] The cmd it acknowledges to
+    const EP_ID_TYPE_ toId, ///< [INPUT] Destination ID of the package when it is to be sent
+    const EP_CMD_TYPE_ cmdAck ///< [INPUT] The cmd it acknowledges to
 ) {
-    Ep_Ack ep_Ack;
+    const auto ep_Ack = Ep_Ack{
+        .header = Ep_Header{
+            .cmd = EP_CMD_Raw_GYRO_ACC_MAG_,
+            .qos = global_SysQoS & EP_QOS_MASK_,
+            .fromId = global_SysShortId & EP_ID_MASK_,
+            .toId = toId & EP_ID_MASK_
+        },
+        .cmdAck = cmdAck
+    };
     Ep_Header headerOut;
-    ep_Ack.header.cmd = EP_CMD_ACK_;
-    ep_Ack.header.fromId = global_SysShortId & EP_ID_MASK_;
-    ep_Ack.header.qos = global_SysQoS & EP_QOS_MASK_;
-    ep_Ack.header.toId = toId & EP_ID_MASK_;
-    ep_Ack.cmdAck = cmdAck;
-    return Write((char*)&ep_Ack, sizeof(Ep_Ack), &headerOut);
+    return Write(reinterpret_cast<const char*>(&ep_Ack), sizeof(Ep_Ack), &headerOut);
 }
 
 int EasyObjectDictionary::Write_Ep_Status(
-    EP_ID_TYPE_ toId, ///< [INPUT]
+    const EP_ID_TYPE_ toId, ///< [INPUT]
     const uint32 timeStamp, ///< [INPUT]
     const float32 temperature, ///< [INPUT]
     const uint16 updateRate ///< [INPUT]
 ) {
-    Ep_Status ep_Status;
+    const Ep_Status ep_Status = {
+        .header = Ep_Header{
+            .cmd = EP_CMD_STATUS_,
+            .qos = global_SysQoS & EP_QOS_MASK_,
+            .fromId = global_SysShortId & EP_ID_MASK_,
+            .toId = toId & EP_ID_MASK_
+        },
+        .timeStamp = timeStamp,
+        .temperature = temperature,
+        .updateRate = updateRate
+    };
     Ep_Header headerOut;
-    ep_Status.header.cmd = EP_CMD_STATUS_;
-    ep_Status.header.fromId = global_SysShortId & EP_ID_MASK_;
-    ep_Status.header.qos = global_SysQoS & EP_QOS_MASK_;
-    ep_Status.header.toId = toId & EP_ID_MASK_;
-    ep_Status.timeStamp = timeStamp;
-    ep_Status.temperature = temperature;
-    ep_Status.updateRate = updateRate;
-    return Write((char*)&ep_Status, sizeof(Ep_Status), &headerOut);
+    return Write(reinterpret_cast<const char*>(&ep_Status), sizeof(Ep_Status), &headerOut);
 }
 
 int EasyObjectDictionary::Write_Ep_Q_s1_s(
-    EP_ID_TYPE_ toId, ///< [INPUT]
+    const EP_ID_TYPE_ toId, ///< [INPUT]
     const uint32 timeStamp, ///< [INPUT]
     const float q1, const float q2, const float q3, const float q4 ///< [INPUT]
 ) {
-    Ep_Q_s1_s ep_Q_s1_s;
+    const auto ep_Q_s1_s = Ep_Q_s1_s{
+        .header = Ep_Header{
+            .cmd = EP_CMD_Q_S1_S_,
+            .qos = global_SysQoS & EP_QOS_MASK_,
+            .fromId = global_SysShortId & EP_ID_MASK_,
+            .toId = toId & EP_ID_MASK_
+        },
+        .timeStamp = timeStamp,
+        .q = {q1, q2, q3, q4}
+    };
     Ep_Header headerOut;
-    ep_Q_s1_s.header.cmd = EP_CMD_Q_S1_S_;
-    ep_Q_s1_s.header.fromId = global_SysShortId & EP_ID_MASK_;
-    ep_Q_s1_s.header.qos = global_SysQoS & EP_QOS_MASK_;
-    ep_Q_s1_s.header.toId = toId & EP_ID_MASK_;
-    ep_Q_s1_s.timeStamp = timeStamp;
-    ep_Q_s1_s.q[0] = q1;
-    ep_Q_s1_s.q[1] = q2;
-    ep_Q_s1_s.q[2] = q3;
-    ep_Q_s1_s.q[3] = q4;
-    return Write((char*)&ep_Q_s1_s, sizeof(Ep_Q_s1_s), &headerOut);
+    return Write(reinterpret_cast<const char*>(&ep_Q_s1_s), sizeof(Ep_Q_s1_s), &headerOut);
 }
 
 int EasyObjectDictionary::Write_Ep_Raw_GyroAccMag(
-    EP_ID_TYPE_ toId, ///< [INPUT]
+    const EP_ID_TYPE_ toId, ///< [INPUT]
     const uint32 timeStamp, ///< [INPUT]
     const float wx, const float wy, const float wz, ///< [INPUT]
     const float ax, const float ay, const float az, ///< [INPUT]
     const float mx, const float my, const float mz ///< [INPUT]
 ) {
-    Ep_Raw_GyroAccMag ep_Raw_GyroAccMag;
+    const auto ep_Raw_GyroAccMag = Ep_Raw_GyroAccMag{
+        .header = Ep_Header{
+            .cmd = EP_CMD_Raw_GYRO_ACC_MAG_,
+            .qos = global_SysQoS & EP_QOS_MASK_,
+            .fromId = global_SysShortId & EP_ID_MASK_,
+            .toId = toId & EP_ID_MASK_
+        },
+        .timeStamp = timeStamp,
+        .gyro = {wx, wy, wz},
+        .acc = {ax, ay, az},
+        .mag = {mx, my, mz}
+    };
     Ep_Header headerOut;
-    ep_Raw_GyroAccMag.header.cmd = EP_CMD_Raw_GYRO_ACC_MAG_;
-    ep_Raw_GyroAccMag.header.fromId = global_SysShortId & EP_ID_MASK_;
-    ep_Raw_GyroAccMag.header.qos = global_SysQoS & EP_QOS_MASK_;
-    ep_Raw_GyroAccMag.header.toId = toId & EP_ID_MASK_;
-    ep_Raw_GyroAccMag.timeStamp = timeStamp;
-    ep_Raw_GyroAccMag.gyro[0] = wx;
-    ep_Raw_GyroAccMag.gyro[1] = wy;
-    ep_Raw_GyroAccMag.gyro[2] = wz;
-    ep_Raw_GyroAccMag.acc[0] = ax;
-    ep_Raw_GyroAccMag.acc[1] = ay;
-    ep_Raw_GyroAccMag.acc[2] = az;
-    ep_Raw_GyroAccMag.mag[0] = mx;
-    ep_Raw_GyroAccMag.mag[1] = my;
-    ep_Raw_GyroAccMag.mag[2] = mz;
-    return Write((char*)&ep_Raw_GyroAccMag, sizeof(Ep_Raw_GyroAccMag), &headerOut);
+    return Write(reinterpret_cast<const char*>(&ep_Raw_GyroAccMag), sizeof(Ep_Raw_GyroAccMag), &headerOut);
 }
 
 int EasyObjectDictionary::Write_Ep_Euler_s1_s(
-    EP_ID_TYPE_ toId, ///< [INPUT]
+    const EP_ID_TYPE_ toId, ///< [INPUT]
     const uint32 timeStamp, ///< [INPUT]
     const float psi, const float theta, const float phi ///< [INPUT]
 ) {
-    Ep_Euler_s1_s ep_Euler_s1_s;
+    const auto ep_Euler_s1_s = Ep_Euler_s1_s{
+        .header = Ep_Header{
+            .cmd = EP_CMD_EULER_S1_S_,
+            .qos = global_SysQoS & EP_QOS_MASK_,
+            .fromId = global_SysShortId & EP_ID_MASK_,
+            .toId = toId & EP_ID_MASK_
+        },
+        .timeStamp = timeStamp,
+        .psi = psi,
+        .theta = theta,
+        .phi = phi
+    };
     Ep_Header headerOut;
-    ep_Euler_s1_s.header.cmd = EP_CMD_EULER_S1_S_;
-    ep_Euler_s1_s.header.fromId = global_SysShortId & EP_ID_MASK_;
-    ep_Euler_s1_s.header.qos = global_SysQoS & EP_QOS_MASK_;
-    ep_Euler_s1_s.header.toId = toId & EP_ID_MASK_;
-    ep_Euler_s1_s.timeStamp = timeStamp;
-    ep_Euler_s1_s.psi = psi;
-    ep_Euler_s1_s.theta = theta;
-    ep_Euler_s1_s.phi = phi;
-    return Write((char*)&ep_Euler_s1_s, sizeof(Ep_Euler_s1_s), &headerOut);
+    return Write(reinterpret_cast<const char*>(&ep_Euler_s1_s), sizeof(Ep_Euler_s1_s), &headerOut);
 }
 
 int EasyObjectDictionary::Write_Ep_Q_s1_e(
-    EP_ID_TYPE_ toId, ///< [INPUT]
+    const EP_ID_TYPE_ toId, ///< [INPUT]
     const uint32 timeStamp, ///< [INPUT]
     const float q1, const float q2, const float q3, const float q4 ///< [INPUT]
 ) {
-    Ep_Q_s1_e ep_Q_s1_e;
+    const auto ep_Q_s1_e = Ep_Q_s1_e{
+        .header = Ep_Header{
+            .cmd = EP_CMD_Q_S1_E_,
+            .qos = global_SysQoS & EP_QOS_MASK_,
+            .fromId = global_SysShortId & EP_ID_MASK_,
+            .toId = toId & EP_ID_MASK_
+        },
+        .timeStamp = timeStamp,
+        .q = {q1, q2, q3, q4}
+    };
     Ep_Header headerOut;
-    ep_Q_s1_e.header.cmd = EP_CMD_Q_S1_E_;
-    ep_Q_s1_e.header.fromId = global_SysShortId & EP_ID_MASK_;
-    ep_Q_s1_e.header.qos = global_SysQoS & EP_QOS_MASK_;
-    ep_Q_s1_e.header.toId = toId & EP_ID_MASK_;
-    ep_Q_s1_e.timeStamp = timeStamp;
-    ep_Q_s1_e.q[0] = q1;
-    ep_Q_s1_e.q[1] = q2;
-    ep_Q_s1_e.q[2] = q3;
-    ep_Q_s1_e.q[3] = q4;
-    return Write((char*)&ep_Q_s1_e, sizeof(Ep_Q_s1_e), &headerOut);
+    return Write(reinterpret_cast<const char*>(&ep_Q_s1_e), sizeof(Ep_Q_s1_e), &headerOut);
 }
 
 int EasyObjectDictionary::Write_Ep_Euler_s1_e(
-    EP_ID_TYPE_ toId, ///< [INPUT]
+    const EP_ID_TYPE_ toId, ///< [INPUT]
     const uint32 timeStamp, ///< [INPUT]
     const float psi, const float theta, const float phi ///< [INPUT]
 ) {
-    Ep_Euler_s1_e ep_Euler_s1_e;
+    const auto ep_Euler_s1_e = Ep_Euler_s1_e{
+        .header = Ep_Header{
+            .cmd = EP_CMD_EULER_S1_E_,
+            .qos = global_SysQoS & EP_QOS_MASK_,
+            .fromId = global_SysShortId & EP_ID_MASK_,
+            .toId = toId & EP_ID_MASK_
+        },
+        .timeStamp = timeStamp,
+        .psi = psi,
+        .theta = theta,
+        .phi = phi
+    };
     Ep_Header headerOut;
-    ep_Euler_s1_e.header.cmd = EP_CMD_EULER_S1_E_;
-    ep_Euler_s1_e.header.fromId = global_SysShortId & EP_ID_MASK_;
-    ep_Euler_s1_e.header.qos = global_SysQoS & EP_QOS_MASK_;
-    ep_Euler_s1_e.header.toId = toId & EP_ID_MASK_;
-    ep_Euler_s1_e.timeStamp = timeStamp;
-    ep_Euler_s1_e.psi = psi;
-    ep_Euler_s1_e.theta = theta;
-    ep_Euler_s1_e.phi = phi;
-    return Write((char*)&ep_Euler_s1_e, sizeof(Ep_Euler_s1_e), &headerOut);
+    return Write(reinterpret_cast<const char*>(&ep_Euler_s1_e), sizeof(Ep_Euler_s1_e), &headerOut);
 }
 
 int EasyObjectDictionary::Write_Ep_RPY(
-    EP_ID_TYPE_ toId, ///< [INPUT]
+    const EP_ID_TYPE_ toId, ///< [INPUT]
     const uint32 timeStamp, ///< [INPUT]
     const float roll, const float pitch, const float yaw ///< [INPUT]
 ) {
-    Ep_RPY ep_RPY;
+    const auto ep_RPY = Ep_RPY{
+        .header = Ep_Header{
+            .cmd = EP_CMD_RPY_,
+            .qos = global_SysQoS & EP_QOS_MASK_,
+            .fromId = global_SysShortId & EP_ID_MASK_,
+            .toId = toId & EP_ID_MASK_
+        },
+        .timeStamp = timeStamp,
+        .roll = roll,
+        .pitch = pitch,
+        .yaw = yaw
+    };
     Ep_Header headerOut;
-    ep_RPY.header.cmd = EP_CMD_RPY_;
-    ep_RPY.header.fromId = global_SysShortId & EP_ID_MASK_;
-    ep_RPY.header.qos = global_SysQoS & EP_QOS_MASK_;
-    ep_RPY.header.toId = toId & EP_ID_MASK_;
-    ep_RPY.timeStamp = timeStamp;
-    ep_RPY.roll = roll;
-    ep_RPY.pitch = pitch;
-    ep_RPY.yaw = yaw;
-    return Write((char*)&ep_RPY, sizeof(Ep_RPY), &headerOut);
+    return Write(reinterpret_cast<const char*>(&ep_RPY), sizeof(Ep_RPY), &headerOut);
 }
 
 int EasyObjectDictionary::Write_Ep_Gravity(
-    EP_ID_TYPE_ toId, ///< [INPUT]
+    const EP_ID_TYPE_ toId, ///< [INPUT]
     const uint32 timeStamp, ///< [INPUT]
     const float gravityX, const float gravityY, const float gravityZ ///< [INPUT]
 ) {
-    Ep_Gravity ep_Gravity;
+    const auto ep_Gravity = Ep_Gravity{
+        .header = Ep_Header{
+            .cmd = EP_CMD_GRAVITY_,
+            .qos = global_SysQoS & EP_QOS_MASK_,
+            .fromId = global_SysShortId & EP_ID_MASK_,
+            .toId = toId & EP_ID_MASK_
+        },
+        .timeStamp = timeStamp,
+        .g = {gravityX, gravityY, gravityZ}
+    };
     Ep_Header headerOut;
-    ep_Gravity.header.cmd = EP_CMD_GRAVITY_;
-    ep_Gravity.header.fromId = global_SysShortId & EP_ID_MASK_;
-    ep_Gravity.header.qos = global_SysQoS & EP_QOS_MASK_;
-    ep_Gravity.header.toId = toId & EP_ID_MASK_;
-    ep_Gravity.timeStamp = timeStamp;
-    ep_Gravity.g[0] = gravityX;
-    ep_Gravity.g[1] = gravityY;
-    ep_Gravity.g[2] = gravityZ;
-    return Write((char*)&ep_Gravity, sizeof(Ep_Gravity), &headerOut);
+    return Write(reinterpret_cast<const char*>(&ep_Gravity), sizeof(Ep_Gravity), &headerOut);
 }
 
 int EasyObjectDictionary::Write_Ep_Combo(
-    EP_ID_TYPE_ toId, ///< [INPUT]
+    const EP_ID_TYPE_ toId, ///< [INPUT]
     const uint32 timeStamp, ///< [INPUT]
     const Ep_Status_SysState sys, ///< [INPUT]
     const int16 roll, const int16 pitch, const uint16 yaw, ///< [INPUT]
@@ -275,37 +289,39 @@ int EasyObjectDictionary::Write_Ep_Combo(
     const int16 mx, const int16 my, const int16 mz, ///< [INPUT]
     const int8 temperature, const uint8 updateRate, const uint16 reserved1, const uint16 simpleChecksum ///< [INPUT]
 ) {
-    Ep_Combo ep_Combo;
+    const auto ep_Combo = Ep_Combo{
+        .header = Ep_Header{
+            .cmd = EP_CMD_COMBO_,
+            .qos = global_SysQoS & EP_QOS_MASK_,
+            .fromId = global_SysShortId & EP_ID_MASK_,
+            .toId = toId & EP_ID_MASK_
+        },
+        .timeStamp = timeStamp,
+        .sysState = sys,
+        .roll = roll,
+        .pitch = pitch,
+        .yaw = yaw,
+        .q1 = q1,
+        .q2 = q2,
+        .q3 = q3,
+        .q4 = q4,
+        .wx = wx,
+        .wy = wy,
+        .wz = wz,
+        .ax = ax,
+        .ay = ay,
+        .az = az,
+        .mx = mx,
+        .my = my,
+        .mz = mz,
+        .temperature = temperature,
+        .updateRate = updateRate,
+        .reserved1 = reserved1,
+        .simpleChecksum = simpleChecksum
+    };
     Ep_Header headerOut;
-    ep_Combo.header.cmd = EP_CMD_COMBO_;
-    ep_Combo.header.fromId = global_SysShortId & EP_ID_MASK_;
-    ep_Combo.header.qos = global_SysQoS & EP_QOS_MASK_;
-    ep_Combo.header.toId = toId & EP_ID_MASK_;
-    ep_Combo.timeStamp = timeStamp;
 
-    ep_Combo.sysState = sys;
-    ep_Combo.roll = roll;
-    ep_Combo.pitch = pitch;
-    ep_Combo.yaw = yaw;
-    ep_Combo.q1 = q1;
-    ep_Combo.q2 = q2;
-    ep_Combo.q3 = q3;
-    ep_Combo.q4 = q4;
-    ep_Combo.wx = wx;
-    ep_Combo.wy = wy;
-    ep_Combo.wz = wz;
-    ep_Combo.ax = ax;
-    ep_Combo.ay = ay;
-    ep_Combo.az = az;
-    ep_Combo.mx = mx;
-    ep_Combo.my = my;
-    ep_Combo.mz = mz;
-    ep_Combo.temperature = temperature;
-    ep_Combo.updateRate = updateRate;
-    ep_Combo.reserved1 = reserved1;
-    ep_Combo.simpleChecksum = simpleChecksum;
-
-    return Write((char*)&ep_Combo, sizeof(Ep_Combo), &headerOut);
+    return Write(reinterpret_cast<const char*>(&ep_Combo), sizeof(Ep_Combo), &headerOut);
 }
 
 /**
@@ -317,17 +333,20 @@ int EasyObjectDictionary::Write_Ep_Combo(
    @endcode
  */
 int EasyObjectDictionary::Write_Ep_Request(
-    EP_ID_TYPE_ toId, ///< [INPUT]
-    EP_CMD_TYPE_ cmdRequest ///< [INPUT]
+    const EP_ID_TYPE_ toId, ///< [INPUT]
+    const EP_CMD_TYPE_ cmdRequest ///< [INPUT]
 ) {
-    Ep_Request ep_Request;
+    const auto ep_Request = Ep_Request{
+        .header = Ep_Header{
+            .cmd = EP_CMD_REQUEST_,
+            .qos = global_SysQoS & EP_QOS_MASK_,
+            .fromId = global_SysShortId & EP_ID_MASK_,
+            .toId = toId & EP_ID_MASK_
+        },
+        .cmdRequest = cmdRequest
+    };
     Ep_Header headerOut;
-    ep_Request.header.cmd = EP_CMD_REQUEST_;
-    ep_Request.header.fromId = global_SysShortId & EP_ID_MASK_;
-    ep_Request.header.qos = global_SysQoS & EP_QOS_MASK_;
-    ep_Request.header.toId = toId & EP_ID_MASK_;
-    ep_Request.cmdRequest = cmdRequest;
-    return Write((char*)&ep_Request, sizeof(Ep_Request), &headerOut);
+    return Write(reinterpret_cast<const char*>(&ep_Request), sizeof(Ep_Request), &headerOut);
 }
 
 
@@ -343,7 +362,7 @@ int EasyObjectDictionary::Write_Ep_Request(
 int EasyObjectDictionary::Read_Ep_Request(
     Ep_Request* dataOut
 ) {
-    EP_CMD_TYPE_ cmd = EP_CMD_REQUEST_;
+    constexpr EP_CMD_TYPE_ cmd = EP_CMD_REQUEST_;
     int odLengthOut;
     char* odDataOut;
     int retVal = EP_FAIL_;
@@ -353,7 +372,7 @@ int EasyObjectDictionary::Read_Ep_Request(
     if (retVal == EP_SUCC_) {
         if (odLengthOut == sizeof(Ep_Request)) {
             for (int i = 0; i < odLengthOut; i++) {
-                *((char*)dataOut + i) = odDataOut[i];
+                *(reinterpret_cast<char*>(dataOut) + i) = odDataOut[i];
             }
         }
     }
@@ -364,7 +383,7 @@ int EasyObjectDictionary::Read_Ep_Request(
 int EasyObjectDictionary::Read_Ep_Ack(
     Ep_Ack* dataOut
 ) {
-    EP_CMD_TYPE_ cmd = EP_CMD_ACK_;
+    constexpr EP_CMD_TYPE_ cmd = EP_CMD_ACK_;
     int odLengthOut;
     char* odDataOut;
     int retVal = EP_FAIL_;
@@ -374,7 +393,7 @@ int EasyObjectDictionary::Read_Ep_Ack(
     if (retVal == EP_SUCC_) {
         if (odLengthOut == sizeof(Ep_Ack)) {
             for (int i = 0; i < odLengthOut; i++) {
-                *((char*)dataOut + i) = odDataOut[i];
+                *(reinterpret_cast<char*>(dataOut) + i) = odDataOut[i];
             }
         }
     }
@@ -385,7 +404,7 @@ int EasyObjectDictionary::Read_Ep_Ack(
 int EasyObjectDictionary::Read_Ep_Status(
     Ep_Status* dataOut
 ) {
-    EP_CMD_TYPE_ cmd = EP_CMD_STATUS_;
+    constexpr EP_CMD_TYPE_ cmd = EP_CMD_STATUS_;
     int odLengthOut;
     char* odDataOut;
     int retVal = EP_FAIL_;
@@ -395,7 +414,7 @@ int EasyObjectDictionary::Read_Ep_Status(
     if (retVal == EP_SUCC_) {
         if (odLengthOut == sizeof(Ep_Status)) {
             for (int i = 0; i < odLengthOut; i++) {
-                *((char*)dataOut + i) = odDataOut[i];
+                *(reinterpret_cast<char*>(dataOut) + i) = odDataOut[i];
             }
         }
     }
@@ -406,7 +425,7 @@ int EasyObjectDictionary::Read_Ep_Status(
 int EasyObjectDictionary::Read_Ep_Raw_GyroAccMag(
     Ep_Raw_GyroAccMag* dataOut
 ) {
-    EP_CMD_TYPE_ cmd = EP_CMD_Raw_GYRO_ACC_MAG_;
+    constexpr EP_CMD_TYPE_ cmd = EP_CMD_Raw_GYRO_ACC_MAG_;
     int odLengthOut;
     char* odDataOut;
     int retVal = EP_FAIL_;
@@ -416,7 +435,7 @@ int EasyObjectDictionary::Read_Ep_Raw_GyroAccMag(
     if (retVal == EP_SUCC_) {
         if (odLengthOut == sizeof(Ep_Raw_GyroAccMag)) {
             for (int i = 0; i < odLengthOut; i++) {
-                *((char*)dataOut + i) = odDataOut[i];
+                *(reinterpret_cast<char*>(dataOut) + i) = odDataOut[i];
             }
         }
     }
@@ -427,7 +446,7 @@ int EasyObjectDictionary::Read_Ep_Raw_GyroAccMag(
 int EasyObjectDictionary::Read_Ep_Q_s1_s(
     Ep_Q_s1_s* dataOut
 ) {
-    EP_CMD_TYPE_ cmd = EP_CMD_Q_S1_S_;
+    constexpr EP_CMD_TYPE_ cmd = EP_CMD_Q_S1_S_;
     int odLengthOut;
     char* odDataOut;
     int retVal = EP_FAIL_;
@@ -437,7 +456,7 @@ int EasyObjectDictionary::Read_Ep_Q_s1_s(
     if (retVal == EP_SUCC_) {
         if (odLengthOut == sizeof(Ep_Q_s1_s)) {
             for (int i = 0; i < odLengthOut; i++) {
-                *((char*)dataOut + i) = odDataOut[i];
+                *(reinterpret_cast<char*>(dataOut) + i) = odDataOut[i];
             }
         }
     }
@@ -448,7 +467,7 @@ int EasyObjectDictionary::Read_Ep_Q_s1_s(
 int EasyObjectDictionary::Read_Ep_Euler_s1_s(
     Ep_Euler_s1_s* dataOut
 ) {
-    EP_CMD_TYPE_ cmd = EP_CMD_EULER_S1_S_;
+    constexpr EP_CMD_TYPE_ cmd = EP_CMD_EULER_S1_S_;
     int odLengthOut;
     char* odDataOut;
     int retVal = EP_FAIL_;
@@ -458,7 +477,7 @@ int EasyObjectDictionary::Read_Ep_Euler_s1_s(
     if (retVal == EP_SUCC_) {
         if (odLengthOut == sizeof(Ep_Euler_s1_s)) {
             for (int i = 0; i < odLengthOut; i++) {
-                *((char*)dataOut + i) = odDataOut[i];
+                *(reinterpret_cast<char*>(dataOut) + i) = odDataOut[i];
             }
         }
     }
@@ -469,7 +488,7 @@ int EasyObjectDictionary::Read_Ep_Euler_s1_s(
 int EasyObjectDictionary::Read_Ep_Q_s1_e(
     Ep_Q_s1_e* dataOut
 ) {
-    EP_CMD_TYPE_ cmd = EP_CMD_Q_S1_E_;
+    constexpr EP_CMD_TYPE_ cmd = EP_CMD_Q_S1_E_;
     int odLengthOut;
     char* odDataOut;
     int retVal = EP_FAIL_;
@@ -479,7 +498,7 @@ int EasyObjectDictionary::Read_Ep_Q_s1_e(
     if (retVal == EP_SUCC_) {
         if (odLengthOut == sizeof(Ep_Q_s1_e)) {
             for (int i = 0; i < odLengthOut; i++) {
-                *((char*)dataOut + i) = odDataOut[i];
+                *(reinterpret_cast<char*>(dataOut) + i) = odDataOut[i];
             }
         }
     }
@@ -490,7 +509,7 @@ int EasyObjectDictionary::Read_Ep_Q_s1_e(
 int EasyObjectDictionary::Read_Ep_Euler_s1_e(
     Ep_Euler_s1_e* dataOut
 ) {
-    EP_CMD_TYPE_ cmd = EP_CMD_EULER_S1_E_;
+    constexpr EP_CMD_TYPE_ cmd = EP_CMD_EULER_S1_E_;
     int odLengthOut;
     char* odDataOut;
     int retVal = EP_FAIL_;
@@ -500,7 +519,7 @@ int EasyObjectDictionary::Read_Ep_Euler_s1_e(
     if (retVal == EP_SUCC_) {
         if (odLengthOut == sizeof(Ep_Euler_s1_e)) {
             for (int i = 0; i < odLengthOut; i++) {
-                *((char*)dataOut + i) = odDataOut[i];
+                *(reinterpret_cast<char*>(dataOut) + i) = odDataOut[i];
             }
         }
     }
@@ -511,7 +530,7 @@ int EasyObjectDictionary::Read_Ep_Euler_s1_e(
 int EasyObjectDictionary::Read_Ep_RPY(
     Ep_RPY* dataOut
 ) {
-    EP_CMD_TYPE_ cmd = EP_CMD_RPY_;
+    constexpr EP_CMD_TYPE_ cmd = EP_CMD_RPY_;
     int odLengthOut;
     char* odDataOut;
     int retVal = EP_FAIL_;
@@ -521,7 +540,7 @@ int EasyObjectDictionary::Read_Ep_RPY(
     if (retVal == EP_SUCC_) {
         if (odLengthOut == sizeof(Ep_RPY)) {
             for (int i = 0; i < odLengthOut; i++) {
-                *((char*)dataOut + i) = odDataOut[i];
+                *(reinterpret_cast<char*>(dataOut) + i) = odDataOut[i];
             }
         }
     }
@@ -532,7 +551,7 @@ int EasyObjectDictionary::Read_Ep_RPY(
 int EasyObjectDictionary::Read_Ep_Gravity(
     Ep_Gravity* dataOut
 ) {
-    EP_CMD_TYPE_ cmd = EP_CMD_GRAVITY_;
+    constexpr EP_CMD_TYPE_ cmd = EP_CMD_GRAVITY_;
     int odLengthOut;
     char* odDataOut;
     int retVal = EP_FAIL_;
@@ -542,7 +561,7 @@ int EasyObjectDictionary::Read_Ep_Gravity(
     if (retVal == EP_SUCC_) {
         if (odLengthOut == sizeof(Ep_Gravity)) {
             for (int i = 0; i < odLengthOut; i++) {
-                *((char*)dataOut + i) = odDataOut[i];
+                *(reinterpret_cast<char*>(dataOut) + i) = odDataOut[i];
             }
         }
     }
@@ -554,7 +573,7 @@ int EasyObjectDictionary::Read_Ep_Gravity(
 int EasyObjectDictionary::Read_Ep_Combo(
     Ep_Combo* dataOut
 ) {
-    EP_CMD_TYPE_ cmd = EP_CMD_COMBO_;
+    constexpr EP_CMD_TYPE_ cmd = EP_CMD_COMBO_;
     int odLengthOut;
     char* odDataOut;
     int retVal = EP_FAIL_;
@@ -564,7 +583,7 @@ int EasyObjectDictionary::Read_Ep_Combo(
     if (retVal == EP_SUCC_) {
         if (odLengthOut == sizeof(Ep_Combo)) {
             for (int i = 0; i < odLengthOut; i++) {
-                *((char*)dataOut + i) = odDataOut[i];
+                *(reinterpret_cast<char*>(dataOut) + i) = odDataOut[i];
             }
         }
     }
@@ -585,7 +604,7 @@ int EasyObjectDictionary::Read_Ep_Combo(
  *          return -1 means not found
  */
 int EasyObjectDictionary::EOD_DB_FindKey(
-    EP_CMD_TYPE_ cmdIn ///< [INPUT] the search keyword cmd
+    const EP_CMD_TYPE_ cmdIn ///< [INPUT] the search keyword cmd
 ) {
     for (int i = 0; i < EOD_DB_SIZE_; i++) {
         if (eOD_DB_Static[i].cmd == cmdIn) {
@@ -606,11 +625,10 @@ int EasyObjectDictionary::EOD_DB_FindKey(
   *         EP_FAIL_            cmd does not exist in the object dictionary,
   */
 int EasyObjectDictionary::EOD_DB_SetWriteProtect(
-    EP_CMD_TYPE_ cmdIn, ///< [INPUT] the search keyword cmd
+    const EP_CMD_TYPE_ cmdIn, ///< [INPUT] the search keyword cmd
     const bool enable ///< [INPUT] true: enable write protection; false: disable.
 ) {
-    const int key = EOD_DB_FindKey(cmdIn);
-    if (key == -1) {
+    if (const int key = EOD_DB_FindKey(cmdIn); key == -1) {
         return EP_FAIL_;
     } else {
         if (enable) {
@@ -640,11 +658,10 @@ int EasyObjectDictionary::EOD_DB_SetWriteProtect(
   *         EP_FAIL_            cmd does not exist in the object dictionary
   */
 int EasyObjectDictionary::EOD_DB_SetReadProtect(
-    EP_CMD_TYPE_ cmdIn, ///< [INPUT] the search keyword cmd
+    const EP_CMD_TYPE_ cmdIn, ///< [INPUT] the search keyword cmd
     const bool enable ///< [INPUT] true: enable read protection; false: disable.
 ) {
-    const int key = EOD_DB_FindKey(cmdIn);
-    if (key == -1) {
+    if (const int key = EOD_DB_FindKey(cmdIn); key == -1) {
         return EP_FAIL_;
     } else {
         if (enable) {
@@ -673,7 +690,7 @@ int EasyObjectDictionary::EOD_DB_SetReadProtect(
   *         EP_MUTEX_LOCKED_    Read permission denied.
   */
 int EasyObjectDictionary::Read(
-    EP_CMD_TYPE_ cmdIn, ///< [INPUT]  Identifier to specify which object in the dictionary
+    const EP_CMD_TYPE_ cmdIn, ///< [INPUT]  Identifier to specify which object in the dictionary
     char** dataOut, ///< [OUTPUT] Pointer to the object
     int* lengthOut ///< [OUTPUT] Length (size) of the object
 ) {
@@ -692,7 +709,7 @@ int EasyObjectDictionary::Read(
     eOD_DB_Dynamic[key].mutex |= EOD_MUTEX_READ_PROTECT_;
 
     // Read data:
-    *dataOut = (char*)eOD_DB_Dynamic[key].data;
+    *dataOut = static_cast<char*>(eOD_DB_Dynamic[key].data);
     *lengthOut = eOD_DB_Static[key].size;
     return EP_SUCC_;
 }
@@ -705,7 +722,7 @@ int EasyObjectDictionary::Read(
   *         EP_MUTEX_LOCKED_    Read permission denied.
  */
 int EasyObjectDictionary::Read_Header(
-    EP_CMD_TYPE_ cmdIn, ///< [INPUT]   Specify the Object where to read the header
+    const EP_CMD_TYPE_ cmdIn, ///< [INPUT]   Specify the Object where to read the header
     Ep_Header* headerOut ///< [OUTPUT]  Output the header
 ) {
     // Mutex Protection:
@@ -724,9 +741,9 @@ int EasyObjectDictionary::Read_Header(
     eOD_DB_Dynamic[key].mutex |= EOD_MUTEX_READ_PROTECT_;
 
     // Read data:
-    const char* dataTmp = (char*)eOD_DB_Dynamic[key].data;
-    for (int i = 0; i < (signed)sizeof(Ep_Header); i++) {
-        *((char*)headerOut + i) = *(dataTmp + i);
+    const char* dataTmp = static_cast<char*>(eOD_DB_Dynamic[key].data);
+    for (int i = 0; i < static_cast<signed>(sizeof(Ep_Header)); i++) {
+        *(reinterpret_cast<char*>(headerOut) + i) = *(dataTmp + i);
     }
 
     // EOD_DB_SetReadProtect(cmdIn, false); // Same effect as below, but has lower efficiency in execution
@@ -740,13 +757,13 @@ int EasyObjectDictionary::Read_Header(
   *         EP_FAIL_            lengthIn doesn't match the type size, or the cmd does not exist in the object dictionary
   */
 int EasyObjectDictionary::Read_Header(
-    char* dataIn, ///< [INPUT] The data array
+    const char* dataIn, ///< [INPUT] The data array
     const int lengthIn, ///< [INPUT] Size of the input data array
     Ep_Header* headerOut ///< [OUTPUT] interpreted header from the data array.
 ) {
-    if (lengthIn < (signed)sizeof(Ep_Header)) return EP_FAIL_;
-    for (int i = 0; i < (signed)sizeof(Ep_Header); i++) {
-        *((char*)headerOut + i) = dataIn[i];
+    if (lengthIn < static_cast<signed>(sizeof(Ep_Header))) return EP_FAIL_;
+    for (int i = 0; i < static_cast<signed>(sizeof(Ep_Header)); i++) {
+        *(reinterpret_cast<char*>(headerOut) + i) = dataIn[i];
     }
     return EP_SUCC_;
 }
@@ -766,7 +783,7 @@ int EasyObjectDictionary::Read_Header(
   *         EP_MUTEX_LOCKED_    Write permission denied.
   */
 int EasyObjectDictionary::Write(
-    char* dataIn, ///< [INPUT] The data array
+    const char* dataIn, ///< [INPUT] The data array
     const int lengthIn, ///< [INPUT] Size of the input data array
     Ep_Header* headerOut ///< [OUTPUT] interpreted cmd from the data array.
 ) {
@@ -793,7 +810,7 @@ int EasyObjectDictionary::Write(
 
     // Write Operation:
     if (lengthIn == eOD_DB_Static[key].size) {
-        char* dataPtr = (char*)eOD_DB_Dynamic[key].data;
+        const auto dataPtr = static_cast<char*>(eOD_DB_Dynamic[key].data);
         for (int i = 0; i < lengthIn; i++) {
             *(dataPtr + i) = *(dataIn + i);
         }
@@ -812,10 +829,10 @@ int EasyObjectDictionary::Write(
   *         EP_MUTEX_LOCKED_    Write permission denied.
   */
 int EasyObjectDictionary::Write_Header(
-    EP_CMD_TYPE_ cmdIn, ///< [INPUT]  Specify which Object to overwrite the new header
+    const EP_CMD_TYPE_ cmdIn, ///< [INPUT]  Specify which Object to overwrite the new header
     Ep_Header headerIn ///< [INPUT]  The new header
 ) {
-    const int retVal = EP_SUCC_;
+    constexpr int retVal = EP_SUCC_;
 
     // Mutex Protection:
     const int key = EOD_DB_FindKey(cmdIn);
@@ -832,9 +849,9 @@ int EasyObjectDictionary::Write_Header(
     eOD_DB_Dynamic[key].mutex |= EOD_MUTEX_LOCKED_;
 
     // Write Operation :
-    char* dataPtr = (char*)eOD_DB_Dynamic[key].data;
-    for (int i = 0; i < (signed)sizeof(Ep_Header); i++) {
-        *(dataPtr + i) = *((char*)&headerIn + i);
+    const auto dataPtr = static_cast<char*>(eOD_DB_Dynamic[key].data);
+    for (int i = 0; i < static_cast<signed>(sizeof(Ep_Header)); i++) {
+        *(dataPtr + i) = *(reinterpret_cast<char*>(&headerIn) + i);
     }
 
     // Mutex: clear EOD_MUTEX_LOCKED_ bit:
@@ -850,8 +867,8 @@ int EasyObjectDictionary::Write_Header(
  *         EP_MUTEX_LOCKED_    Permission denied.
  */
 int EasyObjectDictionary::Write_Header_toId(
-    EP_CMD_TYPE_ cmdIn, ///< [INPUT]
-    EP_ID_TYPE_ toIdIn ///< [INPUT]
+    const EP_CMD_TYPE_ cmdIn, ///< [INPUT]
+    const EP_ID_TYPE_ toIdIn ///< [INPUT]
 ) {
     Ep_Header header;
     int retVal = Read_Header(cmdIn, &header);

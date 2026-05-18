@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 3.22)
 project(tm_imu)
 
+if (NOT CMAKE_CXX_STANDARD)
+    set(CMAKE_CXX_STANDARD 26)
+endif ()
+
 if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     add_compile_options(-Wall -Wextra -Wpedantic)
 endif ()
@@ -24,6 +28,13 @@ add_executable(transducer_m_imu
         src/EasyProfile/EasyObjectDictionary.cpp
         src/EasyProfile/EasyProfile.cpp
         src/EasyProfile/EasyProtocol.cpp
+)
+
+target_compile_features(transducer_m_imu PUBLIC cxx_std_23)
+
+target_include_directories(transducer_m_imu PUBLIC
+        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:include>
 )
 
 ament_target_dependencies(transducer_m_imu
