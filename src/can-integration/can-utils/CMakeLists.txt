@@ -27,6 +27,7 @@ add_library(
         can_util
         SHARED
         src/can_interface.cpp
+        src/can_connect.cpp
         src/system_controller.cpp
         src/spark_max_feedback.cpp
 )

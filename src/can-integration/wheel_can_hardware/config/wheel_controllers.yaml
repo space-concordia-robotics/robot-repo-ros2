@@ -1,5 +1,8 @@
 # Example controller_manager configuration for the rover wheel stack.
 #
+# Requires: sudo apt install ros-jazzy-forward-command-controller
+# (Without it, spawner fails: ForwardCommandController plugin not found.)
+#
 # Uses ros2_controllers/forward_command_controller for direct per-wheel
 # velocity control (matching the joystick-driven rover behaviour) plus
 # joint_state_broadcaster so wheel_odometry_node has a /joint_states stream

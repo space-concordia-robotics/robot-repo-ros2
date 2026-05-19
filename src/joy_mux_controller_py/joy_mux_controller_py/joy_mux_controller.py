@@ -52,10 +52,37 @@ class VKBAxesLayout(IntEnum):
     A1_Y_LED_OFF = 9
 
 
-# Largest indices used in this node: buttons[12], axes[7] → need lengths 13 and 8.
 _JOY_MIN_BUTTONS = 13
 _JOY_MIN_AXES = 8
+_ARM_JOINT_COUNT = 7
 
+
+class ArmVelocityScale:
+    """Max velocity scale per arm motor (normalized stick/button input in [-1, 1])."""
+
+    M1_STICK_Z = 1.0
+    M2_A3_VERTICAL = 0.4
+    M3_STICK_Y = 0.7
+    M4_STICK_X = 0.7
+    M5_A3_HORIZONTAL = 0.8
+
+
+class ThrottleAxisMap:
+    """VKB middle scroll (axis 2) -> A3 speed multiplier for M2/M5."""
+
+    AXIS_MIN = -1.0
+    AXIS_MAX = 1.0
+    MULT_MIN = 0.2
+    MULT_MAX = 1.0
+
+
+def _throttle_multiplier(axis: float) -> float:
+    axis_span = ThrottleAxisMap.AXIS_MAX - ThrottleAxisMap.AXIS_MIN
+    t = (axis - ThrottleAxisMap.AXIS_MIN) / axis_span
+    mult = ThrottleAxisMap.MULT_MIN + t * (
+        ThrottleAxisMap.MULT_MAX - ThrottleAxisMap.MULT_MIN
+    )
+    return max(ThrottleAxisMap.MULT_MIN, min(ThrottleAxisMap.MULT_MAX, mult))
 
 
 class JoyMuxController(Node):
@@ -64,8 +91,6 @@ class JoyMuxController(Node):
         super().__init__('joy_mux_controller')
 
         max_cmd_publish_hz = self.declare_parameter("max_cmd_publish_hz", 100.0).value
-        self._skip_identical = self.declare_parameter("skip_identical", True).value
-        self._epsilon = self.declare_parameter("identical_epsilon", 1e-3).value
 
         self.subscription = self.create_subscription(Joy, '/joy', self.joy_callback, 10)
         self.rover_pub = self.create_publisher(Twist, '/cmd_vel', 10)
@@ -83,57 +108,59 @@ class JoyMuxController(Node):
         self._deadman_held = False
         self._prev_deadman = False
 
-        # Cached commands built from latest /joy
         self._cached_twist: Twist | None = None
         self._cached_joint: JointState | None = None
 
-        # Last-published payloads for skip_identical
-        self._last_twist_vals: tuple[float, ...] | None = None
-        self._last_joint_vals: tuple[float, ...] | None = None
-
-        # Zero-burst: keep publishing stop commands for this duration after deadman release
         self._stop_burst_until: float = 0.0
         self._stop_burst_duration_s = self.declare_parameter(
             "stop_burst_duration_s", 0.5
         ).value
-        # Mode-switch stop window: when we toggle from arm <-> rover we keep
-        # publishing zeros for the mode we just left even while deadman is
-        # still held, so the previous stack actually halts. Without this the
-        # firmware on the just-left side keeps the last commanded velocity
-        # because no new frames are sent and there's no on-board watchdog.
+
+        # Mode-switch stop window: publish zeros on the mode we just left so
+        # firmware without a watchdog actually halts.
         self._mode_switch_stop_until: float = 0.0
         self._mode_switch_stop_duration_s = self.declare_parameter(
             "mode_switch_stop_duration_s", 0.5
         ).value
-        # Keep button-driven arm commands active briefly to improve tap reliability.
+
         self._arm_button_min_hold_s = self.declare_parameter(
             "arm_button_min_hold_s", 0.08
         ).value
         self._m4_latched_cmd = 0.0
         self._m4_hold_until = 0.0
 
+        self._rover_boost_first_fire = self.declare_parameter(
+            "rover_boost_first_fire", 1.5
+        ).value
+        self._rover_boost_both_fire = self.declare_parameter(
+            "rover_boost_both_fire", 2.0
+        ).value
+
         self.get_logger().info(
             f"joy_mux_controller ready — max_cmd_publish_hz={max_cmd_publish_hz}, "
-            f"skip_identical={self._skip_identical}, epsilon={self._epsilon}, "
+            f"stop_burst_duration_s={self._stop_burst_duration_s}, "
+            f"mode_switch_stop_duration_s={self._mode_switch_stop_duration_s}, "
+            f"mode_toggle_cooldown_s={self._mode_toggle_cooldown_s}, "
             f"arm_button_min_hold_s={self._arm_button_min_hold_s}, "
-            f"mode_toggle_cooldown_s={self._mode_toggle_cooldown_s}"
+            f"rover_boost_first_fire={self._rover_boost_first_fire}, "
+            f"rover_boost_both_fire={self._rover_boost_both_fire}"
         )
 
     def _publish_all_stop(self) -> None:
         self.rover_pub.publish(Twist())
         stopped = JointState()
-        stopped.name = [f'joint{i+1}' for i in range(7)]
-        stopped.velocity = [0.0] * 7
+        stopped.name = [f'joint{i+1}' for i in range(_ARM_JOINT_COUNT)]
+        stopped.velocity = [0.0] * _ARM_JOINT_COUNT
         stopped.position = []
         stopped.effort = []
         self.arm_pub.publish(stopped)
-        self._last_twist_vals = None
-        self._last_joint_vals = None
 
-    def _floats_equal(self, a: tuple[float, ...], b: tuple[float, ...] | None) -> bool:
-        if b is None or len(a) != len(b):
-            return False
-        return all(abs(x - y) < self._epsilon for x, y in zip(a, b))
+    def _rover_boost(self, buttons) -> float:
+        if buttons[VKBButtonLayout.SECOND_FIRE]:
+            return self._rover_boost_both_fire
+        if buttons[VKBButtonLayout.FIRST_FIRE]:
+            return self._rover_boost_first_fire
+        return 1.0
 
     def joy_callback(self, msg: Joy):
         if len(msg.buttons) < _JOY_MIN_BUTTONS or len(msg.axes) < _JOY_MIN_AXES:
@@ -156,18 +183,10 @@ class JoyMuxController(Node):
         ):
             self.current_mode = 1 - self.current_mode
             self._last_mode_toggle_at_s = now_s
-            self._last_twist_vals = None
-            self._last_joint_vals = None
-            # Drop the stale payload for *both* modes so a tick that races us
-            # never re-publishes the previous-mode command.
             self._cached_twist = None
             self._cached_joint = None
             self._m4_latched_cmd = 0.0
             self._m4_hold_until = 0.0
-            # Send one immediate stop for both stacks so the just-left motors
-            # halt within this callback, then arm a brief window during which
-            # _tick() keeps publishing zeros for the mode we left in case the
-            # first stop frame is dropped.
             self._mode_switch_stop_until = now_s + self._mode_switch_stop_duration_s
             self._publish_all_stop()
             self.get_logger().info(f"Switched to {'Arm' if self.current_mode else 'Rover'} mode")
@@ -178,18 +197,19 @@ class JoyMuxController(Node):
         if self._deadman_held:
             if self.current_mode == 0:
                 twist = Twist()
-                # Rotate joystick mapping to correct rover cardinal directions.
                 twist.linear.x = msg.axes[VKBAxesLayout.STICK_Y]
                 twist.angular.z = msg.axes[VKBAxesLayout.STICK_Z]
                 tank_turn = (1 if msg.buttons[VKBButtonLayout.A4_LEFT] else 0) - (1 if msg.buttons[VKBButtonLayout.A4_RIGHT] else 0)
                 if tank_turn != 0:
-                    # Tank turn override: spin in place with opposite wheel directions.
                     twist.linear.x = 0.0
                     twist.angular.z = float(tank_turn)
+                boost = self._rover_boost(msg.buttons)
+                twist.linear.x *= boost
+                twist.angular.z *= boost
                 self._cached_twist = twist
             else:
                 joint_state = JointState()
-                joint_state.name = [f'joint{i+1}' for i in range(7)]
+                joint_state.name = [f'joint{i+1}' for i in range(_ARM_JOINT_COUNT)]
                 m4_raw = float(msg.axes[VKBAxesLayout.STICK_X])
                 if m4_raw != 0.0:
                     self._m4_latched_cmd = m4_raw
@@ -198,15 +218,19 @@ class JoyMuxController(Node):
                     m4_raw = self._m4_latched_cmd
                 else:
                     self._m4_latched_cmd = 0.0
-                m4 = m4_raw
+                a3_throttle = _throttle_multiplier(
+                    float(msg.axes[VKBAxesLayout.MIDDLE_SCROLL])
+                )
                 joint_state.velocity = [
-                    float(msg.axes[VKBAxesLayout.STICK_Z]), #M1
-                    (float(msg.buttons[VKBButtonLayout.A3_UP] - msg.buttons[VKBButtonLayout.A3_DOWN]))*0.4, #M2
-                    (float(msg.axes[VKBAxesLayout.STICK_Y]))*0.7, #M3
-                    (m4)*0.7, #M4
-                    (float(msg.buttons[VKBButtonLayout.A3_LEFT] - msg.buttons[VKBButtonLayout.A3_RIGHT]))*0.8, #M5
-                    # float((1 if msg.buttons[Buttons.TRIANGLE] else 0) - (1 if msg.buttons[Buttons.X] else 0)),
-                    # float((1 if msg.buttons[Buttons.SQUARE] else 0) - (1 if msg.buttons[Buttons.CIRCLE] else 0)),
+                    float(msg.axes[VKBAxesLayout.STICK_Z]) * ArmVelocityScale.M1_STICK_Z,
+                    float(msg.buttons[VKBButtonLayout.A3_UP] - msg.buttons[VKBButtonLayout.A3_DOWN])
+                    * ArmVelocityScale.M2_A3_VERTICAL * a3_throttle,
+                    float(msg.axes[VKBAxesLayout.STICK_Y]) * ArmVelocityScale.M3_STICK_Y,
+                    m4_raw * ArmVelocityScale.M4_STICK_X,
+                    float(msg.buttons[VKBButtonLayout.A3_LEFT] - msg.buttons[VKBButtonLayout.A3_RIGHT])
+                    * ArmVelocityScale.M5_A3_HORIZONTAL * a3_throttle,
+                    0.0,
+                    0.0,
                 ]
                 joint_state.position = []
                 joint_state.effort = []
@@ -225,22 +249,16 @@ class JoyMuxController(Node):
         in_stop_burst = now_s < self._stop_burst_until
         in_mode_switch_stop = now_s < self._mode_switch_stop_until
 
-        # Keep stopping the *previous* mode for a short window after a switch,
-        # regardless of whether deadman is held. The mode we just left is
-        # `1 - current_mode`; only that side gets a zero so the new mode can
-        # still be driven normally below.
         if in_mode_switch_stop:
             if self.current_mode == 0:
                 stopped = JointState()
-                stopped.name = [f'joint{i+1}' for i in range(7)]
-                stopped.velocity = [0.0] * 7
+                stopped.name = [f'joint{i+1}' for i in range(_ARM_JOINT_COUNT)]
+                stopped.velocity = [0.0] * _ARM_JOINT_COUNT
                 stopped.position = []
                 stopped.effort = []
                 self.arm_pub.publish(stopped)
-                self._last_joint_vals = None
             else:
                 self.rover_pub.publish(Twist())
-                self._last_twist_vals = None
 
         if not self._deadman_held:
             if in_stop_burst:
@@ -248,21 +266,11 @@ class JoyMuxController(Node):
             return
 
         if self.current_mode == 0:
-            tw = self._cached_twist
-            if tw is None:
-                return
-            vals = (tw.linear.x, tw.linear.y, tw.linear.z, tw.angular.z)
-            # Wheels benefit from a steady frame stream while deadman is held.
-            self.rover_pub.publish(tw)
-            self._last_twist_vals = vals
+            if self._cached_twist is not None:
+                self.rover_pub.publish(self._cached_twist)
         else:
-            js = self._cached_joint
-            if js is None:
-                return
-            vals = tuple(js.velocity)
-            # Arm button control is more reliable when we continuously stream held/release values.
-            self.arm_pub.publish(js)
-            self._last_joint_vals = vals
+            if self._cached_joint is not None:
+                self.arm_pub.publish(self._cached_joint)
 
 
 def main(args=None):

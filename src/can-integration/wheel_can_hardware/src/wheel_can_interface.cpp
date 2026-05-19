@@ -1,5 +1,6 @@
 #include "wheel_can_hardware/wheel_can_interface.hpp"
 
+#include "can-utils/can_connect.hpp"
 #include "can-utils/prefixes.hpp"
 #include "hardware_interface/types/hardware_interface_type_values.hpp"
 #include "pluginlib/class_list_macros.hpp"
@@ -44,9 +45,12 @@ std::string WheelCanInterface::getParam(const std::unordered_map<std::string, st
   return it->second;
 }
 
-hardware_interface::CallbackReturn WheelCanInterface::on_init(const hardware_interface::HardwareInfo & info)
+hardware_interface::CallbackReturn WheelCanInterface::on_init(
+  const hardware_interface::HardwareComponentInterfaceParams & params)
 {
-  if (hardware_interface::SystemInterface::on_init(info) != hardware_interface::CallbackReturn::SUCCESS) {
+  if (hardware_interface::SystemInterface::on_init(params) !=
+      hardware_interface::CallbackReturn::SUCCESS)
+  {
     return hardware_interface::CallbackReturn::ERROR;
   }
 
@@ -141,31 +145,50 @@ WheelCanInterface::AntiSlipMode WheelCanInterface::parseMode(const std::string &
 
 hardware_interface::CallbackReturn WheelCanInterface::on_configure(const rclcpp_lifecycle::State & /*previous_state*/)
 {
-  can_controller_ = std::make_shared<can_util::CANController>(can_interface_name_, logger_);
-  if (!can_controller_->configureCan()) {
-    RCLCPP_FATAL(logger_, "Failed to configure CAN on '%s'", can_interface_name_.c_str());
+  try {
+    can_controller_ = can_util::createConfiguredCanController(can_interface_name_, logger_);
+    if (!can_controller_) {
+      can_controller_.reset();
+      return hardware_interface::CallbackReturn::ERROR;
+    }
+    frame_builder_ = std::make_unique<SystemFrameBuilder>(can_controller_);
+
+    std::vector<uint8_t> ids;
+    ids.reserve(wheels_.size());
+    for (const auto & w : wheels_) {
+      ids.push_back(w.device_id);
+    }
+    feedback_ = std::make_unique<spark_max::SparkMaxFeedback>(can_controller_, std::move(ids));
+
+    // Tell every SPARK MAX to start broadcasting STATUS_2 (velocity + position).
+    // It's idempotent so safe to call again on reconfigure / after a power
+    // cycle of the motor controllers.
+    if (!feedback_->enableStatus2()) {
+      RCLCPP_WARN(logger_, "One or more SPARK MAX SET_STATUSES_ENABLED frames failed to send");
+    } else {
+      RCLCPP_INFO(logger_, "STATUS_2 enable command sent to %zu SPARK MAX motors", wheels_.size());
+    }
+
+    return hardware_interface::CallbackReturn::SUCCESS;
+  } catch (const std::exception & e) {
+    RCLCPP_FATAL(
+      logger_, "Exception during WheelCanInterface configure on '%s': %s",
+      can_interface_name_.c_str(), e.what());
+    can_util::logCanSetupRecoveryHints(logger_, can_interface_name_);
     can_controller_.reset();
+    frame_builder_.reset();
+    feedback_.reset();
+    return hardware_interface::CallbackReturn::ERROR;
+  } catch (...) {
+    RCLCPP_FATAL(
+      logger_, "Unknown exception during WheelCanInterface configure on '%s'",
+      can_interface_name_.c_str());
+    can_util::logCanSetupRecoveryHints(logger_, can_interface_name_);
+    can_controller_.reset();
+    frame_builder_.reset();
+    feedback_.reset();
     return hardware_interface::CallbackReturn::ERROR;
   }
-  frame_builder_ = std::make_unique<SystemFrameBuilder>(can_controller_);
-
-  std::vector<uint8_t> ids;
-  ids.reserve(wheels_.size());
-  for (const auto & w : wheels_) {
-    ids.push_back(w.device_id);
-  }
-  feedback_ = std::make_unique<spark_max::SparkMaxFeedback>(can_controller_, std::move(ids));
-
-  // Tell every SPARK MAX to start broadcasting STATUS_2 (velocity + position).
-  // It's idempotent so safe to call again on reconfigure / after a power
-  // cycle of the motor controllers.
-  if (!feedback_->enableStatus2()) {
-    RCLCPP_WARN(logger_, "One or more SPARK MAX SET_STATUSES_ENABLED frames failed to send");
-  } else {
-    RCLCPP_INFO(logger_, "STATUS_2 enable command sent to %zu SPARK MAX motors", wheels_.size());
-  }
-
-  return hardware_interface::CallbackReturn::SUCCESS;
 }
 
 hardware_interface::CallbackReturn WheelCanInterface::on_activate(const rclcpp_lifecycle::State & /*previous_state*/)

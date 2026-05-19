@@ -43,8 +43,9 @@ private:
   // Parameters
   std::vector<std::string> right_joints_;
   std::vector<std::string> left_joints_;
-  double wheel_radius_{0.165};
-  double track_width_{1.20};
+  // Match rover-description (base.urdf) and diff_drive_base_controller on autonomy.
+  double wheel_radius_{0.15};
+  double track_width_{1.25};
   std::string odom_frame_{"odom"};
   std::string base_frame_{"base_link"};
   bool publish_tf_{true};

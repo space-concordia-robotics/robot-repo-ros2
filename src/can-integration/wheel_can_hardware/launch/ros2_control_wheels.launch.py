@@ -52,6 +52,16 @@ def generate_launch_description():
         default_value='false',
         description='If true, also start wheel_odometry_node.',
     )
+    wheel_radius_arg = DeclareLaunchArgument(
+        'wheel_radius',
+        default_value='0.15',
+        description='Wheel radius (m) for wheel_odometry_node; autonomy diff_drive uses 0.15.',
+    )
+    track_width_arg = DeclareLaunchArgument(
+        'track_width',
+        default_value='1.25',
+        description='Track width (m) for wheel_odometry_node; autonomy wheel_separation is 1.25.',
+    )
     spawn_after_arg = DeclareLaunchArgument(
         'spawn_controller_delay',
         default_value='8.0',
@@ -142,8 +152,8 @@ def generate_launch_description():
         output='screen',
         parameters=[
             {
-                'wheel_radius': 0.165,
-                'track_width': 1.20,
+                'wheel_radius': LaunchConfiguration('wheel_radius'),
+                'track_width': LaunchConfiguration('track_width'),
                 'publish_tf': True,
             }
         ],
@@ -154,6 +164,8 @@ def generate_launch_description():
         [
             can_interface_arg,
             launch_odom_arg,
+            wheel_radius_arg,
+            track_width_arg,
             spawn_after_arg,
             robot_state_publisher,
             delayed_control_node,

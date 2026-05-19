@@ -26,13 +26,13 @@ def generate_launch_description():
     )
     wheel_radius_arg = DeclareLaunchArgument(
         "wheel_radius",
-        default_value="0.165",
-        description="Driven wheel radius in meters.",
+        default_value="0.15",
+        description="Driven wheel radius in meters (autonomy diff_drive: 0.15).",
     )
     track_width_arg = DeclareLaunchArgument(
         "track_width",
-        default_value="1.20",
-        description="Distance between left and right wheel centers in meters.",
+        default_value="1.25",
+        description="Left-right track width in meters (autonomy wheel_separation: 1.25).",
     )
 
     odometry_node = Node(

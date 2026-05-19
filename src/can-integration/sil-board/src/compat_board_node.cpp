@@ -9,7 +9,7 @@
 #include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/msg/joy.hpp>
 
-#include "can-utils/can_interface.hpp"
+#include "can-utils/can_connect.hpp"
 
 namespace {
 
@@ -54,10 +54,11 @@ public:
         axis_deadzone_ =
             static_cast<float>(this->declare_parameter<double>("axis_deadzone", 0.08));
 
-        can_controller_ = std::make_shared<can_util::CANController>(can_path, this->get_logger());
-        if (!can_controller_->configureCan()) {
-            RCLCPP_FATAL(this->get_logger(), "Failed to configure CAN on %s", can_path.c_str());
-            throw std::runtime_error("CAN configure failed");
+        can_controller_ = can_util::createConfiguredCanController(can_path, this->get_logger());
+        if (!can_controller_) {
+            throw std::runtime_error(
+                "CAN configure failed on interface '" + can_path +
+                "' — see log for errno and recovery hints");
         }
 
         joy_sub_ = this->create_subscription<sensor_msgs::msg::Joy>(
@@ -201,7 +202,13 @@ private:
 int main(int argc, char* argv[])
 {
     rclcpp::init(argc, argv);
-    rclcpp::spin(std::make_shared<CompatBoardNode>());
+    try {
+        rclcpp::spin(std::make_shared<CompatBoardNode>());
+    } catch (const std::exception& e) {
+        RCLCPP_FATAL(rclcpp::get_logger("compat_board_node"), "Node failed to start: %s", e.what());
+        rclcpp::shutdown();
+        return 1;
+    }
     rclcpp::shutdown();
     return 0;
 }

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <atomic>
 #include <functional>
 #include <linux/can.h>
 #include <thread>
@@ -37,10 +38,13 @@ namespace can_util {
         
         bool writeFrame(const can_frame& frame) const;
 
+        void shutdown();
+
         mutable std::mutex mtx;
         ros2_fmt_logger::Logger logger;
         std::string path;
-        int socket_descriptor = 0;
+        int socket_descriptor{-1};
+        std::atomic_bool stop_{false};
         std::thread readThread;
         std::vector<std::weak_ptr<CANFrameCallback>> frame_callbacks = {};
 

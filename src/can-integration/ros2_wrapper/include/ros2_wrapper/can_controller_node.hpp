@@ -7,6 +7,7 @@
 #include "std_msgs/msg/string.hpp"
 #include "can-utils/system_controller.hpp"
 #include "can-utils/can_interface.hpp"
+#include "can-utils/spark_max_feedback.hpp"
 #include <array>
 #include <atomic>
 #include <memory>
@@ -75,5 +76,7 @@ class CanControllerNode : public rclcpp::Node{
 
         float wheel_rpm_slew_rate_{0.F};
         std::array<float, 6> wheel_rpm_smoothed_{};
+
+        std::unique_ptr<spark_max::SparkMaxFeedback> wheel_feedback_;
 }; 
 

@@ -1,5 +1,6 @@
 #include "can_safety_node/can_safety_node.hpp"
 
+#include "can-utils/can_connect.hpp"
 #include "can-utils/prefixes.hpp"
 
 namespace can_safety_node
@@ -12,10 +13,11 @@ CanSafetyNode::CanSafetyNode(const rclcpp::NodeOptions & options)
   wheel_force_stop_button_  = this->declare_parameter<int>("wheel_force_stop_button", wheel_force_stop_button_);
   wheel_resume_button_      = this->declare_parameter<int>("wheel_resume_button",     wheel_resume_button_);
 
-  can_ = std::make_shared<can_util::CANController>(can_interface_name_, this->get_logger());
-  if (!can_->configureCan()) {
-    RCLCPP_FATAL(this->get_logger(), "Failed to configure CAN on '%s'", can_interface_name_.c_str());
-    throw std::runtime_error("CAN configure failed");
+  can_ = can_util::createConfiguredCanController(can_interface_name_, this->get_logger());
+  if (!can_) {
+    throw std::runtime_error(
+      "CAN configure failed on interface '" + can_interface_name_ +
+      "' — see log for errno and recovery hints");
   }
   frame_builder_ = std::make_unique<SystemFrameBuilder>(can_);
 
@@ -83,7 +85,16 @@ void CanSafetyNode::onJoy(const sensor_msgs::msg::Joy::ConstSharedPtr & msg)
 int main(int argc, char * argv[])
 {
   rclcpp::init(argc, argv);
-  rclcpp::spin(std::make_shared<can_safety_node::CanSafetyNode>());
+  int exit_code = 0;
+  try {
+    rclcpp::spin(std::make_shared<can_safety_node::CanSafetyNode>());
+  } catch (const std::exception & e) {
+    RCLCPP_FATAL(rclcpp::get_logger("can_safety_node"), "Node failed to start: %s", e.what());
+    exit_code = 1;
+  } catch (...) {
+    RCLCPP_FATAL(rclcpp::get_logger("can_safety_node"), "Node failed to start: unknown exception");
+    exit_code = 1;
+  }
   rclcpp::shutdown();
-  return 0;
+  return exit_code;
 }

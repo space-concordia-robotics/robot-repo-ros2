@@ -1,5 +1,6 @@
 #include "ros2_wrapper/can_controller_node.hpp"
 #include "can-utils/buildAddress.hpp"
+#include "can-utils/can_connect.hpp"
 #include "can-utils/prefixes.hpp"
 #include <algorithm>
 #include <array>
@@ -8,6 +9,21 @@
 #include <thread>
 #include <chrono>
 
+namespace {
+
+constexpr double kArmCmdDeadzone = 0.05;
+
+bool isJointStateIdle(const sensor_msgs::msg::JointState & joint_state)
+{
+    for (const double v : joint_state.velocity) {
+        if (std::abs(v) >= kArmCmdDeadzone) {
+            return false;
+        }
+    }
+    return true;
+}
+
+}  // namespace
 
 CanControllerNode::CanControllerNode(const rclcpp::NodeOptions& options) :
     Node("can_controller_node", options), logger(this->get_logger().get_child("can_controller_node")){
@@ -27,10 +43,11 @@ CanControllerNode::CanControllerNode(const rclcpp::NodeOptions& options) :
         clamp_servo_max_rad_   = static_cast<float>(this->declare_parameter("clamp_servo_max_rad",   1.5707963));
         clamp_servo_max_rad_s_ = static_cast<float>(this->declare_parameter("clamp_servo_max_rad_s", 1.5707963));
 
-        can_controller_ = std::make_shared<can_util::CANController>(can_interface_, this->get_logger());
-        if (!can_controller_->configureCan()) {
-            logger.fatal("Failed to configure CAN on interface {}", can_interface_);
-            throw std::runtime_error("CAN configure failed");
+        can_controller_ = can_util::createConfiguredCanController(can_interface_, this->get_logger());
+        if (!can_controller_) {
+            throw std::runtime_error(
+                "CAN configure failed on interface '" + can_interface_ +
+                "' — see log for errno and recovery hints");
         }
 
         parameter_event_handler = std::make_shared<rclcpp::ParameterEventHandler>(this);
@@ -49,6 +66,20 @@ CanControllerNode::CanControllerNode(const rclcpp::NodeOptions& options) :
         arm_velocity_scale_callback_handle = parameter_event_handler->add_parameter_callback("arm_velocity_scale", arm_scale_callback);
 
         frame_builder_ = std::make_unique<SystemFrameBuilder>(can_controller_);
+
+        wheel_feedback_ = std::make_unique<spark_max::SparkMaxFeedback>(
+            can_controller_,
+            std::vector<uint8_t>{
+                static_cast<uint8_t>(DeviceId::ID::WHEEL_MOT1),
+                static_cast<uint8_t>(DeviceId::ID::WHEEL_MOT2),
+                static_cast<uint8_t>(DeviceId::ID::WHEEL_MOT3),
+                static_cast<uint8_t>(DeviceId::ID::WHEEL_MOT4),
+                static_cast<uint8_t>(DeviceId::ID::WHEEL_MOT5),
+                static_cast<uint8_t>(DeviceId::ID::WHEEL_MOT6),
+            });
+        if (!wheel_feedback_->enableStatus2()) {
+            logger.warn("Failed to enable SPARK MAX STATUS_2 on one or more wheel motors");
+        }
 
         twist_msgs_ = this->create_subscription<geometry_msgs::msg::Twist>("cmd_vel", rclcpp::SystemDefaultsQoS(), [this]
         (const geometry_msgs::msg::Twist::ConstSharedPtr& msg) {getTwistMessages(msg);});
@@ -144,10 +175,9 @@ void CanControllerNode::sendCanFrames(){
         }else if(translate_only){
             right_cmd = -linear_x;
             left_cmd = -linear_x;
-        }else if(yaw_only){
-            right_cmd = -(-angular_z * half_track);
-            left_cmd = -((-angular_z * half_track));
         }else{
+            // Skid-steer mix (covers pure yaw and arc turns). Do not special-case
+            // yaw_only here: the old branch set both sides to the same RPM.
             right_cmd = -(linear_x - (-angular_z * half_track));
             left_cmd = -(linear_x + (-angular_z * half_track));
         }
@@ -185,9 +215,43 @@ void CanControllerNode::sendCanFrames(){
         }
 
         frame_builder_->startMotors(0x7E);
+
+        float measured_right_rpm = 0.F;
+        float measured_left_rpm = 0.F;
+        bool have_measured = false;
+        spark_max::WheelFeedback fb{};
+        if (wheel_feedback_ &&
+            wheel_feedback_->getFeedback(static_cast<uint8_t>(DeviceId::ID::WHEEL_MOT1), fb) &&
+            wheel_feedback_->isStatus2Fresh(
+                static_cast<uint8_t>(DeviceId::ID::WHEEL_MOT1), std::chrono::milliseconds(100))) {
+            measured_right_rpm = fb.velocity_rpm;
+            have_measured = true;
+        }
+        if (wheel_feedback_ &&
+            wheel_feedback_->getFeedback(static_cast<uint8_t>(DeviceId::ID::WHEEL_MOT4), fb) &&
+            wheel_feedback_->isStatus2Fresh(
+                static_cast<uint8_t>(DeviceId::ID::WHEEL_MOT4), std::chrono::milliseconds(100))) {
+            measured_left_rpm = fb.velocity_rpm;
+            have_measured = true;
+        }
+
+        if (have_measured) {
+            RCLCPP_INFO_THROTTLE(
+                this->get_logger(), *this->get_clock(), 1000,
+                "Wheel RPM cmd R/L = %.2f/%.2f (targets %.2f/%.2f) meas R/L = %.2f/%.2f",
+                wheel_rpm_smoothed_[0], wheel_rpm_smoothed_[3],
+                target_rpm[0], target_rpm[3],
+                measured_right_rpm, measured_left_rpm);
+        } else {
+            RCLCPP_INFO_THROTTLE(
+                this->get_logger(), *this->get_clock(), 1000,
+                "Wheel RPM cmd R/L = %.2f/%.2f (targets %.2f/%.2f)",
+                wheel_rpm_smoothed_[0], wheel_rpm_smoothed_[3],
+                target_rpm[0], target_rpm[3]);
+        }
     }
 
-    if(send_arm && inhibit_arm_cmds_){
+    if(send_arm && inhibit_arm_cmds_ && joint_state){
         static constexpr Instructions::Inst MOTOR_MAP[5] = {
             Instructions::Inst::ARM_MOTOR_1,
             Instructions::Inst::ARM_MOTOR_2,
@@ -218,8 +282,13 @@ void CanControllerNode::sendCanFrames(){
             std::this_thread::sleep_for(std::chrono::microseconds(400));
             RCLCPP_DEBUG(this->get_logger(), "Motor %zu -> %.3f (payload)", i + 1, payload);
         }
-        RCLCPP_INFO(this->get_logger(), "Arm motor commands sent: Motor 1 = %.2f, Motor 2 = %.2f, Motor 3 = %.2f, Motor 4 = %.2f, Motor 5 = %.2f",
-            cmd_sent[0], cmd_sent[1], cmd_sent[2], cmd_sent[3], cmd_sent[4]);
+        const bool arm_active = !isJointStateIdle(*joint_state);
+        if (arm_active) {
+            RCLCPP_INFO_THROTTLE(
+                this->get_logger(), *this->get_clock(), 1000,
+                "Arm motor commands sent: Motor 1 = %.2f, Motor 2 = %.2f, Motor 3 = %.2f, Motor 4 = %.2f, Motor 5 = %.2f",
+                cmd_sent[0], cmd_sent[1], cmd_sent[2], cmd_sent[3], cmd_sent[4]);
+        }
 
         if(joint_state->velocity.size() >= 7){
             constexpr double SERVO_DEADZONE = 0.05;
@@ -250,23 +319,32 @@ void CanControllerNode::sendCanFrames(){
             }
             std::this_thread::sleep_for(std::chrono::microseconds(400));
 
-            RCLCPP_INFO(this->get_logger(),
-                "Servo commands sent: spin (%s) = %.3f, clamp (%s) = %.3f",
-                spin_servo_mode_.c_str(),  spin_payload,
-                clamp_servo_mode_.c_str(), clamp_payload);
+            if (arm_active &&
+                (std::abs(spin_payload) > 1e-4f || std::abs(clamp_payload) > 1e-4f)) {
+                RCLCPP_INFO_THROTTLE(
+                    this->get_logger(), *this->get_clock(), 1000,
+                    "Servo commands sent: spin (%s) = %.3f, clamp (%s) = %.3f",
+                    spin_servo_mode_.c_str(), spin_payload,
+                    clamp_servo_mode_.c_str(), clamp_payload);
+            }
         }
     }
 }
 
 
 int main(int argc, char *argv[]){
-
     rclcpp::init(argc, argv);
-
-    auto node = std::make_shared<CanControllerNode>();
-    rclcpp::spin(node);
-
+    int exit_code = 0;
+    try {
+        auto node = std::make_shared<CanControllerNode>();
+        rclcpp::spin(node);
+    } catch (const std::exception & e) {
+        RCLCPP_FATAL(rclcpp::get_logger("can_controller_node"), "Node failed to start: %s", e.what());
+        exit_code = 1;
+    } catch (...) {
+        RCLCPP_FATAL(rclcpp::get_logger("can_controller_node"), "Node failed to start: unknown exception");
+        exit_code = 1;
+    }
     rclcpp::shutdown();
-    return 0;
-
+    return exit_code;
 }

@@ -7,7 +7,35 @@
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="test_rover_wheels">
   <xacro:arg name="can_interface" default="can0"/>
 
-  <link name="base_link"/>
+  <!-- Minimal kinematic tree: ros2_control joint names must exist in URDF. -->
+  <xacro:macro name="bench_wheel" params="joint_name link_name xyz:='0 0 0'">
+    <link name="${link_name}">
+      <inertial>
+        <mass value="0.001"/>
+        <inertia ixx="1e-6" ixy="0" ixz="0" iyy="1e-6" iyz="0" izz="1e-6"/>
+      </inertial>
+    </link>
+    <joint name="${joint_name}" type="continuous">
+      <parent link="base_link"/>
+      <child link="${link_name}"/>
+      <origin xyz="${xyz}" rpy="0 0 0"/>
+      <axis xyz="0 1 0"/>
+    </joint>
+  </xacro:macro>
+
+  <link name="base_link">
+    <inertial>
+      <mass value="1.0"/>
+      <inertia ixx="0.1" ixy="0" ixz="0" iyy="0.1" iyz="0" izz="0.1"/>
+    </inertial>
+  </link>
+
+  <xacro:bench_wheel joint_name="wheel_right_front" link_name="wheel_right_front_link" xyz="0.4 -0.6 0"/>
+  <xacro:bench_wheel joint_name="wheel_right_mid"    link_name="wheel_right_mid_link"    xyz="0.0 -0.6 0"/>
+  <xacro:bench_wheel joint_name="wheel_right_rear"   link_name="wheel_right_rear_link"   xyz="-0.4 -0.6 0"/>
+  <xacro:bench_wheel joint_name="wheel_left_front"   link_name="wheel_left_front_link"   xyz="0.4 0.6 0"/>
+  <xacro:bench_wheel joint_name="wheel_left_mid"     link_name="wheel_left_mid_link"     xyz="0.0 0.6 0"/>
+  <xacro:bench_wheel joint_name="wheel_left_rear"    link_name="wheel_left_rear_link"    xyz="-0.4 0.6 0"/>
 
   <xacro:include filename="$(find wheel_can_hardware)/urdf/rover_wheels.ros2_control.xacro"/>
   <xacro:rover_wheels_ros2_control name="RoverWheels" can_interface="$(arg can_interface)"/>
