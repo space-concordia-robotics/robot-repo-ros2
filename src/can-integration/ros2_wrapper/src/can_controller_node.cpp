@@ -29,7 +29,7 @@ CanControllerNode::CanControllerNode(const rclcpp::NodeOptions& options) :
     Node("can_controller_node", options), logger(this->get_logger().get_child("can_controller_node")){
 
         this->declare_parameter("can_path", "can0");
-        multiplier = this->declare_parameter("multiplier", 500);
+        multiplier = this->declare_parameter("multiplier", 2250);
         arm_velocity_scale_ = this->declare_parameter("arm_velocity_scale", 2.0);
         can_interface_ = this->declare_parameter<std::string>("can_interface", "can0");
         can_send_rate_hz_ = this->declare_parameter("can_send_rate_hz", 100);

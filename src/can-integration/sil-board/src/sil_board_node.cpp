@@ -6,8 +6,8 @@
 
 // TODO: migrate to buildAddress::buildCANID once SIL device type / instruction
 // are defined in prefixes.hpp.  Until then, use the raw ID from the working
-// cansend command: cansend can0 0000800F#RRGGBBFF0000
-static constexpr uint32_t SIL_DEFAULT_CAN_ID = 0x0000800Fu;
+// cansend command: cansend can0 0A08C050#RRGGBBFF0000
+static constexpr uint32_t SIL_DEFAULT_CAN_ID = 0x0A08C050u;
 static constexpr uint8_t  SIL_DLC = 6;
 
 class SilBoardNode : public rclcpp::Node {

@@ -14,6 +14,7 @@
 #include "can-utils/prefixes.hpp"
 #include "can-utils/system_controller.hpp"
 #include "hardware_interface/system_interface.hpp"
+#include "hardware_interface/types/hardware_component_interface_params.hpp"
 #include "hardware_interface/types/hardware_interface_return_values.hpp"
 #include "rclcpp/macros.hpp"
 #include "rclcpp/rclcpp.hpp"
@@ -56,6 +57,8 @@ struct JointConfig
   // ARM_MOTOR_VELOCITY_MAX range. Useful for joints that need to be slowed
   // (e.g. motor 4 historically ran at 0.5 of the others).
   float velocity_scale{1.0f};
+  // +1 or -1: aligns URDF/ros2_control sign with motor and encoder (+X joint axis).
+  float direction{1.0f};
   // Encoder DeviceId used to filter feedback frames; set to 0 to disable.
   uint32_t encoder_device_id{0};
 
@@ -74,7 +77,8 @@ class ArmCanInterface : public hardware_interface::SystemInterface
 public:
   RCLCPP_SHARED_PTR_DEFINITIONS(ArmCanInterface)
 
-  hardware_interface::CallbackReturn on_init(const hardware_interface::HardwareInfo & info) override;
+  hardware_interface::CallbackReturn on_init(
+    const hardware_interface::HardwareComponentInterfaceParams & params) override;
   hardware_interface::CallbackReturn on_configure(const rclcpp_lifecycle::State & previous_state) override;
   hardware_interface::CallbackReturn on_activate(const rclcpp_lifecycle::State & previous_state) override;
   hardware_interface::CallbackReturn on_deactivate(const rclcpp_lifecycle::State & previous_state) override;

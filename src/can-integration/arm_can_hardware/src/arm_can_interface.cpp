@@ -1,6 +1,7 @@
 #include "arm_can_hardware/arm_can_interface.hpp"
 
 #include "can-utils/buildAddress.hpp"
+#include "can-utils/can_connect.hpp"
 #include "can-utils/parser.hpp"
 #include "hardware_interface/types/hardware_interface_type_values.hpp"
 #include "pluginlib/class_list_macros.hpp"
@@ -62,9 +63,12 @@ std::string ArmCanInterface::getParam(const hardware_interface::ComponentInfo & 
   return it->second;
 }
 
-hardware_interface::CallbackReturn ArmCanInterface::on_init(const hardware_interface::HardwareInfo & info)
+hardware_interface::CallbackReturn ArmCanInterface::on_init(
+  const hardware_interface::HardwareComponentInterfaceParams & params)
 {
-  if (hardware_interface::SystemInterface::on_init(info) != hardware_interface::CallbackReturn::SUCCESS) {
+  if (hardware_interface::SystemInterface::on_init(params) !=
+      hardware_interface::CallbackReturn::SUCCESS)
+  {
     return hardware_interface::CallbackReturn::ERROR;
   }
 
@@ -105,6 +109,11 @@ hardware_interface::CallbackReturn ArmCanInterface::on_init(const hardware_inter
             std::stoul(getParam(joint, "encoder_device_id", "0"), nullptr, 0));
         } catch (const std::exception &) {
           cfg.encoder_device_id = 0;
+        }
+        try {
+          cfg.direction = std::stof(getParam(joint, "direction", "1.0"));
+        } catch (const std::exception &) {
+          cfg.direction = 1.0f;
         }
         break;
       }
@@ -152,19 +161,38 @@ hardware_interface::CallbackReturn ArmCanInterface::on_init(const hardware_inter
 
 hardware_interface::CallbackReturn ArmCanInterface::on_configure(const rclcpp_lifecycle::State & /*previous_state*/)
 {
-  can_controller_ = std::make_shared<can_util::CANController>(can_interface_name_, logger_);
-  if (!can_controller_->configureCan()) {
-    RCLCPP_FATAL(logger_, "Failed to configure CAN on '%s'", can_interface_name_.c_str());
+  try {
+    can_controller_ = can_util::createConfiguredCanController(can_interface_name_, logger_);
+    if (!can_controller_) {
+      can_controller_.reset();
+      return hardware_interface::CallbackReturn::ERROR;
+    }
+    frame_builder_ = std::make_unique<SystemFrameBuilder>(can_controller_);
+
+    frame_callback_ = can_controller_->registerFrameCallback(
+      [this](uint32_t id, const std::vector<uint8_t> & data) { onCanFrame(id, data); });
+
+    RCLCPP_INFO(logger_, "Configured ArmCanInterface on CAN '%s'", can_interface_name_.c_str());
+    return hardware_interface::CallbackReturn::SUCCESS;
+  } catch (const std::exception & e) {
+    RCLCPP_FATAL(
+      logger_, "Exception during ArmCanInterface configure on '%s': %s",
+      can_interface_name_.c_str(), e.what());
+    can_util::logCanSetupRecoveryHints(logger_, can_interface_name_);
+    frame_callback_.reset();
+    frame_builder_.reset();
+    can_controller_.reset();
+    return hardware_interface::CallbackReturn::ERROR;
+  } catch (...) {
+    RCLCPP_FATAL(
+      logger_, "Unknown exception during ArmCanInterface configure on '%s'",
+      can_interface_name_.c_str());
+    can_util::logCanSetupRecoveryHints(logger_, can_interface_name_);
+    frame_callback_.reset();
+    frame_builder_.reset();
     can_controller_.reset();
     return hardware_interface::CallbackReturn::ERROR;
   }
-  frame_builder_ = std::make_unique<SystemFrameBuilder>(can_controller_);
-
-  frame_callback_ = can_controller_->registerFrameCallback(
-    [this](uint32_t id, const std::vector<uint8_t> & data) { onCanFrame(id, data); });
-
-  RCLCPP_INFO(logger_, "Configured ArmCanInterface on CAN '%s'", can_interface_name_.c_str());
-  return hardware_interface::CallbackReturn::SUCCESS;
 }
 
 hardware_interface::CallbackReturn ArmCanInterface::on_activate(const rclcpp_lifecycle::State & /*previous_state*/)
@@ -208,8 +236,8 @@ hardware_interface::return_type ArmCanInterface::read(const rclcpp::Time & /*tim
   std::lock_guard<std::mutex> lk(feedback_mutex_);
   for (size_t i = 0; i < joints_.size(); ++i) {
     if (joints_[i].kind == JointKind::ARM_MOTOR) {
-      hw_states_position_[i] = joints_[i].position;
-      hw_states_velocity_[i] = joints_[i].velocity;
+      hw_states_position_[i] = joints_[i].position * joints_[i].direction;
+      hw_states_velocity_[i] = joints_[i].velocity * joints_[i].direction;
     } else {
       // Servos do not provide position feedback over CAN today; mirror the
       // commanded value so the controller has something coherent to read.
@@ -238,9 +266,10 @@ hardware_interface::return_type ArmCanInterface::write(const rclcpp::Time & /*ti
         // Treat the velocity command as a normalized [-1, 1] signal scaled to
         // the firmware payload range, matching the legacy can_controller_node
         // behaviour. The scaling is: raw * velocity_scale * ARM_MOTOR_VELOCITY_MAX.
-        float payload = (std::abs(raw) < kCommandDeadzone)
+        const double scaled = raw * static_cast<double>(cfg.direction);
+        float payload = (std::abs(scaled) < kCommandDeadzone)
                           ? 0.0f
-                          : static_cast<float>(raw * cfg.velocity_scale * kArmMotorPayloadMax);
+                          : static_cast<float>(scaled * cfg.velocity_scale * kArmMotorPayloadMax);
         payload = std::clamp(payload, kArmMotorPayloadMin, kArmMotorPayloadMax);
         frame_builder_->sendArmMotorVelocity(deviceType::DeviceType::ARM_MOTOR_CONTROLLER,
                                              cfg.arm_inst,
@@ -321,10 +350,11 @@ void ArmCanInterface::onCanFrame(uint32_t id, const std::vector<uint8_t> & data)
     std::memcpy(&velocity, data.data() + 4, sizeof(float));
   }
 
+  const float dir = joints_[it->second].direction;
   std::lock_guard<std::mutex> lk(feedback_mutex_);
-  joints_[it->second].position = static_cast<double>(position);
+  joints_[it->second].position = static_cast<double>(position) * dir;
   if (data.size() >= 8) {
-    joints_[it->second].velocity = static_cast<double>(velocity);
+    joints_[it->second].velocity = static_cast<double>(velocity) * dir;
   }
 }
 
