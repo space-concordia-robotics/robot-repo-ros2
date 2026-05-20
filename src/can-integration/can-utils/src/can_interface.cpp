@@ -177,9 +177,16 @@ namespace can_util {
         // clear the previous frame contents
         memset(&frame, 0, sizeof(frame));
 
+        if (socket_descriptor < 0 || stop_.load(std::memory_order_acquire)) {
+            return false;
+        }
+
         const auto byte_count = read(socket_descriptor, &frame, sizeof(struct can_frame));
 
         if (byte_count == -1) {
+            if (stop_.load(std::memory_order_acquire) || socket_descriptor < 0) {
+                return false;
+            }
             logger.fatal("read error: {} ({})", strerror(errno), errno);
             return false;
         }
@@ -217,9 +224,16 @@ namespace can_util {
     bool CANController::writeFrame(const can_frame& frame) const {
         std::lock_guard lock(mtx);
 
+        if (socket_descriptor < 0 || stop_.load(std::memory_order_acquire)) {
+            return false;
+        }
+
         const auto byte_count = write(socket_descriptor, &frame, sizeof(can_frame));
         const auto original_errno = errno;
         if (byte_count == -1) {
+            if (stop_.load(std::memory_order_acquire) || socket_descriptor < 0) {
+                return false;
+            }
             logger.fatal("write error: {} ({})", strerror(original_errno), original_errno);
             return false;
         }
