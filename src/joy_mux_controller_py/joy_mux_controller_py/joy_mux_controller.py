@@ -129,11 +129,11 @@ class JoyMuxController(Node):
         self._m4_latched_cmd = 0.0
         self._m4_hold_until = 0.0
 
-        self._rover_boost_first_fire = self.declare_parameter(
-            "rover_boost_first_fire", 1.5
+        self._rover_boost_trigger_up = self.declare_parameter(
+            "rover_boost_trigger_up", 1.5
         ).value
-        self._rover_boost_both_fire = self.declare_parameter(
-            "rover_boost_both_fire", 2.0
+        self._rover_boost_trigger_down = self.declare_parameter(
+            "rover_boost_trigger_down", 2.0
         ).value
 
         self.get_logger().info(
@@ -142,8 +142,8 @@ class JoyMuxController(Node):
             f"mode_switch_stop_duration_s={self._mode_switch_stop_duration_s}, "
             f"mode_toggle_cooldown_s={self._mode_toggle_cooldown_s}, "
             f"arm_button_min_hold_s={self._arm_button_min_hold_s}, "
-            f"rover_boost_first_fire={self._rover_boost_first_fire}, "
-            f"rover_boost_both_fire={self._rover_boost_both_fire}"
+            f"rover_boost_trigger_up={self._rover_boost_trigger_up}, "
+            f"rover_boost_trigger_down={self._rover_boost_trigger_down}"
         )
 
     def _publish_all_stop(self) -> None:
@@ -156,10 +156,10 @@ class JoyMuxController(Node):
         self.arm_pub.publish(stopped)
 
     def _rover_boost(self, buttons) -> float:
-        if buttons[VKBButtonLayout.SECOND_FIRE]:
-            return self._rover_boost_both_fire
-        if buttons[VKBButtonLayout.FIRST_FIRE]:
-            return self._rover_boost_first_fire
+        if buttons[VKBButtonLayout.TRIGGER_DOWN]:
+            return self._rover_boost_trigger_down
+        if buttons[VKBButtonLayout.TRIGGER_UP]:
+            return self._rover_boost_trigger_up
         return 1.0
 
     def joy_callback(self, msg: Joy):
@@ -225,7 +225,7 @@ class JoyMuxController(Node):
                     float(msg.axes[VKBAxesLayout.STICK_Z]) * ArmVelocityScale.M1_STICK_Z,
                     float(msg.buttons[VKBButtonLayout.A3_UP] - msg.buttons[VKBButtonLayout.A3_DOWN])
                     * ArmVelocityScale.M2_A3_VERTICAL * a3_throttle,
-                    float(msg.axes[VKBAxesLayout.STICK_Y]) * ArmVelocityScale.M3_STICK_Y,
+                    -float(msg.axes[VKBAxesLayout.STICK_Y]) * ArmVelocityScale.M3_STICK_Y,
                     m4_raw * ArmVelocityScale.M4_STICK_X,
                     float(msg.buttons[VKBButtonLayout.A3_LEFT] - msg.buttons[VKBButtonLayout.A3_RIGHT])
                     * ArmVelocityScale.M5_A3_HORIZONTAL * a3_throttle,
