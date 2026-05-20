@@ -17,16 +17,21 @@ namespace can_util {
         shutdown();
     }
 
+    void CANController::stop() {
+        shutdown();
+    }
+
     void CANController::shutdown() {
         stop_.store(true, std::memory_order_release);
         const int fd = socket_descriptor;
-        socket_descriptor = -1;
         if (fd >= 0) {
+            ::shutdown(fd, SHUT_RDWR);
             ::close(fd);
         }
         if (readThread.joinable()) {
             readThread.join();
         }
+        socket_descriptor = -1;
     }
 
     bool CANController::configureCan() {
@@ -139,6 +144,9 @@ namespace can_util {
     // }
 
     bool CANController::readFrameIfAvailable(can_frame& frame) const {
+        if (socket_descriptor < 0 || stop_.load(std::memory_order_acquire)) {
+            return false;
+        }
         // Set up the file descriptor set
         fd_set read_fds;
         FD_ZERO(&read_fds);
@@ -152,13 +160,11 @@ namespace can_util {
         };
 
         // Use select to check if data is available
-        if (
-            const int result = select(socket_descriptor + 1, &read_fds, nullptr, nullptr, &timeout);
-            result > 0 && FD_ISSET(socket_descriptor, &read_fds)
-        ) {
+        const int result = select(socket_descriptor + 1, &read_fds, nullptr, nullptr, &timeout);
+        if (result > 0 && FD_ISSET(socket_descriptor, &read_fds)) {
             readFrame(frame);
             return true;
-        } else if (result == 0) {
+        } else if (result == 0 || stop_.load(std::memory_order_acquire)) {
             // timeout
             return false;
         }
