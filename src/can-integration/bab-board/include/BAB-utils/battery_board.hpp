@@ -1,4 +1,3 @@
-#include "can-utils/can_interface.hpp"
 #include "can-utils/prefixes.hpp"
 #include "can-utils/parser.hpp"
 #include "can-utils/buildAddress.hpp"
@@ -116,6 +115,22 @@ class BAB{
         float getBatteryTemp() const;
 
 
+        //TODO(Michael): Add function description. 
+
+        float getRailVoltageLevel() const; 
+
+
+
+        float getRailCurrent() const; 
+
+
+
+        float getRailTemp() const; 
+
+
+
+        float getRailPower() const;
+
 
 
         /*
@@ -127,12 +142,13 @@ class BAB{
 
 
 
+        float getTCUTemp() const;
         /*
         *  @brief Sends report to user if TCU is no longer operational
         *  @param: None
         * 
         */
-        float getTCUStatus() const; 
+        std::string getTCUStatus() const; 
 
 
         /*
@@ -166,7 +182,7 @@ class BAB{
         * @param: None
         *  
         */
-        std::string getBABStatus() const; 
+        //std::string getBABStatus() const; 
 
 
         /*
@@ -203,7 +219,7 @@ class BAB{
         *  @param: DeviceId::ID railID 
         *  @return: True for success
         */
-        bool sendManualPowerCommands(DeviceId::ID selectRailID); 
+        bool sendManualPowerCommands(DeviceId::ID selectRailID, bool turnOn); 
 
     
     private:

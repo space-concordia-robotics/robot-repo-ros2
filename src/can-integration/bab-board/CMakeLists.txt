@@ -10,12 +10,16 @@ endif ()
 # find dependencies
 set(DEPENDENCIES
         rclcpp
+        can-utils
         ros2_fmt_logger
+        diagnostic_updater
 )
 
 find_package(ament_cmake REQUIRED)
 find_package(ament_cmake_ros REQUIRED)
 find_package(backward_ros REQUIRED)
+find_package(can-utils REQUIRED)
+find_package(diagnostic_updater REQUIRED)
 
 foreach (dependency IN ITEMS ${DEPENDENCIES})
     find_package(${dependency} REQUIRED)
@@ -27,6 +31,7 @@ add_library(
         bab_board
         SHARED
         src/battery_board.cpp
+        src/produce_diagnostics.cpp
 )
 target_include_directories(bab_board
         PUBLIC
