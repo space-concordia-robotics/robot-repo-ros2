@@ -13,6 +13,14 @@
 #include "foc2-gui/widgets/logs_widget.hpp"
 #include "foc2-gui/widgets/video_widget.hpp"
 
+// include stb image implementation
+#define STB_IMAGE_IMPLEMENTATION
+// ReSharper disable once CppUnusedIncludeDirective
+#include <stb_image.h>
+
+#include "foc2-gui/widgets/map_widget.hpp"
+
+
 SDL_Surface* loadSvgSurface(const std::filesystem::path& path, const int width = 0, const int height = 0) {
     auto doc = lunasvg::Document::loadFromFile(path);
     if (!doc)
@@ -38,6 +46,11 @@ class FOC2Application : public ImApplication {
 public:
     FOC2Application() : ImApplication("foc2_gui", "SCRB C2 Station") {}
 
+    FOC2Application(const FOC2Application& other) = delete;
+    FOC2Application(FOC2Application&& other) noexcept = delete;
+    FOC2Application& operator=(const FOC2Application& other) = delete;
+    FOC2Application& operator=(FOC2Application&& other) noexcept = delete;
+
 protected:
     void onWindow() override {
         const auto share_dir = ament_index_cpp::get_package_share_directory(FOC2_PACKAGE_NAME);
@@ -51,15 +64,19 @@ protected:
     }
 
     void onInit() override {
-        video_top = std::make_shared<VideoWidget>(*this, "rtsp://10.240.0.10:8554/RGB", true, "rotate-180");
+        video_top = std::make_shared<VideoWidget>(*this, "rtsp://127.0.0.1:8554/test", true, "rotate-180");
         video_bottom_left = std::make_shared<VideoWidget>(*this, "rtsp://10.240.0.10:8445/arm", false, "none");
         video_bottom_right = std::make_shared<VideoWidget>(*this, "rtsp://10.240.0.10:8445/left", false, "none");
+
+        map_widget = std::make_shared<MapWidget>(*this);
 
         logs = std::make_shared<RosLogWidget>(*this);
 
         video_top->onInit();
         video_bottom_left->onInit();
         video_bottom_right->onInit();
+
+        map_widget->onInit();
 
         logs->onInit();
 
@@ -93,26 +110,26 @@ protected:
 
         // TODO 2026-05-05 (Will Free): figure out what to put on the left side
 
-        // ImGui::BeginChild("Left", ImVec2(left_width, 0), false);
-        // drawLeft();
-        // ImGui::EndChild();
-        //
-        // ImGui::SameLine();
-        //
-        // {
-        //     const auto draw_list = ImGui::GetWindowDrawList();
-        //     const auto cursor_pos = ImGui::GetCursorScreenPos();
-        //
-        //     const auto top = ImGui::GetWindowPos().y;
-        //     const auto bottom = top + ImGui::GetWindowSize().y;
-        //
-        //     draw_list->AddLine(
-        //         ImVec2(cursor_pos.x, top + 8),
-        //         ImVec2(cursor_pos.x, bottom - 8),
-        //         ImGui::ImColor(200, 200, 200, 40),
-        //         2.0
-        //     );
-        // }
+        ImGui::BeginChild("Left", ImVec2(left_width, 0), false);
+        drawLeft();
+        ImGui::EndChild();
+
+        ImGui::SameLine();
+
+        {
+            const auto draw_list = ImGui::GetWindowDrawList();
+            const auto cursor_pos = ImGui::GetCursorScreenPos();
+
+            const auto top = ImGui::GetWindowPos().y;
+            const auto bottom = top + ImGui::GetWindowSize().y;
+
+            draw_list->AddLine(
+                ImVec2(cursor_pos.x, top + 8),
+                ImVec2(cursor_pos.x, bottom - 8),
+                ImGui::ImColor(200, 200, 200, 40),
+                2.0
+            );
+        }
 
         ImGui::BeginChild("Video Streams", ImVec2(0, 0), false);
         drawRight();
@@ -125,6 +142,8 @@ protected:
         video_top->onShutdown();
         video_bottom_left->onShutdown();
         video_bottom_right->onShutdown();
+        map_widget->onShutdown();
+        logs->onShutdown();
     }
 
 private:
@@ -133,18 +152,21 @@ private:
     std::shared_ptr<VideoWidget> video_bottom_right;
     std::shared_ptr<RosLogWidget> logs;
 
+    std::shared_ptr<MapWidget> map_widget;
+
     void drawLeft() const {
         ImGui::Text("TODO");
 
         ImGui::Separator();
 
-        const auto avail = ImGui::GetContentRegionAvail();
+        const auto available = ImGui::GetContentRegionAvail();
 
         // TODO 2026-05-07 (Will Free): make this a percent
+        ImGui::BeginChild("Map", ImVec2(0, available.y - 240), 0);
+        map_widget->onFrame();
+        ImGui::EndChild();
 
-        ImGui::SetCursorPosY(ImGui::GetCursorPosY() + avail.y - 240);
-
-        ImGui::BeginChild("ROS Logs", ImVec2(0, 240), 0);
+        ImGui::BeginChild("ROS Logs", ImGui::GetContentRegionAvail(), 0);
         logs->onFrame();
         ImGui::EndChild();
     }

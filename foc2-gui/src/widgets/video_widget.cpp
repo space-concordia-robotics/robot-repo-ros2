@@ -6,7 +6,6 @@
 
 #include "foc2-gui/overlays/aruco_video_overlay.hpp"
 #include "foc2-gui/overlays/crosshair_overlay.hpp"
-#include "foc2-gui/overlays/minimap.hpp"
 #include "foc2-gui/overlays/video_stats_overlay.hpp"
 
 
@@ -22,8 +21,9 @@ VideoWidget::VideoWidget(ImApplication& application, const std::string& source_u
 
     addOverlay(video_stats_overlay);
 
-    if (minimap)
-        addOverlay(std::make_shared<MiniMapOverlay>(application));
+    // TODO 2026-05-20 (Will Free): the minimap is currently broken, because it cannot correctly determine which way is north.
+    // if (minimap)
+    //     addOverlay(std::make_shared<MiniMapOverlay>(application));
 
     // if this 50ms value is changed, also update the value in the video stats overlay
     stats_timer = this->application.create_timer(50ms, [this] {

@@ -151,7 +151,4 @@
     <xacro:ffc_camera side="left" angle="${1 * pi/2}"/>
     <xacro:ffc_camera side="rear" angle="${2 * pi/2}"/>
     <xacro:ffc_camera side="right" angle="${3 * pi/2}"/>
-
-
-    <xacro:oak_ffc_perimeter_cameras/>
 </robot>

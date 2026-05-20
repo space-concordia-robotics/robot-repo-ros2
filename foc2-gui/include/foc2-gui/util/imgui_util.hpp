@@ -1,8 +1,8 @@
 #pragma once
 
-#include <cstdint>
 #include <imgui.h>
 #include <string>
+#include <fmt/core.h>
 
 namespace ImGui {
     constexpr ImU32 ImColor(const uint8_t r, const uint8_t g, const uint8_t b, const uint8_t a) noexcept {
@@ -12,15 +12,175 @@ namespace ImGui {
             static_cast<ImU32>(r) << IM_COL32_R_SHIFT;
     }
 
-    inline ImVec2 CalcTextSize(const std::string& text, const bool hide_text_after_double_hash = false, const float wrap_width = -1.0f) {
-        return CalcTextSize(text.c_str(), text.c_str() + text.length(), hide_text_after_double_hash, wrap_width);
+    template <
+        typename S = std::string,
+        typename = std::enable_if_t<
+            std::is_same_v<std::decay_t<S>, std::string> ||
+            std::is_same_v<std::decay_t<S>, std::string_view>
+        >>
+    ImVec2 CalcTextSize(const std::string& text, const bool hide_text_after_double_hash = false, const float wrap_width = -1.0f) {
+        return CalcTextSize(text.data(), text.data() + text.length(), hide_text_after_double_hash, wrap_width);
     }
 
-    inline void TextUnformatted(const std::string& text) {
-        TextUnformatted(text.c_str(), text.c_str() + text.length());
+    // region {fmt} Formatting
+
+    template <typename... T>
+    void TextFmt(fmt::format_string<T...> fmt, T&&... args) {
+        const auto result = fmt::vformat(fmt, fmt::make_format_args(args...));
+        TextUnformatted(result.data(), result.data() + result.length());
     }
 
-    inline void TextUnformatted(const std::string_view& text) {
+    template <typename... T>
+    void TextColoredFmt(fmt::format_string<T...> fmt, T&&... args) {
+        const auto result = fmt::vformat(fmt, fmt::make_format_args(args...));
+        TextColoredUnformatted(result.data(), result.data() + result.length());
+    }
+
+    template <typename... T>
+    void TextDisabledFmt(fmt::format_string<T...> fmt, T&&... args) {
+        const auto result = fmt::vformat(fmt, fmt::make_format_args(args...));
+        TextDisabledUnformatted(result.data(), result.data() + result.length());
+    }
+
+    template <typename... T>
+    void TextWrappedFmt(fmt::format_string<T...> fmt, T&&... args) {
+        const auto result = fmt::vformat(fmt, fmt::make_format_args(args...));
+        TextWrappedUnformatted(result.data(), result.data() + result.length());
+    }
+
+    template <
+        typename S = std::string,
+        typename... T,
+        typename = std::enable_if_t<
+            std::is_same_v<std::decay_t<S>, std::string> ||
+            std::is_same_v<std::decay_t<S>, std::string_view>
+        >>
+    void LabelTextFmt(const S& label, fmt::format_string<T...> fmt, T&&... args) {
+        const auto result = fmt::vformat(fmt, fmt::make_format_args(args...));
+        LabelTextUnformatted(label.data(), result.data(), result.data() + result.length());
+    }
+
+    template <typename... T>
+    void BulletTextFmt(fmt::format_string<T...> fmt, T&&... args) {
+        const auto result = fmt::vformat(fmt, fmt::make_format_args(args...));
+        BulletTextUnformatted(result.data(), result.data() + result.length());
+    }
+
+    template <typename... T>
+    void SetTooltipFmt(fmt::format_string<T...> fmt, T&&... args) {
+        const auto result = fmt::vformat(fmt, fmt::make_format_args(args...));
+        SetTooltipUnformatted(result.data(), result.data() + result.length());
+    }
+
+    template <typename... T>
+    void SetItemTooltipFmt(fmt::format_string<T...> fmt, T&&... args) {
+        const auto result = fmt::vformat(fmt, fmt::make_format_args(args...));
+        SetItemTooltipUnformatted(result.data(), result.data() + result.length());
+    }
+
+    // endregion
+
+    // region Unformatted Text
+
+    template <
+        typename S = std::string,
+        typename = std::enable_if_t<
+            std::is_same_v<std::decay_t<S>, std::string> ||
+            std::is_same_v<std::decay_t<S>, std::string_view>
+        >>
+    void TextUnformatted(const S& text) {
         TextUnformatted(text.data(), text.data() + text.length());
+    }
+
+    template <
+        typename S = std::string,
+        typename = std::enable_if_t<
+            std::is_same_v<std::decay_t<S>, std::string> ||
+            std::is_same_v<std::decay_t<S>, std::string_view>
+        >>
+    void TextColoredUnformatted(const S& text) {
+        // %.*s is special-cased to avoid printf()
+        TextColored("%.*s", text.data() + text.length(), text.data());
+    }
+
+    template <
+        typename S = std::string,
+        typename = std::enable_if_t<
+            std::is_same_v<std::decay_t<S>, std::string> ||
+            std::is_same_v<std::decay_t<S>, std::string_view>
+        >>
+    void TextDisabledUnformatted(const S& text) {
+        // %.*s is special-cased to avoid printf()
+        TextDisabled("%.*s", text.data() + text.length(), text.data());
+    }
+
+    template <
+        typename S = std::string,
+        typename = std::enable_if_t<
+            std::is_same_v<std::decay_t<S>, std::string> ||
+            std::is_same_v<std::decay_t<S>, std::string_view>
+        >>
+    void TextWrappedUnformatted(const S& text) {
+        // %.*s is special-cased to avoid printf()
+        TextWrapped("%.*s", text.data() + text.length(), text.data());
+    }
+
+    template <
+        typename S1 = std::string,
+        typename S2 = std::string,
+        typename = std::enable_if_t<
+            (std::is_same_v<std::decay_t<S1>, std::string> || std::is_same_v<std::decay_t<S1>, std::string_view>) &&
+            (std::is_same_v<std::decay_t<S2>, std::string> || std::is_same_v<std::decay_t<S2>, std::string_view>)
+        >>
+    void LabelTextUnformatted(const S1& label, const S2& text) {
+        // %.*s is special-cased to avoid printf()
+        LabelText(label.data(), "%.*s", text.data() + text.length(), text.data());
+    }
+
+    template <
+        typename S = std::string,
+        typename = std::enable_if_t<
+            std::is_same_v<std::decay_t<S>, std::string> ||
+            std::is_same_v<std::decay_t<S>, std::string_view>
+        >>
+    void BulletTextUnformatted(const S& text) {
+        // %.*s is special-cased to avoid printf()
+        BulletText("%.*s", text.data() + text.length(), text.data());
+    }
+
+    template <
+        typename S = std::string,
+        typename = std::enable_if_t<
+            std::is_same_v<std::decay_t<S>, std::string> ||
+            std::is_same_v<std::decay_t<S>, std::string_view>
+        >>
+    void SetTooltip(const S& text) {
+        // %.*s is special-cased to avoid printf()
+        SetTooltip("%.*s", text.data() + text.length(), text.data());
+    }
+
+    template <
+        typename S = std::string,
+        typename = std::enable_if_t<
+            std::is_same_v<std::decay_t<S>, std::string> ||
+            std::is_same_v<std::decay_t<S>, std::string_view>
+        >>
+    void SetItemTooltip(const S& text) {
+        // %.*s is special-cased to avoid printf()
+        SetItemTooltip("%.*s", text.data() + text.length(), text.data());
+    }
+
+    // endregion
+
+    inline bool InputDouble2(const char* label, double v[2], const char* format = "%.3f", const ImGuiInputTextFlags flags = 0) {
+        return InputScalarN(label, ImGuiDataType_Double, v, 2, nullptr, nullptr, format, flags);
+    }
+
+    inline bool InputDouble3(const char* label, double v[3], const char* format = "%.3f", const ImGuiInputTextFlags flags = 0) {
+        return InputScalarN(label, ImGuiDataType_Double, v, 3, nullptr, nullptr, format, flags);
+    }
+
+    inline bool InputDouble4(const char* label, double v[4], const char* format = "%.3f", const ImGuiInputTextFlags flags = 0) {
+        return InputScalarN(label, ImGuiDataType_Double, v, 4, nullptr, nullptr, format, flags);
     }
 }

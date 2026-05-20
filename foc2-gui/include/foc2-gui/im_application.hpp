@@ -36,5 +36,3 @@ private:
     void render() const;
     void quit() const;
 };
-
-#include <SDL3/SDL.h>
