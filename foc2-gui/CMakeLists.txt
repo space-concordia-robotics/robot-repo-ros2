@@ -2,26 +2,12 @@ cmake_minimum_required(VERSION 3.22)
 project(foc2_gui)
 
 if (NOT CMAKE_CXX_STANDARD)
-    set(CMAKE_CXX_STANDARD 26)
-endif ()
-
-if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    add_compile_options(-Wall -Wextra -Wpedantic)
+    set(CMAKE_CXX_STANDARD 23)
 endif ()
 
 ## DEPENDENCIES
 
-# statically link SDL
-# TODO 2026-05-13 (Will Free): compiling SDL from source seems to break things with compilation database projects in CLion,
-#   see: https://youtrack.jetbrains.com/issue/CPP-50040/
-#   when this gets resolved, uncomment these two lines & the line in external/CMakeLists.txt
-#set(SDL_STATIC ON)
-#set(SDL_SHARED OFF)
-
-# I'm compiling SDL3 from source so I don't need this
-find_package(SDL3 REQUIRED)
-
-add_subdirectory(external)
+include(external/dependencies.cmake)
 
 set(DEPENDENCIES
         rclcpp
@@ -41,6 +27,7 @@ set(DEPENDENCIES
         Freetype
         GeographicLib
         magic_enum
+        CURL
 
         geometry_msgs
         tf2_geometry_msgs
@@ -97,20 +84,51 @@ add_executable(${PROJECT_NAME}
 
         # widgets
         src/widgets/logs_widget.cpp
+        src/widgets/map_widget.cpp
         src/widgets/video_widget.cpp
+
+        # OSM map stuff
+        src/osm/osm_map_plot.cpp
+        src/osm/osm_rich_destination_calc_widget.cpp
+        src/osm/osm_rich_distance_calc_widget.cpp
+        src/osm/osm_rich_map_plot.cpp
+        src/osm/osm_rich_mark_editor_widget.cpp
+        src/osm/osm_rich_mark_item.cpp
+        src/osm/osm_rich_mark_item_widget.cpp
+        src/osm/osm_rich_mark_storage.cpp
+        src/osm/osm_tile.cpp
+        src/osm/osm_tile_grabber.cpp
+        src/osm/osm_tile_grabber_url.cpp
+        src/osm/osm_tile_grabber_widget.cpp
+        src/osm/osm_tile_loader.cpp
+        src/osm/osm_tile_loader_url.cpp
+        src/osm/osm_tile_saver.cpp
+        src/osm/osm_tile_source_async.cpp
+        src/osm/osm_tile_source_fs.cpp
+        src/osm/osm_tile_source_url.cpp
+        src/osm/osm_tile_source_url_impl.cpp
+        src/osm/osm_tile_source_widget.cpp
+        src/osm/osm_tile_texture.cpp
+
+        # OSM markers
+        src/osm/markers/rich_robot_marker.cpp
 )
 
 ament_target_dependencies(${PROJECT_NAME} PUBLIC ${DEPENDENCIES})
 
 target_link_libraries(${PROJECT_NAME} PUBLIC
         magic_enum::magic_enum
+
         SDL3::SDL3
+
         imgui
         implot
         implot3d
         imfonts
-        stb
+
         lunasvg
+
+        stb
 )
 
 # fixes issue with mold
@@ -118,6 +136,10 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
 target_link_options(${PROJECT_NAME} PUBLIC -static-libgcc -static-libstdc++)
 
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_23)
+
+if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -Wpedantic)
+endif ()
 
 target_include_directories(${PROJECT_NAME} PUBLIC
         $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
@@ -140,6 +162,11 @@ install(
 install(
         DIRECTORY resources
         DESTINATION share/${PROJECT_NAME}
+)
+
+install(
+        TARGETS ${PROJECT_NAME}
+        DESTINATION lib/${PROJECT_NAME}
 )
 
 install(

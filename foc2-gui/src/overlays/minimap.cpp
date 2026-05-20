@@ -1,23 +1,21 @@
 #include "foc2-gui/overlays/minimap.hpp"
 
-#include <tf2/utils.hpp>
-#include <tf2/LinearMath/Quaternion.hpp>
-#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
-
 #include "foc2-gui/util/tf2_util.hpp"
 
 void MiniMapOverlay::onInit() {
-    using namespace std::chrono_literals;
+    magnetic_field_subscription = application.create_subscription<MagneticField>(
+        "/imu/mag",
+        10,
+        // ReSharper disable once CppPassValueParameterByConstReference
+        [&](const MagneticField::SharedPtr msg) {
+            std::lock_guard lock(magnetic_field_mutex);
 
-    tf_poll_timer = application.create_wall_timer(50ms, [this] {
-        this->pollTransform();
-    });
+            magnetic_field = msg;
+        }
+    );
 }
 
-void MiniMapOverlay::onShutdown() {
-    tf_poll_timer->reset();
-    tf_poll_timer->cancel();
-}
+void MiniMapOverlay::onShutdown() {}
 
 void MiniMapOverlay::onDraw(ImDrawList* draw_list, const ImRect& bounds) {
     const auto top_right = bounds.GetTR();
@@ -43,32 +41,22 @@ void MiniMapOverlay::onDraw(ImDrawList* draw_list, const ImRect& bounds) {
     //   - overlay to show any detected objects
     //   - overlay to show any detected obstacles in nav2's costmap
 
-    drawRobotAtCenter(draw_list, radius, center, has_pose);
+    auto north_bearing = 0.0;
+    auto active = false;
 
-    drawCompass(draw_list, radius, center, robot_yaw);
-}
+    {
+        std::lock_guard lock(magnetic_field_mutex);
 
-void MiniMapOverlay::pollTransform() {
-    // TODO 2026-05-04 (Will Free): This is broken right now. for some reason the buffer cannot find any frames.
-    //  figure out why later.
+        active = magnetic_field != nullptr;
 
-    try {
-        // TODO 2026-05-04 (Will Free): make these two frames parameterized somehow
-
-        const auto transform = tf_buffer.lookupTransform("utm", "base_link", tf2::TimePointZero);
-
-        const auto quat = tf2::fromMsg<tf2::Quaternion>(transform.transform.rotation);
-
-        const auto yaw = tf2::getYaw(quat);
-
-        std::lock_guard lock(pose_mutex);
-
-        robot_yaw = yaw;
-        has_pose = true;
-    } catch (const std::exception& e) {
-        using namespace std::chrono_literals;
-        logger.warn_throttle(1s, "failed to look up tf: {}", e.what());
+        if (active) {
+            north_bearing = std::atan2(magnetic_field->magnetic_field.y, magnetic_field->magnetic_field.x) * 180.0 / std::numbers::pi;
+        }
     }
+
+    drawRobotAtCenter(draw_list, radius, center, active);
+
+    drawCompass(draw_list, radius, center, north_bearing);
 }
 
 void MiniMapOverlay::drawRobotAtCenter(ImDrawList* draw_list, const double radius, const ImVec2& center, const bool active) {
@@ -96,7 +84,7 @@ void MiniMapOverlay::drawRobotAtCenter(ImDrawList* draw_list, const double radiu
     draw_list->AddPolyline(points, std::size(points), accent, 0, radius / 48);
 }
 
-void MiniMapOverlay::drawCompass(ImDrawList* draw_list, const double radius, const ImVec2& center, const double robot_yaw) {
+void MiniMapOverlay::drawCompass(ImDrawList* draw_list, const double radius, const ImVec2& center, const double north_bearing) {
     static constexpr int COMPASS_TICKS_PER_QUADRANT = 4;
 
     const auto major_tick_length = radius * 0.12;
@@ -106,14 +94,12 @@ void MiniMapOverlay::drawCompass(ImDrawList* draw_list, const double radius, con
     static constexpr ImU32 TICK_COLOR = ImGui::ImColor(200, 200, 200, 120);
     static constexpr ImU32 LABEL_COLOR = ImGui::ImColor(240, 240, 240, 220);
 
-    const auto angle_offset = -robot_yaw;
-
     for (int i = 0; i < COMPASS_TICKS_PER_QUADRANT * 4; ++i) {
         const auto len = i % 2 == 0 ? major_tick_length : minor_tick_length;
 
         const auto angle = static_cast<double>(i) / (COMPASS_TICKS_PER_QUADRANT * 4) * 2.0 * std::numbers::pi;
-        const auto angle_cos = std::cos(angle + angle_offset);
-        const auto angle_sin = std::sin(angle + angle_offset);
+        const auto angle_cos = std::cos(angle + north_bearing);
+        const auto angle_sin = std::sin(angle + north_bearing);
         const auto direction = ImVec2(angle_cos, angle_sin);
 
         const auto outer_offset = radius - len / 2;
@@ -127,8 +113,8 @@ void MiniMapOverlay::drawCompass(ImDrawList* draw_list, const double radius, con
     auto placeLabel = [&](const std::string& text, const double angle) {
         const auto labelOffset = radius * 0.70;
 
-        const auto angle_cos = std::cos(angle + angle_offset);
-        const auto angle_sin = std::sin(angle + angle_offset);
+        const auto angle_cos = std::cos(angle + north_bearing);
+        const auto angle_sin = std::sin(angle + north_bearing);
         const auto direction = ImVec2(angle_cos, angle_sin);
 
         const auto text_size = ImGui::CalcTextSize(text);
