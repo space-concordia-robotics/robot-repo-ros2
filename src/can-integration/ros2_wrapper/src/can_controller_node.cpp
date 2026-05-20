@@ -345,13 +345,13 @@ int main(int argc, char *argv[]){
     int exit_code = 0;
 
     try {
-        // CanControllerNode constructs BAB and ProduceDiagnostics internally
+
         auto can_node = std::make_shared<CanControllerNode>();
 
         rclcpp::executors::MultiThreadedExecutor executor;
         executor.add_node(can_node);
 
-        // ProduceDiagnostics is a separate node — must be added to executor too
+
         executor.add_node(can_node->getDiagnostics());
 
         executor.spin();
