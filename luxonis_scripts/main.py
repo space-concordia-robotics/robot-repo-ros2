@@ -15,6 +15,7 @@ OAKD_MXID = "1944301001EDE12E00"
 STREAM_NAMES = ["FRONT", "RIGHT", "LEFT", "BACK", "RGB", "DEPTH"]
 
 MODES = {
+    "ffc": {"bitrate": 4000000, "fps": 30},
     "ffc_all": {"bitrate": 2000000, "fps": 30},
     "ffc_front": {"bitrate": 7000000, "fps": 30},
     "ffc_back": {"bitrate": 7000000, "fps": 30},
@@ -79,7 +80,7 @@ class PipelineSession:
         self._rgb_lock = threading.Lock()
         self._latest_rgb = None
 
-    def start(self, mode, device_id):
+    def start(self, mode, device_id, cameras=None):
         with self._lock:
             self._stop_locked()
             self._stop_event.clear()
@@ -88,7 +89,7 @@ class PipelineSession:
             self._mode = mode
             self._thread = threading.Thread(
                 target=self._worker,
-                args=(mode, device_id),
+                args=(mode, device_id, cameras),
                 daemon=False,
             )
             self._thread.start()
@@ -127,7 +128,7 @@ class PipelineSession:
         with self._rgb_lock:
             return None if self._latest_rgb is None else self._latest_rgb
 
-    def _worker(self, mode, device_id):
+    def _worker(self, mode, device_id, cameras=None):
         try:
             profile = profile_for(mode)
             fps = profile["fps"]
@@ -143,7 +144,7 @@ class PipelineSession:
                     pass
 
             with dai.Pipeline(device) as pipeline:
-                bitstream_queues, extra_queues = build_pipeline(pipeline, mode, fps, bitrate, self._visualizer)
+                bitstream_queues, extra_queues = build_pipeline(pipeline, mode, fps, bitrate, self._visualizer, cameras)
                 pipeline.start()
                 self._visualizer.registerPipeline(pipeline)
                 self._ready_event.set()
@@ -171,14 +172,21 @@ def main():
 
     server = RtspServer(stream_names=STREAM_NAMES)
     metrics = StreamMetrics()
-    visualizer = dai.RemoteConnection(webSocketPort=8765, httpPort=8082)
-    session = PipelineSession(server, metrics, visualizer)
-    
+    viz_ffc = dai.RemoteConnection(webSocketPort=8765, httpPort=8082)
+    viz_oak = dai.RemoteConnection(webSocketPort=8766, httpPort=8083)
+    sessions = {
+        "ffc": PipelineSession(server, metrics, viz_ffc),
+        "oakd": PipelineSession(server, metrics, viz_oak),
+    }
+
+    def session_for(mode):
+        return sessions[kit_name(mode)]
+
     if args.mode:
         device_id = resolve_device(args.mode, args.device)
         print(f"Connecting to {kit_name(args.mode).upper()} ({device_id})...")
         try:
-            session.start(args.mode, device_id)
+            session_for(args.mode).start(args.mode, device_id)
             print(f"Started: {args.mode}")
         except RuntimeError as e:
             print(f"Failed: {e}")
@@ -203,23 +211,29 @@ def main():
             elif cmd in ("help", "?"):
                 print_help()
             elif cmd == "stop":
-                session.stop()
+                target = parts[1].lower() if len(parts) >= 2 else None
+                for kit, s in sessions.items():
+                    if target is None or target == kit:
+                        s.stop()
                 print("Stopped.")
             elif cmd == "status":
-                if session.is_running():
-                    print(f"Running: {session.current_mode()}")
-                else:
-                    print("Idle.")
+                for kit, s in sessions.items():
+                    if s.is_running():
+                        print(f"{kit}: {s.current_mode()}")
+                    else:
+                        print(f"{kit}: idle")
             elif cmd == "bw":
-                if not session.is_running():
+                running = [s for s in sessions.values() if s.is_running()]
+                if not running:
                     print("Idle.")
                     continue
-                print_bandwidth(metrics, session.current_mode())
+                label = ", ".join(s.current_mode() for s in running)
+                print_bandwidth(metrics, label)
             elif cmd == "watch":
                 interval = float(parts[1]) if len(parts) >= 2 else 1.0
-                watch_bandwidth(metrics, session, interval)
+                watch_bandwidth(metrics, sessions, interval)
             elif cmd == "detections":
-                detections = session.latest_detections()
+                detections = sessions["oakd"].latest_detections()
                 if detections is None:
                     print("No detections yet.")
                 else:
@@ -227,55 +241,64 @@ def main():
                         print(f"  {d.labelName:<16} conf={d.confidence:.2f}  "
                             f"X={d.spatialCoordinates.x:>7.0f}mm  "
                             f"Y={d.spatialCoordinates.y:>7.0f}mm  "
-                            f"Z={d.spatialCoordinates.z:>7.0f}mm")   
+                            f"Z={d.spatialCoordinates.z:>7.0f}mm")
             elif cmd == "watch_detections":
                 interval = float(parts[1]) if len(parts) >= 2 else 1.0
                 try:
-                    while session.is_running():
-                        detections = session.latest_detections()
+                    while sessions["oakd"].is_running():
+                        detections = sessions["oakd"].latest_detections()
                         if detections is not None:
-                            print(f"\n[{session.current_mode()}] Detections:")
+                            print(f"\n[{sessions['oakd'].current_mode()}] Detections:")
                             for d in detections.detections:
                                 print(f"  {d.labelName:<16} conf={d.confidence:.2f}  "
                                     f"X={d.spatialCoordinates.x:>7.0f}mm  "
                                     f"Y={d.spatialCoordinates.y:>7.0f}mm  "
-                                    f"Z={d.spatialCoordinates.z:>7.0f}mm")   
+                                    f"Z={d.spatialCoordinates.z:>7.0f}mm")
                         else:
-                            print(f"\n[{session.current_mode()}] No detections yet.")
+                            print(f"\n[{sessions['oakd'].current_mode()}] No detections yet.")
                         time.sleep(interval)
                 except KeyboardInterrupt:
                     print() # Create a new line after CTRL+C
             elif cmd == "mode":
                 if len(parts) < 2:
-                    print("Usage: mode <name> [device_id]")
+                    print("Usage: mode <name> [device_id]   |   mode ffc <cam1,cam2,...> [device_id]")
                     continue
                 mode = parts[1]
                 if mode not in ALL_MODES:
                     print(f"Unknown mode: {mode}")
                     continue
-                device_id = parts[2] if len(parts) >= 3 else resolve_device(mode, args.device)
+                cameras = None
+                if mode == "ffc":
+                    if len(parts) < 3:
+                        print("Usage: mode ffc <cam1,cam2,...> [device_id]   (cams: front,right,left,back)")
+                        continue
+                    cameras = [c.strip().upper() for c in parts[2].split(",") if c.strip()]
+                    device_id = parts[3] if len(parts) >= 4 else resolve_device(mode, args.device)
+                else:
+                    device_id = parts[2] if len(parts) >= 3 else resolve_device(mode, args.device)
                 print(f"Connecting to {kit_name(mode).upper()} ({device_id})...")
                 try:
-                    session.start(mode, device_id)
-                    print(f"Started: {mode}")
+                    session_for(mode).start(mode, device_id, cameras)
+                    print(f"Started: {mode}{(' ' + ','.join(cameras)) if cameras else ''}")
                 except RuntimeError as e:
                     print(f"Failed: {e}")
     except KeyboardInterrupt:
         pass
     finally:
         print("\nShutting down.")
-        session.stop()
+        for s in sessions.values():
+            s.stop()
         subprocess.Popen(["pkill", "-f", "run_cameras.sh"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
 
 def resolve_device(mode, override):
     if override:
         return override
-    return FFC_MXID if mode.startswith("ffc_") else OAKD_MXID
+    return FFC_MXID if mode.startswith("ffc") else OAKD_MXID
 
 
 def kit_name(mode):
-    return "ffc" if mode.startswith("ffc_") else "oakd"
+    return "ffc" if mode.startswith("ffc") else "oakd"
 
 
 def print_help():
@@ -297,9 +320,13 @@ def print_bandwidth(metrics, mode):
     if not snap:
         print(f"[{mode}] no traffic in last {elapsed:.2f}s")
         return
-    configured = profile_for(mode)["bitrate"] / 1e6 if mode else 0.0
+    try:
+        configured = profile_for(mode)["bitrate"] / 1e6 if mode else 0.0
+        cfg_str = f"  configured={configured:.1f} Mbps/stream"
+    except (ValueError, KeyError):
+        cfg_str = ""
     total_mbps = sum(s["mbps"] for s in snap.values())
-    print(f"[{mode}] window={elapsed:.2f}s  configured={configured:.1f} Mbps/stream  total={total_mbps:.2f} Mbps")
+    print(f"[{mode}] window={elapsed:.2f}s{cfg_str}  total={total_mbps:.2f} Mbps")
     print(f"  {'stream':<8} {'mbps':>7}  {'fps':>6}")
     for name in sorted(snap):
         s = snap[name]
@@ -307,15 +334,16 @@ def print_bandwidth(metrics, mode):
 
 
 ## RUN watch [interval] to print bandwidth at set interval (in seconds)
-def watch_bandwidth(metrics, session, interval):
-    metrics.sample() 
+def watch_bandwidth(metrics, sessions, interval):
+    metrics.sample()
     try:
-        while session.is_running():
+        while any(s.is_running() for s in sessions.values()):
             time.sleep(interval)
-            print_bandwidth(metrics, session.current_mode())
+            label = ", ".join(s.current_mode() for s in sessions.values() if s.is_running())
+            print_bandwidth(metrics, label)
     except KeyboardInterrupt:
         print() # Create a new line after CTRL+C
-    if not session.is_running():
+    if not any(s.is_running() for s in sessions.values()):
         print("Idle.")
 
 
@@ -335,9 +363,25 @@ def parse_args():
     return parser.parse_args()
 
 
-def build_pipeline(pipeline, mode, maxFps, bitrate, visualizer):
+FFC_SOCKETS = {
+    "FRONT": dai.CameraBoardSocket.CAM_A,
+    "RIGHT": dai.CameraBoardSocket.CAM_B,
+    "LEFT":  dai.CameraBoardSocket.CAM_C,
+    "BACK":  dai.CameraBoardSocket.CAM_D,
+}
+
+
+def build_pipeline(pipeline, mode, maxFps, bitrate, visualizer, cameras=None):
     sockets = []
-    if mode == "ffc_all" or mode == "ffc_yolo":
+    if mode == "ffc":
+        if not cameras:
+            raise ValueError("mode 'ffc' requires a camera list")
+        for cam in cameras:
+            cam = cam.upper()
+            if cam not in FFC_SOCKETS:
+                raise ValueError(f"Unknown FFC camera '{cam}' (valid: {','.join(FFC_SOCKETS)})")
+            sockets.append((FFC_SOCKETS[cam], cam))
+    elif mode == "ffc_all" or mode == "ffc_yolo":
         sockets = [
             (dai.CameraBoardSocket.CAM_A, "FRONT"),
             (dai.CameraBoardSocket.CAM_B, "RIGHT"),
