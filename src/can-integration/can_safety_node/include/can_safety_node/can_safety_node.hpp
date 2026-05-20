@@ -42,10 +42,12 @@ private:
   static bool risingEdge(bool current, bool & prev);
 
   std::string can_interface_name_{"can0"};
-  // Joy button indices (configurable via params; defaults match the legacy
-  // can_controller_node mapping).
-  int wheel_force_stop_button_{6};
-  int wheel_resume_button_{7};
+  // Joy button indices (configurable via params).
+  // Defaults are VKBButtonLayout::F1 (26) and F2 (27) — unassigned by joy_mux_controller_py,
+  // so they do not conflict with arm joints 2/5 (which used the old defaults 6 and 7).
+  // Verify actual indices on your hardware with: ros2 run joy_mux_controller_py joy_button_probe
+  int wheel_force_stop_button_{26};
+  int wheel_resume_button_{27};
 
   std::shared_ptr<can_util::CANController> can_;
   std::unique_ptr<SystemFrameBuilder>      frame_builder_;

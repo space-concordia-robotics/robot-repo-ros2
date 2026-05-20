@@ -81,6 +81,23 @@ uint32_t SystemFrameBuilder::sendSpinServoSpeed(float speed_rad_s){
         speed_rad_s);
 }
 
+uint32_t SystemFrameBuilder::sendGripperMovePosition(int32_t degrees_relative) {
+    // Firmware_SPIN MOVE_POSITION frame per docs/SERVO_API.md.
+    // MAKE_ID(ctrl=0b11, instruction=0x01, device=0x18) => 0x180B0
+    // Payload: signed int32 big-endian relative degrees. Firmware clamps ±100° on its side.
+    const int32_t clamped = std::clamp(degrees_relative, -100, 100);
+    struct can_frame frame{};
+    constexpr uint32_t kGripperMovePositionId = 0x180B0u;
+    frame.can_id = kGripperMovePositionId | CAN_EFF_FLAG;
+    frame.len = 4;
+    std::memset(frame.data, 0, sizeof(frame.data));
+    frame.data[0] = static_cast<uint8_t>((clamped >> 24) & 0xFF);
+    frame.data[1] = static_cast<uint8_t>((clamped >> 16) & 0xFF);
+    frame.data[2] = static_cast<uint8_t>((clamped >>  8) & 0xFF);
+    frame.data[3] = static_cast<uint8_t>((clamped >>  0) & 0xFF);
+    return can_manager_->sendBlockingFrame(frame);
+}
+
 uint32_t SystemFrameBuilder::sendClampServoPosition(float position_rad){
     return builder_.buildServoFrame(
         static_cast<uint32_t>(Instructions::Inst::SERVO_MOVE_TO_POSITION),

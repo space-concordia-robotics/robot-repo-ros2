@@ -41,8 +41,9 @@ enum class JointKind
 
 enum class ServoMode
 {
-  POSITION,  // velocity command interpreted as target rad
-  SPEED,     // velocity command interpreted as target rad/s
+  POSITION,       // velocity command interpreted as target rad (legacy FRC-style ID)
+  SPEED,          // velocity command interpreted as target rad/s (legacy FRC-style ID)
+  MOVE_POSITION,  // Firmware_SPIN MOVE_POSITION: cmd × servo_max = relative degrees (SERVO_API.md)
 };
 
 // Per-joint configuration parsed once during on_init() from the URDF.
@@ -59,8 +60,15 @@ struct JointConfig
   float velocity_scale{1.0f};
   // +1 or -1: aligns URDF/ros2_control sign with motor and encoder (+X joint axis).
   float direction{1.0f};
-  // Encoder DeviceId used to filter feedback frames; set to 0 to disable.
+  // Legacy encoder device id (bits[5:0] of the RX command ID). Kept for
+  // documentation compatibility; routing now uses the full 29-bit TX IDs below.
   uint32_t encoder_device_id{0};
+
+  // Full 29-bit arbitration IDs of encoder TX frames (masked, no EFF flag).
+  // Populated from URDF params or derived from encoder_device_id defaults.
+  // 0 = not connected (feedback disabled for this joint).
+  uint32_t encoder_abs_can_id{0};    // absolute position frame
+  uint32_t encoder_speed_can_id{0};  // angular velocity frame
 
   // SERVO fields
   ServoMode servo_mode{ServoMode::SPEED};
@@ -115,7 +123,9 @@ private:
 
   // Indexed parallel to info_.joints / hw_*_ vectors.
   std::vector<JointConfig> joints_;
-  std::unordered_map<uint32_t, size_t> encoder_id_to_joint_;
+  // Maps masked 29-bit CAN arbitration ID -> joint index.
+  std::unordered_map<uint32_t, size_t> abs_can_id_to_joint_;
+  std::unordered_map<uint32_t, size_t> speed_can_id_to_joint_;
 
   // ros2_control state buffers (one entry per URDF joint).
   std::vector<double> hw_states_position_;
