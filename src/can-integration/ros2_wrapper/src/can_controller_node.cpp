@@ -29,7 +29,7 @@ CanControllerNode::CanControllerNode(const rclcpp::NodeOptions& options) :
     Node("can_controller_node", options), logger(this->get_logger().get_child("can_controller_node")){
 
         this->declare_parameter("can_path", "can0");
-        multiplier = this->declare_parameter("multiplier", 2250);
+        multiplier = this->declare_parameter("multiplier", 500);
         arm_velocity_scale_ = this->declare_parameter("arm_velocity_scale", 2.0);
         can_interface_ = this->declare_parameter<std::string>("can_interface", "can0");
         can_send_rate_hz_ = this->declare_parameter("can_send_rate_hz", 100);
@@ -73,7 +73,7 @@ CanControllerNode::CanControllerNode(const rclcpp::NodeOptions& options) :
         arm_velocity_scale_callback_handle = parameter_event_handler->add_parameter_callback("arm_velocity_scale", arm_scale_callback);
 
         frame_builder_ = std::make_unique<SystemFrameBuilder>(can_controller_);
-
+        
         wheel_feedback_ = std::make_unique<spark_max::SparkMaxFeedback>(
             can_controller_,
             std::vector<uint8_t>{
@@ -170,7 +170,7 @@ void CanControllerNode::sendCanFrames(){
         if(std::abs(angular_z) < DEADZONE) angular_z = 0.0f;
 
         const float half_track = 1.2f * 0.5f;
-        float right_cmd = 0.F;
+        float  right_cmd = 0.F;
         float left_cmd = 0.F;
 
         const bool yaw_only = std::abs(linear_x) < kPureAxisEps;
@@ -345,13 +345,13 @@ int main(int argc, char *argv[]){
     int exit_code = 0;
 
     try {
-
+        // CanControllerNode constructs BAB and ProduceDiagnostics internally
         auto can_node = std::make_shared<CanControllerNode>();
 
         rclcpp::executors::MultiThreadedExecutor executor;
         executor.add_node(can_node);
 
-
+        // ProduceDiagnostics is a separate node — must be added to executor too
         executor.add_node(can_node->getDiagnostics());
 
         executor.spin();
