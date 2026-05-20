@@ -46,13 +46,14 @@ class CanControllerNode : public rclcpp::Node{
         double arm_velocity_scale_; 
         
 
-        // Servo shaping (joystick [-1,1] -> rad or rad/s).
+        // Spin servo shaping (joystick [-1,1] -> rad or rad/s).
         std::string spin_servo_mode_;
-        std::string clamp_servo_mode_;
         float spin_servo_max_rad_{0.0f};
         float spin_servo_max_rad_s_{0.0f};
-        float clamp_servo_max_rad_{0.0f};
-        float clamp_servo_max_rad_s_{0.0f};
+
+        // Gripper (CLAMP) shaping — SERVO_API MOVE_POSITION relative degrees per tick.
+        // Each active command cycle sends one relative frame scaled by this param.
+        float clamp_max_deg_per_command_{15.0f};
 
         std::shared_ptr<rclcpp::ParameterEventHandler> parameter_event_handler;
         rclcpp::ParameterCallbackHandle::SharedPtr multiplier_callback_handle;

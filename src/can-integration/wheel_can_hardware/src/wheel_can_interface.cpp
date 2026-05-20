@@ -146,7 +146,7 @@ WheelCanInterface::AntiSlipMode WheelCanInterface::parseMode(const std::string &
 hardware_interface::CallbackReturn WheelCanInterface::on_configure(const rclcpp_lifecycle::State & /*previous_state*/)
 {
   try {
-    can_controller_ = can_util::createConfiguredCanController(can_interface_name_, logger_);
+    can_controller_ = can_util::getSharedCanController(can_interface_name_, logger_);
     if (!can_controller_) {
       can_controller_.reset();
       return hardware_interface::CallbackReturn::ERROR;

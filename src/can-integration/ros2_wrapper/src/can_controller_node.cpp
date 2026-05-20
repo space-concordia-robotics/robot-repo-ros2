@@ -34,14 +34,16 @@ CanControllerNode::CanControllerNode(const rclcpp::NodeOptions& options) :
         can_interface_ = this->declare_parameter<std::string>("can_interface", "can0");
         can_send_rate_hz_ = this->declare_parameter("can_send_rate_hz", 100);
 
-        // Servo command shaping: pick instruction mode and scale joystick [-1,1]
+        // Spin servo command shaping: pick instruction mode and scale joystick [-1,1]
         // to physical units (rad for position, rad/s for speed) without recompiling.
-        spin_servo_mode_  = this->declare_parameter<std::string>("spin_servo_mode",  "speed");
-        clamp_servo_mode_ = this->declare_parameter<std::string>("clamp_servo_mode", "speed");
+        spin_servo_mode_      = this->declare_parameter<std::string>("spin_servo_mode",  "speed");
         spin_servo_max_rad_   = static_cast<float>(this->declare_parameter("spin_servo_max_rad",   3.14159265));
         spin_servo_max_rad_s_ = static_cast<float>(this->declare_parameter("spin_servo_max_rad_s", 3.14159265));
-        clamp_servo_max_rad_   = static_cast<float>(this->declare_parameter("clamp_servo_max_rad",   1.5707963));
-        clamp_servo_max_rad_s_ = static_cast<float>(this->declare_parameter("clamp_servo_max_rad_s", 1.5707963));
+
+        // Gripper (CLAMP) via Firmware_SPIN MOVE_POSITION — see docs/SERVO_API.md.
+        // Joystick [-1,1] is scaled to degrees per command tick; firmware clamps ±100°.
+        clamp_max_deg_per_command_ = static_cast<float>(
+            this->declare_parameter("clamp_max_deg_per_command", 15.0));
 
         can_controller_ = can_util::createConfiguredCanController(can_interface_, this->get_logger());
         if (!can_controller_) {
@@ -308,6 +310,7 @@ void CanControllerNode::sendCanFrames(){
             const float spin_in  = shape_input(joint_state->velocity[SPIN_IDX]);
             const float clamp_in = shape_input(joint_state->velocity[CLAMP_IDX]);
 
+            // Spin servo — legacy FRC-style frames (SERVO_API spin path TBD).
             const float spin_payload = std::clamp(spin_in, -1.0f, 1.0f) *
                 ((spin_servo_mode_ == "position") ? spin_servo_max_rad_ : spin_servo_max_rad_s_);
             if(spin_servo_mode_ == "position"){
@@ -317,22 +320,21 @@ void CanControllerNode::sendCanFrames(){
             }
             std::this_thread::sleep_for(std::chrono::microseconds(400));
 
-            const float clamp_payload = std::clamp(clamp_in, -1.0f, 1.0f) *
-                ((clamp_servo_mode_ == "position") ? clamp_servo_max_rad_ : clamp_servo_max_rad_s_);
-            if(clamp_servo_mode_ == "position"){
-                frame_builder_->sendClampServoPosition(clamp_payload);
-            } else {
-                frame_builder_->sendClampServoSpeed(clamp_payload);
+            // Gripper (CLAMP) — Firmware_SPIN MOVE_POSITION, docs/SERVO_API.md.
+            // CAN ID 0x180B0, int32 big-endian relative degrees per command tick.
+            const int32_t gripper_deg = static_cast<int32_t>(
+                std::round(std::clamp(clamp_in, -1.0f, 1.0f) * clamp_max_deg_per_command_));
+            if (gripper_deg != 0) {
+                frame_builder_->sendGripperMovePosition(gripper_deg);
+                std::this_thread::sleep_for(std::chrono::microseconds(400));
             }
-            std::this_thread::sleep_for(std::chrono::microseconds(400));
 
             if (arm_active &&
-                (std::abs(spin_payload) > 1e-4f || std::abs(clamp_payload) > 1e-4f)) {
+                (std::abs(spin_payload) > 1e-4f || gripper_deg != 0)) {
                 RCLCPP_INFO_THROTTLE(
                     this->get_logger(), *this->get_clock(), 1000,
-                    "Servo commands sent: spin (%s) = %.3f, clamp (%s) = %.3f",
-                    spin_servo_mode_.c_str(), spin_payload,
-                    clamp_servo_mode_.c_str(), clamp_payload);
+                    "Servo commands sent: spin (%s) = %.3f, gripper = %d deg",
+                    spin_servo_mode_.c_str(), spin_payload, gripper_deg);
             }
         }
     }

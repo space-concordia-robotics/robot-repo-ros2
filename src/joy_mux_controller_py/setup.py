@@ -21,6 +21,7 @@ setup(
     entry_points={
         'console_scripts': [
             'joy_mux_controller = joy_mux_controller_py.joy_mux_controller:main',
+            'joy_button_probe = joy_mux_controller_py.joy_button_probe:main',
         ],
     },
 )

@@ -30,12 +30,19 @@ class SystemFrameBuilder{
         void sendForceStop(deviceType::DeviceType DeviceType, DeviceId::ID deviceID);
         void sendResume(deviceType::DeviceType DeviceType, DeviceId::ID deviceID);
 
-        // Servo commands (spin / clamp). Position values are in rad, speed in rad/s.
-        // The payload selector byte (ServoSelector::SPIN / ::CLAMP) and the CAN
-        // device_ID (DeviceId::ID::SPIN_SERVO / ::CLAMP_SERVO) are paired per
-        // servo; flip the selectors in prefixes.hpp if the firmware expects 4/5.
+        // Spin servo (SPIN wrist) — legacy FRC-style frames via buildServoFrame.
+        // Position values are in rad, speed in rad/s.
         uint32_t sendSpinServoPosition(float position_rad);
         uint32_t sendSpinServoSpeed(float speed_rad_s);
+
+        // Gripper (CLAMP) via Firmware_SPIN bridge — see docs/SERVO_API.md.
+        // CAN ID: 0x180B0 (MAKE_ID ctrl/MOVE_POSITION/device 0x18), int32 BE relative degrees.
+        // Firmware clamps to ±100°. Host-side clamp also applied here.
+        // Replaces the legacy sendClampServoPosition / sendClampServoSpeed for production gripper use.
+        uint32_t sendGripperMovePosition(int32_t degrees_relative);
+
+        // Legacy clamp servo frames (old FRC-style ID 0x0708C04D/0x0708C10D).
+        // Kept for spin servo parity; do NOT use for the gripper — use sendGripperMovePosition.
         uint32_t sendClampServoPosition(float position_rad);
         uint32_t sendClampServoSpeed(float speed_rad_s);
 

@@ -2,57 +2,12 @@ import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import Joy, JointState
 from geometry_msgs.msg import Twist
-from enum import IntEnum
+
+from .vkb_layout import VKBButtonLayout, VKBAxesLayout  # noqa: F401 (re-exported for callers)
 
 
-"""Button configurations for VKB joystick."""
-class VKBButtonLayout(IntEnum):
-
-    FIRST_FIRE = 0
-    SECOND_FIRE = 1
-    A2 = 2
-    B2 = 3
-    D1 = 4
-    A3_UP = 5
-    A3_RIGHT = 6
-    A3_DOWN = 7
-    A3_LEFT = 8
-    A3_PRESS = 9
-    A4_UP = 10
-    A4_RIGHT = 11
-    A4_DOWN = 12
-    A4_LEFT = 13
-    A4_PRESS = 14
-    C1_UP = 15
-    C1_RIGHT = 16
-    C1_DOWN = 17
-    C1_LEFT = 18
-    C1_PRESS = 19
-    TRIGGER_UP = 20
-    TRIGGER_DOWN = 21
-    EN1_UP = 22
-    EN1_DOWN = 23
-    EN2_UP = 24
-    EN2_DOWN = 25
-    F1 = 26
-    F2 = 27
-    F3 = 28
-
-
-"""Axes configuration for VKB joystick."""
-class VKBAxesLayout(IntEnum):
-
-    STICK_X = 0
-    STICK_Y = 1
-    STICK_Z = 5
-    MIDDLE_SCROLL = 2
-    A1_X_LED_ON = 3
-    A1_Y_LED_ON = 4
-    A1_X_LED_OFF = 8
-    A1_Y_LED_OFF = 9
-
-
-_JOY_MIN_BUTTONS = 13
+# Must cover highest VKBButtonLayout index (F3 = 28) so C1 and F-keys are in range.
+_JOY_MIN_BUTTONS = 29
 _JOY_MIN_AXES = 8
 _ARM_JOINT_COUNT = 7
 
@@ -65,6 +20,7 @@ class ArmVelocityScale:
     M3_STICK_Y = 0.7
     M4_STICK_X = 0.7
     M5_A3_HORIZONTAL = 0.8
+    M7_GRIPPER = 1.0
 
 
 class ThrottleAxisMap:
@@ -230,7 +186,8 @@ class JoyMuxController(Node):
                     float(msg.buttons[VKBButtonLayout.A3_LEFT] - msg.buttons[VKBButtonLayout.A3_RIGHT])
                     * ArmVelocityScale.M5_A3_HORIZONTAL * a3_throttle,
                     0.0,
-                    0.0,
+                    float(msg.buttons[VKBButtonLayout.C1_UP] - msg.buttons[VKBButtonLayout.C1_DOWN])
+                    * ArmVelocityScale.M7_GRIPPER,
                 ]
                 joint_state.position = []
                 joint_state.effort = []

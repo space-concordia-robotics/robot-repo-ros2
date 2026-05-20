@@ -40,6 +40,9 @@ ServoMode ArmCanInterface::parseServoMode(const std::string & s)
   if (s == "position") {
     return ServoMode::POSITION;
   }
+  if (s == "move_position") {
+    return ServoMode::MOVE_POSITION;
+  }
   return ServoMode::SPEED;
 }
 
@@ -115,6 +118,41 @@ hardware_interface::CallbackReturn ArmCanInterface::on_init(
         } catch (const std::exception &) {
           cfg.direction = 1.0f;
         }
+
+        // Derive default encoder TX IDs from device_id if not explicitly provided.
+        // Firmware layout (questions.md §A): TX abs = 0x0108_C_<dev>01, speed = +0x40.
+        // Device IDs: BASE=0x07, SHOULDER=0x08, ELBOW=0x09, WRIST=0x0B.
+        auto deriveAbsId = [](uint32_t dev_id) -> uint32_t {
+          // ID = (0x01 << 24) | (0x08 << 16) | ((dev_id << 2) << 6) | 0x01
+          // Precomputed: 0x0108C001 + ((dev_id - 0x07) * 0x100) ... simpler: use the table.
+          return (0x0108C000u) | ((dev_id & 0xFFu) << 8) | 0x01u;
+        };
+        auto deriveSpeedId = [&deriveAbsId](uint32_t dev_id) -> uint32_t {
+          return deriveAbsId(dev_id) + 0x40u;
+        };
+
+        auto parseOptionalId = [&](const std::string & param_name) -> uint32_t {
+          const std::string val = getParam(joint, param_name, "");
+          if (val.empty()) {
+            return 0;
+          }
+          try {
+            return static_cast<uint32_t>(std::stoul(val, nullptr, 0));
+          } catch (const std::exception &) {
+            return 0;
+          }
+        };
+
+        const uint32_t abs_id   = parseOptionalId("encoder_abs_can_id");
+        const uint32_t speed_id = parseOptionalId("encoder_speed_can_id");
+
+        if (abs_id != 0) {
+          cfg.encoder_abs_can_id   = abs_id;
+          cfg.encoder_speed_can_id = (speed_id != 0) ? speed_id : (abs_id + 0x40u);
+        } else if (cfg.encoder_device_id != 0) {
+          cfg.encoder_abs_can_id   = deriveAbsId(cfg.encoder_device_id);
+          cfg.encoder_speed_can_id = deriveSpeedId(cfg.encoder_device_id);
+        }
         break;
       }
       case JointKind::SPIN_SERVO:
@@ -146,11 +184,22 @@ hardware_interface::CallbackReturn ArmCanInterface::on_init(
   hw_states_position_.assign(n, std::numeric_limits<double>::quiet_NaN());
   hw_states_velocity_.assign(n, std::numeric_limits<double>::quiet_NaN());
 
-  // Build an O(1) lookup from encoder DeviceId -> joint index for read().
-  encoder_id_to_joint_.clear();
+  // Build O(1) lookup tables from full 29-bit encoder TX IDs -> joint index.
+  abs_can_id_to_joint_.clear();
+  speed_can_id_to_joint_.clear();
   for (size_t i = 0; i < joints_.size(); ++i) {
-    if (joints_[i].kind == JointKind::ARM_MOTOR && joints_[i].encoder_device_id != 0) {
-      encoder_id_to_joint_[joints_[i].encoder_device_id] = i;
+    if (joints_[i].kind != JointKind::ARM_MOTOR) {
+      continue;
+    }
+    if (joints_[i].encoder_abs_can_id != 0) {
+      abs_can_id_to_joint_[joints_[i].encoder_abs_can_id] = i;
+      RCLCPP_DEBUG(logger_, "Joint '%s': encoder abs ID 0x%08X, speed ID 0x%08X",
+                   joints_[i].name.c_str(),
+                   joints_[i].encoder_abs_can_id,
+                   joints_[i].encoder_speed_can_id);
+    }
+    if (joints_[i].encoder_speed_can_id != 0) {
+      speed_can_id_to_joint_[joints_[i].encoder_speed_can_id] = i;
     }
   }
 
@@ -162,7 +211,7 @@ hardware_interface::CallbackReturn ArmCanInterface::on_init(
 hardware_interface::CallbackReturn ArmCanInterface::on_configure(const rclcpp_lifecycle::State & /*previous_state*/)
 {
   try {
-    can_controller_ = can_util::createConfiguredCanController(can_interface_name_, logger_);
+    can_controller_ = can_util::getSharedCanController(can_interface_name_, logger_);
     if (!can_controller_) {
       can_controller_.reset();
       return hardware_interface::CallbackReturn::ERROR;
@@ -286,11 +335,21 @@ hardware_interface::return_type ArmCanInterface::write(const rclcpp::Time & /*ti
         break;
       }
       case JointKind::CLAMP_SERVO: {
-        const float clamped = std::clamp(static_cast<float>(raw), -1.0f, 1.0f) * cfg.servo_max;
-        if (cfg.servo_mode == ServoMode::POSITION) {
-          frame_builder_->sendClampServoPosition(clamped);
+        if (cfg.servo_mode == ServoMode::MOVE_POSITION) {
+          // Firmware_SPIN MOVE_POSITION — see docs/SERVO_API.md.
+          // servo_max is interpreted as max degrees per command tick.
+          const int32_t gripper_deg = static_cast<int32_t>(
+              std::round(std::clamp(static_cast<float>(raw), -1.0f, 1.0f) * cfg.servo_max));
+          if (gripper_deg != 0) {
+            frame_builder_->sendGripperMovePosition(gripper_deg);
+          }
         } else {
-          frame_builder_->sendClampServoSpeed(clamped);
+          const float clamped = std::clamp(static_cast<float>(raw), -1.0f, 1.0f) * cfg.servo_max;
+          if (cfg.servo_mode == ServoMode::POSITION) {
+            frame_builder_->sendClampServoPosition(clamped);
+          } else {
+            frame_builder_->sendClampServoSpeed(clamped);
+          }
         }
         break;
       }
@@ -323,38 +382,64 @@ std::vector<hardware_interface::CommandInterface> ArmCanInterface::export_comman
 
 void ArmCanInterface::onCanFrame(uint32_t id, const std::vector<uint8_t> & data)
 {
-  // Encoder boards transmit on DeviceType::ENCODER. Filter early to avoid
-  // doing work for every frame on the bus.
-  const DecodedFrame decoded = CANParser::parse(id, data);
-  if (decoded.deviceType != static_cast<uint8_t>(deviceType::DeviceType::ENCODER)) {
+  // Route by full 29-bit arbitration ID (stripped of EFF flag by CANController).
+  // Firmware TX layout per docs/integration/questions.md §A:
+  //   Abs  frame IDs: 0x0108C701/C801/C901/CB01  (BASE/SHOULDER/ELBOW/WRIST)
+  //   Speed frame IDs: each abs ID + 0x40
+
+  auto abs_it = abs_can_id_to_joint_.find(id);
+  if (abs_it != abs_can_id_to_joint_.end()) {
+    // Absolute position frame (DLC = 6):
+    //   bytes 0–1 : uint16 LE calibrated angle (TLE5012B 15-bit signed counts)
+    //   bytes 2–3 : uint16 LE TLE5012B status register
+    //   byte  4   : reserved (0x00)
+    //   byte  5   : validity flag (0x01 = valid, 0x00 = sensor error)
+    if (data.size() < 6) {
+      return;
+    }
+    if (data[5] != 0x01) {
+      // Validity flag not set — sensor error. Keep last known position; log once.
+      RCLCPP_WARN(logger_,
+                  "Encoder abs frame 0x%08X: validity flag 0x%02X (sensor error)",
+                  id, data[5]);
+      return;
+    }
+    // Reconstruct signed 15-bit count from LE uint16.
+    const uint16_t raw_u16 = static_cast<uint16_t>(data[0]) |
+                             (static_cast<uint16_t>(data[1]) << 8);
+    // TLE5012B angle is a 15-bit signed value in a 16-bit field (bit 15 unused/sign).
+    const int16_t counts = static_cast<int16_t>(raw_u16);
+    // Scale: 360° / 32768 counts, but we want radians: 2π / 32768 = π / 16384
+    constexpr double kCountsToRad = M_PI / 16384.0;
+    const double position_rad = static_cast<double>(counts) * kCountsToRad;
+    const double dir = static_cast<double>(joints_[abs_it->second].direction);
+    RCLCPP_DEBUG(logger_, "Encoder abs 0x%08X: counts=%d  pos_rad=%.4f", id, counts, position_rad);
+
+    std::lock_guard<std::mutex> lk(feedback_mutex_);
+    joints_[abs_it->second].position = position_rad * dir;
     return;
   }
 
-  auto it = encoder_id_to_joint_.find(decoded.deviceId);
-  if (it == encoder_id_to_joint_.end()) {
-    return;
-  }
+  auto spd_it = speed_can_id_to_joint_.find(id);
+  if (spd_it != speed_can_id_to_joint_.end()) {
+    // Angular velocity frame (DLC = 6):
+    //   bytes 0–3 : float32 angular velocity rad/s, PDP (middle) endian
+    //               Firmware stores via memcpy then swaps within 16-bit halves:
+    //               wire order [b1, b0, b3, b2] — undo swap before cast.
+    //   byte  4   : sign flag (0 = positive, 1 = negative) — informational only
+    //   bytes 5–7 : reserved
+    if (data.size() < 4) {
+      return;
+    }
+    // Undo PDP-endian swap: swap bytes 0↔1 and 2↔3, then reinterpret as float32 LE.
+    uint8_t buf[4] = { data[1], data[0], data[3], data[2] };
+    float velocity_rads = 0.0f;
+    std::memcpy(&velocity_rads, buf, sizeof(float));
+    const double dir = static_cast<double>(joints_[spd_it->second].direction);
+    RCLCPP_DEBUG(logger_, "Encoder spd 0x%08X: vel_rads=%.4f", id, velocity_rads);
 
-  // Encoder payload is currently assumed to be:
-  //   bytes 0..3 : float32 LE position (rad)
-  //   bytes 4..7 : float32 LE velocity (rad/s) -- optional
-  // Update once the encoder firmware spec is finalised.
-  if (data.size() < 4) {
-    return;
-  }
-
-  float position = 0.0f;
-  std::memcpy(&position, data.data(), sizeof(float));
-  float velocity = 0.0f;
-  if (data.size() >= 8) {
-    std::memcpy(&velocity, data.data() + 4, sizeof(float));
-  }
-
-  const float dir = joints_[it->second].direction;
-  std::lock_guard<std::mutex> lk(feedback_mutex_);
-  joints_[it->second].position = static_cast<double>(position) * dir;
-  if (data.size() >= 8) {
-    joints_[it->second].velocity = static_cast<double>(velocity) * dir;
+    std::lock_guard<std::mutex> lk(feedback_mutex_);
+    joints_[spd_it->second].velocity = static_cast<double>(velocity_rads) * dir;
   }
 }
 

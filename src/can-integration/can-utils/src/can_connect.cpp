@@ -1,11 +1,21 @@
 #include "can-utils/can_connect.hpp"
 
 #include <exception>
+#include <memory>
+#include <mutex>
+#include <unordered_map>
 #include <utility>
 
 #include <rclcpp/logging.hpp>
 
 namespace can_util {
+
+namespace {
+
+std::mutex g_shared_mutex;
+std::unordered_map<std::string, std::weak_ptr<CANController>> g_shared_controllers;
+
+}  // namespace
 
 void logCanSetupRecoveryHints(const rclcpp::Logger & logger, const std::string & interface_name)
 {
@@ -44,6 +54,29 @@ std::shared_ptr<CANController> createConfiguredCanController(
     logCanSetupRecoveryHints(logger, interface_name);
     return nullptr;
   }
+}
+
+std::shared_ptr<CANController> getSharedCanController(
+  const std::string & interface_name, const rclcpp::Logger & logger)
+{
+  std::lock_guard<std::mutex> lock(g_shared_mutex);
+
+  auto & weak = g_shared_controllers[interface_name];
+  if (auto existing = weak.lock()) {
+    RCLCPP_DEBUG(logger,
+                 "getSharedCanController: reusing existing CANController for '%s'",
+                 interface_name.c_str());
+    return existing;
+  }
+
+  auto fresh = createConfiguredCanController(interface_name, logger);
+  if (fresh) {
+    weak = fresh;
+    RCLCPP_INFO(logger,
+                "getSharedCanController: created new CANController for '%s'",
+                interface_name.c_str());
+  }
+  return fresh;
 }
 
 }  // namespace can_util
