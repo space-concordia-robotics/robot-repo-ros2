@@ -1,5 +1,5 @@
 #pragma once
-#include "BAB-utils/battery_board.hpp"
+#include "bab-board/battery_board.hpp"
 #include "diagnostic_msgs/msg/diagnostic_status.hpp"
 #include "diagnostic_updater/diagnostic_updater.hpp"
 #include "rclcpp/rclcpp.hpp"

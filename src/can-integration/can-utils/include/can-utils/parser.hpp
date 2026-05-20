@@ -47,7 +47,7 @@ public:
      * @brief Casts the 8-byte array back into a specific data type (e.g. float).
      */
     template <typename T>
-    static T getValue(const std::vector<uint8_t, 8>& data) {
+    static T getValue(const std::vector<uint8_t>& data) {
         // Reinterprets the memory address of the array as a pointer to type T
         return *reinterpret_cast<const T*>(data.data());
     }

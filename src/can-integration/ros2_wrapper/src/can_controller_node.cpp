@@ -50,6 +50,13 @@ CanControllerNode::CanControllerNode(const rclcpp::NodeOptions& options) :
                 "' — see log for errno and recovery hints");
         }
 
+        build_address_ = std::make_shared<buildAddress::BuildAddress>(can_controller_);
+        bab_ = std::make_shared<BAB>(
+            this->get_logger(),
+            *can_controller_,
+            *build_address_,
+            static_cast<uint32_t>(DeviceId::ID::BAB));
+        diagnostics_node = std::make_shared<ProduceDiagnostics>(bab_);
         parameter_event_handler = std::make_shared<rclcpp::ParameterEventHandler>(this);
 
         auto multiplier_callback = [this](const rclcpp::Parameter parameter) {
@@ -333,18 +340,30 @@ void CanControllerNode::sendCanFrames(){
 
 
 int main(int argc, char *argv[]){
+
     rclcpp::init(argc, argv);
     int exit_code = 0;
+
     try {
-        auto node = std::make_shared<CanControllerNode>();
-        rclcpp::spin(node);
-    } catch (const std::exception & e) {
-        RCLCPP_FATAL(rclcpp::get_logger("can_controller_node"), "Node failed to start: %s", e.what());
+        // CanControllerNode constructs BAB and ProduceDiagnostics internally
+        auto can_node = std::make_shared<CanControllerNode>();
+
+        rclcpp::executors::MultiThreadedExecutor executor;
+        executor.add_node(can_node);
+
+        // ProduceDiagnostics is a separate node — must be added to executor too
+        executor.add_node(can_node->getDiagnostics());
+
+        executor.spin();
+
+    } catch (const std::exception& e) {
+        RCLCPP_FATAL(rclcpp::get_logger("main"), "Node failed to start: %s", e.what());
         exit_code = 1;
     } catch (...) {
-        RCLCPP_FATAL(rclcpp::get_logger("can_controller_node"), "Node failed to start: unknown exception");
+        RCLCPP_FATAL(rclcpp::get_logger("main"), "Node failed to start: unknown exception");
         exit_code = 1;
     }
+
     rclcpp::shutdown();
     return exit_code;
 }

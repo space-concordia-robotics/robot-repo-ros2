@@ -1,3 +1,5 @@
+#pragma once
+
 #include "can-utils/prefixes.hpp"
 #include "can-utils/parser.hpp"
 #include "can-utils/buildAddress.hpp"
@@ -66,7 +68,7 @@ class BAB{
         *  
         */
 
-        BAB(rclcpp::Logger& logger, 
+        BAB(rclcpp::Logger logger, 
             can_util::CANController& can_controller_, 
             buildAddress::BuildAddress& build_frame, 
             uint32_t deviceID); 

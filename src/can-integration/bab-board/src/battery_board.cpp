@@ -1,7 +1,7 @@
-#include "BAB-utils/battery_board.hpp"
+#include "bab-board/battery_board.hpp"
 
 
-BAB::BAB(rclcpp::Logger& logger, 
+BAB::BAB(rclcpp::Logger logger, 
          can_util::CANController& can_controller_, 
          buildAddress::BuildAddress& build_frame, 
          uint32_t deviceID)

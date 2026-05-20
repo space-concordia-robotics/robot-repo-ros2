@@ -1,4 +1,4 @@
-#include "BAB-utils/produce_diagnostics.hpp"
+#include "bab-board/produce_diagnostics.hpp"
 
 #include <functional>
 #include <utility>
