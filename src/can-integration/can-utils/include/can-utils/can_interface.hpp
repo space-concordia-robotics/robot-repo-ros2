@@ -21,6 +21,8 @@ namespace can_util {
 
         ~CANController();
 
+        void stop();
+
         bool configureCan();
 
         std::shared_ptr<CANFrameCallback> registerFrameCallback(CANFrameCallback callback);

@@ -50,6 +50,12 @@ CanControllerNode::CanControllerNode(const rclcpp::NodeOptions& options) :
                 "' — see log for errno and recovery hints");
         }
 
+        rclcpp::on_shutdown([weak_can = std::weak_ptr<can_util::CANController>(can_controller_)] {
+            if (const auto can = weak_can.lock()) {
+                can->stop();
+            }
+        });
+
         build_address_ = std::make_shared<buildAddress::BuildAddress>(can_controller_);
         bab_ = std::make_shared<BAB>(
             this->get_logger(),

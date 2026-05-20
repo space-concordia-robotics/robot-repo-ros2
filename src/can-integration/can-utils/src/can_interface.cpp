@@ -17,6 +17,10 @@ namespace can_util {
         shutdown();
     }
 
+    void CANController::stop() {
+        shutdown();
+    }
+
     void CANController::shutdown() {
         stop_.store(true, std::memory_order_release);
         const int fd = socket_descriptor;
