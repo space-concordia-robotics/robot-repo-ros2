@@ -45,11 +45,8 @@ namespace Instructions{
         STOP_COMMAND = 0x01,
         RESUME_COMMAND = 0x02, 
 
-        // Servo commands (spin / clamp) on DeviceType::ENCODER. Instruction bytes are
-        // distinct from STOP_COMMAND / RESUME_COMMAND despite some duplicate numeric
-        // tags elsewhere in this enum for other device contexts.
-        SERVO_MOVE_TO_POSITION = 0x01, // payload float = position in rad
-        SERVO_MOVE_AT_SPEED    = 0x04, // payload float = speed in rad/s
+        // Legacy servo instruction bytes removed — servo commands now use hardcoded
+        // CAN IDs in the ServoCAN namespace below (int32 BE degree payloads).
 
 
         CUT_PDS_OUTPUTS = 0x8F,
@@ -97,9 +94,10 @@ namespace DeviceId{
         WRIST_ENCODER = 0X0B,
         SPIN_SERVO_ENCODER = 0X0C,
         CLAMP_SERVO_ENCODER = 0X0D, 
-        // Aliases used when issuing servo move commands (same wire device IDs).
-        SPIN_SERVO  = 0X0C,  // 0b001100 in the 6-bit device_ID field
-        CLAMP_SERVO = 0X0D,  // 0b001101 in the 6-bit device_ID field
+        // Servo device IDs kept for reference; commands now use hardcoded
+        // CAN IDs in the ServoCAN namespace (both map to device 0x0C).
+        SPIN_SERVO  = 0X0C,
+        CLAMP_SERVO = 0X0C,
 
 
         HUB = 0X0E,
@@ -115,13 +113,25 @@ namespace DeviceId{
     }; 
 } //namespace DeviceId
 
-namespace ServoSelector {
-    // Payload byte 0 selector tag for servo commands. This is the firmware's
-    // payload-side servo identifier, NOT the 6-bit CAN device_ID field. The two
-    // are paired per servo but are distinct values.
-    //
-    // Switch here if the firmware ends up expecting 0x04 / 0x05 instead.
-    constexpr uint8_t SPIN  = 0x05;
-    constexpr uint8_t CLAMP = 0x06;
-} // namespace ServoSelector
+// Hardcoded CAN IDs for the servo protocol.
+// Payload is always a signed int32 big-endian value (degrees for position
+// commands, zero for queries and LED toggle).
+//
+// ID derivation (for reference):
+//   base     = 0x0C08C000
+//   CLAMP    = base | 0x00002040 | 0x0C = 0x0C08E04C
+//   SPIN     = base | 0x00001040 | 0x0C = 0x0C08D04C
+//   LED      = base | 0x00000400 | 0x0C = 0x0C08C40C
+//   Q_CLAMP  = 0x0C08E08C
+//   Q_SPIN   = 0x0C08D08C
+namespace ServoCAN {
+    constexpr uint32_t CLAMP_POSITION  = 0x0C08E04Cu;
+    constexpr uint32_t SPIN_POSITION   = 0x0C08D04Cu;
+    constexpr uint32_t LED             = 0x0C08C40Cu;
+    constexpr uint32_t QUERY_CLAMP     = 0x0C08E08Cu;
+    constexpr uint32_t QUERY_SPIN      = 0x0C08D08Cu;
+
+    constexpr int32_t CLAMP_MAX_DEG = 100;
+    constexpr int32_t SPIN_MAX_DEG  = 360;
+} // namespace ServoCAN
 
