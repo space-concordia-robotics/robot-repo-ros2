@@ -56,13 +56,13 @@ CanControllerNode::CanControllerNode(const rclcpp::NodeOptions& options) :
             }
         });
 
-        build_address_ = std::make_shared<buildAddress::BuildAddress>(can_controller_);
-        bab_ = std::make_shared<BAB>(
-            this->get_logger(),
-            *can_controller_,
-            *build_address_,
-            static_cast<uint32_t>(DeviceId::ID::BAB));
-        diagnostics_node = std::make_shared<ProduceDiagnostics>(bab_);
+        // build_address_ = std::make_shared<buildAddress::BuildAddress>(can_controller_);
+        // bab_ = std::make_shared<BAB>(
+        //     this->get_logger(),
+        //     *can_controller_,
+        //     *build_address_,
+        //     static_cast<uint32_t>(DeviceId::ID::BAB));
+        // diagnostics_node = std::make_shared<ProduceDiagnostics>(bab_);
         parameter_event_handler = std::make_shared<rclcpp::ParameterEventHandler>(this);
 
         auto multiplier_callback = [this](const rclcpp::Parameter parameter) {
@@ -358,7 +358,7 @@ int main(int argc, char *argv[]){
         executor.add_node(can_node);
 
         // ProduceDiagnostics is a separate node — must be added to executor too
-        executor.add_node(can_node->getDiagnostics());
+        // executor.add_node(can_node->getDiagnostics());
 
         executor.spin();
 
