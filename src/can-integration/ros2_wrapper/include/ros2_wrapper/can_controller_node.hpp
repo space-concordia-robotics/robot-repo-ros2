@@ -20,9 +20,9 @@ using namespace std::chrono;
 using namespace std::literals::chrono_literals; 
 //#define MAX_MOTOR_SPEED 1024.f
 
-// namespace buildAddress {
-//     class BuildAddress;
-// }
+namespace buildAddress {
+    class BuildAddress;
+}
 
 class CanControllerNode : public rclcpp::Node{
 
@@ -32,7 +32,7 @@ class CanControllerNode : public rclcpp::Node{
         void getTwistMessages(const geometry_msgs::msg::Twist::ConstSharedPtr& twist_msg);
         void getJointStateMessages(const sensor_msgs::msg::JointState::ConstSharedPtr& joint_state_msg);
         
-        // std::shared_ptr<ProduceDiagnostics> getDiagnostics() {return diagnostics_node; }
+        std::shared_ptr<ProduceDiagnostics> getDiagnostics() {return diagnostics_node; }
 
     private: 
 
@@ -42,8 +42,8 @@ class CanControllerNode : public rclcpp::Node{
         
         std::shared_ptr<can_util::CANController> can_controller_; 
         std::unique_ptr<SystemFrameBuilder> frame_builder_; 
-        // std::shared_ptr<ProduceDiagnostics> diagnostics_node; 
-        // std::shared_ptr<buildAddress::BuildAddress> build_address_;
+        std::shared_ptr<ProduceDiagnostics> diagnostics_node; 
+        std::shared_ptr<buildAddress::BuildAddress> build_address_;
         std::shared_ptr<BAB> bab_;
 
         ros2_fmt_logger::Logger logger; 

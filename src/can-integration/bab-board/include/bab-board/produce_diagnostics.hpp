@@ -31,6 +31,6 @@ class ProduceDiagnostics : public rclcpp::Node {
         diagnostic_updater::Updater updater_;
         rclcpp::TimerBase::SharedPtr clock_;
         std::shared_ptr<BAB> diagnostics_ptr;
-        bool fault_detected_ = false;
-        bool shutdown_sent_ = false;
+        std::atomic<bool> fault_detected_{false};
+        std::atomic<bool> shutdown_sent_{false};
 };
