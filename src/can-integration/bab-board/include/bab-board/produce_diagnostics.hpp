@@ -4,13 +4,16 @@
 #include "diagnostic_updater/diagnostic_updater.hpp"
 #include "rclcpp/rclcpp.hpp"
 
+#include <atomic>
 #include <chrono>
 #include <memory>
 #include <string>
 
-class ProduceDiagnostics : public rclcpp::Node {
+class ProduceDiagnostics {
     public:
-        explicit ProduceDiagnostics(std::shared_ptr<BAB> bab_ptr);
+        ProduceDiagnostics(rclcpp::Node& node,
+                           std::shared_ptr<BAB> bab_ptr,
+                           rclcpp::CallbackGroup::SharedPtr callback_group = nullptr);
 
     private:
         bool ensureDiagnostics(diagnostic_updater::DiagnosticStatusWrapper& stat) const;
@@ -28,9 +31,10 @@ class ProduceDiagnostics : public rclcpp::Node {
 
         void DiagnosticsCallback();
 
-        diagnostic_updater::Updater updater_;
-        rclcpp::TimerBase::SharedPtr clock_;
-        std::shared_ptr<BAB> diagnostics_ptr;
+        rclcpp::Node& node_;
+        std::shared_ptr<diagnostic_updater::Updater> updater_;
+        rclcpp::TimerBase::SharedPtr diagnostics_timer_;
+        std::shared_ptr<BAB> diagnostics_ptr_;
         std::atomic<bool> fault_detected_{false};
         std::atomic<bool> shutdown_sent_{false};
 };
