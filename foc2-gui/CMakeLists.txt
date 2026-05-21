@@ -80,6 +80,7 @@ add_executable(${PROJECT_NAME}
         # overlays
         src/overlays/aruco_video_overlay.cpp
         src/overlays/minimap.cpp
+        src/overlays/nav_path_video_overlay.cpp
         src/overlays/video_stats_overlay.cpp
 
         # widgets

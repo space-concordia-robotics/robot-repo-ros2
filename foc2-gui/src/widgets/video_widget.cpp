@@ -3,36 +3,50 @@
 #include <imgui.h>
 #include <gst/gstbin.h>
 #include <gst/app/gstappsink.h>
+#include <image_transport/camera_common.hpp>
 
 #include "foc2-gui/overlays/aruco_video_overlay.hpp"
 #include "foc2-gui/overlays/crosshair_overlay.hpp"
+#include "foc2-gui/overlays/nav_path_video_overlay.hpp"
 #include "foc2-gui/overlays/video_stats_overlay.hpp"
 
 
 using namespace std::chrono;
 using namespace std::chrono_literals;
 
-VideoWidget::VideoWidget(ImApplication& application, const std::string& source_url, const bool minimap, const std::string& videoflip)
-    : UiWidget(application),
-      source_url(source_url), minimap(minimap), videoflip(videoflip) {
-    addOverlay(std::make_shared<CrosshairOverlay>(application));
-    video_stats_overlay = std::make_shared<VideoStatsOverlay>(application);
-    addOverlay(std::make_shared<ArucoVideoOverlay>(application, "/rover/ffc/front/image_raw", "ffc_front_camera"));
+VideoWidget::VideoWidget(
+    ImApplication& application,
+    const std::string& source_url,
+    const std::string& camera_topic,
+    const bool minimap,
+    const std::string& videoflip
+) : UiWidget(application),
+    source_url(source_url),
+    camera_topic(camera_topic),
+    minimap(minimap),
+    // TODO 2026-05-20 (Will Free): determine videoflip from camera frame
+    videoflip(videoflip) {
+    stats_overlay = std::make_shared<VideoStatsOverlay>(application);
+    const auto aruco_overlay = std::make_shared<ArucoVideoOverlay>(application);
+    const auto global_nav_overlay = std::make_shared<NavPathVideoOverlay>(application, "/plan", ImVec4(0.1, 1, 0, 1));
+    const auto local_nav_overlay = std::make_shared<NavPathVideoOverlay>(application, "/local_plan", ImVec4(1, 0.3, 1, 1));
 
-    addOverlay(video_stats_overlay);
+    addOverlay(stats_overlay);
+    addOverlay(aruco_overlay);
+    addOverlay(local_nav_overlay);
+    addOverlay(global_nav_overlay);
+
+    camera_info_subscription = SubscriptionGroup<CameraInfo>::make_shared(application);
+
+    camera_info_subscription->addCallback(aruco_overlay, std::bind(&ArucoVideoOverlay::onCameraInfo, aruco_overlay, std::placeholders::_1));
+    camera_info_subscription->addCallback(local_nav_overlay, std::bind(&NavPathVideoOverlay::onCameraInfo, local_nav_overlay, std::placeholders::_1));
+    camera_info_subscription->addCallback(global_nav_overlay, std::bind(&NavPathVideoOverlay::onCameraInfo, global_nav_overlay, std::placeholders::_1));
+
+    addOverlay(std::make_shared<CrosshairOverlay>(application));
 
     // TODO 2026-05-20 (Will Free): the minimap is currently broken, because it cannot correctly determine which way is north.
     // if (minimap)
     //     addOverlay(std::make_shared<MiniMapOverlay>(application));
-
-    // if this 50ms value is changed, also update the value in the video stats overlay
-    stats_timer = this->application.create_timer(50ms, [this] {
-        if (this->video_stats_overlay) {
-            std::lock_guard lock(this->stats_mutex);
-
-            this->video_stats_overlay->updateStats(this->video_stats);
-        }
-    });
 }
 
 void VideoWidget::onInit() {
@@ -40,6 +54,17 @@ void VideoWidget::onInit() {
     UiOverlayable::onInit();
 
     gst_thread = std::thread(std::bind(&VideoWidget::videoThread, this));
+
+    camera_info_subscription->subscribe(image_transport::getCameraInfoTopic(camera_topic), 10);
+
+    // if this 50ms value is changed, also update the value in the video stats overlay
+    stats_timer = this->application.create_timer(50ms, [this] {
+        if (this->stats_overlay) {
+            std::lock_guard lock(this->stats_mutex);
+
+            this->stats_overlay->updateStats(this->video_stats);
+        }
+    });
 }
 
 void VideoWidget::onShutdown() {

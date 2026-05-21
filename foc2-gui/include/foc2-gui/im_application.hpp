@@ -4,6 +4,9 @@
 #include <rclcpp/node.hpp>
 #include <ros2_fmt_logger/logger.hpp>
 #include <SDL3/SDL.h>
+#include <tf2_ros/buffer.hpp>
+#include <tf2_ros/transform_listener.hpp>
+
 
 class ImApplication : public rclcpp::Node {
 public:
@@ -15,6 +18,10 @@ public:
     int init();
     int run();
 
+    tf2_ros::Buffer& tfBuffer() {
+        return this->tf_buffer;
+    }
+
 protected:
     ros2_fmt_logger::Logger logger;
 
@@ -23,7 +30,8 @@ protected:
 
     virtual void onWindow() {}
 
-    virtual void onInit() {}
+    virtual void onInit();
+
     virtual void onFrame();
     virtual void onShutdown() {}
 
@@ -31,6 +39,9 @@ private:
     std::string title{};
     bool done = false;
     std::chrono::time_point<std::chrono::steady_clock> last_frame;
+
+    tf2_ros::Buffer tf_buffer;
+    tf2_ros::TransformListener tf_listener;
 
     void frame();
     void render() const;

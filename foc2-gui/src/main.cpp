@@ -64,9 +64,11 @@ protected:
     }
 
     void onInit() override {
-        video_top = std::make_shared<VideoWidget>(*this, "rtsp://127.0.0.1:8554/test", true, "rotate-180");
-        video_bottom_left = std::make_shared<VideoWidget>(*this, "rtsp://10.240.0.10:8445/arm", false, "none");
-        video_bottom_right = std::make_shared<VideoWidget>(*this, "rtsp://10.240.0.10:8445/left", false, "none");
+        ImApplication::onInit();
+
+        video_top = std::make_shared<VideoWidget>(*this, "rtsp://127.0.0.1:8554/test", "/rover/ffc/front/image_raw", true, "none");
+        video_bottom_left = std::make_shared<VideoWidget>(*this, "rtsp://10.240.0.10:8445/left", "/rover/ffc/left/image_raw", false, "none");
+        video_bottom_right = std::make_shared<VideoWidget>(*this, "rtsp://10.240.0.10:8445/right", "/rover/ffc/right/image_raw", false, "none");
 
         map_widget = std::make_shared<MapWidget>(*this);
 

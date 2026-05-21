@@ -8,9 +8,10 @@
 #include <implot3d.h>
 #include <backends/imgui_impl_opengl3.h>
 #include <backends/imgui_impl_sdl3.h>
-#include <rclcpp/rate.hpp>
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_opengl.h>
+#include <tf2_ros/buffer.hpp>
+#include <tf2_ros/transform_listener.hpp>
 
 // Based on Dear ImGui example "Dear ImGui: standalone example application for
 // GLFW + OpenGL 3, using programmable pipeline"
@@ -22,7 +23,9 @@
 
 ImApplication::ImApplication(const std::string& node_name, const std::string& title)
     : Node(node_name),
-      logger(this->get_logger()), title(title) {}
+      logger(this->get_logger()), title(title),
+      tf_buffer(this->get_clock()),
+      tf_listener(tf_buffer, this) {}
 
 ImApplication::~ImApplication() {}
 
@@ -47,6 +50,8 @@ int ImApplication::run() {
 
     return 0;
 }
+
+void ImApplication::onInit() {}
 
 void ImApplication::onFrame() {}
 

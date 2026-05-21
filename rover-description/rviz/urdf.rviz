@@ -7,8 +7,6 @@ Panels:
         - /RobotModel1
         - /Odometry1/Topic1
         - /Odometry1/Shape1
-        - /AerialMap1/Topic1
-        - /AerialMap1/Use Local Map1
         - /Map1/Local Costmap1/Topic1
         - /Plan1
       Splitter Ratio: 0.5644171833992004
@@ -54,173 +52,21 @@ Visualization Manager:
       Reference Frame: base_link
       Value: true
     - Class: rviz_default_plugins/TF
-      Enabled: true
+      Enabled: false
       Filter (blacklist): ""
       Filter (whitelist): ""
       Frame Timeout: 15
       Frames:
         All Enabled: true
-        antenna_a:
-          Value: true
-        antenna_b:
-          Value: true
-        antenna_block:
-          Value: true
-        autonomy_module_base:
-          Value: true
-        back_bogey:
-          Value: true
-        back_bogey_left_inner_wheel:
-          Value: true
-        back_bogey_left_leg:
-          Value: true
-        back_bogey_left_wheel:
-          Value: true
-        back_bogey_right_inner_wheel:
-          Value: true
-        back_bogey_right_leg:
-          Value: true
-        back_bogey_right_wheel:
-          Value: true
-        base_link:
-          Value: true
-        base_red_x_panel:
-          Value: true
-        base_red_y_panel:
-          Value: true
-        base_red_z_panel:
-          Value: true
-        forward_camera:
-          Value: true
-        front_left_bogey:
-          Value: true
-        front_left_bogey_backwards_bar:
-          Value: true
-        front_left_bogey_backwards_bar_base:
-          Value: true
-        front_left_bogey_backwards_inner_wheel:
-          Value: true
-        front_left_bogey_backwards_wheel:
-          Value: true
-        front_left_bogey_forwards_bar:
-          Value: true
-        front_left_bogey_forwards_bar_base:
-          Value: true
-        front_left_bogey_forwards_inner_wheel:
-          Value: true
-        front_left_bogey_forwards_wheel:
-          Value: true
-        front_right_bogey:
-          Value: true
-        front_right_bogey_backwards_bar:
-          Value: true
-        front_right_bogey_backwards_bar_base:
-          Value: true
-        front_right_bogey_backwards_inner_wheel:
-          Value: true
-        front_right_bogey_backwards_wheel:
-          Value: true
-        front_right_bogey_forwards_bar:
-          Value: true
-        front_right_bogey_forwards_bar_base:
-          Value: true
-        front_right_bogey_forwards_inner_wheel:
-          Value: true
-        front_right_bogey_forwards_wheel:
-          Value: true
-        gps_link:
-          Value: true
-        imu_link:
-          Value: true
-        left_battery:
-          Value: true
-        lidar_link:
-          Value: true
-        map:
-          Value: true
-        odom:
-          Value: true
-        pole:
-          Value: true
-        right_battery:
-          Value: true
-        utm:
-          Value: true
       Marker Scale: 1
       Name: TF
       Show Arrows: true
       Show Axes: true
       Show Names: false
       Tree:
-        base_link:
-          autonomy_module_base:
-            forward_camera:
-              {}
-            lidar_link:
-              {}
-          back_bogey:
-            back_bogey_left_leg:
-              back_bogey_left_wheel:
-                back_bogey_left_inner_wheel:
-                  {}
-            back_bogey_right_leg:
-              back_bogey_right_wheel:
-                back_bogey_right_inner_wheel:
-                  {}
-          base_red_x_panel:
-            {}
-          base_red_y_panel:
-            {}
-          base_red_z_panel:
-            {}
-          front_left_bogey:
-            front_left_bogey_backwards_bar:
-              front_left_bogey_backwards_bar_base:
-                {}
-              front_left_bogey_backwards_wheel:
-                front_left_bogey_backwards_inner_wheel:
-                  {}
-            front_left_bogey_forwards_bar:
-              front_left_bogey_forwards_bar_base:
-                {}
-              front_left_bogey_forwards_wheel:
-                front_left_bogey_forwards_inner_wheel:
-                  {}
-          front_right_bogey:
-            front_right_bogey_backwards_bar:
-              front_right_bogey_backwards_bar_base:
-                {}
-              front_right_bogey_backwards_wheel:
-                front_right_bogey_backwards_inner_wheel:
-                  {}
-            front_right_bogey_forwards_bar:
-              front_right_bogey_forwards_bar_base:
-                {}
-              front_right_bogey_forwards_wheel:
-                front_right_bogey_forwards_inner_wheel:
-                  {}
-          gps_link:
-            {}
-          imu_link:
-            {}
-          left_battery:
-            {}
-          pole:
-            antenna_a:
-              {}
-            antenna_b:
-              {}
-            antenna_block:
-              {}
-          right_battery:
-            {}
-        map:
-          utm:
-            {}
-        odom:
-          {}
+        {}
       Update Interval: 0
-      Value: true
+      Value: false
     - Alpha: 1
       Class: rviz_default_plugins/RobotModel
       Collision Enabled: false
@@ -314,6 +160,47 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
+        ffc_enclosure:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        ffc_front_camera:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        ffc_left_camera:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        ffc_mount_bar_left:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        ffc_mount_bar_right:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        ffc_rear_camera:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        ffc_right_camera:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        ffc_stem:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        ffc_t_bar:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
         forward_camera:
           Alpha: 1
           Show Axes: false
@@ -427,6 +314,10 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
+        mass:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
         pole:
           Alpha: 1
           Show Axes: false
@@ -437,6 +328,10 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
+        sil_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
       Mass Properties:
         Inertia: false
         Mass: false
@@ -813,25 +708,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz_default_plugins/XYOrbit
-      Distance: 4.511255264282227
+      Distance: 10
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0.7632503509521484
-        Y: -0.4836125373840332
+        X: 0
+        Y: 0
         Z: 0
       Focal Shape Fixed Size: false
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.175398588180542
+      Pitch: 0.7853981852531433
       Target Frame: base_link
       Value: XYOrbit (rviz_default_plugins)
-      Yaw: 2.4303996562957764
+      Yaw: 0.7853981852531433
     Saved: ~
 Window Geometry:
   Displays:
@@ -851,5 +746,5 @@ Window Geometry:
   Views:
     collapsed: false
   Width: 1920
-  X: 3600
+  X: 0
   Y: 0
