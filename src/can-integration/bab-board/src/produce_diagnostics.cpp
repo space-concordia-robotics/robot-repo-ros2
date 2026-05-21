@@ -1,4 +1,5 @@
 #include "bab-board/produce_diagnostics.hpp"
+#include <atomic>
 
 #include <functional>
 #include <utility>
@@ -38,10 +39,6 @@ ProduceDiagnostics::ProduceDiagnostics(std::shared_ptr<BAB> bab_ptr)
 	updater_.add("Relay Module Status", this, &ProduceDiagnostics::checkRelayStatus);
 
 	updater_.setPeriod(kUpdatePeriodSec);
-
-	clock_ = this->create_wall_timer(
-		kUpdatePeriod,
-		std::bind(&ProduceDiagnostics::DiagnosticsCallback, this));
 }
 
 bool ProduceDiagnostics::ensureDiagnostics(diagnostic_updater::DiagnosticStatusWrapper& stat) const {
