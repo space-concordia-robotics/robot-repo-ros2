@@ -32,8 +32,6 @@ class CanControllerNode : public rclcpp::Node{
         void getTwistMessages(const geometry_msgs::msg::Twist::ConstSharedPtr& twist_msg);
         void getJointStateMessages(const sensor_msgs::msg::JointState::ConstSharedPtr& joint_state_msg);
         
-        std::shared_ptr<ProduceDiagnostics> getDiagnostics() {return diagnostics_node; }
-
     private: 
 
         void sendCanFrames();
@@ -42,7 +40,7 @@ class CanControllerNode : public rclcpp::Node{
         
         std::shared_ptr<can_util::CANController> can_controller_; 
         std::unique_ptr<SystemFrameBuilder> frame_builder_; 
-        std::shared_ptr<ProduceDiagnostics> diagnostics_node; 
+        std::unique_ptr<ProduceDiagnostics> diagnostics_;
         std::shared_ptr<buildAddress::BuildAddress> build_address_;
         std::shared_ptr<BAB> bab_;
 
@@ -66,6 +64,7 @@ class CanControllerNode : public rclcpp::Node{
         rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr twist_msgs_;
         rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr joint_state_msgs_;
         rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr wheel_stopped_sub_;
+            rclcpp::CallbackGroup::SharedPtr io_callback_group_;
         
 
         // Inhibit flags driven by /can_safety/wheel_stopped (latched). The

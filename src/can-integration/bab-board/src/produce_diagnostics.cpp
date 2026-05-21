@@ -1,7 +1,5 @@
 #include "bab-board/produce_diagnostics.hpp"
-#include <atomic>
 
-#include <functional>
 #include <utility>
 
 namespace {
@@ -21,28 +19,34 @@ constexpr float kRailCurrentErrorMin = 30.0f;
 constexpr float kTempWarnMin = 60.0f;
 }
 
-ProduceDiagnostics::ProduceDiagnostics(std::shared_ptr<BAB> bab_ptr)
-	: Node("produce_diagnostic_node"),
-	  updater_(this),
-	  diagnostics_ptr(std::move(bab_ptr)) {
-	updater_.setHardwareID("Rover-PowerBoard");
+ProduceDiagnostics::ProduceDiagnostics(rclcpp::Node& node,
+						   std::shared_ptr<BAB> bab_ptr,
+						   rclcpp::CallbackGroup::SharedPtr callback_group)
+	: node_(node),
+	  updater_(std::make_shared<diagnostic_updater::Updater>(&node_)),
+	  diagnostics_ptr_(std::move(bab_ptr)) {
+	updater_->setHardwareID("Rover-PowerBoard");
 
-	updater_.add("Battery Voltage Status", this, &ProduceDiagnostics::checkBatteryVoltage);
-	updater_.add("Rail Voltage Status", this, &ProduceDiagnostics::checkRailVoltage);
-	updater_.add("Battery Current Status", this, &ProduceDiagnostics::checkBatteryCurrent);
-	updater_.add("Rail Current Status", this, &ProduceDiagnostics::checkRailCurrent);
-	updater_.add("Rail Power Status", this, &ProduceDiagnostics::checkRailPower);
-	updater_.add("Battery Temperature Status", this, &ProduceDiagnostics::checkBatteryTemperature);
-	updater_.add("Rail Temperature Status", this, &ProduceDiagnostics::checkRailTemperature);
-	updater_.add("TCU Temperature Status", this, &ProduceDiagnostics::checkTCUTemperature);
-	updater_.add("TCU Module Status", this, &ProduceDiagnostics::checkTCUStatus);
-	updater_.add("Relay Module Status", this, &ProduceDiagnostics::checkRelayStatus);
+	updater_->add("Battery Voltage Status", this, &ProduceDiagnostics::checkBatteryVoltage);
+	updater_->add("Rail Voltage Status", this, &ProduceDiagnostics::checkRailVoltage);
+	updater_->add("Battery Current Status", this, &ProduceDiagnostics::checkBatteryCurrent);
+	updater_->add("Rail Current Status", this, &ProduceDiagnostics::checkRailCurrent);
+	updater_->add("Rail Power Status", this, &ProduceDiagnostics::checkRailPower);
+	updater_->add("Battery Temperature Status", this, &ProduceDiagnostics::checkBatteryTemperature);
+	updater_->add("Rail Temperature Status", this, &ProduceDiagnostics::checkRailTemperature);
+	updater_->add("TCU Temperature Status", this, &ProduceDiagnostics::checkTCUTemperature);
+	updater_->add("TCU Module Status", this, &ProduceDiagnostics::checkTCUStatus);
+	updater_->add("Relay Module Status", this, &ProduceDiagnostics::checkRelayStatus);
 
-	updater_.setPeriod(kUpdatePeriodSec);
+	updater_->setPeriod(kUpdatePeriodSec);
+	diagnostics_timer_ = node_.create_wall_timer(
+		kUpdatePeriod,
+		[this]() { DiagnosticsCallback(); },
+		callback_group);
 }
 
 bool ProduceDiagnostics::ensureDiagnostics(diagnostic_updater::DiagnosticStatusWrapper& stat) const {
-	if (diagnostics_ptr) {
+	if (diagnostics_ptr_) {
 		return true;
 	}
 
@@ -55,7 +59,7 @@ void ProduceDiagnostics::checkBatteryVoltage(diagnostic_updater::DiagnosticStatu
 		return;
 	}
 
-	const float battery_voltage = diagnostics_ptr->getBatteryVoltageLevel();
+	const float battery_voltage = diagnostics_ptr_->getBatteryVoltageLevel();
 	stat.add("Battery Voltage Level (V)", battery_voltage);
 
 	if (battery_voltage >= kBatteryVoltMin && battery_voltage <= kBatteryVoltMax) {
@@ -73,7 +77,7 @@ void ProduceDiagnostics::checkRailVoltage(diagnostic_updater::DiagnosticStatusWr
 		return;
 	}
 
-	const float rail_voltage = diagnostics_ptr->getRailVoltageLevel();
+	const float rail_voltage = diagnostics_ptr_->getRailVoltageLevel();
 	stat.add("Rail Voltage Level (V)", rail_voltage);
 
 	if (rail_voltage >= kRailVoltMin && rail_voltage <= kRailVoltMax) {
@@ -92,7 +96,7 @@ void ProduceDiagnostics::checkBatteryCurrent(diagnostic_updater::DiagnosticStatu
 		return;
 	}
 
-	const float battery_current = diagnostics_ptr->getBatteryCurrentLevel();
+	const float battery_current = diagnostics_ptr_->getBatteryCurrentLevel();
 	stat.add("Battery Current Level (A)", battery_current);
 
 	if (battery_current >= kBatteryCurrentFailMin) {
@@ -115,7 +119,7 @@ void ProduceDiagnostics::checkRailCurrent(diagnostic_updater::DiagnosticStatusWr
 		return;
 	}
 
-	const float rail_current = diagnostics_ptr->getRailCurrent();
+	const float rail_current = diagnostics_ptr_->getRailCurrent();
 	stat.add("Rail Current Level (A)", rail_current);
 
 	if (rail_current >= kRailCurrentErrorMin) {
@@ -132,7 +136,7 @@ void ProduceDiagnostics::checkRailPower(diagnostic_updater::DiagnosticStatusWrap
 		return;
 	}
 
-	const float rail_power = diagnostics_ptr->getRailPower();
+	const float rail_power = diagnostics_ptr_->getRailPower();
 	stat.add("Rail Power Level (W)", rail_power);
 	stat.summary(diagnostic_msgs::msg::DiagnosticStatus::OK, "Rail power level OK");
 }
@@ -142,7 +146,7 @@ void ProduceDiagnostics::checkBatteryTemperature(diagnostic_updater::DiagnosticS
 		return;
 	}
 
-	const float battery_temp = diagnostics_ptr->getBatteryTemp();
+	const float battery_temp = diagnostics_ptr_->getBatteryTemp();
 	stat.add("Battery Temperature (C)", battery_temp);
 
 	if (battery_temp >= kTempWarnMin) {
@@ -157,7 +161,7 @@ void ProduceDiagnostics::checkRailTemperature(diagnostic_updater::DiagnosticStat
 		return;
 	}
 
-	const float rail_temp = diagnostics_ptr->getRailTemp();
+	const float rail_temp = diagnostics_ptr_->getRailTemp();
 	stat.add("Rail Temperature (C)", rail_temp);
 
 	if (rail_temp >= kTempWarnMin) {
@@ -172,7 +176,7 @@ void ProduceDiagnostics::checkTCUTemperature(diagnostic_updater::DiagnosticStatu
 		return;
 	}
 
-	const float tcu_temp = diagnostics_ptr->getTCUTemp();
+	const float tcu_temp = diagnostics_ptr_->getTCUTemp();
 	stat.add("TCU Temperature (C)", tcu_temp);
 	stat.summary(diagnostic_msgs::msg::DiagnosticStatus::OK, "TCU temperature OK");
 }
@@ -182,7 +186,7 @@ void ProduceDiagnostics::checkTCUStatus(diagnostic_updater::DiagnosticStatusWrap
 		return;
 	}
 
-	const std::string tcu_status = diagnostics_ptr->getTCUStatus();
+	const std::string tcu_status = diagnostics_ptr_->getTCUStatus();
 	stat.add("TCU Status", tcu_status);
 
 	if (tcu_status == "TCU ON") {
@@ -197,7 +201,7 @@ void ProduceDiagnostics::checkRelayStatus(diagnostic_updater::DiagnosticStatusWr
 		return;
 	}
 
-	const std::string relay_status = diagnostics_ptr->getRelayStatus();
+	const std::string relay_status = diagnostics_ptr_->getRelayStatus();
 	stat.add("Relay Status", relay_status);
 
 	if (relay_status == "Relay Closed (ON)") {
@@ -208,15 +212,15 @@ void ProduceDiagnostics::checkRelayStatus(diagnostic_updater::DiagnosticStatusWr
 }
 
 void ProduceDiagnostics::DiagnosticsCallback() {
-	updater_.force_update();
+	updater_->force_update();
 
-	if (!diagnostics_ptr) {
+	if (!diagnostics_ptr_) {
 		return;
 	}
 
 	if (fault_detected_ && !shutdown_sent_) {
-		RCLCPP_FATAL(this->get_logger(), "Overcurrent confirmed - sending shutdown");
-		diagnostics_ptr->sendKYSCommand();
+		RCLCPP_FATAL(node_.get_logger(), "Overcurrent confirmed - sending shutdown");
+		diagnostics_ptr_->sendKYSCommand();
 		shutdown_sent_ = true;
 	}
 }
