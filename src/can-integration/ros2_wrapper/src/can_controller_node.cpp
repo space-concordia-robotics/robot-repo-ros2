@@ -50,12 +50,7 @@ CanControllerNode::CanControllerNode(const rclcpp::NodeOptions& options) :
                 "' — see log for errno and recovery hints");
         }
 
-      rclcpp::on_shutdown([weak_diag = std::weak_ptr<ProduceDiagnostics>(diagnostics_node),
-                     weak_can  = std::weak_ptr<can_util::CANController>(can_controller_)] {
-            if (const auto diag = weak_diag.lock()) {
-                diag->get_node_base_interface()->get_context()->shutdown("diagnostics shutdown");
-                // or add a stop() method to ProduceDiagnostics that cancels the timer
-            }
+        rclcpp::on_shutdown([weak_can = std::weak_ptr<can_util::CANController>(can_controller_)] {
             if (const auto can = weak_can.lock()) {
                 can->stop();
             }
@@ -361,10 +356,7 @@ int main(int argc, char *argv[]){
 
         rclcpp::executors::MultiThreadedExecutor executor;
         executor.add_node(can_node);
-
-        // ProduceDiagnostics is a separate node — must be added to executor too
-        executor.add_node(can_node->getDiagnostics());
-
+        
         executor.spin();
 
     } catch (const std::exception& e) {
