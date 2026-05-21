@@ -40,9 +40,6 @@ class CanControllerNode : public rclcpp::Node{
         
         std::shared_ptr<can_util::CANController> can_controller_; 
         std::unique_ptr<SystemFrameBuilder> frame_builder_; 
-        std::unique_ptr<ProduceDiagnostics> diagnostics_;
-        std::shared_ptr<buildAddress::BuildAddress> build_address_;
-        std::shared_ptr<BAB> bab_;
 
         ros2_fmt_logger::Logger logger; 
         int multiplier;
