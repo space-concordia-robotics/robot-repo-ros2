@@ -18,7 +18,22 @@ namespace can_util {
     }
 
     void CANController::stop() {
-        shutdown();
+        stop_.store(true, std::memory_order_release);
+
+        {
+            std::lock_guard lock(mtx);       // ← serialize with writeFrame()
+            const int fd = socket_descriptor;
+            socket_descriptor = -1;          // ← zero out BEFORE closing
+            if (fd >= 0) {
+                ::shutdown(fd, SHUT_RDWR);
+                ::close(fd);
+            }
+        }
+
+        if (readThread.joinable()) {
+            readThread.join();
+        }
+
     }
 
     void CANController::shutdown() {
