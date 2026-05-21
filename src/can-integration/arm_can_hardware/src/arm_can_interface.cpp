@@ -35,15 +35,9 @@ JointKind ArmCanInterface::parseKind(const std::string & s)
   return JointKind::ARM_MOTOR;
 }
 
-ServoMode ArmCanInterface::parseServoMode(const std::string & s)
+ServoMode ArmCanInterface::parseServoMode(const std::string & /*s*/)
 {
-  if (s == "position") {
-    return ServoMode::POSITION;
-  }
-  if (s == "move_position") {
-    return ServoMode::MOVE_POSITION;
-  }
-  return ServoMode::SPEED;
+  return ServoMode::POSITION;
 }
 
 Instructions::Inst ArmCanInterface::parseInstruction(const std::string & s)
@@ -157,12 +151,12 @@ hardware_interface::CallbackReturn ArmCanInterface::on_init(
       }
       case JointKind::SPIN_SERVO:
       case JointKind::CLAMP_SERVO: {
-        cfg.servo_mode = parseServoMode(getParam(joint, "servo_mode", "speed"));
+        cfg.servo_mode = parseServoMode(getParam(joint, "servo_mode", "position"));
+        const std::string default_max = (cfg.kind == JointKind::SPIN_SERVO) ? "90.0" : "15.0";
         try {
-          cfg.servo_max = std::stof(getParam(joint, "servo_max",
-                                             cfg.servo_mode == ServoMode::POSITION ? "1.5707963" : "1.5707963"));
+          cfg.servo_max = std::stof(getParam(joint, "servo_max", default_max));
         } catch (const std::exception &) {
-          cfg.servo_max = 1.5707963f;
+          cfg.servo_max = (cfg.kind == JointKind::SPIN_SERVO) ? 90.0f : 15.0f;
         }
         break;
       }
@@ -326,30 +320,18 @@ hardware_interface::return_type ArmCanInterface::write(const rclcpp::Time & /*ti
         break;
       }
       case JointKind::SPIN_SERVO: {
-        const float clamped = std::clamp(static_cast<float>(raw), -1.0f, 1.0f) * cfg.servo_max;
-        if (cfg.servo_mode == ServoMode::POSITION) {
-          frame_builder_->sendSpinServoPosition(clamped);
-        } else {
-          frame_builder_->sendSpinServoSpeed(clamped);
+        const int32_t deg = static_cast<int32_t>(
+            std::round(std::clamp(static_cast<float>(raw), -1.0f, 1.0f) * cfg.servo_max));
+        if (deg != 0) {
+          frame_builder_->sendSpinServoPosition(deg);
         }
         break;
       }
       case JointKind::CLAMP_SERVO: {
-        if (cfg.servo_mode == ServoMode::MOVE_POSITION) {
-          // Firmware_SPIN MOVE_POSITION — see docs/SERVO_API.md.
-          // servo_max is interpreted as max degrees per command tick.
-          const int32_t gripper_deg = static_cast<int32_t>(
-              std::round(std::clamp(static_cast<float>(raw), -1.0f, 1.0f) * cfg.servo_max));
-          if (gripper_deg != 0) {
-            frame_builder_->sendGripperMovePosition(gripper_deg);
-          }
-        } else {
-          const float clamped = std::clamp(static_cast<float>(raw), -1.0f, 1.0f) * cfg.servo_max;
-          if (cfg.servo_mode == ServoMode::POSITION) {
-            frame_builder_->sendClampServoPosition(clamped);
-          } else {
-            frame_builder_->sendClampServoSpeed(clamped);
-          }
+        const int32_t deg = static_cast<int32_t>(
+            std::round(std::clamp(static_cast<float>(raw), -1.0f, 1.0f) * cfg.servo_max));
+        if (deg != 0) {
+          frame_builder_->sendClampServoPosition(deg);
         }
         break;
       }

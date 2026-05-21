@@ -41,9 +41,7 @@ enum class JointKind
 
 enum class ServoMode
 {
-  POSITION,       // velocity command interpreted as target rad (legacy FRC-style ID)
-  SPEED,          // velocity command interpreted as target rad/s (legacy FRC-style ID)
-  MOVE_POSITION,  // Firmware_SPIN MOVE_POSITION: cmd × servo_max = relative degrees (SERVO_API.md)
+  POSITION,       // cmd × servo_max = degrees, sent via unified servo protocol
 };
 
 // Per-joint configuration parsed once during on_init() from the URDF.

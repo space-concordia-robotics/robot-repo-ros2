@@ -65,52 +65,40 @@ void SystemFrameBuilder::sendResume(deviceType::DeviceType DeviceType, DeviceId:
     builder_.sendRestartCommand(static_cast<uint32_t>(DeviceType), static_cast<uint32_t>(deviceID));
 }
 
-uint32_t SystemFrameBuilder::sendSpinServoPosition(float position_rad){
-    return builder_.buildServoFrame(
-        static_cast<uint32_t>(Instructions::Inst::SERVO_MOVE_TO_POSITION),
-        static_cast<uint32_t>(DeviceId::ID::SPIN_SERVO),
-        ServoSelector::SPIN,
-        position_rad);
-}
-
-uint32_t SystemFrameBuilder::sendSpinServoSpeed(float speed_rad_s){
-    return builder_.buildServoFrame(
-        static_cast<uint32_t>(Instructions::Inst::SERVO_MOVE_AT_SPEED),
-        static_cast<uint32_t>(DeviceId::ID::SPIN_SERVO),
-        ServoSelector::SPIN,
-        speed_rad_s);
-}
-
-uint32_t SystemFrameBuilder::sendGripperMovePosition(int32_t degrees_relative) {
-    // Firmware_SPIN MOVE_POSITION frame per docs/SERVO_API.md.
-    // MAKE_ID(ctrl=0b11, instruction=0x01, device=0x18) => 0x180B0
-    // Payload: signed int32 big-endian relative degrees. Firmware clamps ±100° on its side.
-    const int32_t clamped = std::clamp(degrees_relative, -100, 100);
+namespace {
+uint32_t packServoFrame(std::shared_ptr<can_util::CANController>& mgr,
+                        uint32_t can_id, int32_t value) {
     struct can_frame frame{};
-    constexpr uint32_t kGripperMovePositionId = 0x180B0u;
-    frame.can_id = kGripperMovePositionId | CAN_EFF_FLAG;
+    frame.can_id = can_id | CAN_EFF_FLAG;
     frame.len = 4;
     std::memset(frame.data, 0, sizeof(frame.data));
-    frame.data[0] = static_cast<uint8_t>((clamped >> 24) & 0xFF);
-    frame.data[1] = static_cast<uint8_t>((clamped >> 16) & 0xFF);
-    frame.data[2] = static_cast<uint8_t>((clamped >>  8) & 0xFF);
-    frame.data[3] = static_cast<uint8_t>((clamped >>  0) & 0xFF);
-    return can_manager_->sendBlockingFrame(frame);
+    frame.data[0] = static_cast<uint8_t>((value >> 24) & 0xFF);
+    frame.data[1] = static_cast<uint8_t>((value >> 16) & 0xFF);
+    frame.data[2] = static_cast<uint8_t>((value >>  8) & 0xFF);
+    frame.data[3] = static_cast<uint8_t>((value >>  0) & 0xFF);
+    return mgr->sendBlockingFrame(frame);
+}
+}  // namespace
+
+uint32_t SystemFrameBuilder::sendSpinServoPosition(int32_t degrees) {
+    return packServoFrame(can_manager_, ServoCAN::SPIN_POSITION,
+                          std::clamp(degrees, -ServoCAN::SPIN_MAX_DEG, ServoCAN::SPIN_MAX_DEG));
 }
 
-uint32_t SystemFrameBuilder::sendClampServoPosition(float position_rad){
-    return builder_.buildServoFrame(
-        static_cast<uint32_t>(Instructions::Inst::SERVO_MOVE_TO_POSITION),
-        static_cast<uint32_t>(DeviceId::ID::CLAMP_SERVO),
-        ServoSelector::CLAMP,
-        position_rad);
+uint32_t SystemFrameBuilder::sendClampServoPosition(int32_t degrees) {
+    return packServoFrame(can_manager_, ServoCAN::CLAMP_POSITION,
+                          std::clamp(degrees, -ServoCAN::CLAMP_MAX_DEG, ServoCAN::CLAMP_MAX_DEG));
 }
 
-uint32_t SystemFrameBuilder::sendClampServoSpeed(float speed_rad_s){
-    return builder_.buildServoFrame(
-        static_cast<uint32_t>(Instructions::Inst::SERVO_MOVE_AT_SPEED),
-        static_cast<uint32_t>(DeviceId::ID::CLAMP_SERVO),
-        ServoSelector::CLAMP,
-        speed_rad_s);
+uint32_t SystemFrameBuilder::sendServoLed(uint32_t value) {
+    return packServoFrame(can_manager_, ServoCAN::LED, static_cast<int32_t>(value));
+}
+
+uint32_t SystemFrameBuilder::sendQuerySpinPosition() {
+    return packServoFrame(can_manager_, ServoCAN::QUERY_SPIN, 0);
+}
+
+uint32_t SystemFrameBuilder::sendQueryClampPosition() {
+    return packServoFrame(can_manager_, ServoCAN::QUERY_CLAMP, 0);
 }
 
