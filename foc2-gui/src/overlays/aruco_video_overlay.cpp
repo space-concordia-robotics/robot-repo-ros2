@@ -15,12 +15,6 @@ void ArucoVideoOverlay::onInit() {
         10,
         std::bind(&ArucoVideoOverlay::onDetections, this, std::placeholders::_1)
     );
-    const auto camera_info_topic = image_transport::getCameraInfoTopic(camera_topic);
-    camera_info_subscription = application.create_subscription<CameraInfo>(
-        camera_info_topic,
-        10,
-        std::bind(&ArucoVideoOverlay::onCameraInfo, this, std::placeholders::_1)
-    );
 }
 
 constexpr ImVec2 pointToBounds(const cv::Point2f point, const ImRect& bounds, const double scale_x, const double scale_y) {
@@ -147,7 +141,7 @@ inline void ArucoVideoOverlay::onDraw(ImDrawList* draw_list, const ImRect& bound
     // this is because you cannot reproject the rejected markers from 2d into 3d,
     // then translate to the correct frame.
     for (const auto& rejected_marker : rejected_markers) {
-        if (rejected_marker.header.frame_id != target_frame)
+        if (rejected_marker.header.frame_id != camera_frame)
             continue;
 
         // convert goemetry_msgs's Point32 to cv::Point2f
@@ -205,7 +199,7 @@ void ArucoVideoOverlay::onDetections(const ArucoDetections::UniquePtr& msg) {
             continue;
         }
 
-        if (frame_id == target_frame) {
+        if (frame_id == camera_frame) {
             transformed_pose = marker.pose;
         } else {
             try {
@@ -214,7 +208,7 @@ void ArucoVideoOverlay::onDetections(const ArucoDetections::UniquePtr& msg) {
                 //  there may also be additional latency elsewhere, maybe make it configurable?
 
                 auto tf = tf_buffer.lookupTransform(
-                    target_frame,
+                    camera_frame,
                     frame_id,
                     tf2::TimePointZero
                 );
@@ -265,7 +259,7 @@ void ArucoVideoOverlay::onDetections(const ArucoDetections::UniquePtr& msg) {
     rejected_markers = msg->rejected_markers;
 }
 
-void ArucoVideoOverlay::onCameraInfo(const CameraInfo::UniquePtr& msg) {
+void ArucoVideoOverlay::onCameraInfo(const CameraInfo::SharedPtr& msg) {
     std::scoped_lock lock(camera_mutex);
     camera_width = msg->width;
     camera_height = msg->height;

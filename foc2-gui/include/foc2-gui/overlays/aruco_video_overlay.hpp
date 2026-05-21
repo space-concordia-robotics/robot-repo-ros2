@@ -6,7 +6,6 @@
 #include <opencv2/core/types.hpp>
 #include <ros_aruco_opencv_msgs/msg/aruco_detections.hpp>
 #include <tf2_ros/buffer.hpp>
-#include <tf2_ros/transform_listener.hpp>
 
 #include "foc2-gui/overlay.hpp"
 #include "foc2-gui/util/imgui_util.hpp"
@@ -34,26 +33,20 @@ public:
         ProjectedAxes axes;
     };
 
-    explicit ArucoVideoOverlay(ImApplication& application, const std::string& camera_topic, const std::string& target_frame)
+    explicit ArucoVideoOverlay(ImApplication& application)
         : UiOverlay(application),
-          camera_topic(camera_topic),
-          target_frame(target_frame),
-          tf_buffer(application.get_clock()),
-          tf_listener(tf_buffer, &application) {}
+          tf_buffer(application.tfBuffer()) {}
 
     void onInit() override;
 
     void onDraw(ImDrawList* draw_list, const ImRect& bounds) override;
 
+    void onCameraInfo(const CameraInfo::SharedPtr& msg);
+
 private:
-    std::string camera_topic;
-    std::string target_frame;
-
     rclcpp::Subscription<ArucoDetections>::SharedPtr aruco_subscription;
-    rclcpp::Subscription<sensor_msgs::msg::CameraInfo>::SharedPtr camera_info_subscription;
 
-    tf2_ros::Buffer tf_buffer;
-    tf2_ros::TransformListener tf_listener;
+    tf2_ros::Buffer& tf_buffer;
 
     std::mutex markers_mutex;
     std::vector<ProjectedMarker> markers;
@@ -66,29 +59,5 @@ private:
     std::string camera_frame;
     cv::Matx33d camera_k;
 
-    // static void drawArucoMarker(
-    //     ImDrawList* draw_list,
-    //     const ImRect& bounds,
-    //     double scale_x,
-    //     double scale_y,
-    //     const std::array<geometry_msgs::msg::Point32, 4>& corners,
-    //     int marker_id = -1,
-    //     ImU32 marker_color = ImGui::ImColor(0, 255, 0, 255),
-    //     ImU32 id_color = ImGui::ImColor(255, 255, 255, 255)
-    // );
-    //
-    // static void drawFrameAxis(
-    //     ImDrawList* draw_list,
-    //     const ImRect& bounds,
-    //     double scale_x,
-    //     double scale_y,
-    //     const std::array<geometry_msgs::msg::Point32, 4>& corners,
-    //     int marker_id = -1,
-    //     ImU32 marker_color = ImGui::ImColor(0, 255, 0, 255),
-    //     ImU32 id_color = ImGui::ImColor(255, 255, 255, 255)
-    // );
-
     void onDetections(const ArucoDetections::UniquePtr& msg);
-
-    void onCameraInfo(const CameraInfo::UniquePtr& msg);
 };

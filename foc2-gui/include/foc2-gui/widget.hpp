@@ -1,5 +1,6 @@
 #pragma once
 
+#include "subscription_group.hpp"
 #include "element.hpp"
 
 class UiWidget : public UiElement {
