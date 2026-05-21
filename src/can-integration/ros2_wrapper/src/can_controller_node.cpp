@@ -56,15 +56,6 @@ CanControllerNode::CanControllerNode(const rclcpp::NodeOptions& options) :
             }
         });
 
-        build_address_ = std::make_shared<buildAddress::BuildAddress>(can_controller_);
-        bab_ = std::make_shared<BAB>(
-            this->get_logger(),
-            *can_controller_,
-            *build_address_,
-            static_cast<uint32_t>(DeviceId::ID::BAB));
-
-        io_callback_group_ = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
-        diagnostics_ = std::make_unique<ProduceDiagnostics>(*this, bab_, io_callback_group_);
 
         parameter_event_handler = std::make_shared<rclcpp::ParameterEventHandler>(this);
 
@@ -114,7 +105,7 @@ CanControllerNode::CanControllerNode(const rclcpp::NodeOptions& options) :
             });
 
         const auto period = std::chrono::milliseconds(1000 / can_send_rate_hz_);
-        can_send_timer_ = this->create_wall_timer(period, [this]{ sendCanFrames(); }, io_callback_group_);
+        can_send_timer_ = this->create_wall_timer(period, [this]{ sendCanFrames(); });
 
         uint64_t mask = 0x7E;
         frame_builder_->startMotors(mask);
