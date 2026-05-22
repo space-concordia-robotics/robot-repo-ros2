@@ -44,6 +44,15 @@ install(TARGETS bab_board
     RUNTIME DESTINATION bin
 )
 
+# Standalone telemetry node: prints BAB battery + rail info on the ROS log.
+add_executable(bab_telemetry_node src/bab_telemetry_node.cpp)
+target_link_libraries(bab_telemetry_node PUBLIC bab_board)
+ament_target_dependencies(bab_telemetry_node PUBLIC ${DEPENDENCIES})
+
+install(TARGETS bab_telemetry_node
+    DESTINATION lib/${PROJECT_NAME}
+)
+
 ament_export_include_directories("include")
 ament_export_libraries(bab_board)
 ament_export_targets(export_${PROJECT_NAME})
