@@ -18,9 +18,10 @@ class ArmVelocityScale:
     M1_STICK_Z = 1.0
     M2_A3_VERTICAL = 0.4
     M3_STICK_Y = 0.7
-    M4_STICK_X = 0.7
+    M4_STICK_X = -0.7
     M5_A3_HORIZONTAL = 0.8
-    M7_GRIPPER = 1.0
+    M6_SPIN = 1.0
+    M7_GRIPPER = -1.0
 
 
 class ThrottleAxisMap:
@@ -185,7 +186,8 @@ class JoyMuxController(Node):
                     m4_raw * ArmVelocityScale.M4_STICK_X,
                     float(msg.buttons[VKBButtonLayout.A3_LEFT] - msg.buttons[VKBButtonLayout.A3_RIGHT])
                     * ArmVelocityScale.M5_A3_HORIZONTAL * a3_throttle,
-                    0.0,
+                    float(msg.buttons[VKBButtonLayout.C1_RIGHT] - msg.buttons[VKBButtonLayout.C1_LEFT])
+                    * ArmVelocityScale.M6_SPIN,
                     float(msg.buttons[VKBButtonLayout.C1_UP] - msg.buttons[VKBButtonLayout.C1_DOWN])
                     * ArmVelocityScale.M7_GRIPPER,
                 ]

@@ -19,6 +19,7 @@ namespace deviceType{
 
 namespace Manufacturer{
     enum : uint32_t{ 
+        SCC = 0x01,           // Space Concordia (BAB firmware manufacturer field; see BAB-docs.md §1)
         REV_ROBOTICS = 0x05,
         TEAM_USE = 0x08,
         ARM_MOTOR_CONTROLLER = 0x81
@@ -63,14 +64,11 @@ namespace Instructions{
 
 
         // BAB telemetry instruction bytes -- see src/can-integration/docs/BAB-docs.md.
-        // RAIL_TELEM is 0x02 in the BAB firmware; the previous 0x01 value was a typo.
         BATTERY_TELEM = 0x00,
         RAIL_TELEM = 0x02,
         TCU_TELEM = 0x03,
-
-
         RELAY_STATUS = 0x08,
-        TCU_STATUS = 0x00
+        TCU_STATUS = 0x0A         // TCU fan status (per BAB-docs.md §6)
 
 
 

@@ -3,238 +3,121 @@
 #include "can-utils/prefixes.hpp"
 #include "can-utils/parser.hpp"
 #include "can-utils/buildAddress.hpp"
-#include <mutex> 
-#include <string> 
+#include <array>
 #include <chrono>
-#include <vector> 
+#include <mutex>
+#include <string>
+#include <vector>
 
 
 #define VOLTAGE_MULTIPLIER 100.0f
 #define CURRENT_MULTIPLIER 100.0f
-#define POWER_MULTIPLIER 10.0f 
+#define POWER_MULTIPLIER 10.0f
+
+struct BatteryTelem {
+    int BatteryNum{0};
+    float voltage{0.f};
+    float temperature{0.f};
+    float current{0.f};
+    std::chrono::steady_clock::time_point timestamp{};
+    bool ever_received{false};
+};
+
+struct RailTelem {
+    int RailNum{0};
+    bool status{false};
+    float voltage{0.f};
+    float temperature{0.f};
+    float current{0.f};
+    float power{0.f};
+    std::chrono::steady_clock::time_point timestamp{};
+    bool ever_received{false};
+};
+
+struct TCUtelem {
+    bool fan_status{false};
+    float temperature{0.f};
+};
+
+struct RelayTelem {
+    int RelayNum{0};
+    bool status{false};
+};
 
 /*
-    * @brief Struct storing important telemetry updates to be printed on the terminal.
-*/
-struct BatteryTelem{
-    int BatteryNum;
-    float voltage;
-    float temperature; 
-    float current;  
-    std::chrono::steady_clock::time_point timestamp; 
+ * @class BAB
+ * @brief Battery Arbiter Board telemetry decoder.
+ *
+ * Decodes CAN frames published by the BAB firmware (per
+ * src/can-integration/docs/BAB-docs.md) and stores the latest values
+ * per-battery (2 batteries) and per-rail (3 PDS rails) so callers can
+ * query individual channels.
+ *
+ * Backwards compatibility: the legacy zero-argument getters
+ * (e.g. `getBatteryVoltageLevel()`) return data for index 0
+ * (battery 1 / rail 1).
+ */
+class BAB {
+public:
+    static constexpr size_t NUM_BATTERIES = 2;
+    static constexpr size_t NUM_RAILS = 3;
+    static constexpr size_t NUM_RELAYS = 2;
+
+    BAB(rclcpp::Logger logger,
+        can_util::CANController & can_controller_,
+        buildAddress::BuildAddress & build_frame,
+        uint32_t deviceID);
+
+    /// Build the expected 29-bit CAN ID for a BAB telemetry frame.
+    /// Uses the manufacturer / device-ID values documented in BAB-docs.md
+    /// (Manufacturer::SCC, DeviceID 0x01) rather than the generic TEAM_USE.
+    uint32_t validateFrameID(uint32_t sev, Instructions::Inst cmd) const;
+
+    /// Frame callback invoked by `CANController::registerFrameCallback`.
+    /// Decodes battery/rail/TCU/relay frames in-place.
+    void handleFrames(uint32_t id, const std::vector<uint8_t> & data);
+
+    // ----------------------- Battery accessors -----------------------
+    // idx in [0, NUM_BATTERIES). Default 0 keeps legacy callers working.
+    float getBatteryVoltageLevel(size_t idx = 0) const;
+    float getBatteryCurrentLevel(size_t idx = 0) const;
+    float getBatteryTemp(size_t idx = 0) const;
+    bool  batteryFresh(size_t idx = 0,
+                       std::chrono::milliseconds max_age = std::chrono::seconds(3)) const;
+    bool  batteryEverReceived(size_t idx = 0) const;
+
+    // ------------------------ Rail accessors -------------------------
+    float getRailVoltageLevel(size_t idx = 0) const;
+    float getRailCurrent(size_t idx = 0) const;
+    float getRailPower(size_t idx = 0) const;
+    float getRailTemp(size_t idx = 0) const;  // firmware does not send; returns 0
+    bool  getRailSwitchOn(size_t idx = 0) const;
+    bool  railFresh(size_t idx = 0,
+                    std::chrono::milliseconds max_age = std::chrono::seconds(3)) const;
+    bool  railEverReceived(size_t idx = 0) const;
+
+    // ------------------------ TCU / relay ----------------------------
+    float getTCUTemp() const;
+    std::string getTCUStatus() const;
+    std::string getRelayStatus() const;
+    std::string getBMSHealth() const;
+
+    // ----------------------- Command emitters ------------------------
+    bool sendKYSCommand();
+    bool cutFanPower(DeviceId::ID fanID);
+    bool CutRelayCommand(DeviceId::ID relayID);
+    bool sendManualPowerCommands(DeviceId::ID selectRailID, bool turnOn);
+
+private:
+    mutable std::mutex mtx;
+    ros2_fmt_logger::Logger logger;
+    can_util::CANController & can_controller;
+    buildAddress::BuildAddress & build_frame;
+    uint32_t deviceId;
+    std::shared_ptr<can_util::CANFrameCallback> frame_callback;
+
+    std::array<BatteryTelem, NUM_BATTERIES> batteryTelems{};
+    std::array<RailTelem,    NUM_RAILS>     railTelems{};
+    std::array<RelayTelem,   NUM_RELAYS>    relayTelems{};
+    TCUtelem tcuTelem{};
 };
-
-struct RailTelem{
-
-    int RailNum; 
-    bool status; 
-    float voltage;
-    float temperature;
-    float current; 
-    float power; 
-};
-
-struct TCUtelem{
-
-    bool fan_status; 
-    float temperature; 
-};
-
-struct RelayTelem{
-
-    int RelayNum; 
-    bool status; 
-
-};
-
-
- /*
-*  @class BAB
-*  @brief Battery Arbiter Board class 
-*  
-*   This class provides methods to obtain required telemetry from the BAB which will then be displayed on the terminal as data input for users. 
-*
-*/
-
-class BAB{
-
-    public: 
-    
-        /*
-        * @brief initiallizes the can controller to establish a CAN connection in order to obtain telemetry. 
-        *
-        * @details This constructor attempts to initialize the CAN bus connection. If it fails, it will throw
-        * an exception with a detailed error message that includes possible causes and suggested solutions.
-        *  
-        */
-
-        BAB(rclcpp::Logger logger, 
-            can_util::CANController& can_controller_, 
-            buildAddress::BuildAddress& build_frame, 
-            uint32_t deviceID); 
-
-
-
-        uint32_t validateFrameID(uint32_t sev, Instructions::Inst cmd) const; 
-
-
-        /*
-        *  @brief: given a 32 bit id frame ID and a 8 byte data payload, the function decodes the incoming data and stores 
-        *          the respective telemetry info in the telemetryUpdates struct
-        *  @param: 32 bit CAN frame id, 8 byte payload of data   
-        *  @return: void
-        * 
-        */
-        void handleFrames(const uint32_t id, const std::vector<uint8_t>& data); 
-
-
-
-        /*
-        *  @brief Gets the current battery voltage level. 
-        *  @param: None  
-        *  @return return a voltage value in Volts. 
-        * 
-        */
-        float getBatteryVoltageLevel() const; 
-
-        /*
-        *  @brief Gets the current running through the battery.
-        *  @param: None  
-        *  @return return a voltage value in Volts. 
-        * 
-        */
-        float getBatteryCurrentLevel() const; 
-
-
-
-
-
-        /*
-        *  @brief Aquires the BMS temperature 
-        *  @param: None 
-        * 
-        */
-        float getBatteryTemp() const;
-
-
-        //TODO(Michael): Add function description. 
-
-        float getRailVoltageLevel() const; 
-
-
-
-        float getRailCurrent() const; 
-
-
-
-        float getRailTemp() const; 
-
-
-
-        float getRailPower() const;
-
-
-
-        /*
-        *  @brief Gets the power distribution system telemetry 
-        *  @param: None
-        * 
-        */
-        float getPDSTelemetry() const; 
-
-
-
-        float getTCUTemp() const;
-        /*
-        *  @brief Sends report to user if TCU is no longer operational
-        *  @param: None
-        * 
-        */
-        std::string getTCUStatus() const; 
-
-
-        /*
-        *  @brief 
-        *  @param: None 
-        *  @return: Returns a string indicating the status of the BMS 
-        */
-        std::string getBMSHealth() const; 
-
-
-        /*
-        *  @brief Gets the status of the power relays for the arm, BAB and wheel motor power rails. 
-        *  @param: None
-        *  @return: Returns string indicating relay status
-        */
-        std::string getRelayStatus() const; 
-
-
-        /*
-        *  @brief Reports when the BAB has decided to cut the relays to the batteries or 
-        *   when the BAB reports that the PDS has decided to cut a power rail. 
-        *
-        *  @details
-        *   E00: Both batteries have reached their lower thresholds.
-        *   E01: Unexpected Failure. Check fuses.
-        *   E02: The batteries are overheating.
-        *   E11: BlueBus power rail is shut off.
-        *   E12: Wheel power rail is shut off.
-        *   E13: Arm power rail is shut off.
-        * 
-        * @param: None
-        *  
-        */
-        //std::string getBABStatus() const; 
-
-
-        /*
-        *  @brief Sends command to cut ALL rails on the PDS
-        *  @param: None. 
-        *  @return: True for success 
-        */
-        bool sendKYSCommand(); 
-
-
-
-        /*
-        *  @brief Sends command to cut fan power
-        *  @param: DeviceId::ID fanid
-        *  @details --> Commands get sent to TCU board. 
-        *  @return: True for success
-        */
-        bool cutFanPower(DeviceId::ID fanID); 
-
-
-        /*
-        *  @brief Sends command to cut ALL relay power
-        *  @param: DeviceId::ID relay id 
-        *  @return: True for success
-        */
-        bool CutRelayCommand(DeviceId::ID relayID); 
-
-        /*
-        *  @brief Send commands to manually cut power to rails 1, 2 or 3 or open them again. 
-        *
-        *    1: BlueBus Rail
-        *    2: Arm Rail
-        *    3: Wheels Rail
-        *  @param: DeviceId::ID railID 
-        *  @return: True for success
-        */
-        bool sendManualPowerCommands(DeviceId::ID selectRailID, bool turnOn); 
-
-    
-    private:
-
-        mutable std::mutex mtx; 
-        ros2_fmt_logger::Logger logger; 
-        can_util::CANController& can_controller; 
-        buildAddress::BuildAddress& build_frame; 
-        uint32_t deviceId;
-        std::shared_ptr<can_util::CANFrameCallback> frame_callback; 
-
-        BatteryTelem batteryTelem{};
-        RelayTelem relayTelem{};
-        RailTelem railTelem{}; 
-        TCUtelem tcuTelem{}; 
-}; 
