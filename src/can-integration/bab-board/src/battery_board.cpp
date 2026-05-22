@@ -4,9 +4,19 @@
 
 namespace {
 
-// BAB-docs.md §1 fixed field values: DeviceType 0x01 (BAB), Manufacturer 0x01
-// (SCC), DeviceID 0x01 (BAB instance).
-constexpr uint8_t  BAB_FIRMWARE_DEVICE_ID = 0x01;
+// CAN-ID fields actually used by the BAB firmware on the rover (confirmed via
+// candump). These differ from BAB-docs.md, which describes an idealised
+// protocol with DevType 0x01 / Manufacturer 0x01 (SCC) / DeviceID 0x01.
+// Real frames observed on the bus:
+//
+//   ID 0x00088000  DevType=0x00  Mfr=0x08  Sev=0x02  Instr=0x00  DevID=0x00  Battery
+//   ID 0x00088080  DevType=0x00  Mfr=0x08  Sev=0x02  Instr=0x02  DevID=0x00  Rail
+//   ID 0x00088200  DevType=0x00  Mfr=0x08  Sev=0x02  Instr=0x08  DevID=0x00  Relay
+//
+// If firmware is updated to match the doc, change these to 0x01 / SCC / 0x01.
+constexpr uint8_t BAB_FIRMWARE_DEVTYPE   = 0x00;                       // not DeviceType::BAB
+constexpr uint8_t BAB_FIRMWARE_MFR       = Manufacturer::TEAM_USE;     // 0x08
+constexpr uint8_t BAB_FIRMWARE_DEVICE_ID = 0x00;                       // DeviceId::ID::BAB
 
 // Pack the first N bytes of a CAN payload into a 64-bit integer in
 // MSB-first (network) order, matching the bit layouts in BAB-docs.md.
@@ -38,21 +48,21 @@ BAB::BAB(rclcpp::Logger logger_,
 }
 
 uint32_t BAB::validateFrameID(uint32_t sev, Instructions::Inst cmd) const {
-    // Use the values documented in BAB-docs.md (firmware-side) so the CAN ID
-    // comparison in handleFrames matches frames the BAB actually emits.
+    // Use the field values actually emitted by the BAB firmware (see the
+    // constants block above; they do not match BAB-docs.md as of this commit).
     return buildAddress::BuildAddress::buildCANID(
-        static_cast<uint32_t>(deviceType::DeviceType::BAB),
-        Manufacturer::SCC,
+        BAB_FIRMWARE_DEVTYPE,
+        BAB_FIRMWARE_MFR,
         sev,
         static_cast<uint32_t>(cmd),
         BAB_FIRMWARE_DEVICE_ID);
 }
 
 void BAB::handleFrames(const uint32_t id, const std::vector<uint8_t> & data) {
-    // Quick reject: ignore anything that is not a BAB-typed frame. Saves a few
-    // comparisons per received frame on a busy bus.
+    // Quick reject: ignore frames whose DeviceType field is not what the BAB
+    // firmware emits today (0x00). Saves a few comparisons on a busy bus.
     const uint8_t devtype = (id >> 24) & 0x1F;
-    if (devtype != static_cast<uint8_t>(deviceType::DeviceType::BAB)) {
+    if (devtype != BAB_FIRMWARE_DEVTYPE) {
         return;
     }
 

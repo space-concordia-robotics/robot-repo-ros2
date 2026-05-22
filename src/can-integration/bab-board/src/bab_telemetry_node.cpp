@@ -36,9 +36,11 @@
 
 namespace {
 
-constexpr uint8_t BAB_DEVTYPE = static_cast<uint8_t>(deviceType::DeviceType::BAB);
-constexpr uint8_t BAB_FIRMWARE_MFR = Manufacturer::SCC;
-constexpr uint8_t BAB_FIRMWARE_DEVID = 0x01;
+// Match the values actually used by the BAB firmware on the rover
+// (see comments at the top of battery_board.cpp).
+constexpr uint8_t BAB_DEVTYPE        = 0x00;
+constexpr uint8_t BAB_FIRMWARE_MFR   = Manufacturer::TEAM_USE;  // 0x08
+constexpr uint8_t BAB_FIRMWARE_DEVID = 0x00;
 
 std::string formatRow(const char * label,
                       bool fresh,
