@@ -36,7 +36,7 @@ CanControllerNode::CanControllerNode(const rclcpp::NodeOptions& options) :
 
         // Servo command shaping: joystick [-1,1] scaled to degrees per command tick.
         spin_max_deg_per_command_ = static_cast<float>(
-            this->declare_parameter("spin_max_deg_per_command", 90.0));
+            this->declare_parameter("spin_max_deg_per_command", 5.0));
         clamp_max_deg_per_command_ = static_cast<float>(
             this->declare_parameter("clamp_max_deg_per_command", 15.0));
 
