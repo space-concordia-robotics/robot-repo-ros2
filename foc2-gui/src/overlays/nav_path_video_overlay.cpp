@@ -21,18 +21,6 @@ NavPathVideoOverlay::NavPathVideoOverlay(ImApplication& application, std::string
       path_color(path_color),
       tf_buffer(application.tfBuffer()) {}
 
-void NavPathVideoOverlay::onPath(const nav_msgs::msg::Path::UniquePtr& msg) {
-    if (!msg) return;
-    std::lock_guard lock(mutex);
-    path = *msg;
-}
-
-void NavPathVideoOverlay::onCameraInfo(const CameraInfo::SharedPtr& msg) {
-    if (!msg) return;
-    std::lock_guard lock(mutex);
-    camera_info = *msg;
-}
-
 void NavPathVideoOverlay::onInit() {
     path_subscription = application.create_subscription<Path>(
         path_topic,
@@ -208,7 +196,7 @@ void NavPathVideoOverlay::onDraw(ImDrawList* draw_list, const ImRect& bounds) {
         if (segment.size() == 0) {
             continue;
         } else if (segment.size() == 1) {
-            const auto [point, alpha, thickness] = segment[0];
+            const auto& [point, alpha, thickness] = segment[0];
             draw_list->AddCircle(point, thickness, segmentColor(alpha));
 
             drawDiscontinuityMarker(last_segment_end);
@@ -217,10 +205,30 @@ void NavPathVideoOverlay::onDraw(ImDrawList* draw_list, const ImRect& bounds) {
             continue;
         }
 
-        for (auto&& [first, second] : std::views::adjacent<2>(segment)) {
-            const auto& [start, alpha, thickness] = first;
+        drawDiscontinuityMarker(last_segment_end);
 
-            draw_list->AddLine(start, second.pos, segmentColor(alpha), thickness);
+        for (auto&& [first, second] : std::views::adjacent<2>(segment)) {
+            const auto& [start, start_alpha, start_thickness] = first;
+            const auto& [end, end_alpha, end_thickness] = second;
+
+            static constexpr auto PIXELS_PER_STEP = 4.0;
+
+            if (const auto subdivisions = std::max(static_cast<int>(ImLengthSqr(end - start) / (PIXELS_PER_STEP * PIXELS_PER_STEP)), 1); subdivisions == 1) {
+                draw_list->AddLine(start, end, segmentColor((start_alpha + end_alpha) / 2), (start_thickness + end_thickness) / 2);
+            } else {
+                for (int subdivision = 0; subdivision < subdivisions; ++subdivision) {
+                    const auto ratio_start = static_cast<double>(subdivision) / subdivisions;
+                    const auto ratio_end = static_cast<double>(subdivision + 1) / subdivisions;
+
+                    const auto pos_start = ImLerp(start, end, ratio_start);
+                    const auto pos_end = ImLerp(start, end, ratio_end);
+
+                    const auto alpha = std::lerp(start_alpha, end_alpha, (ratio_start + ratio_end) * 0.5);
+                    const auto thickness = std::lerp(start_thickness, end_thickness, (ratio_start + ratio_end) * 0.5);
+
+                    draw_list->AddLine(pos_start, pos_end, segmentColor(alpha), thickness);
+                }
+            }
         }
 
         drawDiscontinuityMarker(last_segment_end);
@@ -228,4 +236,16 @@ void NavPathVideoOverlay::onDraw(ImDrawList* draw_list, const ImRect& bounds) {
 
         last_segment_end = segment.back();
     }
+}
+
+void NavPathVideoOverlay::onCameraInfo(const CameraInfo::SharedPtr& msg) {
+    if (!msg) return;
+    std::lock_guard lock(mutex);
+    camera_info = *msg;
+}
+
+void NavPathVideoOverlay::onPath(const nav_msgs::msg::Path::UniquePtr& msg) {
+    if (!msg) return;
+    std::lock_guard lock(mutex);
+    path = *msg;
 }
