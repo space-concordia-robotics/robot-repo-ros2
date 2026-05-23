@@ -177,10 +177,6 @@ private:
     std::shared_ptr<MapWidget> map_widget;
 
     void drawLeft() const {
-        ImGui::Text("TODO");
-
-        ImGui::Separator();
-
         const auto available = ImGui::GetContentRegionAvail();
 
         // TODO 2026-05-07 (Will Free): make this a percent
