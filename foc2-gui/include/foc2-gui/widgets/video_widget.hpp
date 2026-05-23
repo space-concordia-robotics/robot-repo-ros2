@@ -85,9 +85,6 @@ private:
 
     VideoStatsOverlay::VideoStats video_stats;
     std::shared_ptr<VideoStatsOverlay> stats_overlay;
-    std::shared_ptr<ArucoVideoOverlay> aruco_overlay;
-    std::shared_ptr<NavPathVideoOverlay> local_nav_path_overlay;
-    std::shared_ptr<NavPathVideoOverlay> global_nav_path_overlay;
 
     bool new_frame_available = false;
 
