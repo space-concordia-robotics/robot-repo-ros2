@@ -1,0 +1,22 @@
+/**/twist_mux:
+  ros__parameters:
+    use_stamped: false
+    topics:
+      navigation:
+        # jazzy:
+        topic: cmd_vel_smoothed
+        # humble:
+        #topic: cmd_vel_nav
+        timeout: 0.5
+        priority: 10
+        use_stamped: false
+      tracker:
+        topic: cmd_vel_tracker
+        timeout: 0.5
+        priority: 20
+        use_stamped: true
+      joystick:
+        topic: cmd_vel_joy
+        timeout: 0.5
+        priority: 100
+        use_stamped: true
