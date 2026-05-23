@@ -1,6 +1,7 @@
 #define IMGUI_USER_CONFIG "foc2-gui/imgui_user.hpp"
 
 #include <filesystem>
+#include <IconsFontAwesome7.h>
 #include <imgui.h>
 #include <lunasvg.h>
 #include <ament_index_cpp/get_package_share_directory.hpp>
@@ -66,9 +67,28 @@ protected:
     void onInit() override {
         ImApplication::onInit();
 
-        video_top = std::make_shared<VideoWidget>(*this, "rtsp://127.0.0.1:8554/test", "/rover/ffc/front/image_raw", true, "none");
-        video_bottom_left = std::make_shared<VideoWidget>(*this, "rtsp://10.240.0.10:8445/left", "/rover/ffc/left/image_raw", false, "none");
-        video_bottom_right = std::make_shared<VideoWidget>(*this, "rtsp://10.240.0.10:8445/right", "/rover/ffc/right/image_raw", false, "none");
+        const auto share_dir = ament_index_cpp::get_package_share_directory(FOC2_PACKAGE_NAME);
+
+        const auto& io = ImGui::GetIO();
+
+        static constexpr auto BASE_FONT_SIZE = 13.0f; // 13.0f is the size of the default font. Change to the font size you use.
+        static constexpr auto ICON_FONT_SIZE = BASE_FONT_SIZE * 2.0f / 3.0f;
+        // FontAwesome fonts need to have their sizes reduced by 2.0f/3.0f in order to align correctly
+
+        static constexpr ImWchar FONTAWESOME_ICON_RANGE[] = {ICON_MIN_FA, ICON_MAX_16_FA, 0};
+        auto fontawesome_config = ImFontConfig();
+        strcpy(fontawesome_config.Name, "FontAwesome Solid");
+        // font_cfg.PixelSnapH = true;
+        fontawesome_config.MergeMode = true;
+        fontawesome_config.PixelSnapH = true;
+        fontawesome_config.GlyphMinAdvanceX = ICON_FONT_SIZE;
+
+        const auto filename = std::filesystem::path(share_dir) / "resources" / "fonts" / FONT_ICON_FILE_NAME_FAS;
+        io.Fonts->AddFontFromFileTTF(filename.c_str(), ICON_FONT_SIZE, &fontawesome_config, FONTAWESOME_ICON_RANGE);
+
+        video_top = std::make_shared<VideoWidget>(*this, "rtsp://127.0.0.1:8554/test", "/rover/ffc/front/image_raw", true);
+        video_bottom_left = std::make_shared<VideoWidget>(*this, "rtsp://10.240.0.10:8445/left", "/rover/ffc/left/image_raw", false);
+        video_bottom_right = std::make_shared<VideoWidget>(*this, "rtsp://10.240.0.10:8445/right", "/rover/ffc/right/image_raw", false);
 
         map_widget = std::make_shared<MapWidget>(*this);
 

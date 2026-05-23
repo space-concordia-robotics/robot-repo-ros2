@@ -21,7 +21,7 @@ public:
             return;
         }
 
-        subscription = application.create_subscription<Msg>(topic, qos, std::bind(&SubscriptionGroup::onMessageShared, this, std::placeholders::_1));
+        subscription = application.create_subscription<Msg>(topic, qos, std::bind(&SubscriptionGroup::onMessage, this, std::placeholders::_1));
     }
 
     template <typename Owner, typename Callback>
@@ -47,7 +47,7 @@ private:
         callbacks.push_back(CallbackHolder::make_shared(std::move(owner), std::move(callback)));
     }
 
-    void onMessageShared(const Msg::ConstSharedPtr& msg) {
+    void onMessage(const Msg::SharedPtr msg) {
         std::vector<typename CallbackHolder::SharedPtr> callbacks_copy;
 
         // copy callbacks to avoid any race conditions where the callbacks vector is mutated as we iterate over them

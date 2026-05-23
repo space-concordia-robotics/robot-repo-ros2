@@ -65,6 +65,31 @@ pkg_check_modules(GSTREAMER_RTSP REQUIRED
 
 list(APPEND DEPENDENCIES GSTREAMER GSTREAMER_APP GSTREAMER_RTSP)
 
+set(API_TWEAKS_FILE "${CMAKE_CURRENT_BINARY_DIR}/api-tweaks.txt")
+file(WRITE "${API_TWEAKS_FILE}" "
+# these api tweaks can be removed when updating to gstreamer >=1.28.0. (aka updating to ubuntu 26.04 or later)
+# they're only necessary, because I don't want to force people to compile gstreamer from source.
+type	gst_calculate_linear_regression			xy		gpointer
+type	gst_calculate_linear_regression			temp		gpointer
+type	gst_util_simplify_fraction			numerator		gpointer
+type	gst_util_simplify_fraction			denominator		gpointer
+type	gst_caps_features_set_parent_refcount			refcount		gpointer
+type	gst_meta_deserialize			data		gpointer
+type	gst_iterator_new			master_cookie		gpointer
+type	gst_structure_set_parent_refcount			refcount		gpointer
+
+# these last two are either due to a bug in peel or in gstreamer's rtsp server. unsure.
+skip	gst_rtsp_stream_transport_set_callbacks
+skip	gst_rtsp_stream_transport_set_list_callbacks
+"
+)
+
+peel_generate(Gst 1.0 RECURSIVE TWEAKS "${API_TWEAKS_FILE}")
+peel_generate(GstNet 1.0 RECURSIVE TWEAKS "${API_TWEAKS_FILE}")
+peel_generate(GstApp 1.0 RECURSIVE TWEAKS "${API_TWEAKS_FILE}")
+peel_generate(GstRtsp 1.0 RECURSIVE TWEAKS "${API_TWEAKS_FILE}")
+peel_generate(GstRtspServer 1.0 RECURSIVE TWEAKS "${API_TWEAKS_FILE}")
+
 find_package(Boost REQUIRED CONFIG COMPONENTS)
 
 list(APPEND DEPENDENCIES Boost)
@@ -127,6 +152,15 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
         implot3d
         imfonts
 
+        iconfonts
+
+        peel::peel
+        peel::Gst
+        peel::GstNet
+        peel::GstApp
+        peel::GstRtsp
+        peel::GstRtspServer
+
         lunasvg
 
         stb
@@ -149,9 +183,13 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 
 set(GENERATED_INCLUDE_DIR ${CMAKE_CURRENT_BINARY_DIR}/generated)
 
-configure_file(cmake/resources.hpp.in ${GENERATED_INCLUDE_DIR}/foc2-gui/resources.hpp @ONLY)
+configure_file(resources/resources.hpp.in ${GENERATED_INCLUDE_DIR}/foc2-gui/resources.hpp @ONLY)
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${GENERATED_INCLUDE_DIR})
+
+set(FONT_AWESOME_PATH "share/resources/fonts/fa-solid-900.ttf")
+
+target_compile_definitions(${PROJECT_NAME} INTERFACE FONT_AWESOME_PATH="${FONT_AWESOME_PATH}")
 
 ## INSTALL
 
@@ -163,6 +201,13 @@ install(
 install(
         DIRECTORY resources
         DESTINATION share/${PROJECT_NAME}
+        PATTERN "*.in" EXCLUDE
+)
+
+install(
+        FILES ${FONT_AWESOME_SOURCE_PATH}
+        DESTINATION share/${PROJECT_NAME}/resources/fonts/
+        RENAME fa-solid-900.woff2
 )
 
 install(
