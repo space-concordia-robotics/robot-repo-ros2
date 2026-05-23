@@ -15,24 +15,17 @@ public:
     using Path = nav_msgs::msg::Path;
     using CameraInfo = sensor_msgs::msg::CameraInfo;
 
-    // tf_buffer is required to transform path poses into the camera frame.
     explicit NavPathVideoOverlay(ImApplication& application, std::string path_topic, const ImVec4& path_color);
 
     ~NavPathVideoOverlay() override = default;
 
-    // Called by external code to deliver the current nav2 path.
-    void onPath(const Path::UniquePtr& msg);
-
-    // Public camera-info hook required by your pipeline.
-    // This will be called by another class; we cache intrinsics for projection.
-    void onCameraInfo(const CameraInfo::SharedPtr& msg);
-
-    // UiOverlay lifecycle
     void onInit() override;
+
     void onShutdown() override;
 
-    // Draw overlay onto the provided ImDrawList within bounds.
     void onDraw(ImDrawList* draw_list, const ImRect& bounds) override;
+
+    void onCameraInfo(const CameraInfo::SharedPtr& msg);
 
 private:
     std::string path_topic;
@@ -45,4 +38,6 @@ private:
     std::optional<CameraInfo> camera_info;
 
     tf2_ros::Buffer& tf_buffer;
+
+    void onPath(const Path::UniquePtr& msg);
 };
