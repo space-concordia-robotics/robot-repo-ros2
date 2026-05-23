@@ -1,6 +1,7 @@
 #include "tm_imu/tm_imu_node.hpp"
-#include "EasyObjectDictionary.h" // TransducerM Data
-#include "EasyProfile.h"          // TransducerM communication protocol
+
+#include "EasyProfile/EasyObjectDictionary.h" // TransducerM Data
+#include "EasyProfile/EasyProfile.h"          // TransducerM communication protocol
 
 EasyObjectDictionary eOD;
 EasyProfile eP(&eOD);

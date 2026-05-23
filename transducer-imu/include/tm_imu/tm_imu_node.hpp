@@ -4,7 +4,7 @@
 #include <sensor_msgs/msg/imu.hpp>
 #include <sensor_msgs/msg/magnetic_field.hpp>
 #include <tf2_ros/transform_broadcaster.h>
-#include "serialib.h"
+#include "serialib/serialib.h"
 
 // To use the communication library, we need to include the following
 // two header files:

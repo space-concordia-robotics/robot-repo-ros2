@@ -1,0 +1,229 @@
+cmake_minimum_required(VERSION 3.22)
+project(foc2_gui)
+
+if (NOT CMAKE_CXX_STANDARD)
+    set(CMAKE_CXX_STANDARD 23)
+endif ()
+
+## DEPENDENCIES
+
+include(external/dependencies.cmake)
+
+set(DEPENDENCIES
+        rclcpp
+        rclcpp_components
+        rclcpp_action
+        ament_index_cpp
+
+        tf2_ros
+        tf2_eigen
+        image_transport
+        ros2_fmt_logger
+
+        fmt
+        X11
+        OpenCV
+        OpenGL
+        Freetype
+        GeographicLib
+        magic_enum
+        CURL
+
+        geometry_msgs
+        tf2_geometry_msgs
+        sensor_msgs
+        nav2_msgs
+        action_msgs
+        lifecycle_msgs
+        ros_aruco_opencv_msgs
+        rover_msgs
+)
+
+include(../cmake/CPM.cmake)
+
+# find dependencies
+CPMAddPackage("gh:fmtlib/fmt#11.2.0")
+CPMAddPackage("gh:Neargye/magic_enum#v0.9.7")
+
+find_package(ament_cmake REQUIRED)
+find_package(backward_ros REQUIRED)
+
+foreach (dependency IN ITEMS ${DEPENDENCIES})
+    find_package(${dependency} REQUIRED)
+endforeach ()
+
+find_package(PkgConfig REQUIRED)
+
+pkg_check_modules(GSTREAMER REQUIRED gstreamer-1.0)
+pkg_check_modules(GSTREAMER_APP REQUIRED gstreamer-app-1.0)
+pkg_check_modules(GSTREAMER_RTSP REQUIRED
+        gstreamer-sdp-1.0
+        gstreamer-net-1.0
+        gstreamer-rtp-1.0
+        gstreamer-rtsp-1.0
+)
+
+list(APPEND DEPENDENCIES GSTREAMER GSTREAMER_APP GSTREAMER_RTSP)
+
+set(API_TWEAKS_FILE "${CMAKE_CURRENT_BINARY_DIR}/api-tweaks.txt")
+file(WRITE "${API_TWEAKS_FILE}" "
+# these api tweaks can be removed when updating to gstreamer >=1.28.0. (aka updating to ubuntu 26.04 or later)
+# they're only necessary, because I don't want to force people to compile gstreamer from source.
+type	gst_calculate_linear_regression			xy		gpointer
+type	gst_calculate_linear_regression			temp		gpointer
+type	gst_util_simplify_fraction			numerator		gpointer
+type	gst_util_simplify_fraction			denominator		gpointer
+type	gst_caps_features_set_parent_refcount			refcount		gpointer
+type	gst_meta_deserialize			data		gpointer
+type	gst_iterator_new			master_cookie		gpointer
+type	gst_structure_set_parent_refcount			refcount		gpointer
+
+# these last two are either due to a bug in peel or in gstreamer's rtsp server. unsure.
+skip	gst_rtsp_stream_transport_set_callbacks
+skip	gst_rtsp_stream_transport_set_list_callbacks
+"
+)
+
+peel_generate(Gst 1.0 RECURSIVE TWEAKS "${API_TWEAKS_FILE}")
+peel_generate(GstNet 1.0 RECURSIVE TWEAKS "${API_TWEAKS_FILE}")
+peel_generate(GstApp 1.0 RECURSIVE TWEAKS "${API_TWEAKS_FILE}")
+peel_generate(GstRtsp 1.0 RECURSIVE TWEAKS "${API_TWEAKS_FILE}")
+peel_generate(GstRtspServer 1.0 RECURSIVE TWEAKS "${API_TWEAKS_FILE}")
+
+find_package(Boost REQUIRED CONFIG COMPONENTS)
+
+list(APPEND DEPENDENCIES Boost)
+
+## TARGETS
+
+# TODO 2026-05-05 (Will Free): split these out into multiple libraries to improve compile times.
+
+add_executable(${PROJECT_NAME}
+        src/main.cpp
+        src/im_application.cpp
+
+        # overlays
+        src/overlays/aruco_video_overlay.cpp
+        src/overlays/minimap.cpp
+        src/overlays/nav_path_video_overlay.cpp
+        src/overlays/video_stats_overlay.cpp
+
+        # widgets
+        src/widgets/logs_widget.cpp
+        src/widgets/map_widget.cpp
+        src/widgets/video_widget.cpp
+
+        # OSM map stuff
+        src/osm/osm_map_plot.cpp
+        src/osm/osm_rich_destination_calc_widget.cpp
+        src/osm/osm_rich_distance_calc_widget.cpp
+        src/osm/osm_rich_map_plot.cpp
+        src/osm/osm_rich_mark_editor_widget.cpp
+        src/osm/osm_rich_mark_item.cpp
+        src/osm/osm_rich_mark_item_widget.cpp
+        src/osm/osm_rich_mark_storage.cpp
+        src/osm/osm_tile.cpp
+        src/osm/osm_tile_grabber.cpp
+        src/osm/osm_tile_grabber_url.cpp
+        src/osm/osm_tile_grabber_widget.cpp
+        src/osm/osm_tile_loader.cpp
+        src/osm/osm_tile_loader_url.cpp
+        src/osm/osm_tile_saver.cpp
+        src/osm/osm_tile_source_async.cpp
+        src/osm/osm_tile_source_fs.cpp
+        src/osm/osm_tile_source_url.cpp
+        src/osm/osm_tile_source_url_impl.cpp
+        src/osm/osm_tile_source_widget.cpp
+        src/osm/osm_tile_texture.cpp
+
+        # OSM markers
+        src/osm/markers/rich_robot_marker.cpp
+)
+
+ament_target_dependencies(${PROJECT_NAME} PUBLIC ${DEPENDENCIES})
+
+target_link_libraries(${PROJECT_NAME} PUBLIC
+        magic_enum::magic_enum
+
+        SDL3::SDL3
+
+        imgui
+        implot
+        implot3d
+        imfonts
+
+        iconfonts
+
+        peel::peel
+        peel::Gst
+        peel::GstNet
+        peel::GstApp
+        peel::GstRtsp
+        peel::GstRtspServer
+
+        lunasvg
+
+        stb
+)
+
+# fixes issue with mold
+# TODO 2026-05-02 (Will Free): remove
+target_link_options(${PROJECT_NAME} PUBLIC -static-libgcc -static-libstdc++)
+
+target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_23)
+
+if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -Wpedantic)
+endif ()
+
+target_include_directories(${PROJECT_NAME} PUBLIC
+        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:include>
+)
+
+set(GENERATED_INCLUDE_DIR ${CMAKE_CURRENT_BINARY_DIR}/generated)
+
+configure_file(resources/resources.hpp.in ${GENERATED_INCLUDE_DIR}/foc2-gui/resources.hpp @ONLY)
+
+target_include_directories(${PROJECT_NAME} PRIVATE ${GENERATED_INCLUDE_DIR})
+
+set(FONT_AWESOME_PATH "share/resources/fonts/fa-solid-900.ttf")
+
+target_compile_definitions(${PROJECT_NAME} INTERFACE FONT_AWESOME_PATH="${FONT_AWESOME_PATH}")
+
+## INSTALL
+
+install(
+        DIRECTORY include
+        DESTINATION include/${PROJECT_NAME}
+)
+
+install(
+        DIRECTORY resources
+        DESTINATION share/${PROJECT_NAME}
+        PATTERN "*.in" EXCLUDE
+)
+
+install(
+        FILES ${FONT_AWESOME_SOURCE_PATH}
+        DESTINATION share/${PROJECT_NAME}/resources/fonts/
+        RENAME fa-solid-900.woff2
+)
+
+install(
+        TARGETS ${PROJECT_NAME}
+        DESTINATION lib/${PROJECT_NAME}
+)
+
+install(
+        TARGETS ${PROJECT_NAME}
+        EXPORT export_${PROJECT_NAME}
+        ARCHIVE DESTINATION lib
+        LIBRARY DESTINATION lib
+        RUNTIME DESTINATION bin
+        INCLUDES DESTINATION include
+)
+
+## EXPORTS
+ament_export_targets(export_${PROJECT_NAME})
+ament_package()

@@ -1,0 +1,52 @@
+cameras:
+  imx378w:
+    color: true
+    hfov: 95
+    vfov: 72
+    resolutions:
+      12mp:
+        fps: 30
+        width: 4056
+        height: 3040
+      4k:
+        fps: 30
+        width: 3840
+        height: 2160
+      1080p:
+        fps: 60
+        width: 1920
+        height: 1080
+      1352x1012:
+        fps: 52
+        width: 1352
+        height: 1012
+      2024x1520:
+        fps: 85
+        width: 2024
+        height: 1520
+
+  imx378:
+    color: true
+    hfov: 69
+    vfov: 55
+    resolutions:
+      12mp:
+        fps: 30
+        width: 4056
+        height: 3040
+      4k:
+        fps: 30
+        width: 3840
+        height: 2160
+      1080p:
+        fps: 60
+        width: 1920
+        height: 1080
+      1352x1012:
+        fps: 52
+        width: 1352
+        height: 1012
+      2024x1520:
+        fps: 85
+        width: 2024
+        height: 1520
