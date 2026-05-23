@@ -183,4 +183,57 @@ namespace ImGui {
     inline bool InputDouble4(const char* label, double v[4], const char* format = "%.3f", const ImGuiInputTextFlags flags = 0) {
         return InputScalarN(label, ImGuiDataType_Double, v, 4, nullptr, nullptr, format, flags);
     }
+
+    inline bool SliderDouble(
+        const char* label,
+        double* value,
+        const double v_min,
+        const double v_max,
+        const char* format = "%.3f",
+        const ImGuiSliderFlags flags = 0
+    ) {
+        return SliderScalar(label, ImGuiDataType_Double, value, &v_min, &v_max, format, flags);
+    }
+
+    inline bool SliderDoubleSnapping(
+        const char* label,
+        double* value,
+        const double v_min,
+        const double v_max,
+        const double threshold = 0.1,
+        const char* format = "%.3f",
+        const ImGuiSliderFlags flags = 0
+    ) {
+        const auto before = *value;
+        const auto changed = SliderDouble(label, value, v_min, v_max, format, flags);
+
+        if (before != *value) {
+            if (const auto nearest = std::round(*value); std::abs(*value - nearest) <= threshold) {
+                *value = nearest;
+                return true;
+            }
+        }
+        return changed;
+    }
+
+    inline bool SliderFloatSnapping(
+        const char* label,
+        float* value,
+        const float v_min,
+        const float v_max,
+        const float threshold = 0.1,
+        const char* format = "%.3f",
+        const ImGuiSliderFlags flags = 0
+    ) {
+        const auto before = *value;
+        const auto changed = SliderFloat(label, value, v_min, v_max, format, flags);
+
+        if (before != *value) {
+            if (const auto nearest = std::round(*value); std::abs(*value - nearest) <= threshold) {
+                *value = nearest;
+                return true;
+            }
+        }
+        return changed;
+    }
 }

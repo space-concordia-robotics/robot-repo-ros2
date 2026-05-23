@@ -1,9 +1,20 @@
 #include "foc2-gui/widgets/video_widget.hpp"
 
+#include <IconsFontAwesome7.h>
 #include <imgui.h>
-#include <gst/gstbin.h>
 #include <gst/app/gstappsink.h>
 #include <image_transport/camera_common.hpp>
+#include <magic_enum/magic_enum.hpp>
+#include <peel/GLib/MainLoop.h>
+#include <peel/Gst/Element.h>
+#include <peel/Gst/functions.h>
+#include <peel/Gst/Pad.h>
+#include <peel/Gst/PadProbeInfo.h>
+#include <peel/Gst/PadProbeReturn.h>
+#include <peel/Gst/PadProbeType.h>
+#include <peel/Gst/State.h>
+#include <peel/Gst/StateChangeReturn.h>
+#include <peel/GstApp/AppSink.h>
 
 #include "foc2-gui/overlays/aruco_video_overlay.hpp"
 #include "foc2-gui/overlays/crosshair_overlay.hpp"
@@ -14,18 +25,61 @@
 using namespace std::chrono;
 using namespace std::chrono_literals;
 
+using namespace peel;
+
+template <>
+struct fmt::formatter<String> : formatter<const char*> {
+    template <typename FormatContext>
+    auto format(const String string, FormatContext& ctx) const {
+        return formatter<const char*>::format(string.c_str(), ctx);
+    }
+};
+
+namespace magic_enum::customize {
+    template <>
+    constexpr customize_t enum_name(const VideoFlipMethod method) noexcept {
+        switch (method) {
+        case VideoFlipMethod::NONE:
+            return "None";
+            break;
+        case VideoFlipMethod::CLOCKWISE:
+            return "Clockwise";
+            break;
+        case VideoFlipMethod::ROTATE_180:
+            return "Rotate 180";
+            break;
+        case VideoFlipMethod::COUNTERCLOCKWISE:
+            return "Counterclockwise";
+            break;
+        case VideoFlipMethod::HORIZONTAL_FLIP:
+            return "Horizontal Flip";
+            break;
+        case VideoFlipMethod::VERTICAL_FLIP:
+            return "Vertical Flip";
+            break;
+        case VideoFlipMethod::UPPER_LEFT_DIAGONAL:
+            return "Upper Left Diagonal";
+            break;
+        case VideoFlipMethod::UPPER_RIGHT_DIAGONAL:
+            return "Upper Right Diagonal";
+            break;
+        case VideoFlipMethod::AUTOMATIC:
+            return "Automatic";
+            break;
+        }
+        return invalid_tag;
+    }
+}
+
 VideoWidget::VideoWidget(
     ImApplication& application,
     const std::string& source_url,
     const std::string& camera_topic,
-    const bool minimap,
-    const std::string& videoflip
+    const bool minimap
 ) : UiWidget(application),
     source_url(source_url),
     camera_topic(camera_topic),
-    minimap(minimap),
-    // TODO 2026-05-20 (Will Free): determine videoflip from camera frame
-    videoflip(videoflip) {
+    minimap(minimap) {
     stats_overlay = std::make_shared<VideoStatsOverlay>(application);
     const auto aruco_overlay = std::make_shared<ArucoVideoOverlay>(application);
     const auto global_nav_overlay = std::make_shared<NavPathVideoOverlay>(application, "/plan", ImVec4(0.1, 1, 0, 1));
@@ -73,6 +127,13 @@ void VideoWidget::onShutdown() {
 
     running = false;
     gst_thread.join();
+
+    if (texture_id) {
+        glDeleteTextures(1, &texture_id);
+        texture_id = 0;
+        texture_width = 0;
+        texture_height = 0;
+    }
 }
 
 ImVec2 VideoWidget::expectedSize(const ImVec2 available) const {
@@ -115,6 +176,104 @@ void VideoWidget::draw() {
         ImGui::Image(texture_id, size);
 
         drawOverlays(ImGui::GetWindowDrawList(), ImRect(ImGui::GetItemRectMin(), ImGui::GetItemRectMax()));
+
+        const auto item_max = ImGui::GetItemRectMax();
+        constexpr auto cog_size = ImVec2(20.0f, 20.0f);
+        const auto cog_pos = item_max - cog_size - ImVec2(6.0, 6.0);
+        const ImU32 icon_col = ImGui::GetColorU32(ImGuiCol_Text);
+
+        const auto draw_list = ImGui::GetWindowDrawList();
+
+        ImGui::PushFont(nullptr, 24.0);
+        const ImVec2 text_size = ImGui::CalcTextSize(ICON_FA_GEAR);
+        const ImVec2 text_pos = cog_pos + (cog_size - text_size) * 0.5f;
+        draw_list->AddText(text_pos, icon_col, ICON_FA_GEAR);
+        ImGui::PopFont();
+
+        ImGui::SetCursorScreenPos(cog_pos);
+
+        const auto popup_id = fmt::format("filters_popup_{}", reinterpret_cast<uintptr_t>(this));
+
+        if (ImGui::InvisibleButton("filters", cog_size)) {
+            ImGui::OpenPopup(popup_id.data());
+        }
+
+        if (ImGui::BeginPopup(popup_id.data())) {
+            auto changed = false;
+
+            ImGui::TextUnformatted("Filters");
+            ImGui::Separator();
+
+            changed |= ImGui::Checkbox("Enable filters", &filters.enabled);
+
+            ImGui::BeginDisabled(!filters.enabled);
+
+            ImGui::Spacing();
+
+            changed |= ImGui::SliderDoubleSnapping("Gamma", &filters.gamma, 0.1, 3.0, 0.1);
+            changed |= ImGui::SliderDoubleSnapping("Brightness", &filters.brightness, -1.0, 1.0, 0.1);
+            changed |= ImGui::SliderDoubleSnapping("Contrast", &filters.contrast, 0.0, 3.0, 0.1);
+            changed |= ImGui::SliderDoubleSnapping("Saturation", &filters.saturation, 0.0, 3.0, 0.1);
+
+            ImGui::Spacing();
+
+            static constexpr auto VIDEO_FLIP_ENTRIES = magic_enum::enum_entries<VideoFlipMethod>();
+            const auto current_index = magic_enum::enum_index(filters.rotation).value_or(0);
+            const auto preview_value = magic_enum::enum_name(filters.rotation);
+
+            if (ImGui::BeginCombo("Rotation", preview_value.data(), ImGuiComboFlags_None)) {
+                for (auto i = 0u; i < VIDEO_FLIP_ENTRIES.size(); ++i) {
+                    const auto [enum_val, name] = VIDEO_FLIP_ENTRIES[i];
+
+                    ImGui::PushID(i);
+
+                    const auto selected = i == current_index;
+
+                    if (ImGui::Selectable(name.data(), selected)) {
+                        filters.rotation = enum_val;
+                        changed = true;
+                    }
+
+                    if (selected)
+                        ImGui::SetItemDefaultFocus();
+
+                    ImGui::PopID();
+                }
+                ImGui::EndCombo();
+            }
+
+
+            ImGui::Spacing();
+
+            changed |= ImGui::SliderDoubleSnapping("Sharpness", &filters.sharpness, 0.0, 5.0, 0.1);
+
+            ImGui::EndDisabled();
+
+            ImGui::Separator();
+
+            static constexpr auto DEFAULT_FILTER_STATE = FilterState();
+
+            if (ImGui::Button("Reset")) {
+                filters = DEFAULT_FILTER_STATE;
+                changed = true;
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("Close")) {
+                ImGui::CloseCurrentPopup();
+            }
+
+            if (filters.enabled) {
+                if (changed)
+                    applyFilters(filters);
+            } else {
+                if (changed) {
+                    applyFilters(DEFAULT_FILTER_STATE, false);
+                    applyFlip(filters.rotation);
+                }
+            }
+
+            ImGui::EndPopup();
+        }
     } else {
         // TODO 2026-05-07 (Will Free): show message if we got disconnected from the stream & are reconnecting
 
@@ -135,203 +294,257 @@ void VideoWidget::draw() {
 }
 
 void VideoWidget::videoThread() {
-    // TODO 2026-05-07 (Will Free): replace this pipeline string with creating each of the elements individually
-    //  via gst_element_factory_make(), then linking them together.
-
-    const auto pipeline_desc = fmt::format(
-        "rtspsrc name=src location={} latency=100 ! "
-        "rtpjitterbuffer name=jitter latency=50 ! "
-        "rtph264depay ! "
-        "decodebin ! "
-        "videoconvert ! "
-        "videoflip method={} ! "
-        "video/x-raw,format=RGBA ! "
-        "appsink name=appsink sync=true", // is sync needed here?
-        source_url, videoflip
-    );
-
     while (running) {
-        GError* error = nullptr;
-        pipeline = gst_parse_launch(pipeline_desc.c_str(), &error);
+        pipeline = createPipeline();
 
-        if (!pipeline || error) {
-            logger.error("Failed to create GStreamer pipeline: {}", error ? error->message : "unknown");
-            if (error) g_error_free(error);
+        if (pipeline == nullptr) {
             std::this_thread::sleep_for(1s);
             continue;
         }
 
-        jitterbuffer = gst_bin_get_by_name(GST_BIN(pipeline), "jitter");
+        const auto pipeline_bin = pipeline->cast<Gst::Bin>();
 
-        appsink = GST_APP_SINK(gst_bin_get_by_name(GST_BIN(pipeline), "appsink"));
-        if (!appsink) {
-            logger.error("Failed to get appsink from pipeline");
-            gst_object_unref(pipeline);
-            pipeline = nullptr;
-            std::this_thread::sleep_for(1s);
-            continue;
-        }
+        jitterbuffer = pipeline_bin->get_by_name("jitter");
 
-        gst_app_sink_set_emit_signals(appsink, true);
-        gst_app_sink_set_drop(appsink, true);
-        gst_app_sink_set_max_buffers(appsink, 1);
-        // gst_base_sink_set_sync(GST_BASE_SINK(appsink), true); // TODO 2026-05-06 (Will Free): is this needed?
+        appsink = std::move(pipeline_bin->get_by_name("appsink")).cast<GstApp::AppSink>();
 
-        auto appsink_callbacks = GstAppSinkCallbacks{};
-        appsink_callbacks.new_sample = [](GstAppSink* appsink, void* widget) -> GstFlowReturn {
-            return static_cast<VideoWidget*>(widget)->onNewSample(appsink);
-        };
+        balance = pipeline_bin->get_by_name("balance");
+        gamma = pipeline_bin->get_by_name("gamma");
+        sharpness = pipeline_bin->get_by_name("sharpness");
+        // TODO 2026-05-20 (Will Free): determine initial videoflip from camera frame
+        videoflip = pipeline_bin->get_by_name("videoflip");
 
-        gst_app_sink_set_callbacks(appsink, &appsink_callbacks, this, nullptr);
+        configureAppsink();
+        applyFilters(filters);
 
         // TODO 2026-05-07 (Will Free): we are currently not recording the latency of the RTSP stream.
         //  this can be done by listening to RTCP packets from the RTSP stream,
         //  and then getting the difference between the current time and the time in the packet.
-        video_stats.rtsp_latency = milliseconds(0);
 
-        if (const auto jitterbuffer_sink_pad = gst_element_get_static_pad(jitterbuffer, "sink")) {
-            gst_pad_add_probe(
-                jitterbuffer_sink_pad,
-                GST_PAD_PROBE_TYPE_BUFFER,
-                // ReSharper disable once CppParameterMayBeConstPtrOrRef
-                [](GstPad*, GstPadProbeInfo* info, const gpointer user_data) -> GstPadProbeReturn {
-                    const auto self = static_cast<VideoWidget*>(user_data);
+        configureJitterbuffer();
 
-                    if (!info)
-                        return GST_PAD_PROBE_OK;
-
-                    const auto buf = GST_PAD_PROBE_INFO_BUFFER(info);
-
-                    if (!buf)
-                        return GST_PAD_PROBE_OK;
-
-                    auto avg_jitter = 0uL;
-                    auto num_pushed = 0uL;
-                    auto num_lost = 0uL;
-                    auto rtx_rtt = 0uL;
-                    auto loss = 0.0;
-
-                    if (self->jitterbuffer) {
-                        GstStructure* stats = nullptr;
-                        g_object_get(self->jitterbuffer, "stats", &stats, nullptr);
-
-                        gst_structure_get_uint64(stats, "avg-jitter", &avg_jitter);
-                        gst_structure_get_uint64(stats, "num-pushed", &num_pushed);
-                        gst_structure_get_uint64(stats, "num-lost", &num_lost);
-                        gst_structure_get_uint64(stats, "rtx-rtt", &rtx_rtt);
-
-                        // TODO 2026-05-06 (Will Free): num-lost seems to periodically reset here, whereas num-pushed doesn't. deal with that.
-
-                        gst_structure_free(stats);
-
-                        if (num_pushed + num_lost > 0)
-                            loss = static_cast<double>(num_lost) / static_cast<double>(num_pushed + num_lost);
-                    }
-
-                    {
-                        std::lock_guard lock(self->stats_mutex);
-
-                        const auto now = steady_clock::now();
-
-                        // TODO 2026-05-07 (Will Free): I think these bitrate numbers might be wrong, but I'm not sure.
-                        if (self->last_probe != time_point<steady_clock>()) {
-                            if (const auto probe_delta = duration_cast<duration<double>>(now - self->last_probe).count(); probe_delta > 0.0) {
-                                static constexpr auto ALPHA = 0.05;
-
-                                const auto size = gst_buffer_get_size(buf);
-
-                                // size is the size of the array, so times 8 to get bits, over 1000 to get kbits, over probe_delta to get kbits/s
-                                const auto current_bitrate = static_cast<double>(size) * 8 / 1000 / probe_delta;
-                                const double old_bitrate = self->video_stats.bitrate;
-                                self->video_stats.bitrate = ALPHA * current_bitrate + (1.0 - ALPHA) * old_bitrate;
-                            }
-                        }
-
-                        self->last_probe = now;
-
-                        self->video_stats.average_jitter = duration_cast<milliseconds>(nanoseconds(avg_jitter));
-                        self->video_stats.packet_loss = loss;
-                        self->video_stats.rtt = nanoseconds(rtx_rtt);
-                    }
-
-                    return GST_PAD_PROBE_OK;
-                },
-                this,
-                nullptr
-            );
-
-            gst_object_unref(jitterbuffer_sink_pad);
-        }
-
-        if (const auto ret = gst_element_set_state(pipeline, GST_STATE_PLAYING); ret == GST_STATE_CHANGE_FAILURE) {
-            logger.error("Failed to set pipeline to PLAYING");
-            gst_element_set_state(pipeline, GST_STATE_NULL);
-            gst_object_unref(appsink);
-            gst_object_unref(pipeline);
-            appsink = nullptr;
-            pipeline = nullptr;
-            std::this_thread::sleep_for(seconds(1));
-            continue;
-        }
-
-        logger.info("RTSP pipeline started");
-
-        GstBus* bus = gst_element_get_bus(pipeline);
-        bool reconnect = false;
-
-        while (running && !reconnect) {
-            using namespace std::chrono_literals;
-
-            const auto msg = gst_bus_timed_pop_filtered(
-                bus,
-                500ms / 1ns,
-                static_cast<GstMessageType>(GST_MESSAGE_ERROR | GST_MESSAGE_EOS | GST_MESSAGE_LATENCY)
-            );
-
-            if (!msg)
-                continue;
-
-            switch (msg->type) {
-            case GST_MESSAGE_ERROR: {
-                GError* err = nullptr;
-                gchar* debug = nullptr;
-
-                gst_message_parse_error(msg, &err, &debug);
-
-                logger.error("Error received from element {}: {} ({})", msg->src->name, err->message, debug ? debug : "no debug");
-
-                g_clear_error(&err);
-                g_free(debug);
-
-                reconnect = true;
-                break;
-            }
-            case GST_MESSAGE_EOS:
-                logger.warn("Got end-of-stream, reconnecting...");
-                reconnect = true;
-                break;
-            default:
-                break;
-            }
-
-            gst_message_unref(msg);
-        }
-
-        gst_object_unref(bus);
-
-        gst_element_set_state(pipeline, GST_STATE_NULL);
-        if (appsink) gst_object_unref(appsink);
-        if (jitterbuffer) gst_object_unref(jitterbuffer);
-        if (pipeline) gst_object_unref(pipeline);
-
-        appsink = nullptr;
-        jitterbuffer = nullptr;
-        pipeline = nullptr;
+        runPipelineLoop();
 
         if (running) {
-            std::this_thread::sleep_for(seconds(1));
+            // TODO 2026-05-23 (Will Free): config value for this or something?
+            std::this_thread::sleep_for(250ms);
         }
     }
+}
+
+// ReSharper disable once CppDFAUnreachableFunctionCall
+FloatPtr<Gst::Bin> VideoWidget::createPipeline() const {
+    // TODO 2026-05-07 (Will Free): replace this pipeline string with creating each of the elements individually
+    //  via gst_element_factory_make(), then linking them together.
+
+    // TODO 2026-05-22 (Will Free): when switching to creating the elements individually,
+    //  maybe consider something that checks if rtspsrc exists, and if yes using it.
+
+    // TODO 2026-05-23 (Will Free): maybe consider replacing rtspsrc with playbin and using an rtsp:// URI? idk if playbin lets you set the latency
+
+    static constexpr auto GSTREAMER_PIPELINE = "rtspsrc name=src latency=100 ! "
+        "rtpjitterbuffer name=jitter latency=50 ! " // TODO 2026-05-23 (Will Free): I think this additional jitterbuffer is just adding unecessary latency?
+        "rtph264depay ! "
+        "decodebin ! "
+        "videoconvert ! "
+        "videobalance name=balance ! "
+        "gamma name=gamma ! "
+        "frei0r-filter-sharpness name=sharpness ! "
+        "videoflip name=videoflip ! "
+        "video/x-raw,format=RGBA ! "
+        "appsink name=appsink sync=true";
+
+    peel::UniquePtr<GLib::Error> error = nullptr;
+
+    auto pipeline = Gst::parse_launch(GSTREAMER_PIPELINE, &error);
+
+    if (!pipeline || error) {
+        logger.error("Failed to create GStreamer pipeline: {}", error ? error->message : "unknown");
+        return nullptr;
+    }
+
+    auto pipeline_bin = std::move(pipeline).cast<Gst::Bin>();
+
+    const auto rtspsrc = pipeline_bin->get_by_name("src");
+    rtspsrc->set_property<String>("location", source_url.data());
+
+    return pipeline_bin;
+}
+
+// ReSharper disable once CppDFAUnreachableFunctionCall
+void VideoWidget::configureAppsink() {
+    appsink->set_emit_signals(true);
+    appsink->set_drop(true);
+    appsink->set_max_buffers(1);
+    // appsink->set_sync(true);  // TODO 2026-05-06 (Will Free): is this needed?
+
+    auto appsink_callbacks = GstAppSinkCallbacks{};
+    appsink_callbacks.new_sample = [](GstAppSink* appsink, void* widget) -> GstFlowReturn {
+        return static_cast<VideoWidget*>(widget)->onNewSample(appsink);
+    };
+
+    appsink->set_callbacks(reinterpret_cast<GstApp::AppSinkCallbacks*>(&appsink_callbacks), this, nullptr);
+}
+
+// ReSharper disable once CppDFAUnreachableFunctionCall
+void VideoWidget::configureJitterbuffer() {
+    if (const auto jitterbuffer_sink_pad = jitterbuffer->get_static_pad("sink")) {
+        jitterbuffer_sink_pad->add_probe(
+            Gst::Pad::ProbeType::BUFFER,
+            [this](Gst::Pad* pad, const Gst::Pad::ProbeInfo* info) -> Gst::Pad::ProbeReturn {
+                return onJitterbufferProbe(pad, info);
+            }
+        );
+    }
+}
+
+Gst::Pad::ProbeReturn VideoWidget::onJitterbufferProbe(Gst::Pad*, const Gst::Pad::ProbeInfo* info) {
+    if (!info)
+        return Gst::Pad::ProbeReturn::HANDLED;
+
+    const auto buf = GST_PAD_PROBE_INFO_BUFFER(info);
+
+    if (!buf)
+        return Gst::Pad::ProbeReturn::OK;
+
+    auto avg_jitter = 0uL;
+    auto num_pushed = 0uL;
+    auto num_lost = 0uL;
+    auto rtx_rtt = 0uL;
+    auto loss = 0.0;
+
+    if (jitterbuffer) {
+        // TODO 2026-05-21 (Will Free): figure out how Gst::Structure works in peel
+        GstStructure* stats = nullptr;
+        g_object_get(jitterbuffer, "stats", &stats, nullptr);
+
+        gst_structure_get_uint64(stats, "avg-jitter", &avg_jitter);
+        gst_structure_get_uint64(stats, "num-pushed", &num_pushed);
+        gst_structure_get_uint64(stats, "num-lost", &num_lost);
+        gst_structure_get_uint64(stats, "rtx-rtt", &rtx_rtt);
+
+        // TODO 2026-05-06 (Will Free): num-lost seems to periodically reset here, whereas num-pushed doesn't. deal with that.
+
+        gst_structure_free(stats);
+
+        if (num_pushed + num_lost > 0)
+            loss = static_cast<double>(num_lost) / static_cast<double>(num_pushed + num_lost);
+    }
+
+    {
+        std::lock_guard lock(stats_mutex);
+
+        const auto now = steady_clock::now();
+
+        // TODO 2026-05-07 (Will Free): I think these bitrate numbers might be wrong, but I'm not sure.
+        if (last_probe != time_point<steady_clock>()) {
+            if (const auto probe_delta = duration_cast<duration<double>>(now - last_probe).count(); probe_delta > 0.0) {
+                static constexpr auto ALPHA = 0.05;
+
+                const auto size = gst_buffer_get_size(buf);
+
+                // size is the size of the array, so times 8 to get bits, over 1000 to get kbits, over probe_delta to get kbits/s
+                const auto current_bitrate = static_cast<double>(size) * 8 / 1000 / probe_delta;
+                const double old_bitrate = video_stats.bitrate;
+                video_stats.bitrate = ALPHA * current_bitrate + (1.0 - ALPHA) * old_bitrate;
+            }
+        }
+
+        last_probe = now;
+
+        video_stats.average_jitter = duration_cast<milliseconds>(nanoseconds(avg_jitter));
+        video_stats.packet_loss = loss;
+        video_stats.rtt = nanoseconds(rtx_rtt);
+    }
+
+    return Gst::Pad::ProbeReturn::OK;
+}
+
+void VideoWidget::runPipelineLoop() const {
+    if (const auto ret = pipeline->set_state(Gst::State::PLAYING); ret == Gst::StateChangeReturn::FAILURE) {
+        // TODO 2026-05-21 (Will Free): this does not properly clean up things
+        logger.error("Failed to set pipeline to PLAYING");
+        pipeline->set_state(Gst::State::NULL_);
+    }
+
+    logger.info("RTSP pipeline started");
+
+    const auto bus = pipeline->get_bus();
+    bool reconnect = false;
+
+    // TODO 2026-05-23 (Will Free): I assume it's fine to create multiple main loops?
+    // NOTE: if this ever gets uncommented, this block should go above the pipeline->set_state(Gst::State::PLAYING) line.
+    // in the header, add: RefPtr<peel::GLib::MainLoop> loop;
+    //
+    // loop = GLib::MainLoop::create(nullptr, false);
+    //
+    // bus->add_watch_full(
+    //     G_PRIORITY_DEFAULT,
+    //     [&](Gst::Bus*, Gst::Message* msg) {
+    //         switch (msg->type) {
+    //         case Gst::Message::Type::ERROR_: {
+    //             peel::UniquePtr<GLib::Error> err = nullptr;
+    //             String debug = nullptr;
+    //
+    //             msg->parse_error(&err, &debug);
+    //
+    //             logger.error("Error received from element {}: {} ({})", msg->src->get_name(), err->message, debug ? debug : "no debug");
+    //
+    //             loop->quit();
+    //         }
+    //         break;
+    //         case Gst::Message::Type::EOS:
+    //             logger.warn("Got end-of-stream, reconnecting...");
+    //
+    //             loop->quit();
+    //             break;
+    //         // TODO 2026-05-23 (Will Free): handle latency message type?
+    //         default:
+    //             break;
+    //         }
+    //
+    //         return true;
+    //     }
+    // );
+
+    while (running && !reconnect) {
+        // TODO 2026-05-21 (Will Free): timed_pop_filtered does not exist on the peel type
+        const auto msg = gst_bus_timed_pop_filtered(
+            bus->cast<GstBus>(),
+            500ms / 1ns,
+            static_cast<GstMessageType>(GST_MESSAGE_ERROR | GST_MESSAGE_EOS | GST_MESSAGE_LATENCY)
+        );
+
+        if (!msg)
+            continue;
+
+        switch (msg->type) {
+        case GST_MESSAGE_ERROR: {
+            GError* err = nullptr;
+            gchar* debug = nullptr;
+
+            gst_message_parse_error(msg, &err, &debug);
+
+            logger.error("Error received from element {}: {} ({})", msg->src->name, err->message, debug ? debug : "no debug");
+
+            g_clear_error(&err);
+            g_free(debug);
+
+            reconnect = true;
+            break;
+        }
+        case GST_MESSAGE_EOS:
+            logger.warn("Got end-of-stream, reconnecting...");
+            reconnect = true;
+            break;
+        default:
+            break;
+        }
+
+        gst_message_unref(msg);
+    }
+
+    pipeline->set_state(Gst::State::NULL_);
 }
 
 GstFlowReturn VideoWidget::onNewSample(GstAppSink* sink) {
@@ -402,6 +615,9 @@ void VideoWidget::updateTexture() {
         new_frame_available = false;
     }
 
+    // TODO 2026-05-23 (Will Free): consider using something like glupload in the gstreamer pipeline,
+    //  see: https://gstreamer.freedesktop.org/documentation/additional/design/opengl.html
+
     if (texture_id == 0) {
         glGenTextures(1, &texture_id);
         glBindTexture(GL_TEXTURE_2D, texture_id);
@@ -442,5 +658,33 @@ void VideoWidget::updateTexture() {
             GL_UNSIGNED_BYTE,
             current_frame.data
         );
+    }
+}
+
+void VideoWidget::applyFilters(const FilterState& filters, const bool update_flip) const {
+    if (!pipeline)
+        return;
+
+    if (balance) {
+        balance->set_property<gdouble>("brightness", filters.brightness);
+        balance->set_property<gdouble>("contrast", filters.contrast);
+        balance->set_property<gdouble>("saturation", filters.saturation);
+    }
+
+    if (gamma) {
+        gamma->set_property<gdouble>("gamma", filters.gamma);
+    }
+
+    if (sharpness) {
+        sharpness->set_property<gdouble>("amount", filters.sharpness);
+    }
+
+    if (update_flip)
+        applyFlip(filters.rotation);
+}
+
+void VideoWidget::applyFlip(VideoFlipMethod rotation) const {
+    if (videoflip) {
+        videoflip->set_property<gint>("method", static_cast<gint>(rotation));
     }
 }
