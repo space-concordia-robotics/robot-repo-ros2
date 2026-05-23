@@ -85,9 +85,6 @@ function(peel_generate GIR_NAME GIR_VERSION)
         set(api_tweaks_arg)
     endif ()
 
-    message("api tweaks: ${peel_generate_TWEAKS}")
-    message("api tweaks arg: ${api_tweaks_arg}")
-
     set(gen_dir "${CMAKE_CURRENT_BINARY_DIR}/peel-generated")
     file(MAKE_DIRECTORY "${gen_dir}")
 
@@ -102,9 +99,6 @@ function(peel_generate GIR_NAME GIR_VERSION)
         cmake_policy(SET CMP0171 NEW)
         set(codegen_arg CODEGEN)
     endif ()
-
-    message("missing values: ${peel_generate_KEYWORDS_MISSING_VALUES}")
-    message("command: ${CMAKE_COMMAND} -E env GI_GIR_PATH=${gi_gir_path} ${Python3_EXECUTABLE} ${PEEL_GEN_MODULE} ${recursive_arg} ${api_tweaks_arg} ${GIR_NAME} ${GIR_VERSION}")
 
     add_custom_command(
             OUTPUT "${gen_dir}/peel/${GIR_NAME}"
