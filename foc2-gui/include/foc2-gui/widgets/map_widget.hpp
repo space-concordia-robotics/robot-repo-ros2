@@ -11,6 +11,8 @@ namespace ImOsm::Rich {
 
 class MapWidget : public UiWidget, public UiOverlayable {
 public:
+    RCLCPP_SMART_PTR_ALIASES_ONLY(MapWidget)
+
     explicit MapWidget(ImApplication& application);
 
     void onInit() override;

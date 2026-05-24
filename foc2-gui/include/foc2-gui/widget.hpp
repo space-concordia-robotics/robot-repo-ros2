@@ -5,6 +5,8 @@
 
 class UiWidget : public UiElement {
 public:
+    RCLCPP_SMART_PTR_ALIASES_ONLY(UiWidget)
+
     explicit UiWidget(ImApplication& application) : UiElement(application) {}
 
     void onFrame() override {

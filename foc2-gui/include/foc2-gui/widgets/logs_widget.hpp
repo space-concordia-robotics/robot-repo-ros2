@@ -11,6 +11,8 @@ class RosLogWidget : public UiWidget {
     using Log = rcl_interfaces::msg::Log;
 
 public:
+    RCLCPP_SMART_PTR_ALIASES_ONLY(RosLogWidget)
+
     explicit RosLogWidget(ImApplication& application) : UiWidget(application), logs(2000) {}
 
     void onInit() override;

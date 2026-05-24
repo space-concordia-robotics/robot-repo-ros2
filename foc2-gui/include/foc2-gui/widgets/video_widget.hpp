@@ -33,6 +33,7 @@ enum class VideoFlipMethod {
     AUTOMATIC = 8,
 };
 
+// TODO 2026-05-24 (Will Free): consider converting to the pimpl pattern to improve compile times?
 class VideoWidget : public UiWidget, public UiOverlayable {
     using CameraInfo = sensor_msgs::msg::CameraInfo;
     template <typename T>
@@ -41,6 +42,8 @@ class VideoWidget : public UiWidget, public UiOverlayable {
     using RefPtr = peel::RefPtr<T>;
 
 public:
+    RCLCPP_SMART_PTR_ALIASES_ONLY(VideoWidget);
+
     explicit VideoWidget(
         ImApplication& application,
         const std::string& source_url,

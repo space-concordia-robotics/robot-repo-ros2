@@ -12,14 +12,13 @@
 #include "foc2-gui/im_application.hpp"
 #include "foc2-gui/resources.hpp"
 #include "foc2-gui/widgets/logs_widget.hpp"
+#include "foc2-gui/widgets/map_widget.hpp"
 #include "foc2-gui/widgets/video_widget.hpp"
 
 // include stb image implementation
 #define STB_IMAGE_IMPLEMENTATION
 // ReSharper disable once CppUnusedIncludeDirective
 #include <stb_image.h>
-
-#include "foc2-gui/widgets/map_widget.hpp"
 
 
 SDL_Surface* loadSvgSurface(const std::filesystem::path& path, const int width = 0, const int height = 0) {
@@ -42,6 +41,11 @@ SDL_Surface* loadSvgSurface(const std::filesystem::path& path, const int width =
     );
 }
 
+static constexpr auto MAP_WIDGET_NAME = "Map";
+static constexpr auto LOGS_WIDGET_NAME = "ROS Logs";
+static constexpr auto TOP_STREAM_WIDGET_NAME = "Top Stream";
+static constexpr auto BOTTOM_RIGHT_STREAM_WIDGET_NAME = "Bottom Right Stream";
+static constexpr auto BOTTOM_LEFT_STREAM_WIDGET_NAME = "Bottom Left Stream";
 
 class FOC2Application : public ImApplication {
 public:
@@ -78,7 +82,6 @@ protected:
         static constexpr ImWchar FONTAWESOME_ICON_RANGE[] = {ICON_MIN_FA, ICON_MAX_16_FA, 0};
         auto fontawesome_config = ImFontConfig();
         strcpy(fontawesome_config.Name, "FontAwesome Solid");
-        // font_cfg.PixelSnapH = true;
         fontawesome_config.MergeMode = true;
         fontawesome_config.PixelSnapH = true;
         fontawesome_config.GlyphMinAdvanceX = ICON_FONT_SIZE;
@@ -109,55 +112,24 @@ protected:
 
         style.AntiAliasedLines = true;
         style.AntiAliasedLinesUseTex = true;
+
+        // TODO 2026-05-24 (Will Free): for now we're just disabling the ini file so layout is never saved
+        //  eventually, we should make sure to save the layout somewhere.
+        ImGui::GetIO().IniFilename = nullptr;
     }
 
     void onFrame() override {
         const auto viewport = ImGui::GetMainViewport();
-        ImGui::SetNextWindowPos(viewport->Pos);
-        ImGui::SetNextWindowSize(viewport->Size);
+        const auto dockspace_id = ImGui::DockSpaceOverViewport(0, viewport, ImGuiDockNodeFlags_AutoHideTabBar);
 
-        constexpr auto flags = ImGuiWindowFlags_NoTitleBar |
-            ImGuiWindowFlags_NoResize |
-            ImGuiWindowFlags_NoMove |
-            ImGuiWindowFlags_NoScrollbar |
-            ImGuiWindowFlags_NoSavedSettings |
-            ImGuiWindowFlags_NoBringToFrontOnFocus;
-
-        ImGui::Begin("MainUI", nullptr, flags);
-
-        const ImVec2 available = ImGui::GetContentRegionAvail();
-
-        // TODO 2026-05-05 (Will Free): for now these are just split 50/50. figure out something better for layout later.
-        const float left_width = available.x * 0.5f;
-
-        // TODO 2026-05-05 (Will Free): figure out what to put on the left side
-
-        ImGui::BeginChild("Left", ImVec2(left_width, 0), false);
-        drawLeft();
-        ImGui::EndChild();
-
-        ImGui::SameLine();
-
-        {
-            const auto draw_list = ImGui::GetWindowDrawList();
-            const auto cursor_pos = ImGui::GetCursorScreenPos();
-
-            const auto top = ImGui::GetWindowPos().y;
-            const auto bottom = top + ImGui::GetWindowSize().y;
-
-            draw_list->AddLine(
-                ImVec2(cursor_pos.x, top + 8),
-                ImVec2(cursor_pos.x, bottom - 8),
-                ImGui::ImColor(200, 200, 200, 40),
-                2.0
-            );
+        if (!layout_initialized) {
+            setupInitialLayout(dockspace_id);
+            layout_initialized = true;
         }
 
-        ImGui::BeginChild("Video Streams", ImVec2(0, 0), false);
-        drawRight();
-        ImGui::EndChild();
+        drawUtilWindows();
 
-        ImGui::End();
+        drawStreamWindows();
     }
 
     void onShutdown() override {
@@ -169,60 +141,79 @@ protected:
     }
 
 private:
-    std::shared_ptr<VideoWidget> video_top;
-    std::shared_ptr<VideoWidget> video_bottom_left;
-    std::shared_ptr<VideoWidget> video_bottom_right;
-    std::shared_ptr<RosLogWidget> logs;
+    bool layout_initialized = false;
 
-    std::shared_ptr<MapWidget> map_widget;
+    VideoWidget::SharedPtr video_top;
+    VideoWidget::SharedPtr video_bottom_left;
+    VideoWidget::SharedPtr video_bottom_right;
+    RosLogWidget::SharedPtr logs;
 
-    void drawLeft() const {
-        const auto available = ImGui::GetContentRegionAvail();
+    MapWidget::SharedPtr map_widget;
 
-        // TODO 2026-05-07 (Will Free): make this a percent
-        ImGui::BeginChild("Map", ImVec2(0, available.y - 240), 0);
+    static void setupInitialLayout(const ImGuiID& dock_main_id) {
+        ImGuiID node_left;
+        ImGuiID node_right;
+        ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Left, 0.5, &node_left, &node_right);
+
+        setupInitialLayoutLeft(node_left);
+
+        setupInitialLayoutRight(node_right);
+
+        ImGui::DockBuilderFinish(dock_main_id);
+    }
+
+    static void setupInitialLayoutLeft(const ImGuiID node_left) {
+        ImGuiID node_left_bottom;
+        ImGuiID node_left_top;
+        ImGui::DockBuilderSplitNode(node_left, ImGuiDir_Up, 0.75, &node_left_top, &node_left_bottom);
+
+        ImGui::DockBuilderGetNode(node_left_bottom)->SetLocalFlags(ImGuiDockNodeFlags_AutoHideTabBar);
+        ImGui::DockBuilderGetNode(node_left_top)->SetLocalFlags(ImGuiDockNodeFlags_AutoHideTabBar);
+
+        ImGui::DockBuilderDockWindow(MAP_WIDGET_NAME, node_left_top);
+        ImGui::DockBuilderDockWindow(LOGS_WIDGET_NAME, node_left_bottom);
+    }
+
+    static void setupInitialLayoutRight(const ImGuiID node_right) {
+        ImGuiID dock_right_top;
+        ImGuiID dock_right_bottom;
+        ImGui::DockBuilderSplitNode(node_right, ImGuiDir_Up, 0.6, &dock_right_top, &dock_right_bottom);
+
+        ImGui::DockBuilderGetNode(dock_right_top)->SetLocalFlags(ImGuiDockNodeFlags_AutoHideTabBar);
+        ImGui::DockBuilderDockWindow(TOP_STREAM_WIDGET_NAME, dock_right_top);
+
+        ImGuiID dock_right_bottom_right;
+        ImGuiID dock_right_bottom_left;
+        ImGui::DockBuilderSplitNode(dock_right_bottom, ImGuiDir_Left, 0.5, &dock_right_bottom_left, &dock_right_bottom_right);
+
+        ImGui::DockBuilderGetNode(dock_right_bottom_left)->SetLocalFlags(ImGuiDockNodeFlags_AutoHideTabBar);
+        ImGui::DockBuilderGetNode(dock_right_bottom_right)->SetLocalFlags(ImGuiDockNodeFlags_AutoHideTabBar);
+
+        ImGui::DockBuilderDockWindow(BOTTOM_LEFT_STREAM_WIDGET_NAME, dock_right_bottom_left);
+        ImGui::DockBuilderDockWindow(BOTTOM_RIGHT_STREAM_WIDGET_NAME, dock_right_bottom_right);
+    }
+
+    void drawUtilWindows() const {
+        ImGui::Begin(MAP_WIDGET_NAME, nullptr, ImGuiWindowFlags_None);
         map_widget->onFrame();
-        ImGui::EndChild();
+        ImGui::End();
 
-        ImGui::BeginChild("ROS Logs", ImGui::GetContentRegionAvail(), 0);
+        ImGui::Begin(LOGS_WIDGET_NAME, nullptr, ImGuiWindowFlags_None);
         logs->onFrame();
-        ImGui::EndChild();
+        ImGui::End();
     }
 
-    void drawRight() const {
-        // TODO 2026-05-05 (Will Free): give the streams proper names
+    void drawStreamWindows() const {
+        constexpr auto drawStreamWindow = [](auto name, const VideoWidget::SharedPtr& video) {
+            if (ImGui::Begin(name, nullptr, ImGuiWindowFlags_None)) {
+                drawStream(video);
+            }
+            ImGui::End();
+        };
 
-        // TODO 2026-05-06 (Will Free): vertically center windows.
-        //  this can be done in two ways:
-        //  1. compute the size of all the children manually and just that to set the cursor position
-        //  2. render in two passes: a first invisible pass which is used to get the height, and a second pass to render.
-
-        const auto available = ImGui::GetContentRegionAvail();
-
-        ImGui::BeginChild("Top Stream", ImVec2(0, available.y * 0.6f), 0);
-        drawStream(video_top);
-        ImGui::EndChild();
-
-        ImGui::BeginChild("Bottom Left Stream", ImVec2(available.x * 0.5f, 0), 0);
-        drawStream(video_bottom_left);
-        ImGui::EndChild();
-
-        ImGui::SameLine();
-
-        ImGui::BeginChild("Bottom Right Stream", ImVec2(0, 0), 0);
-        drawStream(video_bottom_right);
-        ImGui::EndChild();
-    }
-
-    static void drawCenteredLabel(const std::string& label) {
-        const auto available_x = ImGui::GetContentRegionAvail().x;
-
-        const auto label_size = ImGui::CalcTextSize(label);
-
-        const auto off = (available_x - label_size.x) / 2;
-        ImGui::SetCursorPosX(ImGui::GetCursorPosX() + off);
-
-        ImGui::TextUnformatted(label);
+        drawStreamWindow(TOP_STREAM_WIDGET_NAME, video_top);
+        drawStreamWindow(BOTTOM_LEFT_STREAM_WIDGET_NAME, video_bottom_left);
+        drawStreamWindow(BOTTOM_RIGHT_STREAM_WIDGET_NAME, video_bottom_right);
     }
 
     static void drawStream(const std::shared_ptr<VideoWidget>& video_widget) {
