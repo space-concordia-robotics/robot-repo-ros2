@@ -3,10 +3,11 @@
 #include <string>
 #include <rclcpp/node.hpp>
 #include <ros2_fmt_logger/logger.hpp>
-#include <SDL3/SDL.h>
 #include <tf2_ros/buffer.hpp>
 #include <tf2_ros/transform_listener.hpp>
 
+typedef struct SDL_GLContextState* SDL_GLContext;
+typedef struct SDL_Window SDL_Window;
 
 class ImApplication : public rclcpp::Node {
 public:
