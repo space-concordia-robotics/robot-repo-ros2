@@ -4,19 +4,20 @@
 
 namespace {
 
-// CAN-ID fields actually used by the BAB firmware on the rover (confirmed via
-// candump). These differ from BAB-docs.md, which describes an idealised
-// protocol with DevType 0x01 / Manufacturer 0x01 (SCC) / DeviceID 0x01.
-// Real frames observed on the bus:
-//
-//   ID 0x00088000  DevType=0x00  Mfr=0x08  Sev=0x02  Instr=0x00  DevID=0x00  Battery
-//   ID 0x00088080  DevType=0x00  Mfr=0x08  Sev=0x02  Instr=0x02  DevID=0x00  Rail
-//   ID 0x00088200  DevType=0x00  Mfr=0x08  Sev=0x02  Instr=0x08  DevID=0x00  Relay
-//
-// If firmware is updated to match the doc, change these to 0x01 / SCC / 0x01.
-constexpr uint8_t BAB_FIRMWARE_DEVTYPE   = 0x00;                       // not DeviceType::BAB
-constexpr uint8_t BAB_FIRMWARE_MFR       = Manufacturer::TEAM_USE;     // 0x08
-constexpr uint8_t BAB_FIRMWARE_DEVICE_ID = 0x00;                       // DeviceId::ID::BAB
+// CAN-ID fields used by BAB firmware for both telemetry TX and command RX
+// (see src/can-integration/docs/BAB-docs copy.md / Firmware/BAB_MX).
+constexpr uint8_t BAB_FIRMWARE_DEVTYPE   = 0x00;
+constexpr uint8_t BAB_FIRMWARE_MFR       = Manufacturer::TEAM_USE;  // 0x08 (CAN_MFR_SCC)
+constexpr uint8_t BAB_FIRMWARE_DEVICE_ID = 0x00;
+
+// Firmware DATA_SELECT_1 / DATA_SELECT_2 (command payload words, not telemetry indices).
+// 0x000F → PDS rail 1 (arm / CH2). 0x00F0 → PDS rail 2 (wheel / CH3).
+// CH1 (5 V) is telemetry index 0 only; firmware has no CAN command for it.
+constexpr uint16_t DATA_SELECT_ARM_RAIL   = 0x000F;
+constexpr uint16_t DATA_SELECT_WHEEL_RAIL = 0x00F0;
+
+// BAB command TX is off until bench-validated on hardware.
+constexpr bool kBabCommandTxEnabled = false;
 
 // Pack the first N bytes of a CAN payload into a 64-bit integer in
 // MSB-first (network) order, matching the bit layouts in BAB-docs.md.
@@ -48,14 +49,44 @@ BAB::BAB(rclcpp::Logger logger_,
 }
 
 uint32_t BAB::validateFrameID(uint32_t sev, Instructions::Inst cmd) const {
-    // Use the field values actually emitted by the BAB firmware (see the
-    // constants block above; they do not match BAB-docs.md as of this commit).
     return buildAddress::BuildAddress::buildCANID(
         BAB_FIRMWARE_DEVTYPE,
         BAB_FIRMWARE_MFR,
         sev,
         static_cast<uint32_t>(cmd),
         BAB_FIRMWARE_DEVICE_ID);
+}
+
+bool BAB::sendBabControlFrame(Instructions::Inst inst, uint16_t data_word) {
+    if (!kBabCommandTxEnabled) {
+        logger.warn(
+            "BAB control command suppressed (tx disabled until tested): instr=0x{:02X} word=0x{:04X}",
+            static_cast<uint32_t>(inst), data_word);
+        return false;
+    }
+    struct can_frame frame{};
+    const uint32_t can_id = validateFrameID(severity::SEV_CNTRL, inst);
+    frame.can_id = can_id | CAN_EFF_FLAG;
+    frame.len = 2;
+    frame.data[0] = static_cast<uint8_t>((data_word >> 8) & 0xFF);
+    frame.data[1] = static_cast<uint8_t>(data_word & 0xFF);
+    return can_controller.sendBlockingFrame(frame);
+}
+
+bool BAB::sendBabEmergencyFrame(Instructions::Inst inst) {
+    if (!kBabCommandTxEnabled) {
+        logger.warn(
+            "BAB emergency command suppressed (tx disabled until tested): instr=0x{:02X}",
+            static_cast<uint32_t>(inst));
+        return false;
+    }
+    struct can_frame frame{};
+    const uint32_t can_id = validateFrameID(severity::SEV_MAN_INTERVENTION, inst);
+    frame.can_id = can_id | CAN_EFF_FLAG;
+    frame.len = 4;
+    // DATA_EMERG_*_TOKEN = 0x00000000 (big-endian)
+    frame.data[0] = frame.data[1] = frame.data[2] = frame.data[3] = 0;
+    return can_controller.sendBlockingFrame(frame);
 }
 
 void BAB::handleFrames(const uint32_t id, const std::vector<uint8_t> & data) {
@@ -68,6 +99,21 @@ void BAB::handleFrames(const uint32_t id, const std::vector<uint8_t> & data) {
 
     const auto now = std::chrono::steady_clock::now();
     std::lock_guard<std::mutex> lock(mtx);
+
+    // -------------- Automatic PDS rail shutdown (SEV_AUTO, DLC 1) ------------
+    if (id == validateFrameID(severity::SEV_AUTOMATIC_INTERVENTION,
+                             Instructions::Inst::AUTOMATIC_RAIL_SHUTDOWN)) {
+        if (data.empty()) {
+            return;
+        }
+        const uint8_t reason = data[0] & 0x03;
+        const char * reason_str = (reason == 0x01) ? "arm rail"
+                                : (reason == 0x02) ? "wheel rail"
+                                : "all rails";
+        logger.warn("BAB automatic PDS rail shutdown (reason=0x{:02X}, {})",
+                    reason, reason_str);
+        return;
+    }
 
     // ---------------------- Battery telemetry (DLC 4) ----------------------
     if (id == validateFrameID(severity::SEV_STATUS, Instructions::Inst::BATTERY_TELEM)) {
@@ -244,56 +290,41 @@ std::string BAB::getBMSHealth() const {
     return "NORMAL VOLTAGE (HEALTHY)";
 }
 
-std::string BAB::getRelayStatus() const {
+std::string BAB::getRelayStatus(size_t idx) const {
     std::lock_guard<std::mutex> lock(mtx);
-    return relayTelems[0].status ? "Relay Closed (ON)" : "Relay OPEN (OFF)";
+    if (idx >= NUM_RELAYS) {
+        return "Relay unknown";
+    }
+    return relayTelems[idx].status ? "Relay Closed (ON)" : "Relay OPEN (OFF)";
+}
+
+bool BAB::getRelayClosed(size_t idx) const {
+    std::lock_guard<std::mutex> lock(mtx);
+    return idx < NUM_RELAYS && relayTelems[idx].status;
 }
 
 // ------------------------------ Commands ---------------------------------
 
 bool BAB::sendKYSCommand() {
-    uint16_t payload = 0x0000;
-    return build_frame.buildAddress(
-        static_cast<uint32_t>(deviceType::DeviceType::BAB),
-        Manufacturer::TEAM_USE,
-        severity::SEV_MAN_INTERVENTION,
-        static_cast<uint32_t>(Instructions::Inst::CUT_PDS_OUTPUTS),
-        static_cast<uint32_t>(DeviceId::ID::BAB),
-        payload);
+    return sendBabEmergencyFrame(Instructions::Inst::CUT_PDS_OUTPUTS);
 }
 
-bool BAB::cutFanPower(DeviceId::ID fanID) {
-    uint16_t payload = 0x0000;
-    return build_frame.buildAddress(
-        static_cast<uint32_t>(deviceType::DeviceType::BAB),
-        Manufacturer::TEAM_USE,
-        severity::SEV_CNTRL,
-        static_cast<uint32_t>(Instructions::Inst::TURN_OFF_FAN),
-        static_cast<uint32_t>(fanID),
-        payload);
+bool BAB::cutFanPower(DeviceId::ID /*fanID*/) {
+    return sendBabControlFrame(Instructions::Inst::TURN_OFF_FAN, 0x0000);
 }
 
 bool BAB::CutRelayCommand(DeviceId::ID relayID) {
-    uint16_t payload = (relayID == DeviceId::ID::JMSB) ? 0x000F : 0x00F0;
-    return build_frame.buildAddress(
-        static_cast<uint32_t>(deviceType::DeviceType::BAB),
-        Manufacturer::TEAM_USE,
-        severity::SEV_CNTRL,
-        static_cast<uint32_t>(Instructions::Inst::TURN_OFF_RELAY),
-        static_cast<uint32_t>(relayID),
-        payload);
+    const uint16_t select =
+        (relayID == DeviceId::ID::JMSB) ? DATA_SELECT_ARM_RAIL : DATA_SELECT_WHEEL_RAIL;
+    return sendBabControlFrame(Instructions::Inst::TURN_OFF_RELAY, select);
 }
 
 bool BAB::sendManualPowerCommands(DeviceId::ID selectRailID, bool turnOn) {
-    Instructions::Inst inst =
+    const Instructions::Inst inst =
         turnOn ? Instructions::Inst::COMMAND_ON : Instructions::Inst::COMMAND_OFF;
-    uint16_t payload_val =
-        (selectRailID == DeviceId::ID::ARM_EMERGENCY_INTERVENTION) ? 0x000F : 0x00F0;
-    return build_frame.buildAddress(
-        static_cast<uint32_t>(deviceType::DeviceType::BAB),
-        Manufacturer::TEAM_USE,
-        severity::SEV_CNTRL,
-        static_cast<uint32_t>(inst),
-        static_cast<uint32_t>(selectRailID),
-        payload_val);
+    const uint16_t select =
+        (selectRailID == DeviceId::ID::ARM_EMERGENCY_INTERVENTION)
+            ? DATA_SELECT_ARM_RAIL
+            : DATA_SELECT_WHEEL_RAIL;
+    return sendBabControlFrame(inst, select);
 }
