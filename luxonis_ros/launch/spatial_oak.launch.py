@@ -23,6 +23,10 @@ def generate_launch_description() -> LaunchDescription:
                         'frame_id': 'oak_rgb_optical_frame',
                         'camera_name': 'oak_pro',
                         'publish_rate_hz': 30.0,
+                        'publish_depth': True,
+                        'align_depth_to_rgb': True,
+                        'depth_image_topic': 'depth/image_raw',
+                        'depth_camera_info_topic': 'depth/camera_info',
                     }
                 ],
             )
