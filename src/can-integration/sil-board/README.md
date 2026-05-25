@@ -26,7 +26,7 @@ No rate limiting — one topic message equals one `sendBlockingFrame` call.
 | Parameter | Default | Description |
 |-----------|---------|-------------|
 | `can_interface` | `can0` | SocketCAN interface name |
-| `sil_can_id` | `0x0009001E` | Raw 29-bit extended CAN ID |
+| `sil_can_id` | `0x0A08C050` | Raw 29-bit extended CAN ID |
 
 ```bash
 ros2 run sil_board sil_board_node --ros-args -p can_interface:=can0
@@ -105,11 +105,13 @@ ros2 run sil_board sil_board_joy_teleop.py
 candump can0
 ```
 
-## Related: joy_mux_controller throttling
+## Related: joy_mux_controller publish rate
 
-`joy_mux_controller` (package `joy_mux_controller_py`) now uses the same
-publisher-side throttling pattern for `/cmd_vel` and `/arm_xyz_cmd`:
-`max_cmd_publish_hz` (default 20 Hz), `skip_identical` (default true), and
-`identical_epsilon` (default 1e-3). Deadman release still triggers an
-immediate all-stop. This keeps topic traffic proportional to bus capacity
-when testing arm and wheel control alongside SIL.
+`joy_mux_controller` (package `joy_mux_controller_py`) republishes cached
+commands at a fixed rate via `max_cmd_publish_hz` (default 100 Hz) while the
+deadman is held. There is no deduplication — steady streaming is intentional
+for CAN and arm motor reliability. Deadman release still triggers an
+immediate all-stop followed by a zero-burst window.
+
+Note: `sil_board_joy_teleop.py` retains its own `skip_identical` (default
+true) and `max_publish_hz` (default 10 Hz) independently.

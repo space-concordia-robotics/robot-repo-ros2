@@ -1,7 +1,8 @@
 # BAB → Jetson CAN Telemetry Protocol
 
 Reference for parsing CAN frames transmitted by the BAB (Battery Arbiter Board) firmware.
-All frames use **CAN 2.0B extended identifiers** (29-bit).
+Source of truth: `Firmware/BAB_MX/Core/Src/main.c`. All frames use **CAN 2.0B extended
+identifiers** (29-bit).
 
 ---
 
@@ -28,13 +29,33 @@ uint8_t instr   = (ext_id >>  6) & 0xFF;
 uint8_t devid   = (ext_id)       & 0x3F;
 ```
 
-### Fixed field values for BAB telemetry
+### Fixed field values (firmware `main.c`)
 
-| Field       | Value  | Meaning            |
-|-------------|--------|--------------------|
-| DevType     | `0x01` | BAB                |
-| Manufacturer| `0x01` | SCC                |
-| DeviceID    | `0x01` | BAB instance       |
+Defined as `CAN_DEVTYPE_BAB`, `CAN_MFR_SCC`, and `CAN_DEVID_BAB` in
+`Firmware/BAB_MX/Core/Src/main.c`. Used for **both** telemetry TX and command RX
+(`CAN_HandleRx` rejects frames that do not match all three).
+
+| Field        | Value  | Firmware define   |
+|--------------|--------|-------------------|
+| DevType      | `0x00` | `CAN_DEVTYPE_BAB` |
+| Manufacturer | `0x08` | `CAN_MFR_SCC`     |
+| DeviceID     | `0x00` | `CAN_DEVID_BAB`   |
+
+Telemetry extended IDs (`severity = SEV_STATUS = 0x02`):
+
+| Telemetry frame | Extended ID  | Decomposition (DevType / Mfr / Sev / InstrID / DevID) |
+|-----------------|--------------|--------------------------------------------------------|
+| Battery         | `0x00088000` | `0x00 / 0x08 / 0x02 / 0x00 / 0x00`                     |
+| Rail            | `0x00088080` | `0x00 / 0x08 / 0x02 / 0x02 / 0x00`                     |
+| TCU temperature | `0x000880C0` | `0x00 / 0x08 / 0x02 / 0x03 / 0x00`                     |
+| Relay status    | `0x00088200` | `0x00 / 0x08 / 0x02 / 0x08 / 0x00`                     |
+| TCU fan status  | `0x00088280` | `0x00 / 0x08 / 0x02 / 0x0A / 0x00`                     |
+
+Emergency notification (`severity = SEV_EMERGENCY_AUTO = 0x01`):
+
+| Frame                    | Extended ID  | Decomposition (DevType / Mfr / Sev / InstrID / DevID) |
+|--------------------------|--------------|--------------------------------------------------------|
+| Automatic PDS rail shut  | `0x00084080` | `0x00 / 0x08 / 0x01 / 0x02 / 0x00`                     |
 
 ### Severity codes
 
@@ -65,7 +86,7 @@ uint8_t devid   = (ext_id)       & 0x3F;
 
 ## 2. Battery Telemetry (InstrID 0x00, DLC 4)
 
-Sent once per battery (bat1 then bat2) every main-loop cycle (~1 s).
+Sent once per battery (bat1 then bat2) every telemetry burst (~3 s; see §9).
 
 ### Payload bit layout (32 bits, MSB-first)
 
@@ -181,38 +202,51 @@ Sent when BAB autonomously shuts down a rail (overcurrent / fault).
 
 ---
 
-## 8. Jetson → BAB Commands (Severity SEV_CONTROL = 0x03)
+## 8. Jetson → BAB Commands
 
-To command the BAB, send a CAN frame with `DevType=0x01`, `Sev=0x03`, the appropriate InstrID, and a 2-byte big-endian data word selecting the target.
+All commands must use the same ID fields as telemetry (§1):
+`DevType=0x00`, `Manufacturer=0x08`, `DeviceID=0x00`.
+`CAN_HandleRx` ignores frames that do not match.
 
-### Data words
+### Emergency commands (`SEV_EMERGENCY_MANUAL = 0x00`)
+
+Require **DLC ≥ 4**. Bytes 0–3 are a big-endian 32-bit token; both supported
+tokens are `0x00000000` (`DATA_EMERG_RELAY_TOKEN` / `DATA_EMERG_PDS_TOKEN`).
+
+| InstrID | Action                       | Token (4 bytes, BE) |
+|---------|------------------------------|---------------------|
+| `0x00`  | Cut both relays              | `0x00000000`        |
+| `0x8F`  | Command PDS to cut all rails | `0x00000000`        |
+
+### Control commands (`SEV_CONTROL = 0x03`)
+
+Require **DLC ≥ 2**. Bytes 0–1 are a big-endian 16-bit data word.
 
 | Word     | Meaning              |
 |----------|----------------------|
 | `0x000F` | Relay 1 / Arm rail   |
 | `0x00F0` | Relay 2 / Wheel rail |
 
-### Command table
+| InstrID | Action                      | Data word    |
+|---------|-----------------------------|--------------|
+| `0x01`  | Open (disconnect) a relay   | select relay |
+| `0x02`  | Close (connect) a relay     | select relay |
+| `0x04`  | Turn OFF a PDS rail         | select rail  |
+| `0x06`  | Turn ON a PDS rail          | select rail  |
+| `0x08`  | Turn OFF TCU fan            | (ignored)    |
+| `0x0A`  | Turn ON TCU fan             | (ignored)    |
 
-| InstrID | Action                      | Data word         |
-|---------|-----------------------------|-------------------|
-| `0x00`  | Emergency: cut both relays  | (no data needed)  |
-| `0x8F`  | Emergency: cut all PDS rails| (no data needed)  |
-| `0x01`  | Open (disconnect) a relay   | select relay      |
-| `0x02`  | Close (connect) a relay     | select relay      |
-| `0x04`  | Turn OFF a PDS rail         | select rail       |
-| `0x06`  | Turn ON a PDS rail          | select rail       |
-| `0x08`  | Turn OFF TCU fan            | select (ignored)  |
-| `0x0A`  | Turn ON TCU fan             | select (ignored)  |
+PDS rail commands map `DATA_SELECT_1` → rail `1` (arm), `DATA_SELECT_2` → rail `2`
+(wheel). There is no CAN command for CH1 (5 V) in the current firmware.
 
 ### Example: turn on arm rail
 
 ```python
 import can
 
-ext_id = (0x01 << 24) | (0x01 << 16) | (0x03 << 14) | (0x06 << 6) | 0x01
+ext_id = (0x00 << 24) | (0x08 << 16) | (0x03 << 14) | (0x06 << 6) | 0x00
 msg = can.Message(arbitration_id=ext_id, is_extended_id=True,
-                  data=b'\x00\x0F')  # DATA_SELECT_1 = arm rail
+                  data=b'\x00\x0F')  # DATA_SELECT_1
 bus.send(msg)
 ```
 
@@ -220,59 +254,42 @@ bus.send(msg)
 
 ## 9. Timing and Known Caveats
 
-- BAB broadcasts all telemetry once per main-loop iteration, spaced by a 1-second `HAL_Delay`.
-- Each burst contains ~9 CAN frames transmitted back-to-back with no inter-frame delay.
-- The STM32F4 CAN peripheral has only **3 TX mailboxes**. Frames issued when all mailboxes
-  are full are **silently dropped** (no retry, no error flag). Under load the 2nd rail frame
-  (`CAN_SendRailTelemetry(1)`) is the most likely victim because it is the 5th or 6th frame
-  in the burst sequence.
+- Telemetry is sent when `HAL_GetTick() - last_can_bab_data_transfer >= 3000` ms
+  (3 s between bursts), not every main-loop iteration.
+- Each burst contains 9 CAN frames (2 battery + 3 rail + TCU temp + 2 relay + fan)
+  issued back-to-back from the main loop.
+- `CAN_Transmit` waits up to **10 ms** for a free TX mailbox before giving up (see §10).
+  The STM32F4 still has only **3 TX mailboxes**, but frames are no longer dropped
+  immediately when all three are busy.
 - All three rail telemetry frames share the **same arbitration ID** — the rail index lives
   in the data field only. If your receive handler stores "last value per CAN ID" you will
   see only whichever rail arrived last.
 
 ---
 
-## 10. Known Firmware Bugs (why the 2nd rail goes missing)
+## 10. Known Issues
 
-### Bug 1 — `CAN_Transmit` silently drops frames (PRIMARY CAUSE)
+### TX mailbox wait (fixed in current firmware)
 
-**Location:** `main.c` — `CAN_Transmit()` function (~line 895)
+**Location:** `Firmware/BAB_MX/Core/Src/main.c` — `CAN_Transmit()`
+
+Earlier builds submitted only when `GetTxMailboxesFreeLevel() > 0`, which dropped the
+4th+ frame in a 9-frame burst (often `CAN_SendRailTelemetry(1)`). Current firmware
+spins until a mailbox frees or a **10 ms** deadline expires:
 
 ```c
-if (HAL_CAN_GetTxMailboxesFreeLevel(&hcan1) > 0) {
-    can_tx_result = HAL_CAN_AddTxMessage(&hcan1, &can_tx_header, data, &can_tx_mailbox);
+uint32_t deadline = HAL_GetTick() + 10U;
+while (HAL_CAN_GetTxMailboxesFreeLevel(&hcan1) == 0U) {
+    if (HAL_GetTick() >= deadline) return;
 }
+can_tx_result = HAL_CAN_AddTxMessage(&hcan1, &can_tx_header, data, &can_tx_mailbox);
 ```
 
-**What's wrong:** If all 3 TX mailboxes are occupied, the frame is simply not sent — no
-retry, no queue, no error flag. The main loop fires 9 frames back-to-back every cycle:
-
-```
-CAN_SendBatteryTelemetry(1)   ← fills mailbox 1
-CAN_SendBatteryTelemetry(2)   ← fills mailbox 2
-CAN_SendRailTelemetry(0)      ← fills mailbox 3
-CAN_SendRailTelemetry(1)      ← ALL FULL → DROPPED
-CAN_SendRailTelemetry(2)      ← maybe dropped too
-CAN_SendTCUTemp()
-CAN_SendRelayStatus() × 2
-CAN_SendTCUStatus()
-```
-
-At standard CAN bit rates (500 kbit/s) an extended-ID frame takes ~230 µs. After the
-first 3 frames fill the mailboxes, the 4th call arrives within microseconds — long before
-a mailbox drains. This consistently drops `CAN_SendRailTelemetry(1)` (the 2nd rail /
-CH2 / Arm rail).
-
-**Why it's not the HAL delays:** The `200` in `HAL_UART_Transmit(..., 200)` is a *timeout*
-ceiling, not a sleep. The UART finishes in microseconds to low-milliseconds at typical baud
-rates. `HAL_Delay(1000)` at the end of the loop spaces entire bursts — it does not
-selectively skip one rail within a burst.
-
-**Fix (summary):** See [Section 11 — Possible solutions for CAN TX frame dropping](#11-possible-solutions-for-can-tx-frame-dropping) for concrete approaches.
+A frame can still be lost if the bus is off or all mailboxes stay busy for 10 ms.
 
 ---
 
-### Bug 2 — Duplicate CAN arbitration ID for all 3 rail frames (JETSON-SIDE GOTCHA)
+### Duplicate CAN arbitration ID for all 3 rail frames (host-side gotcha)
 
 **Location:** `CAN_SendRailTelemetry()` — all three calls use `INSTR_TX_RAIL_TELEM` = 0x02
 with identical `DevType`, `Mfr`, `Sev`, and `DevID` fields, producing the **same 29-bit
@@ -290,44 +307,9 @@ every time a new rail frame arrives. Only the last-received rail survives.
 
 ---
 
-### Bug 3 — Blocking UART echo inside the USART2 RX interrupt (RELIABILITY RISK)
+### `RS485_PDS` sscanf all-or-nothing parse
 
-**Location:** `HAL_UART_RxCpltCallback` — USART2 branch (~line 762)
-
-```c
-HAL_GPIO_WritePin(DE1_GPIO_Port, DE1_Pin, GPIO_PIN_SET);
-HAL_UART_Transmit(&huart1, rs485_rx_buffer, RS485_RX_BUFFER_SIZE, 200);
-while (__HAL_UART_GET_FLAG(&huart1, UART_FLAG_TC) == RESET) {}
-HAL_GPIO_WritePin(DE1_GPIO_Port, DE1_Pin, GPIO_PIN_RESET);
-```
-
-**What's wrong (multiple issues):**
-
-1. **Wrong UART and DE pin:** PDS communication uses USART2/DE2, but this echoes on
-   `huart1`/DE1 (BMS UART). This is leftover debug code.
-2. **Transmits 512 bytes regardless of message length:** Uses `RS485_RX_BUFFER_SIZE` (512)
-   instead of `rs485_rx_index + 1` (actual message length). Sends garbage past the null
-   terminator.
-3. **Blocks inside an ISR:** `HAL_UART_Transmit` is a polling/blocking call. At 115200
-   baud, 512 bytes takes ~44 ms. During that time **all other UART interrupts are masked**,
-   causing missed BMS bytes on USART1/USART3 and potentially corrupting the next PDS
-   response already arriving on USART2.
-4. **Guard condition is wrong:** `rs485_rx_index >= 1` allows triggering when `rs485_rx_index`
-   is 1, but then accesses `rs485_rx_buffer[rs485_rx_index - 2]` = index −1 (undefined
-   behaviour / reads before buffer start).
-
-**Why this could contribute to rail issues:** The ~44 ms stall can cause the PDS response
-to be partially lost on the next cycle, leading to `sscanf` in `RS485_PDS()` parsing fewer
-than 22 fields and updating **no** channel data at all (stale values forwarded via CAN).
-
-**Fix:** Remove the debug echo entirely. If forwarding is needed, do it outside the ISR
-(set a flag + handle in main loop) and use the actual message length.
-
----
-
-### Bug 4 — `RS485_PDS` sscanf all-or-nothing parse
-
-**Location:** `RS485_PDS()` (~line 816)
+**Location:** `RS485_PDS()` in `main.c`
 
 ```c
 if (parsed == 22) { ... }
@@ -347,17 +329,16 @@ invalidate the others.
 
 ---
 
-## 11. Possible solutions for CAN TX frame dropping
+## 11. CAN TX frame dropping — options
 
-**What goes wrong today:** `CAN_Transmit` only calls `HAL_CAN_AddTxMessage` when
-`HAL_CAN_GetTxMailboxesFreeLevel(&hcan1) > 0`. The STM32F4 CAN controller has **three** TX
-mailboxes. If all three are busy (previous frames still arbitrating or shifting out on the
-bus), the next frame is **thrown away** with no retry. Your code still calls the same
-`CAN_Send*` functions; some of them never reach the wire.
+**Current firmware:** Option A below is already implemented in `CAN_Transmit()` (10 ms
+mailbox wait). The notes remain useful if you need a queue or stricter guarantees.
 
-Below are **three** firmware-side approaches that keep the **same CAN IDs and payloads** as
-today (no Jetson protocol change). They differ in *where* you wait and *when* you still
-might lose a frame.
+The STM32F4 CAN controller has **three** TX mailboxes. Without waiting, back-to-back sends
+in a telemetry burst can overflow all three slots and drop frames.
+
+Below are three approaches that keep the **same CAN IDs and payloads**. They differ in
+*where* you wait and *when* you might still lose a frame.
 
 ---
 
@@ -384,12 +365,9 @@ void CAN_Transmit(uint32_t ext_id, uint8_t *data, uint8_t dlc)
 {
     /* ... fill can_tx_header as today ... */
 
-    uint32_t t0 = HAL_GetTick();
-    while (HAL_CAN_GetTxMailboxesFreeLevel(&hcan1) == 0) {
-        if ((HAL_GetTick() - t0) > 5U) {
-            /* optional: increment a drop counter, set a debug flag */
-            return;
-        }
+    uint32_t deadline = HAL_GetTick() + 10U;
+    while (HAL_CAN_GetTxMailboxesFreeLevel(&hcan1) == 0U) {
+        if (HAL_GetTick() >= deadline) return;
     }
     (void)HAL_CAN_AddTxMessage(&hcan1, &can_tx_header, data, &can_tx_mailbox);
 }
@@ -441,10 +419,8 @@ grows). Option A centralizes the wait in one function.
 
 ### Recommendation
 
-- Use **Option A** for the **minimum** change: one place to fix, same call pattern, drops only
-  on genuine timeout / bus fault.
-- Move to **Option B** if you want **no** busy-wait in the main loop or expect **more** TX
-  frames per cycle.
-- Use **Option C** only if you strongly prefer **not** touching `CAN_Transmit` and are willing
-  to maintain pacing at each send site; functionally it overlaps with A but is easier to
-  break as code evolves.
+- **Option A** is in use today; increase the timeout or add drop counting if you still
+  see missing frames under bus fault.
+- Move to **Option B** for a software TX queue and no busy-wait in the main loop.
+- **Option C** only if you prefer pacing at each call site instead of centralizing wait
+  logic in `CAN_Transmit`.
