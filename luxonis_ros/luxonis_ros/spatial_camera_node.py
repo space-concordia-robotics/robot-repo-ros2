@@ -119,6 +119,7 @@ def _spatial_detections_to_ros(
 class OakSpatialSharedState:
     lock: threading.Lock = field(default_factory=threading.Lock)
     rgb_frame: Any = None
+    depth_frame: Any = None
     spatial_detections: Any = None
     calib: Any = None
     error: Optional[str] = None
@@ -134,6 +135,7 @@ class OakSpatialWorker(threading.Thread):
         confidence_threshold: float,
         depth_lower_threshold: int,
         depth_upper_threshold: int,
+        align_depth_to_rgb: bool,
         state: OakSpatialSharedState,
         stop_event: threading.Event,
         log_fn: Any,
@@ -145,6 +147,7 @@ class OakSpatialWorker(threading.Thread):
         self._confidence_threshold = confidence_threshold
         self._depth_lower_threshold = depth_lower_threshold
         self._depth_upper_threshold = depth_upper_threshold
+        self._align_depth_to_rgb = align_depth_to_rgb
         self._state = state
         self._stop_event = stop_event
         self._log = log_fn
@@ -181,7 +184,7 @@ class OakSpatialWorker(threading.Thread):
             self._state.calib = calib
 
         with dai.Pipeline(device) as pipeline:
-            rgb_q, det_q = self._build_spatial_pipeline(pipeline)
+            rgb_q, det_q, depth_q = self._build_spatial_pipeline(pipeline)
             pipeline.start()
             while pipeline.isRunning() and not self._stop_event.is_set():
                 with self._state.lock:
@@ -189,9 +192,11 @@ class OakSpatialWorker(threading.Thread):
                         self._state.rgb_frame = rgb_q.get()
                     if det_q.has():
                         self._state.spatial_detections = det_q.get()
+                    if depth_q.has():
+                        self._state.depth_frame = depth_q.get()
                 time.sleep(0.002)
 
-    def _build_spatial_pipeline(self, pipeline: Any) -> tuple[Any, Any]:
+    def _build_spatial_pipeline(self, pipeline: Any) -> tuple[Any, Any, Any]:
         cam_rgb = pipeline.create(dai.node.Camera).build(
             dai.CameraBoardSocket.CAM_A,
             sensorFps=self._fps,
@@ -208,6 +213,15 @@ class OakSpatialWorker(threading.Thread):
         stereo.setRectification(True)
         stereo.setLeftRightCheck(True)
         stereo.setExtendedDisparity(True)
+        # Align depth to the RGB camera so the published depth image shares
+        # frame_id, timestamp basis, and intrinsics with image_raw.
+        if self._align_depth_to_rgb:
+            try:
+                stereo.setDepthAlign(dai.CameraBoardSocket.CAM_A)
+            except Exception as e:  # noqa: BLE001
+                self._log.warn(
+                    f'setDepthAlign(CAM_A) failed ({e}); depth will be in rectified-right frame.'
+                )
         mono_left.requestOutput((640, 400)).link(stereo.left)
         mono_right.requestOutput((640, 400)).link(stereo.right)
         archive = dai.NNArchive(self._nn_archive_path)
@@ -222,7 +236,10 @@ class OakSpatialWorker(threading.Thread):
         spatial_nn.setDepthUpperThreshold(self._depth_upper_threshold)
         rgb_q = spatial_nn.passthrough.createOutputQueue(maxSize=4, blocking=False)
         det_q = spatial_nn.out.createOutputQueue(maxSize=4, blocking=False)
-        return rgb_q, det_q
+        # Use passthroughDepth so the depth frame the NN actually consumed
+        # is the one we publish (one-to-one with each detection batch).
+        depth_q = spatial_nn.passthroughDepth.createOutputQueue(maxSize=4, blocking=False)
+        return rgb_q, det_q, depth_q
 
 
 # ---------------------------------------------------------------------------
@@ -244,9 +261,13 @@ class SpatialCameraNode(Node):
         self.declare_parameter('spatial_xyz_mm_to_m', 0.001)
         self.declare_parameter('image_topic', 'image_raw')
         self.declare_parameter('camera_info_topic', 'camera_info')
+        self.declare_parameter('depth_image_topic', 'depth/image_raw')
+        self.declare_parameter('depth_camera_info_topic', 'depth/camera_info')
         self.declare_parameter('detections_3d_topic', 'detections_3d')
         self.declare_parameter('detections_2d_topic', 'detections_2d')
         self.declare_parameter('publish_rate_hz', 30.0)
+        self.declare_parameter('publish_depth', True)
+        self.declare_parameter('align_depth_to_rgb', True)
         self.declare_parameter('use_placeholder_image', True)
         self.declare_parameter('placeholder_width', 640)
         self.declare_parameter('placeholder_height', 480)
@@ -258,12 +279,23 @@ class SpatialCameraNode(Node):
 
         image_topic = self.get_parameter('image_topic').get_parameter_value().string_value
         camera_info_topic = self.get_parameter('camera_info_topic').get_parameter_value().string_value
+        depth_image_topic = self.get_parameter('depth_image_topic').get_parameter_value().string_value
+        depth_cam_info_topic = (
+            self.get_parameter('depth_camera_info_topic').get_parameter_value().string_value
+        )
         det3_topic = self.get_parameter('detections_3d_topic').get_parameter_value().string_value
         det2_topic = self.get_parameter('detections_2d_topic').get_parameter_value().string_value
+
+        self._publish_depth = self.get_parameter('publish_depth').get_parameter_value().bool_value
+        self._align_depth_to_rgb = (
+            self.get_parameter('align_depth_to_rgb').get_parameter_value().bool_value
+        )
 
         self._bridge = CvBridge()
         self._camera_info_msg: CameraInfo | None = None
         self._camera_info_sent_dims: tuple[int, int] | None = None
+        self._depth_camera_info_msg: CameraInfo | None = None
+        self._depth_camera_info_sent_dims: tuple[int, int] | None = None
 
         self._image_pub = self.create_publisher(Image, image_topic, qos_profile_sensor_data)
 
@@ -274,6 +306,10 @@ class SpatialCameraNode(Node):
             history=HistoryPolicy.KEEP_LAST,
         )
         self._cam_info_pub = self.create_publisher(CameraInfo, camera_info_topic, cam_qos)
+        self._depth_image_pub = self.create_publisher(
+            Image, depth_image_topic, qos_profile_sensor_data
+        )
+        self._depth_cam_info_pub = self.create_publisher(CameraInfo, depth_cam_info_topic, cam_qos)
         self._det3_pub = self.create_publisher(Detection3DArray, det3_topic, 10)
         self._det2_pub = self.create_publisher(Detection2DArray, det2_topic, 10)
 
@@ -320,6 +356,7 @@ class SpatialCameraNode(Node):
                 depth_upper_threshold=int(
                     self.get_parameter('depth_upper_threshold').get_parameter_value().integer_value
                 ),
+                align_depth_to_rgb=self._align_depth_to_rgb,
                 state=self._oak_state,
                 stop_event=self._oak_stop,
                 log_fn=self.get_logger(),
@@ -373,6 +410,37 @@ class SpatialCameraNode(Node):
         except Exception as e:  # noqa: BLE001
             self.get_logger().error(f'Failed to build CameraInfo: {e}')
 
+    def _ensure_depth_camera_info(self, width: int, height: int) -> None:
+        if (
+            self._depth_camera_info_sent_dims == (width, height)
+            and self._depth_camera_info_msg is not None
+        ):
+            return
+        if self._oak_state is None or self._oak_state.calib is None or dai is None:
+            return
+        # When depth is aligned to RGB it uses CAM_A intrinsics, otherwise
+        # the StereoDepth default frame is the rectified right (CAM_C).
+        socket = (
+            dai.CameraBoardSocket.CAM_A
+            if self._align_depth_to_rgb
+            else dai.CameraBoardSocket.CAM_C
+        )
+        try:
+            self._depth_camera_info_msg = build_camera_info(
+                self._oak_state.calib,
+                socket,
+                width,
+                height,
+                self._frame_id,
+            )
+            self._depth_camera_info_sent_dims = (width, height)
+            self.get_logger().info(
+                f'Depth CameraInfo built for {width}x{height} '
+                f'(socket={"CAM_A" if self._align_depth_to_rgb else "CAM_C"})'
+            )
+        except Exception as e:  # noqa: BLE001
+            self.get_logger().error(f'Failed to build depth CameraInfo: {e}')
+
     def _on_publish_tick(self) -> None:
         stamp = self.get_clock().now().to_msg()
         header = Header(stamp=stamp, frame_id=self._frame_id)
@@ -407,6 +475,7 @@ class SpatialCameraNode(Node):
 
         with self._oak_state.lock:
             rgb_frame = self._oak_state.rgb_frame
+            depth_frame = self._oak_state.depth_frame
             spatial_dets = self._oak_state.spatial_detections
 
         if rgb_frame is None:
@@ -431,6 +500,9 @@ class SpatialCameraNode(Node):
             ci.header.frame_id = self._frame_id
             self._cam_info_pub.publish(ci)
 
+        if self._publish_depth and depth_frame is not None:
+            self._publish_depth_frame(depth_frame, header)
+
         if spatial_dets is not None:
             det3, det2 = _spatial_detections_to_ros(
                 spatial_dets,
@@ -441,6 +513,44 @@ class SpatialCameraNode(Node):
             )
             self._det3_pub.publish(det3)
             self._det2_pub.publish(det2)
+            self._log_detections(det3)
+
+    def _publish_depth_frame(self, depth_frame: Any, header: Header) -> None:
+        try:
+            depth = depth_frame.getCvFrame()
+        except Exception as e:  # noqa: BLE001
+            self.get_logger().warn(
+                f'depth getCvFrame failed: {e}', throttle_duration_sec=2.0
+            )
+            return
+        if depth is None or depth.size == 0:
+            return
+        if depth.dtype != np.uint16:
+            depth = depth.astype(np.uint16)
+        dh, dw = depth.shape[:2]
+        self._ensure_depth_camera_info(dw, dh)
+
+        depth_msg = self._bridge.cv2_to_imgmsg(depth, encoding='16UC1')
+        depth_msg.header = header
+        self._depth_image_pub.publish(depth_msg)
+
+        if self._depth_camera_info_msg is not None:
+            dci = self._depth_camera_info_msg
+            dci.header.stamp = header.stamp
+            dci.header.frame_id = self._frame_id
+            self._depth_cam_info_pub.publish(dci)
+
+    def _log_detections(self, det3: Detection3DArray) -> None:
+        """Throttled human-readable log of detected class + xyz (meters)."""
+        if not det3.detections:
+            return
+        parts = [
+            f'{d.id} xyz=({d.bbox.center.position.x:+.3f}, '
+            f'{d.bbox.center.position.y:+.3f}, '
+            f'{d.bbox.center.position.z:+.3f}) m'
+            for d in det3.detections
+        ]
+        self.get_logger().info('; '.join(parts), throttle_duration_sec=1.0)
 
 
 def main(args: list[str] | None = None) -> None:
