@@ -1,4 +1,0 @@
-##Brainstormin Type Shiiiiiiii
-
-
-
