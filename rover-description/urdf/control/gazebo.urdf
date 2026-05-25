@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<robot name="ceres"
+       xmlns="https://www.ros.org"
+       xmlns:xacro="https://ros.org/wiki/xacro"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="https://www.ros.org ../../urdf.xsd https://ros.org/wiki/xacro ../../xacro.xsd">
+    <xacro:arg name="mode" default="production"/>
+    <xacro:arg name="control" default="ros"/>
+
+    <xacro:property name="mode" value="$(arg mode)"/>
+    <xacro:property name="production" value="${mode == 'production'}"/>
+    <xacro:property name="simulation" value="${mode == 'simulation'}"/>
+
+
+    <!-- TODO 2025-09-19 (Will Free): Add gazebo control -->
+</robot>

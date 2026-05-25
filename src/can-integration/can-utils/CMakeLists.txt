@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.22)
-project(can-utils)
+project(can_utils)
 
 set(CMAKE_CXX_STANDARD 23)
 
@@ -53,7 +53,8 @@ install(
         RUNTIME DESTINATION bin
 )
 
-ament_export_include_directories("include/${PROJECT_NAME}")
+# Headers live under include/can-utils/ (matches #include "can-utils/...")
+ament_export_include_directories("include/can-utils")
 ament_export_libraries(can_util)
 ament_export_targets(export_${PROJECT_NAME})
 ament_export_dependencies(${DEPENDENCIES})

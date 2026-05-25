@@ -2,7 +2,7 @@
 #include <linux/can.h>
 #include <rclcpp/rclcpp.hpp>
 #include "can-utils/can_connect.hpp"
-#include "sil_board/msg/led_command.hpp"
+#include "ci_sil_board/msg/led_command.hpp"
 
 // TODO: migrate to buildAddress::buildCANID once SIL device type / instruction
 // are defined in prefixes.hpp.  Until then, use the raw ID from the working
@@ -26,16 +26,16 @@ public:
                 "' — see log for errno and recovery hints");
         }
 
-        sub_ = this->create_subscription<sil_board::msg::LedCommand>(
-            "/sil_board/rgb", rclcpp::SystemDefaultsQoS(),
-            [this](const sil_board::msg::LedCommand::SharedPtr msg) { onLedCommand(msg); });
+        sub_ = this->create_subscription<ci_sil_board::msg::LedCommand>(
+            "/ci_sil_board/rgb", rclcpp::SystemDefaultsQoS(),
+            [this](const ci_sil_board::msg::LedCommand::SharedPtr msg) { onLedCommand(msg); });
 
         RCLCPP_INFO(this->get_logger(),
                     "sil_board_node ready — CAN %s, ID 0x%08X", can_path.c_str(), raw_can_id_);
     }
 
 private:
-    void onLedCommand(const sil_board::msg::LedCommand::SharedPtr& msg)
+    void onLedCommand(const ci_sil_board::msg::LedCommand::SharedPtr& msg)
     {
         struct can_frame frame {};
         frame.can_id  = raw_can_id_ | CAN_EFF_FLAG;
@@ -57,7 +57,7 @@ private:
 
     uint32_t raw_can_id_{SIL_DEFAULT_CAN_ID};
     std::shared_ptr<can_util::CANController> can_controller_;
-    rclcpp::Subscription<sil_board::msg::LedCommand>::SharedPtr sub_;
+    rclcpp::Subscription<ci_sil_board::msg::LedCommand>::SharedPtr sub_;
 };
 
 int main(int argc, char* argv[])
