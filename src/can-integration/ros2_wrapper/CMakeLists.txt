@@ -12,7 +12,7 @@ find_package(sensor_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(ros2_fmt_logger REQUIRED)
-find_package(can-utils REQUIRED)
+find_package(can_utils REQUIRED)
 find_package(bab-board REQUIRED)
 
 include_directories(include)
@@ -31,7 +31,7 @@ ament_target_dependencies(
   geometry_msgs  
   sensor_msgs
   std_msgs
-  can-utils
+  can_utils
   bab-board
 )
 

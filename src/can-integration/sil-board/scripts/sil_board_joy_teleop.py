@@ -14,7 +14,7 @@ if _script_dir not in sys.path:
 import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import Joy
-from sil_board.msg import LedCommand
+from ci_sil_board.msg import LedCommand
 from sil_board_presets import PRESETS, PRESET_ORDER
 
 
@@ -81,7 +81,7 @@ class SilBoardJoyTeleop(Node):
         super().__init__("sil_board_joy_teleop")
 
         joy_topic = self.declare_parameter("joy_topic", "/joy").value
-        led_topic = self.declare_parameter("led_topic", "/sil_board/rgb").value
+        led_topic = self.declare_parameter("led_topic", "/ci_sil_board/rgb").value
         max_publish_hz = self.declare_parameter("max_publish_hz", 10.0).value
         self._skip_identical = self.declare_parameter("skip_identical", True).value
 

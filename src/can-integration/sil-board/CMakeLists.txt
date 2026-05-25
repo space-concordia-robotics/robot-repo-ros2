@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.22)
-project(sil_board)
+project(ci_sil_board)
 
 set(CMAKE_CXX_STANDARD 23)
 
@@ -10,7 +10,7 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(sensor_msgs REQUIRED)
-find_package(can-utils REQUIRED)
+find_package(can_utils REQUIRED)
 find_package(ros2_fmt_logger REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 
@@ -26,7 +26,7 @@ target_include_directories(sil_board_node PRIVATE
 )
 ament_target_dependencies(sil_board_node
   rclcpp
-  can-utils
+  can_utils
   ros2_fmt_logger
 )
 rosidl_get_typesupport_target(cpp_typesupport_target ${PROJECT_NAME} rosidl_typesupport_cpp)
@@ -41,7 +41,7 @@ target_include_directories(compat_board_node PRIVATE
 ament_target_dependencies(compat_board_node
   rclcpp
   sensor_msgs
-  can-utils
+  can_utils
   ros2_fmt_logger
 )
 

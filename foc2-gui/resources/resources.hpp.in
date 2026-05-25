@@ -1,0 +1,3 @@
+#pragma once
+
+static constexpr auto FOC2_PACKAGE_NAME = "@PROJECT_NAME@";

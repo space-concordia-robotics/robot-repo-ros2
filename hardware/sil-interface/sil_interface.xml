@@ -1,0 +1,13 @@
+<library path="sil_interface">
+    <class name="sil_interface/SILSystemHardware"
+           type="sil_interface::SILSystemHardware"
+           base_class_type="hardware_interface::SystemInterface">
+        <description>SIL system hardware</description>
+    </class>
+
+    <class name="sil_interface/SILController"
+           type="sil_interface::SILController"
+           base_class_type="controller_interface::ControllerInterface">
+        <description>SIL controller interface</description>
+    </class>
+</library>

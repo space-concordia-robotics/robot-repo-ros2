@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>sil_board</name>
+  <name>ci_sil_board</name>
   <version>0.0.0</version>
   <description>SIL board LED controller — sends RGB + brightness over CAN</description>
   <maintainer email="michael.lythgoe@spaceconcordia.ca">mike</maintainer>
@@ -12,7 +12,7 @@
 
   <depend>rclcpp</depend>
   <depend>rclpy</depend>
-  <depend>can-utils</depend>
+  <depend>can_utils</depend>
   <depend>ros2_fmt_logger</depend>
   <depend>sensor_msgs</depend>
 

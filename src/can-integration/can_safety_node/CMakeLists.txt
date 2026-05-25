@@ -15,7 +15,7 @@ set(DEPENDENCIES
   rclcpp
   sensor_msgs
   std_msgs
-  can-utils
+  can_utils
   ros2_fmt_logger
 )
 

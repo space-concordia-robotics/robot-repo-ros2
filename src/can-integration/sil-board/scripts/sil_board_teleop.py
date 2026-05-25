@@ -10,7 +10,7 @@ if _script_dir not in sys.path:
 
 import rclpy
 from rclpy.node import Node
-from sil_board.msg import LedCommand
+from ci_sil_board.msg import LedCommand
 from sil_board_presets import PRESETS
 
 HELP_TEXT = """
@@ -30,7 +30,7 @@ Type 'q' or Ctrl-C to quit.
 class SilBoardTeleop(Node):
     def __init__(self):
         super().__init__("sil_board_teleop")
-        self.pub = self.create_publisher(LedCommand, "/sil_board/rgb", 10)
+        self.pub = self.create_publisher(LedCommand, "/ci_sil_board/rgb", 10)
 
     def send(self, r: int, g: int, b: int, brightness: int):
         msg = LedCommand()

@@ -22,7 +22,7 @@ constexpr std::array<uint32_t, 5> kScrbMotorIds = {
 /// Protocol full-scale command magnitude (see “Motor velocity scaling” in Compat-README.md).
 constexpr float kMaxRads = 1024.0F;
 
-// PS4-style layout (matches sil_board/scripts/sil_board_joy_teleop.py).
+// PS4-style layout (matches ci_sil_board/scripts/sil_board_joy_teleop.py).
 constexpr int kAxisLeftStickX = 0;
 constexpr int kAxisLeftStickY = 1;
 constexpr int kAxisLeftTrigger = 2;
