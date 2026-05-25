@@ -68,9 +68,8 @@ public:
         buildAddress::BuildAddress & build_frame,
         uint32_t deviceID);
 
-    /// Build the expected 29-bit CAN ID for a BAB telemetry frame.
-    /// Uses the manufacturer / device-ID values documented in BAB-docs.md
-    /// (Manufacturer::SCC, DeviceID 0x01) rather than the generic TEAM_USE.
+    /// Build the expected 29-bit CAN ID for a BAB frame (telemetry or command).
+    /// Uses firmware field values DevType=0x00, Mfr=0x08 (TEAM_USE), DevID=0x00.
     uint32_t validateFrameID(uint32_t sev, Instructions::Inst cmd) const;
 
     /// Frame callback invoked by `CANController::registerFrameCallback`.
@@ -99,16 +98,21 @@ public:
     // ------------------------ TCU / relay ----------------------------
     float getTCUTemp() const;
     std::string getTCUStatus() const;
-    std::string getRelayStatus() const;
+    std::string getRelayStatus(size_t idx = 0) const;
+    bool getRelayClosed(size_t idx) const;
     std::string getBMSHealth() const;
 
-    // ----------------------- Command emitters ------------------------
+    // Command emitters (receive-only on bus until kBabCommandTxEnabled in
+    // battery_board.cpp is set true after bench validation).
     bool sendKYSCommand();
     bool cutFanPower(DeviceId::ID fanID);
     bool CutRelayCommand(DeviceId::ID relayID);
     bool sendManualPowerCommands(DeviceId::ID selectRailID, bool turnOn);
 
 private:
+    bool sendBabControlFrame(Instructions::Inst inst, uint16_t data_word);
+    bool sendBabEmergencyFrame(Instructions::Inst inst);
+
     mutable std::mutex mtx;
     ros2_fmt_logger::Logger logger;
     can_util::CANController & can_controller;

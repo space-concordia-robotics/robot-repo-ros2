@@ -81,5 +81,9 @@ class CanControllerNode : public rclcpp::Node{
         std::array<float, 6> wheel_rpm_smoothed_{};
 
         std::unique_ptr<spark_max::SparkMaxFeedback> wheel_feedback_;
-}; 
+
+        std::unique_ptr<buildAddress::BuildAddress> bab_build_address_;
+        std::shared_ptr<BAB> bab_;
+        std::unique_ptr<ProduceDiagnostics> bab_diagnostics_;
+};
 

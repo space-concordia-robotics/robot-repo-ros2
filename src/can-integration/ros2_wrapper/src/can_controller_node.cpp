@@ -36,7 +36,7 @@ CanControllerNode::CanControllerNode(const rclcpp::NodeOptions& options) :
 
         // Servo command shaping: joystick [-1,1] scaled to degrees per command tick.
         spin_max_deg_per_command_ = static_cast<float>(
-            this->declare_parameter("spin_max_deg_per_command", 5.0));
+            this->declare_parameter("spin_max_deg_per_command", 7.0));
         clamp_max_deg_per_command_ = static_cast<float>(
             this->declare_parameter("clamp_max_deg_per_command", 15.0));
 
@@ -70,7 +70,18 @@ CanControllerNode::CanControllerNode(const rclcpp::NodeOptions& options) :
         arm_velocity_scale_callback_handle = parameter_event_handler->add_parameter_callback("arm_velocity_scale", arm_scale_callback);
 
         frame_builder_ = std::make_unique<SystemFrameBuilder>(can_controller_);
-        
+
+        bab_build_address_ = std::make_unique<buildAddress::BuildAddress>(can_controller_);
+        bab_ = std::make_shared<BAB>(
+            this->get_logger(),
+            *can_controller_,
+            *bab_build_address_,
+            static_cast<uint32_t>(DeviceId::ID::BAB));
+        io_callback_group_ = this->create_callback_group(
+            rclcpp::CallbackGroupType::MutuallyExclusive);
+        bab_diagnostics_ = std::make_unique<ProduceDiagnostics>(
+            *this, bab_, io_callback_group_);
+
         wheel_feedback_ = std::make_unique<spark_max::SparkMaxFeedback>(
             can_controller_,
             std::vector<uint8_t>{
@@ -108,7 +119,9 @@ CanControllerNode::CanControllerNode(const rclcpp::NodeOptions& options) :
         frame_builder_->startMotors(mask);
         frame_builder_->requestStatusFrame();
 
-        logger.info("All subscriptions initialized, CAN send rate = {} Hz", can_send_rate_hz_);
+        logger.info(
+            "All subscriptions initialized, CAN send rate = {} Hz, BAB diagnostics active",
+            can_send_rate_hz_);
 }
 
 //------------------------------ Cache incoming topic data (no CAN I/O here) --------------------------------
@@ -336,7 +349,6 @@ int main(int argc, char *argv[]){
     int exit_code = 0;
 
     try {
-        // CanControllerNode constructs BAB and ProduceDiagnostics internally
         auto can_node = std::make_shared<CanControllerNode>();
 
         rclcpp::executors::MultiThreadedExecutor executor;
