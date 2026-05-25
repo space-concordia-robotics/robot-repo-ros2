@@ -1,6 +1,8 @@
 # Servo CAN frames (spin / clamp)
 
-Reference for **extended CAN 2.0B** frames used by `BuildAddress::buildServoFrame` and `SystemFrameBuilder` (`sendSpinServoPosition`, `sendClampServoPosition`, `sendSpinServoSpeed`, `sendClampServoSpeed`). Implementation: `can-utils/buildAddress.hpp`, `can-utils/system_controller.cpp`, `can-utils/prefixes.hpp`.
+> **Gripper (CLAMP) update:** The production gripper path now uses **Firmware_SPIN `MOVE_POSITION`** via `sendGripperMovePosition()` — see **[`docs/SERVO_API.md`](../../../docs/SERVO_API.md)** for the canonical spec (CAN ID `000180B0`, int32 big-endian relative degrees). The legacy clamp rows below (`0x0708C04D`, float32 LE rad, selector byte `0x06`) remain documented for reference but **are not used by the gripper** in the current codebase.
+
+Reference for **extended CAN 2.0B** frames used by `BuildAddress::buildServoFrame` and `SystemFrameBuilder`. **Spin only** (`sendSpinServoPosition`, `sendSpinServoSpeed`) still uses the legacy FRC-style IDs below. Implementation: `can-utils/buildAddress.hpp`, `can-utils/system_controller.cpp`, `can-utils/prefixes.hpp`.
 
 ## Encoding summary
 

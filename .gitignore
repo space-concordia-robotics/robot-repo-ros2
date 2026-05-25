@@ -41,3 +41,8 @@ __pycache__/
 
 # LiDAR metadata
 os1-992005000098-metadata.json
+
+# Local WIP packages — not part of integration PR
+# Sources are preserved on wip/local-arm-wheel-can branch.
+src/can-integration/arm_can_hardware/
+src/can-integration/wheel_can_hardware/
