@@ -8,7 +8,7 @@ endif ()
 
 set(DEPENDENCIES
         rclcpp
-        can_utils
+        can_util
         ros2_fmt_logger
         diagnostic_updater
 )
