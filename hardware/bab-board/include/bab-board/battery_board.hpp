@@ -1,13 +1,13 @@
 #pragma once
 
-#include "can-utils/prefixes.hpp"
-#include "can-utils/parser.hpp"
-#include "can-utils/buildAddress.hpp"
 #include <array>
 #include <chrono>
 #include <mutex>
 #include <string>
 #include <vector>
+#include <rclcpp/logger.hpp>
+
+#include "can_util/can_controller.hpp"
 
 
 static constexpr auto VOLTAGE_MULTIPLIER = 100;
@@ -63,14 +63,11 @@ public:
     static constexpr auto RAILS_COUNT = 3;
     static constexpr auto RELAYS_COUNT = 2;
 
-    BAB(rclcpp::Logger logger,
-        can_util::CANController& can_controller_,
-        buildAddress::BuildAddress& build_frame,
-        uint32_t deviceID);
+    BAB(rclcpp::Logger logger, can_util::CANController::SharedPtr& can_controller, uint32_t device_id);
 
     /// Build the expected 29-bit CAN ID for a BAB frame (telemetry or command).
     /// Uses firmware field values DevType=0x00, Mfr=0x08 (TEAM_USE), DevID=0x00.
-    uint32_t validateFrameID(uint32_t sev, Instructions::Inst cmd) const;
+    static uint32_t validateFrameID(uint8_t sev, uint8_t cmd);
 
     /// Frame callback invoked by `CANController::registerFrameCallback`.
     /// Decodes battery/rail/TCU/relay frames in-place.
@@ -81,8 +78,7 @@ public:
     float getBatteryVoltageLevel(size_t idx = 0) const;
     float getBatteryCurrentLevel(size_t idx = 0) const;
     float getBatteryTemp(size_t idx = 0) const;
-    bool batteryFresh(size_t idx = 0,
-                      std::chrono::milliseconds max_age = std::chrono::seconds(3)) const;
+    bool batteryFresh(size_t idx = 0, std::chrono::milliseconds max_age = std::chrono::seconds(3)) const;
     bool batteryEverReceived(size_t idx = 0) const;
 
     // ------------------------ Rail accessors -------------------------
@@ -91,8 +87,7 @@ public:
     float getRailPower(size_t idx = 0) const;
     float getRailTemp(size_t idx = 0) const; // firmware does not send; returns 0
     bool getRailSwitchOn(size_t idx = 0) const;
-    bool railFresh(size_t idx = 0,
-                   std::chrono::milliseconds max_age = std::chrono::seconds(3)) const;
+    bool railFresh(size_t idx = 0, std::chrono::milliseconds max_age = std::chrono::seconds(3)) const;
     bool railEverReceived(size_t idx = 0) const;
 
     // ------------------------ TCU / relay ----------------------------
@@ -105,18 +100,17 @@ public:
     // Command emitters (receive-only on bus until kBabCommandTxEnabled in
     // battery_board.cpp is set true after bench validation).
     bool sendKYSCommand();
-    bool cutFanPower(DeviceId::ID fanID);
-    bool CutRelayCommand(DeviceId::ID relayID);
-    bool sendManualPowerCommands(DeviceId::ID selectRailID, bool turnOn);
+    bool cutFanPower(uint8_t fanID);
+    bool CutRelayCommand(uint8_t relayID);
+    bool sendManualPowerCommands(uint8_t selectRailID, bool turnOn);
 
 private:
-    bool sendBabControlFrame(Instructions::Inst inst, uint16_t data_word);
-    bool sendBabEmergencyFrame(Instructions::Inst inst);
+    bool sendBabControlFrame(uint8_t inst, uint16_t data_word) const;
+    bool sendBabEmergencyFrame(uint8_t inst) const;
 
     mutable std::mutex mtx;
     ros2_fmt_logger::Logger logger;
-    can_util::CANController& can_controller;
-    buildAddress::BuildAddress& build_frame;
+    can_util::CANController::SharedPtr& can_controller;
     uint32_t device_id;
     std::shared_ptr<can_util::CANFrameCallback> frame_callback;
 
