@@ -29,12 +29,12 @@ class ProduceDiagnostics {
         void checkTCUStatus(diagnostic_updater::DiagnosticStatusWrapper& stat);
         void checkRelayStatus(diagnostic_updater::DiagnosticStatusWrapper& stat);
 
-        void DiagnosticsCallback();
+        void diagnosticsCallback();
 
-        rclcpp::Node& node_;
-        std::shared_ptr<diagnostic_updater::Updater> updater_;
-        rclcpp::TimerBase::SharedPtr diagnostics_timer_;
-        std::shared_ptr<BAB> diagnostics_ptr_;
-        std::atomic<bool> fault_detected_{false};
-        std::atomic<bool> shutdown_sent_{false};
+        rclcpp::Node& node;
+        std::shared_ptr<diagnostic_updater::Updater> updater;
+        rclcpp::TimerBase::SharedPtr diagnostics_timer;
+        std::shared_ptr<BAB> bab;
+        std::atomic<bool> fault_detected = false;
+        std::atomic<bool> shutdown_sent = false;
 };

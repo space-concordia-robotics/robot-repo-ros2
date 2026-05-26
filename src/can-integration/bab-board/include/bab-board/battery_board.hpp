@@ -10,38 +10,38 @@
 #include <vector>
 
 
-#define VOLTAGE_MULTIPLIER 100.0f
-#define CURRENT_MULTIPLIER 100.0f
-#define POWER_MULTIPLIER 10.0f
+static constexpr auto VOLTAGE_MULTIPLIER = 100;
+static constexpr auto CURRENT_MULTIPLIER = 100.0;
+static constexpr auto POWER_MULTIPLIER = 10.0;
 
-struct BatteryTelem {
-    int BatteryNum{0};
-    float voltage{0.f};
-    float temperature{0.f};
-    float current{0.f};
-    std::chrono::steady_clock::time_point timestamp{};
-    bool ever_received{false};
+struct BatteryTelemetry {
+    int batteries = 0;
+    double voltage = 0.0;
+    double temperature = 0.0;
+    double current = 0.0;
+    std::chrono::steady_clock::time_point timestamp;
+    bool has_received = false;
 };
 
-struct RailTelem {
-    int RailNum{0};
-    bool status{false};
-    float voltage{0.f};
-    float temperature{0.f};
-    float current{0.f};
-    float power{0.f};
-    std::chrono::steady_clock::time_point timestamp{};
-    bool ever_received{false};
+struct RailTelemetry {
+    int rail_id;
+    bool active = false;
+    double voltage = 0.0;
+    double temperature = 0.0;
+    double current = 0.0;
+    double power = 0.0;
+    std::chrono::steady_clock::time_point timestamp;
+    bool has_received = false;
 };
 
-struct TCUtelem {
-    bool fan_status{false};
-    float temperature{0.f};
+struct TCUTelemetry {
+    bool fan_enabled = false;
+    double temperature = 0.0;
 };
 
-struct RelayTelem {
-    int RelayNum{0};
-    bool status{false};
+struct RelayTelemetry {
+    int relay_id;
+    bool active = false;
 };
 
 /*
@@ -59,9 +59,9 @@ struct RelayTelem {
  */
 class BAB {
 public:
-    static constexpr size_t NUM_BATTERIES = 2;
-    static constexpr size_t NUM_RAILS = 3;
-    static constexpr size_t NUM_RELAYS = 2;
+    static constexpr auto BATTERIES_COUNT = 2;
+    static constexpr auto RAILS_COUNT = 3;
+    static constexpr auto RELAYS_COUNT = 2;
 
     BAB(rclcpp::Logger logger,
         can_util::CANController & can_controller_,
@@ -117,11 +117,11 @@ private:
     ros2_fmt_logger::Logger logger;
     can_util::CANController & can_controller;
     buildAddress::BuildAddress & build_frame;
-    uint32_t deviceId;
+    uint32_t device_id;
     std::shared_ptr<can_util::CANFrameCallback> frame_callback;
 
-    std::array<BatteryTelem, NUM_BATTERIES> batteryTelems{};
-    std::array<RailTelem,    NUM_RAILS>     railTelems{};
-    std::array<RelayTelem,   NUM_RELAYS>    relayTelems{};
-    TCUtelem tcuTelem{};
+    std::array<BatteryTelemetry, BATTERIES_COUNT> battery_telemetry = {};
+    std::array<RailTelemetry,    RAILS_COUNT>     rail_telemetry = {};
+    std::array<RelayTelemetry,   RELAYS_COUNT>    relay_telemetry = {};
+    TCUTelemetry tcu_telemetry;
 };

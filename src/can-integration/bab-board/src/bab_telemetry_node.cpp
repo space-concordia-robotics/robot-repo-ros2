@@ -27,6 +27,7 @@
 #include "can-utils/prefixes.hpp"
 
 #include "rclcpp/rclcpp.hpp"
+#include "ros2_fmt_logger/ros2_fmt_logger.hpp"
 
 #include <chrono>
 #include <iomanip>
@@ -38,9 +39,9 @@ namespace {
 
 // Match the values actually used by the BAB firmware on the rover
 // (see comments at the top of battery_board.cpp).
-constexpr uint8_t BAB_DEVTYPE        = 0x00;
-constexpr uint8_t BAB_FIRMWARE_MFR   = Manufacturer::TEAM_USE;  // 0x08
-constexpr uint8_t BAB_FIRMWARE_DEVID = 0x00;
+static constexpr auto BAB_DEVTYPE        = 0x00;
+static constexpr auto BAB_FIRMWARE_MFR   = Manufacturer::TEAM_USE;  // 0x08
+static constexpr auto BAB_FIRMWARE_DEVID = 0x00;
 
 std::string formatRow(const char * label,
                       bool fresh,
@@ -72,7 +73,8 @@ std::string formatRow(const char * label,
 class BabTelemetryNode : public rclcpp::Node {
 public:
     BabTelemetryNode()
-    : Node("bab_telemetry_node") {
+    : Node("bab_telemetry_node"),
+      logger(get_logger().get_child("bab_telemetry_node"), *get_clock()) {
 
         can_interface_ = declare_parameter<std::string>("can_interface", "can0");
         const int period_ms = declare_parameter<int>("print_period_ms", 1000);
@@ -111,9 +113,9 @@ public:
             std::chrono::milliseconds(period_ms),
             [this]() { printTelemetry(); });
 
-        RCLCPP_INFO(get_logger(),
-                    "bab_telemetry_node ready — interface=%s, period=%d ms, log_unknown=%s",
-                    can_interface_.c_str(), period_ms, log_unknown_ ? "true" : "false");
+        logger.info(
+            "bab_telemetry_node ready — interface={}, period={} ms, log_unknown={}",
+            can_interface_, period_ms, log_unknown_);
     }
 
     ~BabTelemetryNode() override {
@@ -158,7 +160,7 @@ private:
                             extra.str().c_str());
         }
 
-        RCLCPP_INFO(get_logger(), "%s", ss.str().c_str());
+        logger.info("{}", ss.str());
     }
 
     void onAnyFrame(uint32_t id, const std::vector<uint8_t> & data) {
@@ -182,11 +184,13 @@ private:
             ss << std::hex << std::setw(2) << std::setfill('0')
                << static_cast<int>(b) << " ";
         }
-        RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 2000, "%s", ss.str().c_str());
+        using namespace std::chrono_literals;
+        logger.warn_throttle(2s, "{}", ss.str());
     }
 
+    ros2_fmt_logger::Logger logger;
     std::string can_interface_;
-    bool log_unknown_{false};
+    bool log_unknown_ = false;
     std::shared_ptr<can_util::CANController> can_;
     std::unique_ptr<buildAddress::BuildAddress> build_address_;
     std::shared_ptr<BAB> bab_;
@@ -202,12 +206,12 @@ int main(int argc, char ** argv) {
         auto node = std::make_shared<BabTelemetryNode>();
         rclcpp::spin(node);
     } catch (const std::exception & e) {
-        RCLCPP_FATAL(rclcpp::get_logger("bab_telemetry_node"),
-                     "Node failed to start: %s", e.what());
+        ros2_fmt_logger::Logger(rclcpp::get_logger("bab_telemetry_node"))
+            .fatal("Node failed to start: {}", e.what());
         exit_code = 1;
     } catch (...) {
-        RCLCPP_FATAL(rclcpp::get_logger("bab_telemetry_node"),
-                     "Node failed to start: unknown exception");
+        ros2_fmt_logger::Logger(rclcpp::get_logger("bab_telemetry_node"))
+            .fatal("Node failed to start: unknown exception");
         exit_code = 1;
     }
     rclcpp::shutdown();
