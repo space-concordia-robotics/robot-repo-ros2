@@ -6,18 +6,22 @@ namespace {
 
 // CAN-ID fields used by BAB firmware for both telemetry TX and command RX
 // (see src/can-integration/docs/BAB-docs copy.md / Firmware/BAB_MX).
-constexpr uint8_t BAB_FIRMWARE_DEVTYPE   = 0x00;
-constexpr uint8_t BAB_FIRMWARE_MFR       = Manufacturer::TEAM_USE;  // 0x08 (CAN_MFR_SCC)
-constexpr uint8_t BAB_FIRMWARE_DEVICE_ID = 0x00;
+static constexpr uint8_t BAB_FIRMWARE_DEVTYPE   = 0x00;
+static constexpr uint8_t BAB_FIRMWARE_MFR       = Manufacturer::TEAM_USE;  // 0x08 (CAN_MFR_SCC)
+static constexpr uint8_t BAB_FIRMWARE_DEVICE_ID = 0x00;
 
 // Firmware DATA_SELECT_1 / DATA_SELECT_2 (command payload words, not telemetry indices).
 // 0x000F → PDS rail 1 (arm / CH2). 0x00F0 → PDS rail 2 (wheel / CH3).
 // CH1 (5 V) is telemetry index 0 only; firmware has no CAN command for it.
-constexpr uint16_t DATA_SELECT_ARM_RAIL   = 0x000F;
-constexpr uint16_t DATA_SELECT_WHEEL_RAIL = 0x00F0;
+static constexpr uint16_t DATA_SELECT_ARM_RAIL   = 0x000F;
+static constexpr uint16_t DATA_SELECT_WHEEL_RAIL = 0x00F0;
 
 // BAB command TX is off until bench-validated on hardware.
-constexpr bool kBabCommandTxEnabled = false;
+static constexpr bool BAB_COMMAND_TX_ENABLED = false;
+
+// getBMSHealth(): above min but below max → critically low, not a dead sensor.
+static constexpr float BMS_CRITICAL_LOW_VOLTAGE_V = 10.0f;
+static constexpr float BMS_MIN_VALID_VOLTAGE_V = 0.5f;
 
 // Pack the first N bytes of a CAN payload into a 64-bit integer in
 // MSB-first (network) order, matching the bit layouts in BAB-docs.md.
@@ -60,33 +64,28 @@ uint32_t BAB::validateFrameID(uint32_t sev, Instructions::Inst cmd) const {
 bool BAB::sendBabControlFrame(Instructions::Inst inst, uint16_t data_word) {
     if (!kBabCommandTxEnabled) {
         logger.warn(
-            "BAB control command suppressed (tx disabled until tested): instr=0x{:02X} word=0x{:04X}",
+            "BAB control command suppressed (tx disabled until tested): instr={:#02X} word={:#04X}",
             static_cast<uint32_t>(inst), data_word);
         return false;
     }
-    struct can_frame frame{};
     const uint32_t can_id = validateFrameID(severity::SEV_CNTRL, inst);
-    frame.can_id = can_id | CAN_EFF_FLAG;
-    frame.len = 2;
-    frame.data[0] = static_cast<uint8_t>((data_word >> 8) & 0xFF);
-    frame.data[1] = static_cast<uint8_t>(data_word & 0xFF);
-    return can_controller.sendBlockingFrame(frame);
+    const std::array<uint8_t, 2> payload = {
+        static_cast<uint8_t>((data_word >> 8) & 0xFF),
+        static_cast<uint8_t>(data_word & 0xFF),
+    };
+    return can_controller.sendBlockingFrame(can_id, payload);
 }
 
 bool BAB::sendBabEmergencyFrame(Instructions::Inst inst) {
     if (!kBabCommandTxEnabled) {
         logger.warn(
-            "BAB emergency command suppressed (tx disabled until tested): instr=0x{:02X}",
+            "BAB emergency command suppressed (tx disabled until tested): instr={:#02X}",
             static_cast<uint32_t>(inst));
         return false;
     }
-    struct can_frame frame{};
     const uint32_t can_id = validateFrameID(severity::SEV_MAN_INTERVENTION, inst);
-    frame.can_id = can_id | CAN_EFF_FLAG;
-    frame.len = 4;
     // DATA_EMERG_*_TOKEN = 0x00000000 (big-endian)
-    frame.data[0] = frame.data[1] = frame.data[2] = frame.data[3] = 0;
-    return can_controller.sendBlockingFrame(frame);
+    return can_controller.sendBlockingFrame(can_id, std::array<uint8_t, 4>{0, 0, 0, 0});
 }
 
 void BAB::handleFrames(const uint32_t id, const std::vector<uint8_t> & data) {
@@ -110,7 +109,7 @@ void BAB::handleFrames(const uint32_t id, const std::vector<uint8_t> & data) {
         const char * reason_str = (reason == 0x01) ? "arm rail"
                                 : (reason == 0x02) ? "wheel rail"
                                 : "all rails";
-        logger.warn("BAB automatic PDS rail shutdown (reason=0x{:02X}, {})",
+        logger.warn("BAB automatic PDS rail shutdown (reason={:#02X}, {})",
                     reason, reason_str);
         return;
     }
@@ -284,7 +283,7 @@ std::string BAB::getTCUStatus() const {
 std::string BAB::getBMSHealth() const {
     std::lock_guard<std::mutex> lock(mtx);
     const float v = batteryTelems[0].voltage;
-    if (v < 10.0f && v > 0.5f) {
+    if (v < BMS_CRITICAL_LOW_VOLTAGE_V && v > BMS_MIN_VALID_VOLTAGE_V) {
         return "CRITICAL LOW VOLTAGE";
     }
     return "NORMAL VOLTAGE (HEALTHY)";

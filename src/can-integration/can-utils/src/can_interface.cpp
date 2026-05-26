@@ -146,17 +146,19 @@ namespace can_util {
         return shared_pointer;
     }
 
-    // bool CANController::sendBlockingFrame(const uint32_t id, const std::vector<uint8_t>& data) const {
-            
-    //     assert(data.size() < 8 && "CAN frame is too large");
-    //     auto frame = can_frame{};
-    //     frame.can_id = id | CAN_EFF_FLAG;
-
-    //     frame.len = static_cast<uint8_t>(data.size());
-    //     memcpy(frame.data, data.data(), data.size());
-
-    //     return sendBlockingFrame(frame);
-    // }
+    bool CANController::sendBlockingFrame(const uint32_t id,
+                                          const std::vector<uint8_t> & data) const
+    {
+        if (data.size() > 8) {
+            logger.error("CAN frame too large ({} bytes)", data.size());
+            return false;
+        }
+        struct can_frame frame{};
+        frame.can_id = id | CAN_EFF_FLAG;
+        frame.len = static_cast<uint8_t>(data.size());
+        std::memcpy(frame.data, data.data(), data.size());
+        return sendBlockingFrame(frame);
+    }
 
     bool CANController::readFrameIfAvailable(can_frame& frame) const {
         if (socket_descriptor < 0 || stop_.load(std::memory_order_acquire)) {

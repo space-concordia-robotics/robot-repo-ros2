@@ -3,20 +3,20 @@
 #include <utility>
 
 namespace {
-constexpr double kUpdatePeriodSec = 10.0;
-constexpr auto kUpdatePeriod = std::chrono::seconds(10);
+static constexpr auto K_UPDATE_PERIOD_SEC = 10.0;
+static constexpr auto K_UPDATE_PERIOD = std::chrono::seconds(10);
 
-constexpr float kBatteryVoltMin = 10.0f;
-constexpr float kBatteryVoltMax = 14.8f;
-constexpr float kRailVoltMin = 10.0f;
-constexpr float kRailVoltMax = 14.8f;
+static constexpr auto K_BATTERY_VOLT_MIN = 10.0f;
+static constexpr auto K_BATTERY_VOLT_MAX = 14.8f;
+static constexpr auto K_RAIL_VOLT_MIN = 10.0f;
+static constexpr auto K_RAIL_VOLT_MAX = 14.8f;
 
-constexpr float kBatteryCurrentWarnMin = 60.0f;
-constexpr float kBatteryCurrentErrorMin = 80.0f;
-constexpr float kBatteryCurrentFailMin = 90.0f;
+static constexpr auto K_BATTERY_CURRENT_WARN_MIN = 60.0f;
+static constexpr auto K_BATTERY_CURRENT_ERROR_MIN = 80.0f;
+static constexpr auto K_BATTERY_CURRENT_FAIL_MIN = 90.0f;
 
-constexpr float kRailCurrentErrorMin = 30.0f;
-constexpr float kTempWarnMin = 60.0f;
+static constexpr auto K_RAIL_CURRENT_ERROR_MIN = 30.0f;
+static constexpr auto K_TEMP_WARN_MIN = 60.0f;
 }
 
 ProduceDiagnostics::ProduceDiagnostics(rclcpp::Node& node,
@@ -50,7 +50,7 @@ bool ProduceDiagnostics::ensureDiagnostics(diagnostic_updater::DiagnosticStatusW
 		return true;
 	}
 
-	stat.summary(diagnostic_msgs::msg::DiagnosticStatus::ERROR, "BAB interface not initialized");
+	stat.summary(diagnostic_msgs::msg::DiagnosticStatus::WARN, "BAB interface not initialized");
 	return false;
 }
 

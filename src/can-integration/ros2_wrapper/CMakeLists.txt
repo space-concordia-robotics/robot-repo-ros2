@@ -19,7 +19,6 @@ include_directories(include)
 
 add_executable(can_node
   src/can_controller_node.cpp
-  
 )
 
 #rosidl_target_interfaces(wheels_controller_node
@@ -39,4 +38,3 @@ install(TARGETS
         can_node
         DESTINATION lib/${PROJECT_NAME})
 ament_package()
-
