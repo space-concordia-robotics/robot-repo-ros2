@@ -30,7 +30,7 @@ ament_target_dependencies(
         geometry_msgs
         sensor_msgs
         std_msgs
-        can_utils
+        can_util
         bab-board
 )
 

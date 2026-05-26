@@ -14,7 +14,7 @@
     <depend>geometry_msgs</depend>
     <depend>std_msgs</depend>
     <depend>ros2_fmt_logger</depend>
-    <depend>can_utils</depend>
+    <depend>can_util</depend>
     <depend>bab-board</depend>
 
     <test_depend>ament_lint_auto</test_depend>
