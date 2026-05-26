@@ -20,34 +20,34 @@
 //                                                    diagnose CAN-ID mismatch
 //                                                    on the bus.
 
-#include "bab-board/battery_board.hpp"
-#include "can-utils/buildAddress.hpp"
-#include "can-utils/can_connect.hpp"
-#include "can-utils/can_interface.hpp"
-#include "can-utils/prefixes.hpp"
-
-#include "rclcpp/rclcpp.hpp"
-#include "ros2_fmt_logger/ros2_fmt_logger.hpp"
-
 #include <chrono>
 #include <iomanip>
 #include <memory>
 #include <sstream>
 #include <string>
+#include <fmt/ranges.h>
+#include <rclcpp/rclcpp.hpp>
+#include <ros2_fmt_logger/ros2_fmt_logger.hpp>
+
+#include "bab-board/battery_board.hpp"
+#include "can_util/can_util.hpp"
+
+// Match the values actually used by the BAB firmware on the rover
+// (see comments at the top of battery_board.cpp).
+static constexpr auto BAB_DEVICE_TYPE = can_util::constants::DeviceType::BROADCAST_MESSAGE; // should really be POWER_DISTRIBUTION_MODULE
+static constexpr auto BAB_MANUFACTURER = can_util::constants::Manufacturer::TEAM_USE; // 0x08
+static constexpr auto BAB_ID = 0x00;
 
 namespace {
-    // Match the values actually used by the BAB firmware on the rover
-    // (see comments at the top of battery_board.cpp).
-    static constexpr auto BAB_DEVTYPE = 0x00;
-    static constexpr auto BAB_FIRMWARE_MFR = Manufacturer::TEAM_USE; // 0x08
-    static constexpr auto BAB_FIRMWARE_DEVID = 0x00;
-
-    std::string formatRow(const char* label,
-                          bool fresh,
-                          bool ever_received,
-                          float v, float i, float p_or_t,
-                          const char* p_or_t_label,
-                          const char* extra = nullptr) {
+    // TODO 2026-05-26 (Will Free): convert this to using fmt with ros2_fmt_logger
+    std::string formatRow(
+        const char* label,
+        const bool fresh,
+        const bool ever_received,
+        const float v, const float i, const float p_or_t,
+        const char* p_or_t_label,
+        const char* extra = nullptr
+    ) {
         std::ostringstream ss;
         ss << "  " << std::left << std::setw(10) << label
             << " V=" << std::setw(7) << std::fixed << std::setprecision(2) << v
@@ -65,98 +65,91 @@ namespace {
         }
         return ss.str();
     }
-} // namespace
+}
 
 
 class BabTelemetryNode : public rclcpp::Node {
 public:
     BabTelemetryNode()
         : Node("bab_telemetry_node"),
-          logger(get_logger().get_child("bab_telemetry_node"), *get_clock()) {
-        can_interface_ = declare_parameter<std::string>("can_interface", "can0");
+          logger(this->get_logger().get_child("bab_telemetry_node"), *get_clock()) {
+        can_interface = declare_parameter<std::string>("can_interface", "can0");
         const int period_ms = declare_parameter<int>("print_period_ms", 1000);
-        log_unknown_ = declare_parameter<bool>("log_unknown_bab_frames", false);
+        log_unknown = declare_parameter<bool>("log_unknown_bab_frames", false);
 
-        can_ = can_util::createConfiguredCanController(can_interface_, get_logger());
-        if (!can_) {
-            throw std::runtime_error(
-                "CAN configure failed on '" + can_interface_ + "' — see log for hints");
+        can_controller = std::make_shared<can_util::CANController>(can_interface, this->get_logger());
+        if (!can_controller->initialize()) {
+            logger.fatal("Failed to initialize canbus");
+            throw std::runtime_error("CAN failed to initialize");
         }
 
-        rclcpp::on_shutdown([weak_can = std::weak_ptr<can_util::CANController>(can_)] {
-            if (auto can = weak_can.lock()) {
-                can->stop();
-            }
-        });
-
-        build_address_ = std::make_unique<buildAddress::BuildAddress>(can_);
-        bab_ = std::make_shared<BAB>(
+        bab = std::make_shared<BAB>(
             get_logger(),
-            *can_,
-            *build_address_,
-            static_cast<uint32_t>(DeviceId::ID::BAB));
+            can_controller,
+            BAB_ID
+        );
 
-        if (log_unknown_) {
+        if (log_unknown) {
             // Independent callback so we can warn about BAB-typed frames whose
             // Manufacturer / DeviceID do not match BAB-docs.md (i.e. frames
             // that the BAB parser will silently ignore).
-            unknown_frame_cb_ = can_->registerFrameCallback(
-                [this](uint32_t id, const std::vector<uint8_t>& data) {
+            unknown_frame_callback = can_controller->registerFrameCallback(
+                [this](const uint32_t id, const std::vector<uint8_t>& data) {
                     onAnyFrame(id, data);
-                });
+                }
+            );
         }
 
-        timer_ = create_wall_timer(
+        timer = create_wall_timer(
             std::chrono::milliseconds(period_ms),
-            [this]() {
+            [this] {
                 printTelemetry();
-            });
+            }
+        );
 
         logger.info(
             "bab_telemetry_node ready — interface={}, period={} ms, log_unknown={}",
-            can_interface_, period_ms, log_unknown_);
+            can_interface, period_ms, log_unknown);
     }
 
-    ~BabTelemetryNode() override {
-        if (can_) {
-            can_->stop();
-        }
-    }
+    ~BabTelemetryNode() override {}
 
 private:
-    void printTelemetry() {
+    void printTelemetry() const {
         std::ostringstream ss;
-        ss << "\n--- BAB Telemetry (iface=" << can_interface_ << ") ---";
+        ss << "\n--- BAB Telemetry (iface=" << can_interface << ") ---";
 
-        for (size_t i = 0; i < BAB::NUM_BATTERIES; ++i) {
+        for (size_t i = 0; i < BAB::BATTERIES_COUNT; ++i) {
             std::string label = "Battery " + std::to_string(i + 1);
             ss << "\n"
                 << formatRow(label.c_str(),
-                             bab_->batteryFresh(i),
-                             bab_->batteryEverReceived(i),
-                             bab_->getBatteryVoltageLevel(i),
-                             bab_->getBatteryCurrentLevel(i),
-                             bab_->getBatteryTemp(i),
+                             bab->batteryFresh(i),
+                             bab->batteryEverReceived(i),
+                             bab->getBatteryVoltageLevel(i),
+                             bab->getBatteryCurrentLevel(i),
+                             bab->getBatteryTemp(i),
                              "T");
         }
 
-        for (size_t i = 0; i < BAB::NUM_RAILS; ++i) {
-            const char* name = (i == 0)
+        // TODO 2026-05-26 (Will Free): convert this to using fmt
+        for (size_t i = 0; i < BAB::RAILS_COUNT; ++i) {
+            // TODO 2026-05-26 (Will Free): this ternary sucks
+            const char* name = i == 0
                                    ? "Rail 1 (5V)"
-                                   : (i == 1)
+                                   : i == 1
                                    ? "Rail 2 (Arm)"
                                    : "Rail 3 (Whl)";
             std::ostringstream extra;
             extra << "P=" << std::fixed << std::setprecision(1)
-                << bab_->getRailPower(i) << "W"
-                << " sw=" << (bab_->getRailSwitchOn(i) ? "ON " : "OFF");
+                << bab->getRailPower(i) << "W"
+                << " sw=" << (bab->getRailSwitchOn(i) ? "ON " : "OFF");
             ss << "\n"
                 << formatRow(name,
-                             bab_->railFresh(i),
-                             bab_->railEverReceived(i),
-                             bab_->getRailVoltageLevel(i),
-                             bab_->getRailCurrent(i),
-                             bab_->getRailPower(i),
+                             bab->railFresh(i),
+                             bab->railEverReceived(i),
+                             bab->getRailVoltageLevel(i),
+                             bab->getRailCurrent(i),
+                             bab->getRailPower(i),
                              "P",
                              extra.str().c_str());
         }
@@ -164,47 +157,36 @@ private:
         logger.info("{}", ss.str());
     }
 
-    void onAnyFrame(uint32_t id, const std::vector<uint8_t>& data) {
-        const uint8_t devtype = (id >> 24) & 0x1F;
-        if (devtype != BAB_DEVTYPE) {
+    void onAnyFrame(const uint32_t id, const std::vector<uint8_t>& data) const {
+        if (const uint8_t device_type = id >> 24 & 0x1F; device_type != static_cast<uint8_t>(BAB_DEVICE_TYPE)) {
             return;
         }
-        const uint8_t mfr = (id >> 16) & 0xFF;
-        const uint8_t devid = id & 0x3F;
-        if (mfr == BAB_FIRMWARE_MFR && devid == BAB_FIRMWARE_DEVID) {
+        const uint8_t manufacturer = id >> 16 & 0xFF;
+        const uint8_t device_id = id & 0x3F;
+        if (manufacturer == static_cast<uint8_t>(BAB_MANUFACTURER) && device_id == BAB_ID) {
             return; // already handled by BAB parser
         }
 
-        std::ostringstream ss;
-        ss << "Unmatched BAB-typed frame id=0x" << std::hex << std::uppercase
-            << std::setw(8) << std::setfill('0') << id
-            << " (mfr=0x" << std::setw(2) << static_cast<int>(mfr)
-            << " devid=0x" << std::setw(2) << static_cast<int>(devid)
-            << ") data=";
-        for (auto b : data) {
-            ss << std::hex << std::setw(2) << std::setfill('0')
-                << static_cast<int>(b) << " ";
-        }
         using namespace std::chrono_literals;
-        logger.warn_throttle(2s, "{}", ss.str());
+        logger.warn_throttle(2s, "Unmatched BAB-typed frame id={:#08X} (mfr={:#02X}, devid={:#02X}) data={:#02X}", id, manufacturer, device_id, data);
     }
 
     ros2_fmt_logger::Logger logger;
-    std::string can_interface_;
-    bool log_unknown_ = false;
-    std::shared_ptr<can_util::CANController> can_;
-    std::unique_ptr<buildAddress::BuildAddress> build_address_;
-    std::shared_ptr<BAB> bab_;
-    std::shared_ptr<can_util::CANFrameCallback> unknown_frame_cb_;
-    rclcpp::TimerBase::SharedPtr timer_;
+    std::string can_interface;
+    bool log_unknown = false;
+    std::shared_ptr<can_util::CANController> can_controller;
+    // std::unique_ptr<buildAddress::BuildAddress> build_address_;
+    std::shared_ptr<BAB> bab;
+    std::shared_ptr<can_util::CANFrameCallback> unknown_frame_callback;
+    rclcpp::TimerBase::SharedPtr timer;
 };
 
 
-int main(int argc, char** argv) {
+int main(const int argc, char** argv) {
     rclcpp::init(argc, argv);
     int exit_code = 0;
     try {
-        auto node = std::make_shared<BabTelemetryNode>();
+        const auto node = std::make_shared<BabTelemetryNode>();
         rclcpp::spin(node);
     } catch (const std::exception& e) {
         ros2_fmt_logger::Logger(rclcpp::get_logger("bab_telemetry_node"))
