@@ -16,9 +16,9 @@ public:
 
     void subscribe(const std::string& topic, const rclcpp::QoS& qos) {
         std::lock_guard lock(mutex);
+
         if (subscription) {
-            RCLCPP_WARN(application.get_logger(), "Tried to subscribe to multiple times to subscription group. Topic: %s", topic.data());
-            return;
+            subscription.reset();
         }
 
         subscription = application.create_subscription<Msg>(topic, qos, std::bind(&SubscriptionGroup::onMessage, this, std::placeholders::_1));
