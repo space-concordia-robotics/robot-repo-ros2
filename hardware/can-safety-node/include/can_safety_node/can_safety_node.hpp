@@ -17,14 +17,13 @@
 
 #pragma once
 
-#include "can-utils/can_interface.hpp"
-#include "can-utils/system_controller.hpp"
-#include "rclcpp/rclcpp.hpp"
-#include "sensor_msgs/msg/joy.hpp"
-#include "std_msgs/msg/bool.hpp"
-
 #include <memory>
 #include <string>
+#include <rclcpp/rclcpp.hpp>
+#include <sensor_msgs/msg/joy.hpp>
+#include <std_msgs/msg/bool.hpp>
+
+#include "can_util/can_util.hpp"
 
 namespace can_safety_node {
     class CanSafetyNode : public rclcpp::Node {
@@ -32,28 +31,31 @@ namespace can_safety_node {
         explicit CanSafetyNode(const rclcpp::NodeOptions& options = rclcpp::NodeOptions());
 
     private:
-        void onJoy(const sensor_msgs::msg::Joy::ConstSharedPtr& msg);
+        ros2_fmt_logger::Logger logger;
 
-        // Helper: returns true on the rising edge of a button press given the
-        // previous state; updates `prev` in place.
-        static bool risingEdge(bool current, bool& prev);
-
-        std::string can_interface_name_{"can0"};
+        std::string can_interface_name = "can0";
         // Joy button indices (configurable via params).
         // Defaults are VKBButtonLayout::F1 (26) and F2 (27) — unassigned by joy_mux_controller_py,
         // so they do not conflict with arm joints 2/5 (which used the old defaults 6 and 7).
         // Verify actual indices on your hardware with: ros2 run joy_mux_controller_py joy_button_probe
-        int wheel_force_stop_button_{26};
-        int wheel_resume_button_{27};
+        int wheel_force_stop_button = 26;
+        int wheel_resume_button = 27;
 
-        std::shared_ptr<can_util::CANController> can_;
-        std::unique_ptr<SystemFrameBuilder> frame_builder_;
+        can_util::CANController::SharedPtr can_controller;
 
-        rclcpp::Subscription<sensor_msgs::msg::Joy>::SharedPtr joy_sub_;
-        rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr wheel_stopped_pub_;
+        rclcpp::Subscription<sensor_msgs::msg::Joy>::SharedPtr joy_subscription;
+        rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr wheel_stopped_publisher;
 
-        bool prev_force_stop_pressed_{false};
-        bool prev_resume_pressed_{false};
-        bool wheel_stopped_{false};
+        bool prev_force_stop_pressed = false;
+        bool prev_resume_pressed = false;
+        bool wheel_stopped = false;
+
+        void onJoy(const sensor_msgs::msg::Joy::ConstSharedPtr& msg);
+        bool sendShutDownRequest(can_util::constants::DeviceType device_type, uint32_t device_id) const;
+        bool sendRestartCommand(can_util::constants::DeviceType device_type, uint32_t device_id) const;
+
+        // Helper: returns true on the rising edge of a button press given the
+        // previous state; updates `prev` in place.
+        static bool risingEdge(bool current, bool& prev);
     };
-} // namespace can_safety_node
+}
