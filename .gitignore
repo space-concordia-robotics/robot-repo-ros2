@@ -341,11 +341,6 @@ venv/
 ENV/
 env.bak/
 venv.bak/
-# Keep colcon from treating a local venv as ROS packages (see luxonis_scripts/venv/COLCON_IGNORE)
-**/.venv/*
-!**/.venv/COLCON_IGNORE
-**/venv/*
-!**/venv/COLCON_IGNORE
 
 # Spyder project settings
 .spyderproject
