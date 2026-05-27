@@ -2,10 +2,10 @@
 
 #include <IconsFontAwesome7.h>
 #include <imgui.h>
-#include <misc/cpp/imgui_stdlib.h>
 #include <gst/app/gstappsink.h>
 #include <image_transport/camera_common.hpp>
 #include <magic_enum/magic_enum.hpp>
+#include <misc/cpp/imgui_stdlib.h>
 #include <peel/GLib/MainLoop.h>
 #include <peel/Gst/Element.h>
 #include <peel/Gst/functions.h>
@@ -31,7 +31,7 @@ using namespace peel;
 template <>
 struct fmt::formatter<String> : formatter<const char*> {
     template <typename FormatContext>
-    auto format(const String string, FormatContext& ctx) const {
+    auto format(const String& string, FormatContext& ctx) const {
         return formatter<const char*>::format(string.c_str(), ctx);
     }
 };
@@ -74,12 +74,12 @@ namespace magic_enum::customize {
 
 VideoWidget::VideoWidget(
     ImApplication& application,
-    const std::string& source_url,
-    const std::string& camera_topic,
+    std::string source_url,
+    std::string camera_topic,
     const bool minimap
 ) : UiWidget(application) {
-    stream_config.source_url = source_url;
-    stream_config.camera_topic = camera_topic;
+    stream_config.source_url = std::move(source_url);
+    stream_config.camera_topic = std::move(camera_topic);
     stream_config.minimap = minimap;
 
     stats_overlay = std::make_shared<VideoStatsOverlay>(application);
@@ -94,9 +94,26 @@ VideoWidget::VideoWidget(
 
     camera_info_subscription = SubscriptionGroup<CameraInfo>::make_shared(application);
 
-    camera_info_subscription->addCallback(aruco_overlay, std::bind(&ArucoVideoOverlay::onCameraInfo, aruco_overlay, std::placeholders::_1));
-    camera_info_subscription->addCallback(local_nav_overlay, std::bind(&NavPathVideoOverlay::onCameraInfo, local_nav_overlay, std::placeholders::_1));
-    camera_info_subscription->addCallback(global_nav_overlay, std::bind(&NavPathVideoOverlay::onCameraInfo, global_nav_overlay, std::placeholders::_1));
+    camera_info_subscription->addCallback(
+        aruco_overlay,
+        [overlay =aruco_overlay](const CameraInfo::SharedPtr& camera_info) mutable {
+            overlay->onCameraInfo(camera_info);
+        }
+    );
+
+    camera_info_subscription->addCallback(
+        local_nav_overlay,
+        [overlay = local_nav_overlay](auto&& camera_info) mutable {
+            overlay->onCameraInfo(camera_info);
+        }
+    );
+
+    camera_info_subscription->addCallback(
+        global_nav_overlay,
+        [overlay = global_nav_overlay](auto&& camera_info) mutable {
+            overlay->onCameraInfo(camera_info);
+        }
+    );
 
     addOverlay(std::make_shared<CrosshairOverlay>(application));
 
@@ -109,7 +126,9 @@ void VideoWidget::onInit() {
     UiWidget::onInit();
     UiOverlayable::onInit();
 
-    gst_thread = std::thread(std::bind(&VideoWidget::videoThread, this));
+    gst_thread = std::thread([this] {
+        videoThread();
+    });
 
     applyRosCameraTopic();
 
@@ -153,6 +172,14 @@ ImVec2 VideoWidget::expectedSize(const ImVec2 available) const {
 }
 
 void VideoWidget::draw() {
+    const auto now = steady_clock::now();
+
+    if (last_frame != time_point<steady_clock>()) {
+        if (const auto frame_delta = duration_cast<duration<double>>(now - last_frame).count(); frame_delta > 0.0) {
+            video_stats.fps = 1.0 / frame_delta;
+        }
+    }
+
     updateTexture();
 
     ImGui::BeginChild("VideoRegion", ImVec2(0, 0), 0, ImGuiWindowFlags_NoScrollbar);
@@ -269,7 +296,7 @@ void VideoWidget::drawFiltersMenu() {
             for (auto i = 0u; i < VIDEO_FLIP_ENTRIES.size(); ++i) {
                 const auto [enum_val, name] = VIDEO_FLIP_ENTRIES[i];
 
-                ImGui::PushID(i);
+                ImGui::PushID(static_cast<int>(i));
 
                 const auto selected = i == current_index;
 
@@ -392,7 +419,6 @@ void VideoWidget::videoThread() {
     }
 }
 
-// ReSharper disable once CppDFAUnreachableFunctionCall
 FloatPtr<Gst::Bin> VideoWidget::createPipeline() const {
     // TODO 2026-05-07 (Will Free): replace this pipeline string with creating each of the elements individually
     //  via gst_element_factory_make(), then linking them together.
@@ -431,7 +457,6 @@ FloatPtr<Gst::Bin> VideoWidget::createPipeline() const {
     return pipeline_bin;
 }
 
-// ReSharper disable once CppDFAUnreachableFunctionCall
 void VideoWidget::configureAppsink() {
     appsink->set_emit_signals(true);
     appsink->set_drop(true);
@@ -446,7 +471,6 @@ void VideoWidget::configureAppsink() {
     appsink->set_callbacks(reinterpret_cast<GstApp::AppSinkCallbacks*>(&appsink_callbacks), this, nullptr);
 }
 
-// ReSharper disable once CppDFAUnreachableFunctionCall
 void VideoWidget::configureJitterbuffer() {
     if (const auto jitterbuffer_sink_pad = jitterbuffer->get_static_pad("sink")) {
         jitterbuffer_sink_pad->add_probe(
@@ -651,12 +675,6 @@ GstFlowReturn VideoWidget::onNewSample(GstAppSink* sink) {
 
         const auto now = steady_clock::now();
 
-        if (last_frame != time_point<steady_clock>()) {
-            if (const auto frame_delta = duration_cast<duration<double>>(now - last_frame).count(); frame_delta > 0.0) {
-                video_stats.fps = 1.0 / frame_delta;
-            }
-        }
-
         last_frame = now;
     }
 
@@ -755,8 +773,9 @@ void VideoWidget::applyFilters(const FilterState& filters, const bool update_fli
         sharpness->set_property<gdouble>("amount", filters.sharpness);
     }
 
-    if (update_flip)
+    if (update_flip) {
         applyFlip(filters.rotation);
+    }
 }
 
 void VideoWidget::applyFlip(VideoFlipMethod rotation) const {
