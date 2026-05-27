@@ -150,6 +150,8 @@ private:
 
     void applyRosCameraTopic() const;
 
+    void applyMinimap();
+
     void applyStreamConfig();
 
     void applyFilters(const FilterState& filters, bool update_flip = true) const;

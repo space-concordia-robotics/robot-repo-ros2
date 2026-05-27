@@ -19,6 +19,7 @@
 
 #include "foc2-gui/overlays/aruco_video_overlay.hpp"
 #include "foc2-gui/overlays/crosshair_overlay.hpp"
+#include "foc2-gui/overlays/minimap.hpp"
 #include "foc2-gui/overlays/nav_path_video_overlay.hpp"
 #include "foc2-gui/overlays/video_stats_overlay.hpp"
 
@@ -118,8 +119,7 @@ VideoWidget::VideoWidget(
     addOverlay(std::make_shared<CrosshairOverlay>(application));
 
     // TODO 2026-05-20 (Will Free): the minimap is currently broken, because it cannot correctly determine which way is north.
-    // if (minimap)
-    //     addOverlay(std::make_shared<MiniMapOverlay>(application));
+    applyMinimap();
 }
 
 void VideoWidget::onInit() {
@@ -352,12 +352,21 @@ void VideoWidget::drawConfigWindow() {
             ImGui::InputText("RTSP URI", &stream_config_next.source_url);
             ImGui::InputText("ROS Camera Topic", &stream_config_next.camera_topic);
 
+            ImGui::Spacing();
+
             ImGui::SliderInt("RTSP latency (ms)", &stream_config_next.rtspsrc_latency, 0, 1000);
             ImGui::SliderInt("Jitterbuffer latency (ms)", &stream_config.jitterbuffer_latency, 0, 1000);
+
+            ImGui::Spacing();
+
+            ImGui::Checkbox("Minimap", &stream_config_next.minimap);
+
+            ImGui::Spacing();
 
             if (ImGui::Button("Apply")) {
                 stream_config = stream_config_next; // apply next config
                 applyStreamConfig();
+                applyMinimap();
                 applyRosCameraTopic();
             }
 
@@ -745,6 +754,11 @@ void VideoWidget::applyRosCameraTopic() const {
         return;
 
     camera_info_subscription->subscribe(image_transport::getCameraInfoTopic(stream_config.camera_topic), 10);
+}
+
+void VideoWidget::applyMinimap() {
+    if (stream_config.minimap)
+        addOverlay("minimap", std::make_shared<MiniMapOverlay>(application));
 }
 
 void VideoWidget::applyStreamConfig() {
