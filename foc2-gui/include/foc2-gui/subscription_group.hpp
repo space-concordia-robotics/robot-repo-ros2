@@ -34,6 +34,10 @@ public:
         addCallbackImpl(std::move(owner), std::function<void(typename Msg::SharedPtr)>(std::forward<Callback>(callback)));
     }
 
+    rclcpp::Subscription<Msg>::SharedPtr getSubscription() {
+        return subscription;
+    }
+
 private:
     struct CallbackHolder {
         std::weak_ptr<void> owner;

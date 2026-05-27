@@ -148,7 +148,7 @@ private:
 
     void updateTexture();
 
-    void applyRosCameraTopic();
+    void applyRosCameraTopic() const;
 
     void applyStreamConfig();
 

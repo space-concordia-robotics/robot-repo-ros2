@@ -740,8 +740,10 @@ void VideoWidget::updateTexture() {
     }
 }
 
-void VideoWidget::applyRosCameraTopic() {
-    // TODO 2026-05-26 (Will Free): optimization: check if the currently subscribed camera topic is the same as the new one
+void VideoWidget::applyRosCameraTopic() const {
+    if (camera_info_subscription->getSubscription()->get_topic_name() == stream_config.camera_topic)
+        return;
+
     camera_info_subscription->subscribe(image_transport::getCameraInfoTopic(stream_config.camera_topic), 10);
 }
 
