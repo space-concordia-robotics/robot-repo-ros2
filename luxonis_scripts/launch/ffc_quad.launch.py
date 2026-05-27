@@ -1,5 +1,3 @@
-"""Launch OAK-FFC-4P quad bridge under the ``ffc`` ROS namespace."""
-
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, SetEnvironmentVariable
 from launch.substitutions import LaunchConfiguration
