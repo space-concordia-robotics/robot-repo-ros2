@@ -1,0 +1,82 @@
+<?xml version="1.0"?>
+<robot name="ceres"
+       xmlns="https://www.ros.org"
+       xmlns:xacro="https://ros.org/wiki/xacro"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="https://www.ros.org ../../urdf.xsd https://ros.org/wiki/xacro ../../xacro.xsd">
+    <xacro:macro name="autonomy_module">
+        <xacro:property name="module_base_offset_z" value="-0.02"/>
+        <xacro:property name="module_base_length" value="0.16"/>
+        <xacro:property name="module_base_width" value="${body_width}"/>
+        <xacro:property name="module_base_height" value="0.1"/>
+
+        <joint name="base_to_autonomy_module_base" type="fixed">
+            <parent link="base_link"/>
+            <child link="autonomy_module_base"/>
+            <origin xyz="${body_length} 0 0"/>
+        </joint>
+
+        <link name="autonomy_module_base">
+            <visual>
+                <origin xyz="${module_base_length/2} 0 -${module_base_height/2}"/>
+                <geometry>
+                    <box size="${module_base_length} ${module_base_width} ${module_base_height}"/>
+                </geometry>
+                <material name="aluminum"/>
+            </visual>
+            <collision>
+                <origin xyz="${module_base_length/2} 0 ${module_base_height/2}"/>
+                <geometry>
+                    <box size="${module_base_length} ${module_base_width} ${module_base_height}"/>
+                </geometry>
+            </collision>
+        </link>
+
+        <xacro:gazebo_color reference="autonomy_module_base" color="aluminum"/>
+
+        <joint name="autonomy_module_base_to_lidar" type="fixed">
+            <parent link="autonomy_module_base"/>
+            <child link="lidar_link"/>
+            <origin xyz="${module_base_length/2} 0 0"/>
+        </joint>
+
+        <xacro:property name="lidar_height" value="0.08"/>
+        <xacro:property name="lidar_radius" value="0.04"/>
+
+        <link name="lidar_link">
+            <visual>
+                <origin xyz="0 0 ${lidar_height/2}"/>
+                <geometry>
+                    <cylinder radius="${lidar_radius}" length="${lidar_height}"/>
+                </geometry>
+                <material name="aluminum"/>
+            </visual>
+        </link>
+
+        <xacro:gazebo_color reference="lidar_link" color="aluminum"/>
+
+        <joint name="autonomy_module_base_to_forward_camera" type="fixed">
+            <parent link="autonomy_module_base"/>
+            <child link="forward_camera"/>
+            <!-- TODO 2026-02-26 (Will Free): correct value for this -->
+            <origin xyz="0.179667 0 -0.0829656"/>
+        </joint>
+
+        <link name="forward_camera">
+            <visual>
+                <geometry>
+                    <sphere radius="0.025"/>
+                </geometry>
+                <material name="plastic-black"/>
+            </visual>
+            <!--
+            <collision>
+            </collision>
+            -->
+        </link>
+
+        <xacro:gazebo_color reference="forward_camera" color="plastic-black"/>
+    </xacro:macro>
+
+    <xacro:autonomy_module/>
+</robot>
