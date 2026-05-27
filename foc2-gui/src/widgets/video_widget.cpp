@@ -118,7 +118,6 @@ VideoWidget::VideoWidget(
 
     addOverlay(std::make_shared<CrosshairOverlay>(application));
 
-    // TODO 2026-05-20 (Will Free): the minimap is currently broken, because it cannot correctly determine which way is north.
     applyMinimap();
 }
 
