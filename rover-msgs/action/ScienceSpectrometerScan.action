@@ -1,5 +1,6 @@
 bool correct_dark_counts false
 bool correct_nonlinearity false
+uint32 integration_time_ms 0
 ---
 float64[] temperatures
 

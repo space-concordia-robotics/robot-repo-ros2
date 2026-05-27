@@ -1,0 +1,7 @@
+<library path="wheels_interface">
+    <class name="wheels_interface/RoverSystemWheelsHardware"
+           type="wheels_interface::RoverSystemWheelsHardware"
+           base_class_type="hardware_interface::SystemInterface">
+        <description/>
+    </class>
+</library>

@@ -12,7 +12,7 @@ from rtsp_server import RtspServer
 
 FFC_MXID = "14442C10014791D700"
 OAKD_MXID = "1944301001EDE12E00"
-STREAM_NAMES = ["Front", "Right", "Left", "Back", "RGB", "DEPTH"]
+STREAM_NAMES = ["FRONT", "RIGHT", "LEFT", "BACK", "RGB", "DEPTH"]
 
 MODES = {
     "ffc_all": {"bitrate": 2000000, "fps": 30},
@@ -358,7 +358,7 @@ def build_pipeline(pipeline, mode, maxFps, bitrate, visualizer):
     bitstream_queues = {}
     extra_queues = {}
 
-    for idx, (socket, name) in enumerate(sockets):
+    for socket, name in sockets:
         cam = pipeline.create(dai.node.Camera).build(socket)
         cam_out = cam.requestOutput((1920, 1080), fps=maxFps, type=dai.ImgFrame.Type.NV12)
 
@@ -370,10 +370,9 @@ def build_pipeline(pipeline, mode, maxFps, bitrate, visualizer):
         cam_out.link(enc.input)
         bitstream_queues[name] = enc.out.createOutputQueue(maxSize=30, blocking=True)
 
-        mjpeg = pipeline.create(dai.node.VideoEncoder)
-        mjpeg.setDefaultProfilePreset(maxFps, dai.VideoEncoderProperties.Profile.MJPEG)
-        cam_out.link(mjpeg.input)
-        visualizer.addTopic(name, mjpeg.out, "img")
+        # Same H.264 bitstream as RTSP — no second encoder, far less link load than MJPEG.
+        # Group "images" matches DepthAI visualizer_encoded.py for compressed video.
+        visualizer.addTopic(name, enc.out, "images")
 
 
     if mode == "oakd_yolo":

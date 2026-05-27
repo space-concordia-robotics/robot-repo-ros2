@@ -25,7 +25,7 @@ set(MESSAGE_DEFINITIONS
 )
 
 set(SERVICE_DEFINITIONS
-        # empty
+        "srv/SetSILStatus.srv"
 )
 
 set(ACTION_DEFINITIONS
@@ -39,4 +39,5 @@ rosidl_generate_interfaces(${PROJECT_NAME}
         DEPENDENCIES ${DEPENDENCIES}
 )
 
+ament_export_dependencies(rosidl_default_runtime geometry_msgs)
 ament_package()
