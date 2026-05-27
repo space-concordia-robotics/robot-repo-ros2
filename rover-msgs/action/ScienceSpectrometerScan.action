@@ -1,0 +1,10 @@
+bool correct_dark_counts false
+bool correct_nonlinearity false
+---
+float64[] temperatures
+
+# the wavelengths & intensities are always the same length,
+# and every wavelength is paired with the intensity at the corresponding index
+float64[] wavelengths
+float64[] intensities
+---

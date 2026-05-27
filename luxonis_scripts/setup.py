@@ -3,20 +3,17 @@ from glob import glob
 
 from setuptools import find_packages, setup
 
-package_name = 'luxonis_ros'
+package_name = 'luxonis_scripts'
 _nn_basename = 'best_190_Epoch.rvc2.tar.xz'
-_repo_nn = os.path.join(os.path.dirname(__file__), '..', 'luxonis_scripts', _nn_basename)
+_repo_nn = os.path.join(os.path.dirname(__file__), _nn_basename)
 
 data_files = [
-    ('share/ament_index/resource_index/packages',
-        ['resource/' + package_name]),
+    ('share/ament_index/resource_index/packages', ['resource/' + package_name]),
     ('share/' + package_name, ['package.xml']),
     (os.path.join('share', package_name, 'launch'), glob('launch/*.py')),
 ]
 if os.path.isfile(_repo_nn):
-    data_files.append(
-        (os.path.join('share', package_name, 'models'), [_repo_nn]),
-    )
+    data_files.append((os.path.join('share', package_name, 'models'), [_repo_nn]))
 
 setup(
     name=package_name,
@@ -26,14 +23,13 @@ setup(
     install_requires=['setuptools'],
     zip_safe=True,
     maintainer='scrb',
-    maintainer_email='michael.lythgoe@spaceconcordia.ca',
-    description='ROS 2 bridge for Luxonis DepthAI spatial pipelines.',
+    maintainer_email='nicholas.sheppard@spaceconcordia.ca',
+    description='Luxonis DepthAI cameras: legacy RTSP scripts and ROS 2 bridge nodes.',
     license='MIT',
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'spatial_camera_node = luxonis_ros.spatial_camera_node:main',
-            'ffc_camera_node = luxonis_ros.ffc_camera_node:main',
+            'luxonis_camera_node = luxonis_scripts.luxonis_camera_node:main',
         ],
     },
 )
