@@ -1,5 +1,3 @@
-"""Shared DepthAI helpers for ROS 2: NN archive lookup, CameraInfo, rover_msgs conversions."""
-
 from __future__ import annotations
 
 import os
@@ -14,7 +12,6 @@ from std_msgs.msg import Header
 
 NN_BASENAME = 'best_190_Epoch.rvc2.tar.xz'
 
-# rover-description/urdf/body/ffc-mount.urdf
 FFC_FRAME_IDS: dict[str, str] = {
     'front': 'ffc_front_camera',
     'right': 'ffc_right_camera',
@@ -22,7 +19,6 @@ FFC_FRAME_IDS: dict[str, str] = {
     'back': 'ffc_rear_camera',
 }
 
-# rover-description/urdf/body/autonomy-module.urdf (depth camera link TBD in depth-camera.urdf)
 OAK_RGB_FRAME_ID = 'forward_camera'
 
 
@@ -98,7 +94,6 @@ def build_camera_info(
 
 
 def build_placeholder_camera_info(width: int, height: int, frame_id: str) -> CameraInfo:
-    """Rough pinhole when the device has no intrinsics at this resolution (common on FFC / legacy cal)."""
     msg = CameraInfo()
     msg.header.frame_id = frame_id
     msg.width = width
@@ -124,7 +119,6 @@ def build_camera_info_with_fallback(
     height: int,
     frame_id: str,
 ) -> tuple[CameraInfo, bool]:
-    """Build ``CameraInfo`` from device calibration, or a placeholder if intrinsics are missing."""
     try:
         return (build_camera_info(calib, camera_socket, width, height, frame_id), False)
     except Exception:
@@ -132,7 +126,6 @@ def build_camera_info_with_fallback(
 
 
 def norm_xy_to_px(value: float, extent: int) -> float:
-    """DepthAI reports box edges normalized to [0, 1] relative to image width/height."""
     return float(value * extent)
 
 
@@ -169,7 +162,6 @@ def spatial_detections_to_rover(
     image_width: int,
     image_height: int,
 ) -> list[ImageDetection]:
-    """Same 2D bbox layout as :func:`img_detections_to_rover` (DepthAI normalized coords)."""
     out: list[ImageDetection] = []
     w, h = image_width, image_height
     for d in src.detections:
