@@ -1,24 +1,29 @@
-"""Shared DepthAI helpers for ROS 2: NN archive lookup, CameraInfo, vision_msgs conversions."""
+"""Shared DepthAI helpers for ROS 2: NN archive lookup, CameraInfo, rover_msgs conversions."""
 
 from __future__ import annotations
 
 import os
 from pathlib import Path
-from typing import Any, Sequence
+from typing import Sequence
 
-from geometry_msgs.msg import Point, Pose, PoseWithCovariance, Quaternion
+import depthai as dai
+from geometry_msgs.msg import Point
+from rover_msgs.msg import ImageDetection
 from sensor_msgs.msg import CameraInfo
 from std_msgs.msg import Header
-from vision_msgs.msg import (
-    BoundingBox2D,
-    Detection2D,
-    Detection2DArray,
-    ObjectHypothesis,
-    ObjectHypothesisWithPose,
-    Pose2D,
-)
 
 NN_BASENAME = 'best_190_Epoch.rvc2.tar.xz'
+
+# rover-description/urdf/body/ffc-mount.urdf
+FFC_FRAME_IDS: dict[str, str] = {
+    'front': 'ffc_front_camera',
+    'right': 'ffc_right_camera',
+    'left': 'ffc_left_camera',
+    'back': 'ffc_rear_camera',
+}
+
+# rover-description/urdf/body/autonomy-module.urdf (depth camera link TBD in depth-camera.urdf)
+OAK_RGB_FRAME_ID = 'forward_camera'
 
 
 def default_nn_archive_path() -> str:
@@ -28,28 +33,26 @@ def default_nn_archive_path() -> str:
     try:
         from ament_index_python.packages import get_package_share_directory
 
-        cand = Path(get_package_share_directory('luxonis_ros')) / 'models' / NN_BASENAME
+        cand = Path(get_package_share_directory('luxonis_scripts')) / 'models' / NN_BASENAME
         if cand.is_file():
             return str(cand)
     except Exception:  # noqa: BLE001
         pass
     here = Path(__file__).resolve()
     for parent in here.parents:
-        cand = parent / 'luxonis_scripts' / NN_BASENAME
+        cand = parent / NN_BASENAME
         if cand.is_file():
             return str(cand)
     return ''
 
 
 def build_camera_info(
-    calib: Any,
-    camera_socket: Any,
+    calib: dai.CalibrationHandler,
+    camera_socket: dai.CameraBoardSocket,
     width: int,
     height: int,
     frame_id: str,
 ) -> CameraInfo:
-    import depthai as dai_
-
     msg = CameraInfo()
     msg.header.frame_id = frame_id
     msg.width = width
@@ -80,7 +83,7 @@ def build_camera_info(
         msg.distortion_model = 'plumb_bob'
 
     model = calib.getDistortionModel(camera_socket)
-    if model == dai_.CameraModel.Fisheye:
+    if model == dai.CameraModel.Fisheye:
         msg.distortion_model = 'equidistant'
 
     msg.r = [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0]
@@ -115,8 +118,8 @@ def build_placeholder_camera_info(width: int, height: int, frame_id: str) -> Cam
 
 
 def build_camera_info_with_fallback(
-    calib: Any,
-    camera_socket: Any,
+    calib: dai.CalibrationHandler,
+    camera_socket: dai.CameraBoardSocket,
     width: int,
     height: int,
     frame_id: str,
@@ -128,64 +131,61 @@ def build_camera_info_with_fallback(
         return (build_placeholder_camera_info(width, height, frame_id), True)
 
 
-def identity_orientation() -> Quaternion:
-    return Quaternion(x=0.0, y=0.0, z=0.0, w=1.0)
+def norm_xy_to_px(value: float, extent: int) -> float:
+    """DepthAI reports box edges normalized to [0, 1] relative to image width/height."""
+    return float(value * extent)
 
 
-def norm_xy_to_px(v: float, extent: int) -> float:
-    if 0.0 <= v <= 1.0:
-        return float(v * extent)
-    return float(v)
-
-
-def hypothesis_with_pose(
-    label: str,
-    score: float,
-    px: float,
-    py: float,
-    pz: float,
-) -> ObjectHypothesisWithPose:
-    hyp = ObjectHypothesis(class_id=label, score=float(score))
-    pose = Pose(position=Point(x=px, y=py, z=pz), orientation=identity_orientation())
-    ohp = ObjectHypothesisWithPose()
-    ohp.hypothesis = hyp
-    ohp.pose = PoseWithCovariance()
-    ohp.pose.pose = pose
-    ohp.pose.covariance = [0.0] * 36
-    return ohp
-
-
-def img_detections_to_detection2d_array(
-    src: Any,
+def img_detections_to_rover(
+    src: dai.ImgDetections,
     header: Header,
     image_width: int,
     image_height: int,
-) -> Detection2DArray:
-    """Convert DepthAI ImgDetections to vision_msgs/Detection2DArray (image coordinates, pose unused)."""
-    out = Detection2DArray(header=header)
+) -> list[ImageDetection]:
+    out: list[ImageDetection] = []
     w, h = image_width, image_height
     for d in src.detections:
-        label = d.labelName or str(d.label)
-        xmin = norm_xy_to_px(d.xmin, w)
-        xmax = norm_xy_to_px(d.xmax, w)
-        ymin = norm_xy_to_px(d.ymin, h)
-        ymax = norm_xy_to_px(d.ymax, h)
-        cx = (xmin + xmax) * 0.5
-        cy = (ymin + ymax) * 0.5
-        sx = max(xmax - xmin, 0.0)
-        sy = max(ymax - ymin, 0.0)
-        bb2 = BoundingBox2D()
-        bb2.center = Pose2D()
-        bb2.center.position.x = cx
-        bb2.center.position.y = cy
-        bb2.center.theta = 0.0
-        bb2.size_x = sx
-        bb2.size_y = sy
-        ohp = hypothesis_with_pose(label, d.confidence, 0.0, 0.0, 0.0)
-        det2 = Detection2D()
-        det2.header = header
-        det2.results = [ohp]
-        det2.id = label
-        det2.bbox = bb2
-        out.detections.append(det2)
+        det = ImageDetection()
+        det.header = header
+        det.label = d.labelName or str(d.label)
+        det.confidence = float(d.confidence)
+        det.min = Point(
+            x=norm_xy_to_px(d.xmin, w),
+            y=norm_xy_to_px(d.ymin, h),
+            z=0.0,
+        )
+        det.max = Point(
+            x=norm_xy_to_px(d.xmax, w),
+            y=norm_xy_to_px(d.ymax, h),
+            z=0.0,
+        )
+        out.append(det)
+    return out
+
+
+def spatial_detections_to_rover(
+    src: dai.ImgDetections,
+    header: Header,
+    image_width: int,
+    image_height: int,
+) -> list[ImageDetection]:
+    """Same 2D bbox layout as :func:`img_detections_to_rover` (DepthAI normalized coords)."""
+    out: list[ImageDetection] = []
+    w, h = image_width, image_height
+    for d in src.detections:
+        det = ImageDetection()
+        det.header = header
+        det.label = d.labelName or str(d.label)
+        det.confidence = float(d.confidence)
+        det.min = Point(
+            x=norm_xy_to_px(d.xmin, w),
+            y=norm_xy_to_px(d.ymin, h),
+            z=0.0,
+        )
+        det.max = Point(
+            x=norm_xy_to_px(d.xmax, w),
+            y=norm_xy_to_px(d.ymax, h),
+            z=0.0,
+        )
+        out.append(det)
     return out

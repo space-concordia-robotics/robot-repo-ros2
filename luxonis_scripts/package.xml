@@ -1,19 +1,18 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-    <name>luxonis_ros</name>
+    <name>luxonis_scripts</name>
     <version>0.0.0</version>
-    <description>ROS 2 bridge for DepthAI spatial cameras (FFC-OAK, OAK-D-Pro): images, CameraInfo, and XYZ detections.</description>
+    <description>Luxonis DepthAI cameras: legacy RTSP scripts and ROS 2 bridge (FFC-OAK, OAK-D-Pro).</description>
     <maintainer email="nicholas.sheppard@spaceconcordia.ca">scrb</maintainer>
     <license>MIT</license>
 
     <depend>ament_index_python</depend>
-    <depend>rcl_interfaces</depend>
     <depend>rclpy</depend>
     <depend>sensor_msgs</depend>
     <depend>std_msgs</depend>
     <depend>geometry_msgs</depend>
-    <depend>vision_msgs</depend>
+    <depend>rover_msgs</depend>
     <depend>cv_bridge</depend>
     <exec_depend>python3-numpy</exec_depend>
 

@@ -1,62 +1,107 @@
 # Luxonis Scripts
 
-We have two Luxonis cameras, and OAK-FFC-4P (4 directional cameras) and an OAK-D-PRO (depth camera)
+We have two Luxonis cameras: an OAK-FFC-4P (4 directional cameras) and an OAK-D-PRO (depth camera).
 
-We are running [this depth model on the PRO](https://models.luxonis.com/luxonis/crestereo/4729a8bd-54df-467a-92ca-a8a5e70b52ab) and a custom trained YOLO model for the object detection
+We are running [this depth model on the PRO](https://models.luxonis.com/luxonis/crestereo/4729a8bd-54df-467a-92ca-a8a5e70b52ab) and a custom trained YOLO model for object detection.
+
+This directory is a ROS 2 package (`luxonis_scripts`) that also contains legacy RTSP/GStreamer scripts under `v2/`.
 
 ## Setup
 
-The current setup requires depthAI v3, which can be installed with:
+DepthAI is a runtime dependency for the camera node (not needed for `colcon build`).
 
-**requires python3 (can be installed with `sudo apt install python3`)**
+**Do not let colcon scan your Python venv.** If you use `luxonis_scripts/venv/`, keep the
+committed `venv/COLCON_IGNORE` file in place, or create the venv outside the workspace.
+
+```bash
+# Optional: Python deps for running the camera node / legacy scripts
+python3 -m venv luxonis_scripts/venv
+source luxonis_scripts/venv/bin/activate
+pip install -r luxonis_scripts/requirements.txt
 ```
-source venv/bin/activate (use activate.fish if using a fish terminal)
 
-# Installs library and requirements
-pip install requirements.txt
-```
-
-### Set usb rules
+### Set USB rules
 
 ```
 echo 'SUBSYSTEM=="usb", ATTRS{idVendor}=="03e7", MODE="0666"' | sudo tee /etc/udev/rules.d/80-movidius.rules
-
 sudo udevadm control --reload-rules && sudo udevadm trigger
 ```
 
-### How to run the program
+## ROS 2 bridge
 
-The most reliable way that I've found to connect to devices from PoE is to c!onnnect directly to their IP.  For the black mydlink router,
-the OAK-D-PRO IP address has been manually set to 10.240.0.67 on the basestation router.  Switching depending on how the devices are connected (just FFC vs FFC+OAKD, just OAKD)
+From the **colcon workspace root** (e.g. `/ws` in the Jazzy dev container), source ROS first:
 
-To run the camera:
+```bash
+source /opt/ros/jazzy/setup.bash
+colcon build --packages-select rover_msgs luxonis_scripts
+source install/setup.bash
 ```
+
+If you see colcon errors about `numpy/.../setup.py` or `Cython`, a `venv/` under the workspace
+is being picked up as a package — ensure `luxonis_scripts/venv/COLCON_IGNORE` exists.
+
+If `ament_cmake` is not found, ROS was not sourced (`source /opt/ros/jazzy/setup.bash`).
+
+One node (`luxonis_camera_node`) drives the FFC and/or OAK-D pipelines. YOLO detections from every active camera are combined into a single `rover_msgs/ImageDetectionArray` on `/detections`.
+
+Camera `frame_id` values match `rover-description` URDF links (`ffc_front_camera`, `ffc_rear_camera`, …, `forward_camera` for OAK-D RGB).
+
+### Run
+
+FFC only (namespace `ffc`):
+
+```bash
+ros2 launch luxonis_scripts ffc_quad.launch.py device_mxid:=10.240.0.69
+```
+
+OAK-D only (namespace `oak`):
+
+```bash
+ros2 launch luxonis_scripts spatial_oak.launch.py device_mxid:=10.240.0.67
+```
+
+Both cameras, all detections in one message:
+
+```bash
+ros2 launch luxonis_scripts luxonis_cameras.launch.py \
+  ffc_device_mxid:=10.240.0.69 oak_device_mxid:=10.240.0.67
+```
+
+### Topics
+
+Under namespace `ffc` (per active camera slug):
+
+| Topic | Type |
+| ----- | ---- |
+| `/<slug>/image_raw` | `sensor_msgs/Image` |
+| `/<slug>/camera_info` | `sensor_msgs/CameraInfo` |
+
+Under namespace `oak`:
+
+| Topic | Type |
+| ----- | ---- |
+| `/rgb/image_raw` | `sensor_msgs/Image` |
+| `/rgb/camera_info` | `sensor_msgs/CameraInfo` |
+| `/depth/image_raw` | `sensor_msgs/Image` (16UC1, mm) |
+| `/depth/camera_info` | `sensor_msgs/CameraInfo` |
+
+Global (absolute topic):
+
+| Topic | Type |
+| ----- | ---- |
+| `/detections` | `rover_msgs/ImageDetectionArray` |
+
+Quick check:
+
+```bash
+ros2 topic echo /detections --once
+ros2 topic hz /oak/depth/image_raw
+```
+
+## Legacy RTSP script (`main.py`)
+
+```bash
 python3 main.py --mode [PipelineType] -d [MXID or IP]
 ```
 
-The available modes are:
-mode       ->   bitrate(b/ps)   -> fps  ->  link    
---------------------------------------
-ffc_all    ->   2000000         -> 30   ->  N/A
-ffc_front  ->   7000000         -> 30   ->  rtsp://localhost:8554/FRONT
-fc_back    ->   7000000         -> 30   ->  rtsp://localhost:8554/BACK
-ffc_right  ->   7000000         -> 30   ->  rtsp://localhost:8554/RIGHT
-ffc_left,  ->   7000000         -> 30   ->  rtsp://localhost:8554/LEFT
-oakd_rgb,  ->   7000000         -> 30   ->  rtsp://localhost:8554/RGB
-oakd_yolo  ->   4000000         -> 15   ->  rtsp://localhost:8554/RGB
-
-To see the currently live cameras in the pipeline go to http://localhost:8082/
-
-### While a pipeline is running
-
-To stop a pipeline run `stop` in the same terminal that ran it
-
-To start a new pipeline, first run `stop`, then run `mode [mode_name]` to switch to the desired mode.
-
-To check bandwidth run `bw`
-To continuously check bandwidth run `watch [interval(s)]`
-
-To check status run `status`
-
-To check for aruco tags run `aruco`
-To check continuously for aruco tags run `watch_aruco`
+See `v2/README.md` for the GStreamer encoder/viewer workflow.

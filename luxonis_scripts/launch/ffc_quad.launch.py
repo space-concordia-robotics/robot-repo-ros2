@@ -1,13 +1,4 @@
-"""Launch OAK-FFC-4P quad bridge: four RGB streams + on-device YOLO (lower FPS may be needed for bandwidth).
-
-Pass the camera over Ethernet, e.g.::
-
-  ros2 launch luxonis_ros ffc_quad.launch.py device_mxid:=10.240.0.170
-
-PoE over high-latency or congested routing often hits ``ping was missed`` / X_LINK_ERROR
-with four networks; lower ``fps``, use ``active_cameras:=front`` to test one branch, or
-relax DepthAI watchdog env (also set via node parameters depthai_watchdog_ms, etc.).
-"""
+"""Launch OAK-FFC-4P quad bridge under the ``ffc`` ROS namespace."""
 
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, SetEnvironmentVariable
@@ -21,8 +12,7 @@ def generate_launch_description() -> LaunchDescription:
             DeclareLaunchArgument(
                 'device_mxid',
                 default_value='',
-                description='DepthAI device MxID or Ethernet IP (use IP for PoE, e.g. 10.240.0.170). '
-                'Empty uses getAllAvailableDevices() (often fails inside Docker/LAN unless discovery works).',
+                description='DepthAI FFC device MxID or Ethernet IP (e.g. 10.240.0.170).',
             ),
             DeclareLaunchArgument(
                 'nn_archive_path',
@@ -32,12 +22,12 @@ def generate_launch_description() -> LaunchDescription:
             DeclareLaunchArgument(
                 'fps',
                 default_value='4.0',
-                description='Camera / NN FPS per branch; four nets over PoE are heavy—raise only after stable.',
+                description='Camera / NN FPS per branch; four nets over PoE are heavy.',
             ),
             DeclareLaunchArgument(
                 'publish_rate_hz',
                 default_value='15.0',
-                description='ROS timer rate for draining queues and publishing images.',
+                description='ROS timer rate for draining queues and publishing.',
             ),
             DeclareLaunchArgument(
                 'active_cameras',
@@ -45,19 +35,9 @@ def generate_launch_description() -> LaunchDescription:
                 description='all or comma-separated subset: front,right,left,back',
             ),
             DeclareLaunchArgument(
-                'topic_namespace',
-                default_value='ffc',
-                description='ROS topic prefix: <namespace>/<front|right|left|back>/....',
-            ),
-            DeclareLaunchArgument(
-                'frame_prefix',
-                default_value='ffc',
-                description='TF frame_id pattern: <prefix>_<camera>_optical_frame.',
-            ),
-            DeclareLaunchArgument(
                 'depthai_watchdog',
                 default_value='4500',
-                description='Ms; Luxonis Ethernet keepalive budget (exported before node starts).',
+                description='Ms; Luxonis Ethernet keepalive budget.',
             ),
             DeclareLaunchArgument(
                 'depthai_watchdog_initial_delay',
@@ -75,20 +55,21 @@ def generate_launch_description() -> LaunchDescription:
             ),
             SetEnvironmentVariable('DEPTHAI_BOOTUP_TIMEOUT', LaunchConfiguration('depthai_bootup_timeout')),
             Node(
-                package='luxonis_ros',
-                executable='ffc_camera_node',
-                name='ffc_quad',
+                package='luxonis_scripts',
+                executable='luxonis_camera_node',
+                name='luxonis_camera',
+                namespace='ffc',
                 output='screen',
                 parameters=[
                     {
-                        'device_mxid': LaunchConfiguration('device_mxid'),
+                        'ffc_device_mxid': LaunchConfiguration('device_mxid'),
+                        'oak_device_mxid': '',
                         'nn_archive_path': LaunchConfiguration('nn_archive_path'),
-                        'fps': LaunchConfiguration('fps'),
+                        'ffc_fps': LaunchConfiguration('fps'),
                         'confidence_threshold': 0.5,
                         'publish_rate_hz': LaunchConfiguration('publish_rate_hz'),
                         'active_cameras': LaunchConfiguration('active_cameras'),
-                        'topic_namespace': LaunchConfiguration('topic_namespace'),
-                        'frame_prefix': LaunchConfiguration('frame_prefix'),
+                        'detections_topic': '/detections',
                     }
                 ],
             ),
