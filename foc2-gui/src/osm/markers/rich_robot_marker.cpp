@@ -39,7 +39,7 @@ void RichRobotMarker::paint() {
 
     const auto spec = ImPlotSpec(
         ImPlotProp_Marker, ImPlotMarker_Circle,
-        ImPlotProp_MarkerSize, 8.0f,
+        ImPlotProp_MarkerSize, 4.0f,
         ImPlotProp_MarkerFillColor, ImVec4(255, 0, 0, 200),
         ImPlotProp_LineWeight, 1.5f,
         ImPlotProp_LineColor, ImVec4(255, 0, 0, 200)
