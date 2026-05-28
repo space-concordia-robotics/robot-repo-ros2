@@ -1,10 +1,10 @@
-import array
 import textwrap
 import time
 import uuid
 from time import sleep
 from typing import List, Dict
 
+import array
 import numpy
 import pandas
 import rclpy
@@ -79,6 +79,12 @@ class SciencePayload(Node):
 
         if request.integration_time != 0:
             self.spectrometer.f.spectrometer.set_integration_time_micros(request.integration_time_ms * 1000)
+
+        if request.boxcar_width != 0:
+            self.spectrometer.f.spectrum_processing.set_boxcar_width(request.boxcar_width)
+
+        if request.scans_to_average != 0:
+            self.spectrometer.f.spectrum_processing.set_scans_to_average(request.scans_to_average)
 
         wavelengths: NDArray[numpy.float64] = self.spectrometer.wavelengths().astype(numpy.float64)
 

@@ -1,6 +1,9 @@
 bool correct_dark_counts false
 bool correct_nonlinearity false
 uint32 integration_time_ms 0
+uint32 boxcar_width 0
+# number of scans to average together
+uint32 scans_to_average 0
 ---
 float64[] temperatures
 
