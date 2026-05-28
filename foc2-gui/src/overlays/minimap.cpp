@@ -50,7 +50,7 @@ void MiniMapOverlay::onDraw(ImDrawList* draw_list, const ImRect& bounds) {
         active = magnetic_field != nullptr;
 
         if (active) {
-            north_bearing = magnetic_field->magnetic_field.z;
+            north_bearing = magnetic_field->magnetic_field.z * 180.0 / std::numbers::pi;
         }
     }
 
