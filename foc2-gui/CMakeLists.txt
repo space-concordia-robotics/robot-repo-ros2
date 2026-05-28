@@ -138,6 +138,7 @@ add_executable(${PROJECT_NAME}
 
         # OSM markers
         src/osm/markers/rich_robot_marker.cpp
+        src/osm/markers/rich_gps_marker.cpp
 )
 
 ament_target_dependencies(${PROJECT_NAME} PUBLIC ${DEPENDENCIES})

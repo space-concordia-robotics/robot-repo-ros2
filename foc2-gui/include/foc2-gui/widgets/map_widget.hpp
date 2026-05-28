@@ -4,6 +4,7 @@
 #include "foc2-gui/overlayable.hpp"
 #include "foc2-gui/widget.hpp"
 #include "foc2-gui/osm/markers/rich_robot_marker.hpp"
+#include "foc2-gui/osm/markers/rich_gps_marker.hpp"
 
 namespace ImOsm::Rich {
     class RichMapPlot;
@@ -24,4 +25,5 @@ protected:
 private:
     std::shared_ptr<ImOsm::Rich::RichMapPlot> map_plot;
     std::shared_ptr<RichRobotMarker> robot_marker;
+    std::shared_ptr<RichGPSMarker> gps_marker;
 };
