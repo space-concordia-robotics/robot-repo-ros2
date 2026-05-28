@@ -18,7 +18,7 @@ namespace ImGui {
             std::is_same_v<std::decay_t<S>, std::string> ||
             std::is_same_v<std::decay_t<S>, std::string_view>
         >>
-    ImVec2 CalcTextSize(const std::string& text, const bool hide_text_after_double_hash = false, const float wrap_width = -1.0f) {
+    ImVec2 CalcTextSize(const S& text, const bool hide_text_after_double_hash = false, const float wrap_width = -1.0f) {
         return CalcTextSize(text.data(), text.data() + text.length(), hide_text_after_double_hash, wrap_width);
     }
 
@@ -171,6 +171,26 @@ namespace ImGui {
     }
 
     // endregion
+
+    template <
+        typename S = std::string,
+        typename = std::enable_if_t<
+            std::is_same_v<std::decay_t<S>, std::string> ||
+            std::is_same_v<std::decay_t<S>, std::string_view>
+        >>
+    bool MenuItem(const S& label, std::optional<S&> shortcut, const bool selected = false, const bool enabled = true) {
+        return MenuItem(label.data(), shortcut.has_value() ? shortcut.value() : nullptr, selected, enabled);
+    }
+
+    template <
+        typename S = std::string,
+        typename = std::enable_if_t<
+            std::is_same_v<std::decay_t<S>, std::string> ||
+            std::is_same_v<std::decay_t<S>, std::string_view>
+        >>
+    bool MenuItem(const S& label, std::optional<S&> shortcut, bool* p_selected, const bool enabled = true) {
+        return MenuItem(label.data(), shortcut.has_value() ? shortcut.value() : nullptr, p_selected, enabled);
+    }
 
     inline bool InputDouble2(const char* label, double v[2], const char* format = "%.3f", const ImGuiInputTextFlags flags = 0) {
         return InputScalarN(label, ImGuiDataType_Double, v, 2, nullptr, nullptr, format, flags);

@@ -4,7 +4,7 @@
 
 void MiniMapOverlay::onInit() {
     magnetic_field_subscription = application.create_subscription<MagneticField>(
-        "/imu/mag",
+        "/imu/rpy",
         10,
         // ReSharper disable once CppPassValueParameterByConstReference
         [&](const MagneticField::SharedPtr msg) {
@@ -50,7 +50,7 @@ void MiniMapOverlay::onDraw(ImDrawList* draw_list, const ImRect& bounds) {
         active = magnetic_field != nullptr;
 
         if (active) {
-            north_bearing = std::atan2(magnetic_field->magnetic_field.y, magnetic_field->magnetic_field.x) * 180.0 / std::numbers::pi;
+            north_bearing = magnetic_field->magnetic_field.z * 180.0 / std::numbers::pi;
         }
     }
 
