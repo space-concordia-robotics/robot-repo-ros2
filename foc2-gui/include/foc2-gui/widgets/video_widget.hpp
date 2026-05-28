@@ -1,6 +1,7 @@
 #pragma once
 
 #include <thread>
+#include <fmt/compile.h>
 #include <gst/gstpad.h>
 #include <image_transport/camera_subscriber.hpp>
 #include <image_transport/image_transport.hpp>
@@ -22,15 +23,15 @@ struct _GstAppSink;
 typedef _GstAppSink GstAppSink;
 
 enum class VideoFlipMethod {
-    NONE = 0,
-    CLOCKWISE = 1,
-    ROTATE_180 = 2,
-    COUNTERCLOCKWISE = 3,
-    HORIZONTAL_FLIP = 4,
-    VERTICAL_FLIP = 5,
-    UPPER_LEFT_DIAGONAL = 6,
+    NONE                 = 0,
+    CLOCKWISE            = 1,
+    ROTATE_180           = 2,
+    COUNTERCLOCKWISE     = 3,
+    HORIZONTAL_FLIP      = 4,
+    VERTICAL_FLIP        = 5,
+    UPPER_LEFT_DIAGONAL  = 6,
     UPPER_RIGHT_DIAGONAL = 7,
-    AUTOMATIC = 8,
+    AUTOMATIC            = 8,
 };
 
 // TODO 2026-05-24 (Will Free): consider converting to the pimpl pattern to improve compile times?
@@ -46,8 +47,8 @@ public:
 
     explicit VideoWidget(
         ImApplication& application,
-        const std::string& source_url,
-        const std::string& camera_topic,
+        std::string source_url,
+        std::string camera_topic,
         bool minimap
     );
 
@@ -60,22 +61,56 @@ protected:
     void draw() override;
 
 private:
-    std::string source_url;
-    std::string camera_topic;
-    bool minimap;
+    void drawContextMenu();
+
+    void drawFiltersMenu();
+
+    void drawConfigWindow();
+
+public:
+    struct StreamConfig {
+        std::string source_url;
+        std::string camera_topic;
+        bool minimap = false;
+        int rtspsrc_latency = 100;
+        int jitterbuffer_latency = 50;
+    };
+
+    struct FilterState {
+        bool enabled = true;
+        double gamma = 1.0;
+        double brightness = 0.0;
+        double contrast = 1.0;
+        double saturation = 1.0;
+        VideoFlipMethod rotation = VideoFlipMethod::NONE;
+        double sharpness = 0.0;
+    };
+
+    enum class ConnectionState {
+        STOPPED,
+        RUNNING,
+        DISCONNECTED,
+    };
+
+private:
+    bool config_window_open = false;
+    StreamConfig stream_config;
+    StreamConfig stream_config_next;
 
     rclcpp::TimerBase::SharedPtr stats_timer;
     SubscriptionGroup<CameraInfo>::SharedPtr camera_info_subscription;
 
     std::thread gst_thread;
     std::atomic<bool> running = true;
+    std::atomic<bool> reconnect = false;
     cv::Mat next_frame;
     cv::Mat current_frame;
     std::mutex frame_mutex;
 
     FloatPtr<peel::Gst::Bin> pipeline = nullptr;
-    RefPtr<peel::GstApp::AppSink> appsink = nullptr;
+    RefPtr<peel::Gst::Element> rtspsrc = nullptr;
     RefPtr<peel::Gst::Element> jitterbuffer = nullptr;
+    RefPtr<peel::GstApp::AppSink> appsink = nullptr;
 
     RefPtr<peel::Gst::Element> balance = nullptr;
     RefPtr<peel::Gst::Element> gamma = nullptr;
@@ -95,21 +130,11 @@ private:
     int texture_width = 0;
     int texture_height = 0;
 
-    struct FilterState {
-        bool enabled = true;
-        double gamma = 1.0;
-        double brightness = 0.0;
-        double contrast = 1.0;
-        double saturation = 1.0;
-        VideoFlipMethod rotation = VideoFlipMethod::NONE;
-        double sharpness = 0.0;
-    };
-
     FilterState filters = {};
 
     void videoThread();
 
-    FloatPtr<peel::Gst::Bin> createPipeline() const;
+    [[nodiscard]] FloatPtr<peel::Gst::Bin> createPipeline() const;
 
     void configureAppsink();
 
@@ -117,13 +142,25 @@ private:
 
     peel::Gst::Pad::ProbeReturn onJitterbufferProbe(peel::Gst::Pad*, const peel::Gst::Pad::ProbeInfo* info);
 
-    void runPipelineLoop() const;
+    void runPipelineLoop();
 
     GstFlowReturn onNewSample(GstAppSink* sink);
 
     void updateTexture();
 
+    void applyRosCameraTopic() const;
+
+    void applyMinimap();
+
+    void applyStreamConfig();
+
     void applyFilters(const FilterState& filters, bool update_flip = true) const;
 
     void applyFlip(VideoFlipMethod rotation) const;
+
+    constexpr std::string getUniqueId(const char* prefix) {
+        using namespace fmt::literals;
+        // we're using the memory address of the current object to ensure every object has a unique id
+        return fmt::format("{}_{}"_cf, prefix, reinterpret_cast<uintptr_t>(this));
+    }
 };

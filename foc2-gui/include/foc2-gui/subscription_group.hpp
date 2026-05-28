@@ -16,9 +16,9 @@ public:
 
     void subscribe(const std::string& topic, const rclcpp::QoS& qos) {
         std::lock_guard lock(mutex);
+
         if (subscription) {
-            RCLCPP_WARN(application.get_logger(), "Tried to subscribe to multiple times to subscription group. Topic: %s", topic.data());
-            return;
+            subscription.reset();
         }
 
         subscription = application.create_subscription<Msg>(topic, qos, std::bind(&SubscriptionGroup::onMessage, this, std::placeholders::_1));
@@ -32,6 +32,10 @@ public:
     template <typename Callback>
     void addCallback(std::weak_ptr<void> owner, Callback&& callback) {
         addCallbackImpl(std::move(owner), std::function<void(typename Msg::SharedPtr)>(std::forward<Callback>(callback)));
+    }
+
+    rclcpp::Subscription<Msg>::SharedPtr getSubscription() {
+        return subscription;
     }
 
 private:

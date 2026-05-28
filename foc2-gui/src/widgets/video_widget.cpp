@@ -5,6 +5,7 @@
 #include <gst/app/gstappsink.h>
 #include <image_transport/camera_common.hpp>
 #include <magic_enum/magic_enum.hpp>
+#include <misc/cpp/imgui_stdlib.h>
 #include <peel/GLib/MainLoop.h>
 #include <peel/Gst/Element.h>
 #include <peel/Gst/functions.h>
@@ -18,6 +19,7 @@
 
 #include "foc2-gui/overlays/aruco_video_overlay.hpp"
 #include "foc2-gui/overlays/crosshair_overlay.hpp"
+#include "foc2-gui/overlays/minimap.hpp"
 #include "foc2-gui/overlays/nav_path_video_overlay.hpp"
 #include "foc2-gui/overlays/video_stats_overlay.hpp"
 
@@ -30,7 +32,7 @@ using namespace peel;
 template <>
 struct fmt::formatter<String> : formatter<const char*> {
     template <typename FormatContext>
-    auto format(const String string, FormatContext& ctx) const {
+    auto format(const String& string, FormatContext& ctx) const {
         return formatter<const char*>::format(string.c_str(), ctx);
     }
 };
@@ -73,13 +75,14 @@ namespace magic_enum::customize {
 
 VideoWidget::VideoWidget(
     ImApplication& application,
-    const std::string& source_url,
-    const std::string& camera_topic,
+    std::string source_url,
+    std::string camera_topic,
     const bool minimap
-) : UiWidget(application),
-    source_url(source_url),
-    camera_topic(camera_topic),
-    minimap(minimap) {
+) : UiWidget(application) {
+    stream_config.source_url = std::move(source_url);
+    stream_config.camera_topic = std::move(camera_topic);
+    stream_config.minimap = minimap;
+
     stats_overlay = std::make_shared<VideoStatsOverlay>(application);
     const auto aruco_overlay = std::make_shared<ArucoVideoOverlay>(application);
     const auto global_nav_overlay = std::make_shared<NavPathVideoOverlay>(application, "/plan", ImVec4(0.1, 1, 0, 1));
@@ -92,24 +95,41 @@ VideoWidget::VideoWidget(
 
     camera_info_subscription = SubscriptionGroup<CameraInfo>::make_shared(application);
 
-    camera_info_subscription->addCallback(aruco_overlay, std::bind(&ArucoVideoOverlay::onCameraInfo, aruco_overlay, std::placeholders::_1));
-    camera_info_subscription->addCallback(local_nav_overlay, std::bind(&NavPathVideoOverlay::onCameraInfo, local_nav_overlay, std::placeholders::_1));
-    camera_info_subscription->addCallback(global_nav_overlay, std::bind(&NavPathVideoOverlay::onCameraInfo, global_nav_overlay, std::placeholders::_1));
+    camera_info_subscription->addCallback(
+        aruco_overlay,
+        [overlay =aruco_overlay](const CameraInfo::SharedPtr& camera_info) mutable {
+            overlay->onCameraInfo(camera_info);
+        }
+    );
+
+    camera_info_subscription->addCallback(
+        local_nav_overlay,
+        [overlay = local_nav_overlay](auto&& camera_info) mutable {
+            overlay->onCameraInfo(camera_info);
+        }
+    );
+
+    camera_info_subscription->addCallback(
+        global_nav_overlay,
+        [overlay = global_nav_overlay](auto&& camera_info) mutable {
+            overlay->onCameraInfo(camera_info);
+        }
+    );
 
     addOverlay(std::make_shared<CrosshairOverlay>(application));
 
-    // TODO 2026-05-20 (Will Free): the minimap is currently broken, because it cannot correctly determine which way is north.
-    // if (minimap)
-    //     addOverlay(std::make_shared<MiniMapOverlay>(application));
+    applyMinimap();
 }
 
 void VideoWidget::onInit() {
     UiWidget::onInit();
     UiOverlayable::onInit();
 
-    gst_thread = std::thread(std::bind(&VideoWidget::videoThread, this));
+    gst_thread = std::thread([this] {
+        videoThread();
+    });
 
-    camera_info_subscription->subscribe(image_transport::getCameraInfoTopic(camera_topic), 10);
+    applyRosCameraTopic();
 
     // if this 50ms value is changed, also update the value in the video stats overlay
     stats_timer = this->application.create_timer(50ms, [this] {
@@ -151,6 +171,14 @@ ImVec2 VideoWidget::expectedSize(const ImVec2 available) const {
 }
 
 void VideoWidget::draw() {
+    const auto now = steady_clock::now();
+
+    if (last_frame != time_point<steady_clock>()) {
+        if (const auto frame_delta = duration_cast<duration<double>>(now - last_frame).count(); frame_delta > 0.0) {
+            video_stats.fps = 1.0 / frame_delta;
+        }
+    }
+
     updateTexture();
 
     ImGui::BeginChild("VideoRegion", ImVec2(0, 0), 0, ImGuiWindowFlags_NoScrollbar);
@@ -171,109 +199,15 @@ void VideoWidget::draw() {
         }
 
         ImGui::SetCursorPosX((avail.x - size.x) * 0.5f);
-        // ImGui::SetCursorPosY((avail.y - size.y) * 0.5f);
+        ImGui::SetCursorPosY((avail.y - size.y) * 0.5f);
 
         ImGui::Image(texture_id, size);
 
+        drawContextMenu(); // TODO 2026-05-24 (Will Free): should this be put aftr the draw overlays? idk if draw overlays will mess with it at all...
+
         drawOverlays(ImGui::GetWindowDrawList(), ImRect(ImGui::GetItemRectMin(), ImGui::GetItemRectMax()));
 
-        const auto item_max = ImGui::GetItemRectMax();
-        constexpr auto cog_size = ImVec2(20.0f, 20.0f);
-        const auto cog_pos = item_max - cog_size - ImVec2(6.0, 6.0);
-        const ImU32 icon_col = ImGui::GetColorU32(ImGuiCol_Text);
-
-        const auto draw_list = ImGui::GetWindowDrawList();
-
-        ImGui::PushFont(nullptr, 24.0);
-        const ImVec2 text_size = ImGui::CalcTextSize(ICON_FA_GEAR);
-        const ImVec2 text_pos = cog_pos + (cog_size - text_size) * 0.5f;
-        draw_list->AddText(text_pos, icon_col, ICON_FA_GEAR);
-        ImGui::PopFont();
-
-        ImGui::SetCursorScreenPos(cog_pos);
-
-        const auto popup_id = fmt::format("filters_popup_{}", reinterpret_cast<uintptr_t>(this));
-
-        if (ImGui::InvisibleButton("filters", cog_size)) {
-            ImGui::OpenPopup(popup_id.data());
-        }
-
-        if (ImGui::BeginPopup(popup_id.data())) {
-            auto changed = false;
-
-            ImGui::TextUnformatted("Filters");
-            ImGui::Separator();
-
-            changed |= ImGui::Checkbox("Enable filters", &filters.enabled);
-
-            ImGui::BeginDisabled(!filters.enabled);
-
-            ImGui::Spacing();
-
-            changed |= ImGui::SliderDoubleSnapping("Gamma", &filters.gamma, 0.1, 3.0, 0.1);
-            changed |= ImGui::SliderDoubleSnapping("Brightness", &filters.brightness, -1.0, 1.0, 0.1);
-            changed |= ImGui::SliderDoubleSnapping("Contrast", &filters.contrast, 0.0, 3.0, 0.1);
-            changed |= ImGui::SliderDoubleSnapping("Saturation", &filters.saturation, 0.0, 3.0, 0.1);
-
-            ImGui::Spacing();
-
-            static constexpr auto VIDEO_FLIP_ENTRIES = magic_enum::enum_entries<VideoFlipMethod>();
-            const auto current_index = magic_enum::enum_index(filters.rotation).value_or(0);
-            const auto preview_value = magic_enum::enum_name(filters.rotation);
-
-            if (ImGui::BeginCombo("Rotation", preview_value.data(), ImGuiComboFlags_None)) {
-                for (auto i = 0u; i < VIDEO_FLIP_ENTRIES.size(); ++i) {
-                    const auto [enum_val, name] = VIDEO_FLIP_ENTRIES[i];
-
-                    ImGui::PushID(i);
-
-                    const auto selected = i == current_index;
-
-                    if (ImGui::Selectable(name.data(), selected)) {
-                        filters.rotation = enum_val;
-                        changed = true;
-                    }
-
-                    if (selected)
-                        ImGui::SetItemDefaultFocus();
-
-                    ImGui::PopID();
-                }
-                ImGui::EndCombo();
-            }
-
-
-            ImGui::Spacing();
-
-            changed |= ImGui::SliderDoubleSnapping("Sharpness", &filters.sharpness, 0.0, 5.0, 0.1);
-
-            ImGui::EndDisabled();
-
-            ImGui::Separator();
-
-            static constexpr auto DEFAULT_FILTER_STATE = FilterState();
-
-            if (ImGui::Button("Reset")) {
-                filters = DEFAULT_FILTER_STATE;
-                changed = true;
-            }
-            ImGui::SameLine();
-            if (ImGui::Button("Close")) {
-                ImGui::CloseCurrentPopup();
-            }
-
-            if (filters.enabled) {
-                if (changed)
-                    applyFilters(filters);
-            } else {
-                if (changed) {
-                    applyFilters(DEFAULT_FILTER_STATE, false);
-                    applyFlip(filters.rotation);
-                }
-            }
-
-            ImGui::EndPopup();
-        }
+        drawFiltersMenu();
     } else {
         // TODO 2026-05-07 (Will Free): show message if we got disconnected from the stream & are reconnecting
 
@@ -288,9 +222,168 @@ void VideoWidget::draw() {
         draw_list->AddText(top_left + avail * 0.5 - text_size * 0.5, ImGui::ImColor(255, 255, 255, 255), AWAITING_FRAME_TEXT);
 
         ImGui::Dummy(avail);
+
+        drawContextMenu();
     }
 
     ImGui::EndChild();
+
+    drawConfigWindow();
+}
+
+void VideoWidget::drawContextMenu() {
+    if (ImGui::BeginPopupContextItem(getUniqueId("stream_menu").data())) {
+        if (ImGui::MenuItem(ICON_FA_GEARS " Configure Video")) {
+            stream_config_next = stream_config; // reset config_next to current config
+            config_window_open = true;
+        }
+
+        if (ImGui::MenuItem(ICON_FA_ROTATE " Reload Stream")) {
+            reconnect = true;
+        }
+
+        ImGui::EndPopup();
+    }
+}
+
+void VideoWidget::drawFiltersMenu() {
+    const auto item_max = ImGui::GetItemRectMax();
+    constexpr auto cog_size = ImVec2(20.0f, 20.0f);
+    const auto cog_pos = item_max - cog_size - ImVec2(6.0, 6.0);
+    const auto icon_col = ImGui::GetColorU32(ImGuiCol_Text);
+
+    const auto draw_list = ImGui::GetWindowDrawList();
+
+    ImGui::PushFont(nullptr, 24.0);
+    const ImVec2 text_size = ImGui::CalcTextSize(ICON_FA_GEAR);
+    const ImVec2 text_pos = cog_pos + (cog_size - text_size) * 0.5f;
+    draw_list->AddText(text_pos, icon_col, ICON_FA_GEAR);
+    ImGui::PopFont();
+
+    ImGui::SetCursorScreenPos(cog_pos);
+
+    const auto popup_id = getUniqueId("filters_popup");
+
+    if (ImGui::InvisibleButton("filters", cog_size)) {
+        ImGui::OpenPopup(popup_id.data());
+    }
+
+    if (ImGui::BeginPopup(popup_id.data())) {
+        auto changed = false;
+
+        ImGui::TextUnformatted("Filters");
+        ImGui::Separator();
+
+        changed |= ImGui::Checkbox("Enable filters", &filters.enabled);
+
+        ImGui::BeginDisabled(!filters.enabled);
+
+        ImGui::Spacing();
+
+        changed |= ImGui::SliderDoubleSnapping("Gamma", &filters.gamma, 0.1, 3.0, 0.1);
+        changed |= ImGui::SliderDoubleSnapping("Brightness", &filters.brightness, -1.0, 1.0, 0.1);
+        changed |= ImGui::SliderDoubleSnapping("Contrast", &filters.contrast, 0.0, 3.0, 0.1);
+        changed |= ImGui::SliderDoubleSnapping("Saturation", &filters.saturation, 0.0, 3.0, 0.1);
+
+        ImGui::Spacing();
+
+        static constexpr auto VIDEO_FLIP_ENTRIES = magic_enum::enum_entries<VideoFlipMethod>();
+        const auto current_index = magic_enum::enum_index(filters.rotation).value_or(0);
+        const auto preview_value = magic_enum::enum_name(filters.rotation);
+
+        if (ImGui::BeginCombo("Rotation", preview_value.data(), ImGuiComboFlags_None)) {
+            for (auto i = 0u; i < VIDEO_FLIP_ENTRIES.size(); ++i) {
+                const auto [enum_val, name] = VIDEO_FLIP_ENTRIES[i];
+
+                ImGui::PushID(static_cast<int>(i));
+
+                const auto selected = i == current_index;
+
+                if (ImGui::Selectable(name.data(), selected)) {
+                    filters.rotation = enum_val;
+                    changed = true;
+                }
+
+                if (selected)
+                    ImGui::SetItemDefaultFocus();
+
+                ImGui::PopID();
+            }
+            ImGui::EndCombo();
+        }
+
+        ImGui::Spacing();
+
+        changed |= ImGui::SliderDoubleSnapping("Sharpness", &filters.sharpness, 0.0, 5.0, 0.1);
+
+        ImGui::EndDisabled();
+
+        ImGui::Separator();
+
+        static constexpr auto DEFAULT_FILTER_STATE = FilterState();
+
+        if (ImGui::Button("Reset")) {
+            filters = DEFAULT_FILTER_STATE;
+            changed = true;
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Close")) {
+            ImGui::CloseCurrentPopup();
+        }
+
+        if (filters.enabled) {
+            if (changed)
+                applyFilters(filters);
+        } else {
+            if (changed) {
+                applyFilters(DEFAULT_FILTER_STATE, false);
+                applyFlip(filters.rotation);
+            }
+        }
+
+        ImGui::EndPopup();
+    }
+}
+
+void VideoWidget::drawConfigWindow() {
+    if (config_window_open) {
+        if (ImGui::Begin("Video configuration", &config_window_open)) {
+            ImGui::InputText("RTSP URI", &stream_config_next.source_url);
+            ImGui::InputText("ROS Camera Topic", &stream_config_next.camera_topic);
+
+            ImGui::Spacing();
+
+            ImGui::SliderInt("RTSP latency (ms)", &stream_config_next.rtspsrc_latency, 0, 1000);
+            ImGui::SliderInt("Jitterbuffer latency (ms)", &stream_config.jitterbuffer_latency, 0, 1000);
+
+            ImGui::Spacing();
+
+            ImGui::Checkbox("Minimap", &stream_config_next.minimap);
+
+            ImGui::Spacing();
+
+            if (ImGui::Button("Apply")) {
+                stream_config = stream_config_next; // apply next config
+                applyStreamConfig();
+                applyMinimap();
+                applyRosCameraTopic();
+            }
+
+            ImGui::SameLine();
+
+            if (ImGui::Button("Close")) {
+                // TODO 2026-05-26 (Will Free): show message for unsaved changes.
+                stream_config_next = stream_config; // reset config_next to current config
+                config_window_open = false;
+            }
+
+            if (ImGui::Button("Reset")) {
+                stream_config_next = stream_config; // reset config_next to current config
+            }
+        }
+
+        ImGui::End();
+    }
 }
 
 void VideoWidget::videoThread() {
@@ -304,6 +397,7 @@ void VideoWidget::videoThread() {
 
         const auto pipeline_bin = pipeline->cast<Gst::Bin>();
 
+        rtspsrc = pipeline_bin->get_by_name("src");
         jitterbuffer = pipeline_bin->get_by_name("jitter");
 
         appsink = std::move(pipeline_bin->get_by_name("appsink")).cast<GstApp::AppSink>();
@@ -315,6 +409,7 @@ void VideoWidget::videoThread() {
         videoflip = pipeline_bin->get_by_name("videoflip");
 
         configureAppsink();
+        applyStreamConfig();
         applyFilters(filters);
 
         // TODO 2026-05-07 (Will Free): we are currently not recording the latency of the RTSP stream.
@@ -332,7 +427,6 @@ void VideoWidget::videoThread() {
     }
 }
 
-// ReSharper disable once CppDFAUnreachableFunctionCall
 FloatPtr<Gst::Bin> VideoWidget::createPipeline() const {
     // TODO 2026-05-07 (Will Free): replace this pipeline string with creating each of the elements individually
     //  via gst_element_factory_make(), then linking them together.
@@ -342,8 +436,8 @@ FloatPtr<Gst::Bin> VideoWidget::createPipeline() const {
 
     // TODO 2026-05-23 (Will Free): maybe consider replacing rtspsrc with playbin and using an rtsp:// URI? idk if playbin lets you set the latency
 
-    static constexpr auto GSTREAMER_PIPELINE = "rtspsrc name=src latency=100 ! "
-        "rtpjitterbuffer name=jitter latency=50 ! " // TODO 2026-05-23 (Will Free): I think this additional jitterbuffer is just adding unecessary latency?
+    static constexpr auto GSTREAMER_PIPELINE = "rtspsrc name=src ! "
+        "rtpjitterbuffer name=jitter ! " // TODO 2026-05-23 (Will Free): I think this additional jitterbuffer is just adding unecessary latency?
         "rtph264depay ! "
         "decodebin ! "
         "videoconvert ! "
@@ -366,12 +460,11 @@ FloatPtr<Gst::Bin> VideoWidget::createPipeline() const {
     auto pipeline_bin = std::move(pipeline).cast<Gst::Bin>();
 
     const auto rtspsrc = pipeline_bin->get_by_name("src");
-    rtspsrc->set_property<String>("location", source_url.data());
+    rtspsrc->set_property<String>("location", stream_config.source_url.data());
 
     return pipeline_bin;
 }
 
-// ReSharper disable once CppDFAUnreachableFunctionCall
 void VideoWidget::configureAppsink() {
     appsink->set_emit_signals(true);
     appsink->set_drop(true);
@@ -386,7 +479,6 @@ void VideoWidget::configureAppsink() {
     appsink->set_callbacks(reinterpret_cast<GstApp::AppSinkCallbacks*>(&appsink_callbacks), this, nullptr);
 }
 
-// ReSharper disable once CppDFAUnreachableFunctionCall
 void VideoWidget::configureJitterbuffer() {
     if (const auto jitterbuffer_sink_pad = jitterbuffer->get_static_pad("sink")) {
         jitterbuffer_sink_pad->add_probe(
@@ -460,7 +552,8 @@ Gst::Pad::ProbeReturn VideoWidget::onJitterbufferProbe(Gst::Pad*, const Gst::Pad
     return Gst::Pad::ProbeReturn::OK;
 }
 
-void VideoWidget::runPipelineLoop() const {
+// ReSharper disable once CppDFAUnreachableFunctionCall
+void VideoWidget::runPipelineLoop() {
     if (const auto ret = pipeline->set_state(Gst::State::PLAYING); ret == Gst::StateChangeReturn::FAILURE) {
         // TODO 2026-05-21 (Will Free): this does not properly clean up things
         logger.error("Failed to set pipeline to PLAYING");
@@ -470,7 +563,7 @@ void VideoWidget::runPipelineLoop() const {
     logger.info("RTSP pipeline started");
 
     const auto bus = pipeline->get_bus();
-    bool reconnect = false;
+    reconnect = false;
 
     // TODO 2026-05-23 (Will Free): I assume it's fine to create multiple main loops?
     // NOTE: if this ever gets uncommented, this block should go above the pipeline->set_state(Gst::State::PLAYING) line.
@@ -590,12 +683,6 @@ GstFlowReturn VideoWidget::onNewSample(GstAppSink* sink) {
 
         const auto now = steady_clock::now();
 
-        if (last_frame != time_point<steady_clock>()) {
-            if (const auto frame_delta = duration_cast<duration<double>>(now - last_frame).count(); frame_delta > 0.0) {
-                video_stats.fps = 1.0 / frame_delta;
-            }
-        }
-
         last_frame = now;
     }
 
@@ -661,6 +748,28 @@ void VideoWidget::updateTexture() {
     }
 }
 
+void VideoWidget::applyRosCameraTopic() const {
+    if (camera_info_subscription->getSubscription()->get_topic_name() == stream_config.camera_topic)
+        return;
+
+    camera_info_subscription->subscribe(image_transport::getCameraInfoTopic(stream_config.camera_topic), 10);
+}
+
+void VideoWidget::applyMinimap() {
+    if (stream_config.minimap)
+        addOverlay("minimap", std::make_shared<MiniMapOverlay>(application));
+}
+
+void VideoWidget::applyStreamConfig() {
+    if (!pipeline)
+        return;
+
+    rtspsrc->set_property<String>("location", stream_config.source_url.data());
+    rtspsrc->set_property<gint>("latency", stream_config.rtspsrc_latency);
+
+    jitterbuffer->set_property<gint>("latency", stream_config.jitterbuffer_latency);
+}
+
 void VideoWidget::applyFilters(const FilterState& filters, const bool update_flip) const {
     if (!pipeline)
         return;
@@ -679,8 +788,9 @@ void VideoWidget::applyFilters(const FilterState& filters, const bool update_fli
         sharpness->set_property<gdouble>("amount", filters.sharpness);
     }
 
-    if (update_flip)
+    if (update_flip) {
         applyFlip(filters.rotation);
+    }
 }
 
 void VideoWidget::applyFlip(VideoFlipMethod rotation) const {
