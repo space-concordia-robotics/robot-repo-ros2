@@ -18,7 +18,8 @@ setup(
     license='MIT',
     entry_points={
         'console_scripts': [
-            'science_payload = science_payload:main'
+            'science_collection = science_payload.science_collection:main',
+            'spectrometer_service = science_payload.spectrometer_service:main'
         ],
     },
 )

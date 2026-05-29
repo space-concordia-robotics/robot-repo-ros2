@@ -1,29 +1,33 @@
 import textwrap
 import time
-import uuid
 from time import sleep
 from typing import List, Dict
 
 import array
 import numpy
-import pandas
 import rclpy
+import seabreeze
 from numpy.typing import NDArray
 from rclpy.action import ActionServer
 from rclpy.action.server import ServerGoalHandle
+from rclpy.executors import ExternalShutdownException
 from rclpy.node import Node
 from rover_msgs.action import ScienceSpectrometerScan
 from seabreeze.spectrometers import Spectrometer, list_devices as list_oceanoptics_devices
 from seabreeze.types import SeaBreezeDevice
 
 
-class SciencePayload(Node):
+class SpectrometerService(Node):
+    __scan_action_server: ActionServer
     __spectrometer: Spectrometer
 
     def __init__(self):
         super().__init__('science_payload')
 
         devices: List[SeaBreezeDevice]
+
+        # TODO 2026-05-28 (Will Free): add config parameter for this
+        seabreeze.use('pyseabreeze')
 
         while True:
             devices = list_oceanoptics_devices()
@@ -47,7 +51,8 @@ class SciencePayload(Node):
         features: Dict[str, List[str]] = {feature: [item.identifier for item in feature_items] for feature, feature_items in self.spectrometer.features.items()}
 
         features_string = {feature: '\n'.join(f'* {item}' for item in items) for feature, items in features.items()}
-        features_string = '\n'.join([f'* {feature}\n{textwrap.indent(items, '  ')}' for feature, items in features_string])
+        features_string = {feature: textwrap.indent(items, '  ') for feature, items in features_string.items()}
+        features_string = '\n'.join([f'* {feature}' + '' if items == '' else f'\n{items}' for feature, items in features_string.items()])
 
         # TODO 2026-05-10 (Will Free): print hardware revision & firmware revision here (in revision feature)
 
@@ -77,49 +82,70 @@ class SciencePayload(Node):
 
         # TODO 2026-05-12 (Will Free): add code to turn light on before measurement & off afterwards?
 
-        if request.integration_time != 0:
+        if request.integration_time_ms != 0:
             self.spectrometer.f.spectrometer.set_integration_time_micros(request.integration_time_ms * 1000)
 
-        if request.boxcar_width != 0:
-            self.spectrometer.f.spectrum_processing.set_boxcar_width(request.boxcar_width)
+        # if request.boxcar_width != 0:
+        #     self.spectrometer.f.spectrum_processing.set_boxcar_width(request.boxcar_width)
 
-        if request.scans_to_average != 0:
-            self.spectrometer.f.spectrum_processing.set_scans_to_average(request.scans_to_average)
+        scans_to_average = max(request.scans_to_average, 1)
+        # broken, so we're just doing this manually
+        # if request.scans_to_average != 0:
+        #     self.spectrometer.f.spectrum_processing.set_scans_to_average(request.scans_to_average)
 
         wavelengths: NDArray[numpy.float64] = self.spectrometer.wavelengths().astype(numpy.float64)
 
         scan_start = time.time()
 
+        intensities_list: List[NDArray[numpy.float64]] = []
+
         # measure intensities
-        intensities: NDArray[numpy.float64] = self.spectrometer.intensities(
-            correct_dark_counts=request.correct_dark_counts,
-            correct_nonlinearity=request.correct_nonlinearity
-        ).astype(numpy.float64)
+        for i in range(1, scans_to_average + 1):
+            measurement_start = time.time()
+
+            self.get_logger().info(f'Performing measurement {i}')
+
+            intensities: NDArray[numpy.float64] = self.spectrometer.intensities(
+                correct_dark_counts=request.correct_dark_counts,
+                correct_nonlinearity=request.correct_nonlinearity
+            ).astype(numpy.float64)
+
+            measurement_end = time.time()
+
+            self.get_logger().info(f'Measurement {i} took {(measurement_end - measurement_start):.2f} ms')
+
+            intensities_list.append(intensities)
+
+            feedback = ScienceSpectrometerScan.Feedback()
+
+            feedback.wavelengths = intensities
+            feedback.raw_intensities = intensities
+            goal_handle.publish_feedback(feedback)
 
         scan_end = time.time()
 
-        spectrum = numpy.vstack(
-            (
-                wavelengths,
-                intensities
-            )
-        )
+        # spectrum = numpy.vstack(
+        #     (
+        #         wavelengths,
+        #         intensities_sum / scans_to_average
+        #     )
+        # )
 
-        self.get_logger().info(f'Scan took {(scan_start - scan_end) * 1000:.2f} ms')
+        self.get_logger().info(f'Scan took {(scan_end - scan_start) * 1000:.2f} ms')
 
-        temperatures = self.spectrometer.f.temperature.temperature_get_all()
+        # temperatures = self.spectrometer.f.temperature.temperature_get_all()
 
-        file_uuid = uuid.uuid4()
-        spectrum_filename = f'spectrum-{file_uuid}.csv'
-        temperatures_filename = f'temperature-{file_uuid}.csv'
+        # file_uuid = uuid.uuid4()
+        # spectrum_filename = f'spectrum-{file_uuid}.csv'
+        # temperatures_filename = f'temperature-{file_uuid}.csv'
 
-        spectrum_dataframe = pandas.DataFrame(spectrum)
-        spectrum_dataframe.to_csv(spectrum_filename)
+        # spectrum_dataframe = pandas.DataFrame(spectrum)
+        # spectrum_dataframe.to_csv(spectrum_filename)
 
-        temperatures_dataframe = pandas.DataFrame(temperatures)
-        temperatures_dataframe.to_csv(temperatures_filename)
+        # temperatures_dataframe = pandas.DataFrame(temperatures)
+        # temperatures_dataframe.to_csv(temperatures_filename)
 
-        self.get_logger().info(f'Saved spectrum to {spectrum_filename} and temperatures to {temperatures_filename}')
+        # self.get_logger().info(f'Saved spectrum to {spectrum_filename} and temperatures to {temperatures_filename}')
 
         # TODO 2026-05-10 (Will Free): get the nonlinearity coefficients from the spectrometer and just record them for later. do not run with this.
         # self.spectrometer.f.nonlinearity_coefficients.get_nonlinearity_coefficients()
@@ -127,8 +153,8 @@ class SciencePayload(Node):
         result = ScienceSpectrometerScan.Result()
 
         result.wavelengths = array.array('d', wavelengths)
-        result.intensities = array.array('d', intensities)
-        result.temperatures = array.array('d', temperatures)
+        result.intensities = array.array('d', numpy.mean(numpy.array(intensities_list), axis=0))
+        # result.temperatures = array.array('d', temperatures)
 
         goal_handle.succeed()
         return result
@@ -136,3 +162,20 @@ class SciencePayload(Node):
     @property
     def spectrometer(self) -> Spectrometer:
         return self.__spectrometer
+
+
+def main(args=None):
+    try:
+        rclpy.init(args=args)
+
+        node = SpectrometerService()
+        rclpy.spin(node)
+        node.destroy_node()
+    except (KeyboardInterrupt, ExternalShutdownException):
+        pass
+
+    rclpy.shutdown()
+
+
+if __name__ == '__main__':
+    main()

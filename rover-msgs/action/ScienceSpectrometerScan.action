@@ -12,3 +12,5 @@ float64[] temperatures
 float64[] wavelengths
 float64[] intensities
 ---
+float64[] wavelengths
+float64[] raw_intensities
