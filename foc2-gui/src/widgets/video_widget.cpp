@@ -749,7 +749,8 @@ void VideoWidget::updateTexture() {
 }
 
 void VideoWidget::applyRosCameraTopic() const {
-    if (camera_info_subscription->getSubscription()->get_topic_name() == stream_config.camera_topic)
+    const auto subscription = camera_info_subscription->getSubscription();
+    if (subscription && subscription->get_topic_name() == stream_config.camera_topic)
         return;
 
     camera_info_subscription->subscribe(image_transport::getCameraInfoTopic(stream_config.camera_topic), 10);

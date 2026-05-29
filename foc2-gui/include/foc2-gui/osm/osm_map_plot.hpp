@@ -66,7 +66,7 @@ namespace ImOsm {
     class MapPlot {
     public:
         MapPlot();
-        MapPlot(const std::shared_ptr<ITileLoader>& loader);
+        explicit MapPlot(const std::shared_ptr<ITileLoader>& loader);
         virtual ~MapPlot();
 
         void setTileLoader(const std::shared_ptr<ITileLoader>& loader) {
