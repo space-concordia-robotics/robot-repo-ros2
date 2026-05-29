@@ -1,19 +1,16 @@
 import argparse
 import os
 import subprocess
-import tempfile
+import sys
 import threading
 import time
 
-import cv2
 import depthai as dai
 
-import panorama
 from rtsp_server import RtspServer
 
 PANORAMA_DIR = os.path.join(os.path.dirname(__file__), "panoramas")
-RTSP_PORT = 8554
-RTSP_GRAB_TIMEOUT_S = 12.0
+PANORAMA_SCRIPT = os.path.join(os.path.dirname(__file__), "panorama.py")
 
 FFC_MXID = "14442C10014791D700"
 OAKD_MXID = "1944301001EDE12E00"
@@ -266,25 +263,10 @@ def main():
                 except KeyboardInterrupt:
                     print() # Create a new line after CTRL+C
             elif cmd == "panorama":
-                ffc = sessions["ffc"]
-                if not ffc.is_running():
-                    print("FFC not running. Start an FFC 4-camera mode first.")
-                    continue
-                print("Grabbing snapshots from RTSP...")
-                snaps = grab_rtsp_snapshots(panorama.CLOCKWISE_ORDER)
-                missing = [c for c in panorama.CLOCKWISE_ORDER if snaps.get(c) is None]
-                if missing:
-                    print(f"Missing snapshots for: {','.join(missing)}. "
-                          f"Ensure the FFC pipeline has all 4 cameras streaming.")
-                    continue
                 filename = parts[1] if len(parts) >= 2 else None
-                try:
-                    out_path = panorama.build_and_save(
-                        snaps, None, PANORAMA_DIR, filename=filename,
-                    )
-                    print(f"Saved: {out_path}")
-                except Exception as e:
-                    print(f"Panorama failed: {e}")
+                ffc_device = args.device if args.device else FFC_MXID
+                oakd_device = args.oakd if args.oakd else OAKD_MXID
+                run_panorama_subprocess(sessions, filename, ffc_device, oakd_device)
             elif cmd == "mode":
                 if len(parts) < 2:
                     print("Usage: mode <name> [device_id]   |   mode ffc <cam1,cam2,...> [device_id]")
@@ -336,7 +318,7 @@ def print_help():
     print("  watch [interval]         monitor bandwidth at intervals")
     print("  detections               show latest detections (FFC YOLO or OAK-D YOLO modes only)")
     print("  watch_detections [interval]   monitor detections at intervals")
-    print("  panorama [filename]      stitch a 360 panorama from FFC + compass overlay (FFC 4-cam modes)")
+    print("  panorama [filename]      stop streams, run panorama.py subprocess (FFC photos + OAK-D IMU)")
     print("  quit / exit / q          shut down")
     print(f"Modes: {', '.join(ALL_MODES)}")
 
@@ -385,9 +367,49 @@ def parse_args():
     parser.add_argument(
         "-d", "--device",
         default=None,
-        help="Default device MxId or IP"
+        help="Default device MxId or IP (applies to whichever kit --mode selects)"
+    )
+    parser.add_argument(
+        "--oakd",
+        default=None,
+        help="OAK-D MxId or IP used by the panorama subprocess for IMU (default: OAKD_MXID)"
     )
     return parser.parse_args()
+
+
+def run_panorama_subprocess(sessions, filename, ffc_device, oakd_device):
+    """Stop the live sessions, then spawn ``panorama.py`` as a separate process.
+
+    panorama.py opens the FFC for one frame per camera and the OAK-D for
+    one IMU packet, stitches, and writes the result. After it returns,
+    the streams stay stopped (resume with ``mode ffc_all``).
+    """
+    if any(s.is_running() for s in sessions.values()):
+        print("Stopping streams for panorama capture...")
+        for s in sessions.values():
+            s.stop()
+
+    cmd = [
+        sys.executable, PANORAMA_SCRIPT,
+        "--ffc", ffc_device,
+        "--oakd", oakd_device,
+        "--out-dir", PANORAMA_DIR,
+    ]
+    if filename:
+        cmd += ["--filename", filename]
+
+    print(f"Running: {' '.join(cmd)}")
+    try:
+        rc = subprocess.call(cmd)
+    except KeyboardInterrupt:
+        print("\nPanorama interrupted.")
+        return
+    except FileNotFoundError as e:
+        print(f"Panorama subprocess failed to launch: {e}")
+        return
+    if rc != 0:
+        print(f"Panorama subprocess exited with code {rc}")
+    print("Streams remain stopped. Resume with: mode ffc_all  (or another mode)")
 
 
 FFC_SOCKETS = {
@@ -495,87 +517,6 @@ def profile_for(mode):
     if mode not in MODES:
         raise ValueError(f"No profile for mode '{mode}'")
     return MODES[mode]
-
-
-def grab_rtsp_snapshots(stream_names, port=RTSP_PORT, timeout=RTSP_GRAB_TIMEOUT_S):
-    """Spawn a short-lived ffmpeg per RTSP stream to grab a single frame.
-
-    Sequential, one stream at a time. ffmpeg runs in its own process so it
-    shares no GIL, signal handlers, or GStreamer state with the in-process
-    GstRtspServer / depthai XLink monitor -- opening 4 in-process
-    cv2.VideoCapture clients simultaneously was racing with depthai's
-    monitor thread and causing missed pings on the device.
-
-    Returns {name: bgr_frame or None}. On failure prints the ffmpeg stderr
-    so problems are diagnosable instead of silent.
-    """
-    results = {}
-    with tempfile.TemporaryDirectory(prefix="ffc_panorama_") as tmpdir:
-        for name in stream_names:
-            url = f"rtsp://127.0.0.1:{port}/{name}"
-            out_path = os.path.join(tmpdir, f"{name}.jpg")
-            frame = None
-            err = ""
-            rc = None
-            # Notes on the option set, learned the hard way against an FFC
-            # H.264_MAIN @ 1080p30 RTSP stream and a SUSE ffmpeg whose native
-            # h264 decoder is disabled (falls back to libopenh264):
-            #   -analyzeduration / -probesize  : codec is in the SDP, skip
-            #     the default 5s input analysis
-            #   -fflags nobuffer+discardcorrupt, -flags low_delay
-            #                                  : flush as soon as we have a
-            #     decodable frame instead of multi-second startup buffering
-            #   -err_detect ignore_err         : tolerate transient noise
-            #     instead of giving up
-            #   -discard:v nokey  (before -i)  : demuxer drops every video
-            #     packet that is not a keyframe; libopenh264 is otherwise
-            #     fed P-frames before the next IDR/SPS/PPS arrives and
-            #     bails out with "Error submitting packet to decoder" at a
-            #     ~92% error rate
-            #   -max_error_rate 0.99           : final belt-and-suspenders
-            #     so the decoder thread does not exit on a transient blip
-            #   -update 1  (after -i)          : modern image2 muxer demands
-            #     either a %d pattern or -update 1 with -vframes 1
-            cmd = [
-                "ffmpeg", "-loglevel", "warning", "-y",
-                "-rtsp_transport", "tcp",
-                "-analyzeduration", "500000",
-                "-probesize", "100000",
-                "-fflags", "nobuffer+discardcorrupt",
-                "-flags", "low_delay",
-                "-err_detect", "ignore_err",
-                "-discard:v", "nokey",
-                "-i", url,
-                "-an",
-                "-max_error_rate", "0.99",
-                "-vframes", "1",
-                "-update", "1",
-                "-q:v", "2",
-                out_path,
-            ]
-            try:
-                proc = subprocess.run(
-                    cmd,
-                    timeout=timeout,
-                    stdout=subprocess.DEVNULL,
-                    stderr=subprocess.PIPE,
-                )
-                rc = proc.returncode
-                err = (proc.stderr or b"").decode(errors="replace").strip()
-                if rc == 0 and os.path.exists(out_path) and os.path.getsize(out_path) > 0:
-                    frame = cv2.imread(out_path)
-            except subprocess.TimeoutExpired as e:
-                rc = "timeout"
-                raw = e.stderr if e.stderr is not None else b""
-                err = raw.decode(errors="replace").strip() or f"timeout after {timeout}s"
-            except FileNotFoundError:
-                print("[panorama] ffmpeg not found on PATH; please install ffmpeg")
-                return {n: None for n in stream_names}
-            if frame is None:
-                tail = "\n  ".join(err.splitlines()[-8:]) if err else "(no stderr)"
-                print(f"[panorama] {name}: ffmpeg rc={rc}\n  {tail}")
-            results[name] = frame
-    return results
 
 
 if __name__ == "__main__":
