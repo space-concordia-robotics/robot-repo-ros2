@@ -68,7 +68,7 @@ namespace ImOsm {
         if (ui->source.starts_with("http")) {
             tile_loader = std::make_shared<TileLoaderUrlMap>(ui->source, ui->request_limit);
         } else if (!ui->source.empty()) {
-            tile_loader = std::make_shared<TileLoaderFsMap>(ui->source, ui->request_limit);
+            tile_loader = std::make_shared<TileLoaderFsMap>(ui->source, std::nullopt, ui->request_limit);
         }
         map_plot->setTileLoader(tile_loader);
     }

@@ -39,6 +39,9 @@ set(DEPENDENCIES
         rover_msgs
 )
 
+# Geographiclib installs FindGeographicLib.cmake to this non-standard location on Ubuntu
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "/usr/share/cmake/geographiclib/")
+
 include(../cmake/CPM.cmake)
 
 # find dependencies
@@ -130,6 +133,7 @@ add_executable(${PROJECT_NAME}
         src/osm/osm_tile_loader_url.cpp
         src/osm/osm_tile_saver.cpp
         src/osm/osm_tile_source_async.cpp
+        src/osm/osm_tile_source_caching.cpp
         src/osm/osm_tile_source_fs.cpp
         src/osm/osm_tile_source_url.cpp
         src/osm/osm_tile_source_url_impl.cpp

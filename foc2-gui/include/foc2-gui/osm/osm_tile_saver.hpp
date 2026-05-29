@@ -10,7 +10,8 @@ namespace ImOsm {
 
     class TileSaver : public ITileSaver {
     public:
-        TileSaver();
+        explicit TileSaver(std::optional<std::string> extension);
+        TileSaver(std::filesystem::path base_path, std::optional<std::string> extension);
         ~TileSaver() override;
 
         [[nodiscard]] bool saveMulti(const std::vector<std::shared_ptr<ITile>>& tiles) const override;
@@ -18,36 +19,39 @@ namespace ImOsm {
 
     protected:
         [[nodiscard]] virtual std::filesystem::path dirPath(const std::shared_ptr<ITile>& tile) const = 0;
+
         [[nodiscard]] virtual std::string fileName(const std::shared_ptr<ITile>& tile) const;
+
+        [[nodiscard]] std::filesystem::path basePath() const {
+            return base_path;
+        }
+
+    private:
+        std::filesystem::path base_path = TileSourceFs::BasePathDefault();
+        std::optional<std::string> extension;
     };
 
     // -----------------------------------------------------------------------------
 
     class TileSaverDir : public TileSaver {
     public:
-        TileSaverDir();
-        TileSaverDir(std::filesystem::path basePath);
+        explicit TileSaverDir(std::optional<std::string> extension);
+        TileSaverDir(std::filesystem::path base_path, std::optional<std::string> extension);
         ~TileSaverDir() override;
 
     protected:
         [[nodiscard]] std::filesystem::path dirPath(const std::shared_ptr<ITile>& tile) const override;
-
-    private:
-        std::filesystem::path base_path = TileSourceFs::BasePathDefault();
     };
 
     // -----------------------------------------------------------------------------
 
     class TileSaverSubDir : public TileSaver {
     public:
-        TileSaverSubDir();
-        TileSaverSubDir(std::filesystem::path basePath);
+        explicit TileSaverSubDir(std::optional<std::string> extension);
+        TileSaverSubDir(std::filesystem::path base_path, std::optional<std::string> extension);
         ~TileSaverSubDir() override;
 
     protected:
         [[nodiscard]] std::filesystem::path dirPath(const std::shared_ptr<ITile>& tile) const override;
-
-    private:
-        std::filesystem::path base_path = TileSourceFs::BasePathDefault();
     };
 }

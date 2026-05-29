@@ -9,7 +9,7 @@ namespace ImOsm {
 
     class TileSourceAsync : public ITileSource {
     public:
-        TileSourceAsync(int requestLimit, bool preload);
+        TileSourceAsync(int request_limit, bool preload);
         ~TileSourceAsync() override;
 
         bool hasRequest() override;
@@ -36,12 +36,12 @@ namespace ImOsm {
             std::vector<std::byte> blob;
         };
 
+        virtual TileAsync::FutureData onHandleRequest(int z, int x, int y);
+
     protected:
         virtual bool receiveTile(int z, int x, int y, TileData& data) = 0;
 
     private:
-        TileAsync::FutureData onHandleRequest(int z, int x, int y);
-
         std::vector<TileAsync> requests;
         int request_limit = 10;
         bool preload = true;

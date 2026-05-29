@@ -39,9 +39,9 @@ void RichGPSMarker::paint() {
     const auto spec = ImPlotSpec(
         ImPlotProp_Marker, ImPlotMarker_Circle,
         ImPlotProp_MarkerSize, 4.0f,
-        ImPlotProp_MarkerFillColor, ImVec4(255, 0, 0, 200),
+        ImPlotProp_MarkerFillColor, ImVec4(0, 0, 255, 200),
         ImPlotProp_LineWeight, 1.5f,
-        ImPlotProp_LineColor, ImVec4(255, 0, 0, 200)
+        ImPlotProp_LineColor, ImVec4(0, 0, 255, 200)
     );
 
     ImPlot::PlotScatter("##", &osm_coords.x, &osm_coords.y, 1, spec);
