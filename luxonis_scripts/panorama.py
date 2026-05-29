@@ -5,17 +5,33 @@ Stitcher for a seamless result, falls back to horizontal concatenation when
 the scene lacks enough overlap texture, and overlays a cardinal-direction
 strip rotated by the IMU yaw.
 
-Public entry point: build_and_save(snaps, imu_pkt, out_dir, hfov_deg=108.0).
+Two usage modes:
+
+1. Library: ``build_and_save(snaps, imu_pkt, out_dir, hfov_deg=108.0)``
+   Stitch from already-captured BGR frames.
+
+2. Standalone subprocess (what ``main.py``'s ``panorama`` REPL command
+   invokes after it stops the live streams): ``python3 panorama.py``
+   opens the FFC and the OAK-D directly, grabs one frame per camera +
+   one IMU packet, and stitches.
 """
 
 from __future__ import annotations
 
+import argparse
 import math
+import os
+import sys
 import time
 from pathlib import Path
 
 import cv2
 import numpy as np
+
+
+FFC_MXID_DEFAULT = "14442C10014791D700"
+OAKD_MXID_DEFAULT = "1944301001EDE12E00"
+DEFAULT_OUT_DIR = os.path.join(os.path.dirname(__file__), "panoramas")
 
 
 CLOCKWISE_ORDER = ("FRONT", "RIGHT", "BACK", "LEFT")
@@ -184,3 +200,152 @@ def _angle_to_xs(world_deg, yaw_deg, width, hfov_deg, stitched):
             x = int(i * cam_w + frac * cam_w)
             xs.append(max(0, min(width - 1, x)))
     return xs
+
+
+# ---------- Standalone capture (subprocess entry-point) ----------
+
+def _capture_ffc_frames(device_id, warmup_s=10.0, capture_timeout_s=6.0,
+                        fps=10, resolution=(1920, 1080)):
+    """Open the FFC and grab one BGR frame per directional camera.
+
+    Used by ``main.py`` after it has stopped the live streaming pipeline.
+    We open the device cleanly here (no encoders, no visualizer) so the
+    capture takes ~3-4 s end to end.
+    """
+    import depthai as dai
+
+    sockets = {
+        "FRONT": dai.CameraBoardSocket.CAM_A,
+        "RIGHT": dai.CameraBoardSocket.CAM_B,
+        "LEFT":  dai.CameraBoardSocket.CAM_C,
+        "BACK":  dai.CameraBoardSocket.CAM_D,
+    }
+
+    snaps = {}
+    device = dai.Device(dai.DeviceInfo(device_id))
+    with device, dai.Pipeline(device) as pipeline:
+        queues = {}
+        for name, sock in sockets.items():
+            cam = pipeline.create(dai.node.Camera).build(sock)
+            cam_out = cam.requestOutput(resolution, fps=fps,
+                                        type=dai.ImgFrame.Type.NV12)
+            queues[name] = cam_out.createOutputQueue(maxSize=4, blocking=False)
+        pipeline.start()
+
+        # Drain the warmup window so autoexposure / autowhitebalance settle.
+        warmup_end = time.monotonic() + 10.0
+        while time.monotonic() < warmup_end:
+            for q in queues.values():
+                while q.has():
+                    q.get()
+            time.sleep(0.1)
+
+        deadline = time.monotonic() + capture_timeout_s
+        while len(snaps) < len(sockets) and time.monotonic() < deadline:
+            for name, q in queues.items():
+                if name in snaps:
+                    continue
+                if q.has():
+                    frame = q.get().getCvFrame()
+                    if frame is not None and frame.size > 0:
+                        snaps[name] = frame
+            time.sleep(0.1)
+
+    missing = [n for n in sockets if n not in snaps]
+    if missing:
+        raise RuntimeError(f"failed to capture FFC frames for: {','.join(missing)}")
+    return snaps
+
+
+def _capture_imu_packet(device_id, timeout_s=4.0):
+    """Open the OAK-D briefly to grab one IMU packet (rotation vector + mag).
+
+    Returns the latest packet, or None on any failure. The caller treats
+    None as 'no orientation available' and the compass overlay falls
+    back to yaw=0.
+    """
+    try:
+        import depthai as dai
+    except Exception as e:
+        print(f"[panorama] depthai import failed for IMU: {e}", file=sys.stderr)
+        return None
+
+    try:
+        device = dai.Device(dai.DeviceInfo(device_id))
+    except Exception as e:
+        print(f"[panorama] could not open OAK-D for IMU ({device_id}): {e}",
+              file=sys.stderr)
+        return None
+
+    try:
+        with device, dai.Pipeline(device) as pipeline:
+            imu = pipeline.create(dai.node.IMU)
+            imu.enableIMUSensor(dai.IMUSensor.ROTATION_VECTOR, 50)
+            try:
+                imu.enableIMUSensor(dai.IMUSensor.MAGNETOMETER_CALIBRATED, 50)
+            except Exception:
+                pass
+            imu.setBatchReportThreshold(1)
+            imu.setMaxBatchReports(10)
+            imu_q = imu.out.createOutputQueue(maxSize=10, blocking=False)
+            pipeline.start()
+
+            deadline = time.monotonic() + timeout_s
+            last_pkt = None
+            while time.monotonic() < deadline:
+                if imu_q.has():
+                    pkt = imu_q.get()
+                    last_pkt = pkt
+                    if pkt is not None and pkt.packets:
+                        rv = getattr(pkt.packets[-1], "rotationVector", None)
+                        if rv is not None and (rv.i or rv.j or rv.k or rv.real):
+                            return pkt
+                time.sleep(0.02)
+            return last_pkt
+    except Exception as e:
+        print(f"[panorama] OAK-D IMU capture failed: {e}", file=sys.stderr)
+        return None
+
+
+def _parse_cli_args():
+    p = argparse.ArgumentParser(description="Stitch a 360 panorama from the FFC + OAK-D IMU")
+    p.add_argument("--ffc", default=FFC_MXID_DEFAULT,
+                   help="FFC MxId or IP (default: %(default)s)")
+    p.add_argument("--oakd", default=OAKD_MXID_DEFAULT,
+                   help="OAK-D MxId or IP for the IMU packet (default: %(default)s)")
+    p.add_argument("--out-dir", default=DEFAULT_OUT_DIR,
+                   help="Directory to write the panorama into (default: %(default)s)")
+    p.add_argument("--filename", default=None,
+                   help="Output filename (auto-timestamped if omitted)")
+    p.add_argument("--hfov-deg", type=float, default=108.0,
+                   help="Per-camera horizontal FOV in degrees (default: %(default)s)")
+    p.add_argument("--no-imu", action="store_true",
+                   help="Skip the OAK-D IMU capture and use yaw=0")
+    return p.parse_args()
+
+
+def _main():
+    args = _parse_cli_args()
+    print(f"[panorama] capturing FFC frames from {args.ffc}...")
+    try:
+        snaps = _capture_ffc_frames(args.ffc)
+    except Exception as e:
+        print(f"[panorama] FFC capture failed: {e}", file=sys.stderr)
+        return 2
+
+    imu_pkt = None
+    if not args.no_imu:
+        print(f"[panorama] capturing OAK-D IMU from {args.oakd}...")
+        imu_pkt = _capture_imu_packet(args.oakd)
+        if imu_pkt is None:
+            print("[panorama] no IMU data; compass overlay will use yaw=0")
+
+    print("[panorama] stitching...")
+    out_path = build_and_save(snaps, imu_pkt, args.out_dir,
+                              hfov_deg=args.hfov_deg, filename=args.filename)
+    print(f"[panorama] saved: {out_path}")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(_main())
