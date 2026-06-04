@@ -40,12 +40,12 @@ namespace autonomy {
         bool ar_detected = false;
 
         Subscription<NavSatFix>::SharedPtr navsat_topic;
-        Subscription<ImageDetectionArray>::SharedPtr aruco_subscription;
+        Subscription<ImageDetectionArray>::SharedPtr detection_subscription;
         ActionClient<NavigateThroughPoses>::SharedPtr nav_client;
         ActionClient<FollowGPSWaypoints>::SharedPtr gps_client;
 
-        rclcpp_async::Task<std::optional<WrappedResult<FollowGPSWaypoints>>> navigateToCenter();
-        rclcpp_async::Task<std::optional<WrappedResult<NavigateThroughPoses>>> tryFindObjet();
+        rclcpp_async::Task<std::optional<WrappedResult<FollowGPSWaypoints>>> navigateToCenter() const;
+        rclcpp_async::Task<std::optional<WrappedResult<NavigateThroughPoses>>> tryFindObject() const;
         rclcpp_async::Task<std::optional<WrappedResult<NavigateThroughPoses>>> navigateToObject();
     };
 }

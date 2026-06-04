@@ -6,7 +6,7 @@
     # The frequency, in Hz, at which the filter will output a position estimate. Note that the filter will not begin
     # computation until it receives at least one message from one of the inputs. It will then run continuously at the
     # frequency specified here, regardless of whether it receives more measurements. Defaults to 30 if unspecified.
-    frequency: 50.0
+    frequency: 30.0
 
     # ekf_localization_node and ukf_localization_node both use a 3D omnidirectional motion model. If this parameter is
     # set to true, no 3D information will be used in your state estimate. Use this if you are operating in a planar
@@ -104,7 +104,7 @@
     # The frequency, in Hz, at which the filter will output a position estimate. Note that the filter will not begin
     # computation until it receives at least one message from one of the inputs. It will then run continuously at the
     # frequency specified here, regardless of whether it receives more measurements. Defaults to 30 if unspecified.
-    frequency: 50.0
+    frequency: 30.0
 
     # ekf_localization_node and ukf_localization_node both use a 3D omnidirectional motion model. If this parameter is
     # set to true, no 3D information will be used in your state estimate. Use this if you are operating in a planar
@@ -252,4 +252,4 @@ rover_lidar_imu_filter:
     publish_filtered_gps: true
     use_odometry_yaw: true
     wait_for_datum: true
-    datum: [ 45.6707543, -73.7952135, 0.0 ]
+    datum: [ 38.3717, -110.704, 0.0 ]

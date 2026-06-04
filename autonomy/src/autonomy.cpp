@@ -24,16 +24,15 @@ namespace autonomy {
             }
         );
 
+        sil_client = this->create_client<SetSILStatus>("/sil_controller/set_status");
+
+        using namespace std::chrono_literals;
+        sil_client->wait_for_service(10s);
+
         start();
     }
 
 
-    // targets:
-    //   names:
-    //     - foo
-    //     - bar
-    //   foo:
-    //     type: gps
     void AutonomyMissionManager::parseConfig() {
         this->mission_duration = rclcpp::Duration(util::parseDuration(this->declare_parameter<std::string>("mission_duration")));
 
@@ -136,17 +135,25 @@ namespace autonomy {
         return location;
     }
 
-    void AutonomyMissionManager::start() {
+    rclcpp_async::Task<> AutonomyMissionManager::start() {
+        setSILColour(0, 0, 255, 255);
+
         while (true) {
             const auto target = nearestTarget();
 
             // cannot find any more targets, so we're done
             if (!target)
-                return;
+                break;
 
             target->setup();
-            target->start();
+
+            co_await target->start();
+
+            // set colour back to blue after target
+            setSILColour(0, 0, 255, 255);
         }
+
+        co_return;
     }
 
     Target::SharedPtr AutonomyMissionManager::nearestTarget() const {
@@ -162,6 +169,18 @@ namespace autonomy {
             }
         }
         return nearest;
+    }
+
+    rclcpp_async::Task<> AutonomyMissionManager::setSILColour(const uint8_t r, const uint8_t g, const uint8_t b, const uint8_t brightness) {
+        using namespace std::chrono_literals;
+
+        const auto sil_request = std::make_shared<SetSILStatus::Request>();
+        sil_request->r = r;
+        sil_request->g = g;
+        sil_request->b = b;
+        sil_request->brightness = brightness;
+
+        co_await co_ctx->send_request<SetSILStatus>(sil_client, sil_request);
     }
 }
 

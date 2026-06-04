@@ -16,7 +16,7 @@ namespace autonomy {
             }
         );
 
-        aruco_subscription = node.create_subscription<ImageDetectionArray>(
+        detection_subscription = node.create_subscription<ImageDetectionArray>(
             "/aruco",
             10,
             [this](const ImageDetectionArray::UniquePtr& msg) {
@@ -33,6 +33,7 @@ namespace autonomy {
                 }
             }
         );
+
         gps_client = rclcpp_action::create_client<FollowGPSWaypoints>(
             node.get_node_base_interface(),
             node.get_node_graph_interface(),
@@ -40,6 +41,7 @@ namespace autonomy {
             node.get_node_waitables_interface(),
             "follow_gps_waypoints"
         );
+
         nav_client = rclcpp_action::create_client<NavigateThroughPoses>(
             node.get_node_base_interface(),
             node.get_node_graph_interface(),
@@ -92,7 +94,7 @@ namespace autonomy {
             if (tries > MAX_SPIRAL_TRIES)
                 co_return; // abandon goal if we cannot find it after 2 spiral attempts
 
-            const auto optional_result = co_await tryFindObjet();
+            const auto optional_result = co_await tryFindObject();
 
             if (!optional_result.has_value())
                 continue;
@@ -110,10 +112,28 @@ namespace autonomy {
         }
 
         // TODO 2026-04-27 (Will Free): retry logic for this
-        navigateToObject();
+        const auto result = co_await navigateToObject();
+
+        if (!result) {
+            logger.error("Failed to navigate to object, bailing out.");
+            co_return;
+        }
+
+        const auto ctx = node.ctx();
+
+        using namespace std::chrono_literals;
+
+        for (int i = 0; i < 8; ++i) {
+            // TODO 2026-05-30 (Will Free): make these not hardcoded
+
+            // flash green
+            node.setSILColour(0, 255, 0, i % 2 == 0 ? 255 : 0);
+
+            ctx->sleep(250ms);
+        }
     }
 
-    rclcpp_async::Task<std::optional<WrappedResult<FollowGPSWaypoints>>> ObjectTarget::navigateToCenter() {
+    rclcpp_async::Task<std::optional<WrappedResult<FollowGPSWaypoints>>> ObjectTarget::navigateToCenter() const {
         const auto ctx = node.ctx();
 
         auto goal_msg = FollowGPSWaypoints::Goal();
@@ -141,7 +161,7 @@ namespace autonomy {
         co_return std::optional(result);
     }
 
-    rclcpp_async::Task<std::optional<WrappedResult<NavigateThroughPoses>>> ObjectTarget::tryFindObjet() {
+    rclcpp_async::Task<std::optional<WrappedResult<NavigateThroughPoses>>> ObjectTarget::tryFindObject() const {
         const auto ctx = node.ctx();
 
         auto goal_msg = NavigateThroughPoses::Goal();

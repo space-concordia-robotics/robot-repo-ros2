@@ -15,6 +15,7 @@ namespace autonomy {
         RCLCPP_SMART_PTR_DEFINITIONS(AutonomyMissionManager)
 
         AutonomyMissionManager();
+        ~AutonomyMissionManager() override = default;
 
         //! parses the config file
         void parseConfig();
@@ -28,7 +29,7 @@ namespace autonomy {
         //! parses a point from the config file
         GeoPoint parseGeoPoint(const std::string& prefix);
 
-        void start();
+        rclcpp_async::Task<> start();
 
         Target::SharedPtr nearestTarget() const;
 
@@ -48,6 +49,8 @@ namespace autonomy {
             return this->co_ctx;
         }
 
+        rclcpp_async::Task<> setSILColour(uint8_t r, uint8_t g, uint8_t b, uint8_t brightness) override;
+
     private:
         std::shared_ptr<rclcpp_async::CoContext> co_ctx;
         ros2_fmt_logger::Logger logger;
@@ -56,6 +59,7 @@ namespace autonomy {
         TargetConfig target_config = {};
 
         rclcpp::Subscription<NavSatFix>::SharedPtr navsat_topic;
+        Client<SetSILStatus>::SharedPtr sil_client;
 
         GeoPoint rover_position;
     };

@@ -98,7 +98,7 @@
       PathDist.scale: 32.0
       GoalDist.scale: 24.0
       RotateToGoal.scale: 32.0
-      RotateToGoal.slowing_factor: 5.0
+      RotateToGoal.slowing_factor: 1.0
       RotateToGoal.lookahead_time: -1.0
       PreferForward.penalty: 1.0
       PreferForward.scale: 1.0
@@ -225,9 +225,9 @@
       # TODO 2026-02-04 (Will Free): add denoise layer
       # voxel layer is 3d, obstacle layer is 3d
       plugins:
-        - voxel_layer
+        #- voxel_layer
         #- obstacle_layer
-        #- spatio_temporal_voxel_layer
+        - spatio_temporal_voxel_layer
         - denoise_layer
         - inflation_layer_near
         - inflation_layer_wide
@@ -259,7 +259,7 @@
           raytrace_max_range: 16.0
           raytrace_min_range: 1.0
           max_obstacle_height: 2.0
-          min_obstacle_height: 0.0
+          min_obstacle_height: 0.5
           clearing: True
           marking: True
           data_type: "LaserScan"
@@ -290,7 +290,7 @@
       spatio_temporal_voxel_layer:
         plugin: "spatio_temporal_voxel_layer/SpatioTemporalVoxelLayer"
         enabled: true
-        voxel_decay: 64.0  # seconds if linear, e^n if exponential
+        voxel_decay: 8.0  # seconds if linear, e^n if exponential
         decay_model: 0     # 0=linear, 1=exponential, -1=persistent
         voxel_size: 0.05  # meters
         track_unknown_space: false  # default space is known
@@ -310,7 +310,7 @@
           marking: true
           clearing: false
           obstacle_range: 12.0          # meters
-          min_obstacle_height: 0.3     # default 0, meters
+          min_obstacle_height: 0.5     # default 0, meters
           max_obstacle_height: 2.0     # default 3, meters
           expected_update_rate: 0.0    # default 0, if not updating at this rate at least, remove from buffer
           observation_persistence: 0.0 # default 0, use all measurements taken during now-value, 0=latest
@@ -340,7 +340,7 @@
       denoise_layer:
         plugin: "nav2_costmap_2d::DenoiseLayer"
         enabled: true
-        minimal_group_size: 2
+        minimal_group_size: 3
         group_connectivity_type: 8
 
       static_layer:
@@ -425,7 +425,7 @@
       spatio_temporal_voxel_layer:
         plugin: "spatio_temporal_voxel_layer/SpatioTemporalVoxelLayer"
         enabled: true
-        voxel_decay: 64.0  # seconds if linear, e^n if exponential
+        voxel_decay: 8.0  # seconds if linear, e^n if exponential
         decay_model: 0     # 0=linear, 1=exponential, -1=persistent
         voxel_size: 0.05  # meters
         track_unknown_space: false  # default space is known
@@ -445,7 +445,7 @@
           marking: true
           clearing: false
           obstacle_range: 12.0          # meters
-          min_obstacle_height: 0.3     # default 0, meters
+          min_obstacle_height: 0.5     # default 0, meters
           max_obstacle_height: 2.0     # default 3, meters
           expected_update_rate: 0.0    # default 0, if not updating at this rate at least, remove from buffer
           observation_persistence: 0.0 # default 0, use all measurements taken during now-value, 0=latest
@@ -486,7 +486,7 @@
           raytrace_max_range: 16.0
           raytrace_min_range: 1.0
           max_obstacle_height: 2.0
-          min_obstacle_height: 0.0
+          min_obstacle_height: 0.5
           clearing: True
           marking: True
           data_type: "LaserScan"
@@ -495,7 +495,7 @@
       denoise_layer:
         plugin: "nav2_costmap_2d::DenoiseLayer"
         enabled: True
-        minimal_group_size: 2
+        minimal_group_size: 3
         group_connectivity_type: 8
 
       static_layer:

@@ -14,6 +14,7 @@ namespace autonomy {
             this->rover_position.longitude = msg->longitude;
             this->rover_position.altitude = msg->altitude;
         });
+
         gps_client = rclcpp_action::create_client<FollowGPSWaypoints>(
             node.get_node_base_interface(),
             node.get_node_graph_interface(),
@@ -27,12 +28,11 @@ namespace autonomy {
         Target::start();
 
         auto tries = 0u;
-        constexpr static auto MAX_TRIES = 8u;
 
         while (true) {
             tries += 1;
 
-            if (tries > MAX_TRIES) {
+            if (tries > this->gps_config.max_retries) {
                 this->state = TargetState::FAILED;
                 co_return;
             }
@@ -50,14 +50,25 @@ namespace autonomy {
             }
         }
 
-        // TODO 2026-04-25 (Will Free): use light to signal that the position has been reached
+        logger.info("reached GPS target {}, triggering SIL", this->id);
 
-        logger.info("reached GPS target {}", this->id);
+        const auto ctx = node.ctx();
+
+        using namespace std::chrono_literals;
+
+        for (int i = 0; i < 8; ++i) {
+            // TODO 2026-05-30 (Will Free): make these not hardcoded
+
+            // flash green
+            node.setSILColour(0, 255, 0, i % 2 == 0 ? 255 : 0);
+
+            ctx->sleep(250ms);
+        }
 
         co_return;
     }
 
-    rclcpp_async::Task<std::optional<WrappedResult<FollowGPSWaypoints>>> GPSTarget::navigateToTarget() {
+    rclcpp_async::Task<std::optional<WrappedResult<FollowGPSWaypoints>>> GPSTarget::navigateToTarget() const {
         const auto ctx = node.ctx();
 
         auto goal_msg = FollowGPSWaypoints::Goal();

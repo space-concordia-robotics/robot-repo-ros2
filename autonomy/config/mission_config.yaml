@@ -1,0 +1,83 @@
+/**/autonomy:
+  ros__parameters:
+    mission_duration: 3600 # unused
+    target:
+      gps:
+        acceptance_radius: 3
+        timeout: 600 # unused
+        max_retries: 8
+      ar:
+        topic_name: /aruco_detections
+        acceptance_radius: 2
+        timeout: 600 # unused
+        max_retries: 8
+        tag_size: 0.15 # unused
+        confidence: 0.5 # unused
+        spiral_step: 1.0
+        spiral_radius_factor: 0.5
+      object:
+        topic_name: /detection
+        acceptance_radius: 30.0
+        timeout: 600 # unused
+        max_retries: 8
+        confidence: 1.0 # unused (I think)
+        spiral_step: 1.0
+        spiral_radius_factor: 0.5
+
+    targets:
+      names:
+        - gps_1
+        - gps_2
+      #        - ar_1
+      #        - ar_2
+      #        - object_1
+      #        - object_2
+
+      gps_1:
+        type: gps
+        location:
+          latitude: 38.37174
+          longitude: 110.70399
+
+      gps_2:
+        type: gps
+        location:
+          latitude: 38.371743
+          longitude: 110.704244
+
+      ar_1:
+        type: ar_tag
+        tag_id: 4
+        radius: 20.0 # TODO 2026-05-30 (Will Free): get the correct value
+        center:
+          latitude: 38.37174
+          longitude: 110.70399
+
+      ar_2:
+        type: ar_tag
+        tag_id: 4
+        radius: 20.0 # TODO 2026-05-30 (Will Free): get the correct value
+        center:
+          latitude: 38.37174
+          longitude: 110.70399
+
+      # labels:
+      # - orange_hammer
+      # - rock_hammer
+      # - bottle
+
+      object_1:
+        type: object
+        label: TODO
+        radius: 20.0 # TODO 2026-05-30 (Will Free): get the correct value
+        center:
+          latitude: 38.37174
+          longitude: 110.70399
+
+      object_2:
+        type: object
+        label: TODO
+        radius: 20.0 # TODO 2026-05-30 (Will Free): get the correct value
+        center:
+          latitude: 38.37174
+          longitude: 110.70399

@@ -1,7 +1,7 @@
 /**/tm_imu:
   ros__parameters:
     imu_baudrate: 115200
-    imu_port: "/dev/ttyACM0"
+    imu_port: "/dev/ttyACM1"
     imu_frame_id: "imu"
     parent_frame_id: "base_link" # note: this frame is actually just unused
     timer_period: 5
