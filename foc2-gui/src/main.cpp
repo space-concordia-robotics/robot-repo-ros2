@@ -89,7 +89,8 @@ void cleanupWindowIcon() {
 
 static constexpr auto MAP_WIDGET_NAME = "Map";
 static constexpr auto LOGS_WIDGET_NAME = "ROS Logs";
-static constexpr auto TOP_STREAM_WIDGET_NAME = "Top Stream";
+static constexpr auto TOP_LEFT_STREAM_WIDGET_NAME = "Top Left Stream";
+static constexpr auto TOP_RIGHT_STREAM_WIDGET_NAME = "Top Right Stream";
 static constexpr auto BOTTOM_RIGHT_STREAM_WIDGET_NAME = "Bottom Right Stream";
 static constexpr auto BOTTOM_LEFT_STREAM_WIDGET_NAME = "Bottom Left Stream";
 
@@ -154,7 +155,8 @@ protected:
         const auto filename = std::filesystem::path(share_dir) / "resources" / "fonts" / FONT_ICON_FILE_NAME_FAS;
         io.Fonts->AddFontFromFileTTF(filename.c_str(), ICON_FONT_SIZE, &fontawesome_config, FONTAWESOME_ICON_RANGE);
 
-        video_top = std::make_shared<VideoWidget>(*this, "rtsp://127.0.0.1:8554/test", "/rover/ffc/front/image_raw", true);
+        video_top_left = std::make_shared<VideoWidget>(*this, "rtsp://127.0.0.1:8554/test", "/rover/ffc/front/image_raw", true);
+        video_top_right = std::make_shared<VideoWidget>(*this, "rtsp://127.0.0.1:8554/test", "/rover/ffc/front/image_raw", true);
         video_bottom_left = std::make_shared<VideoWidget>(*this, "rtsp://10.240.0.10:8445/left", "/rover/ffc/left/image_raw", false);
         video_bottom_right = std::make_shared<VideoWidget>(*this, "rtsp://10.240.0.10:8445/right", "/rover/ffc/right/image_raw", false);
 
@@ -162,7 +164,8 @@ protected:
 
         logs = std::make_shared<RosLogWidget>(*this);
 
-        video_top->onInit();
+        video_top_left->onInit();
+        video_top_right->onInit();
         video_bottom_left->onInit();
         video_bottom_right->onInit();
 
@@ -198,7 +201,8 @@ protected:
     }
 
     void onShutdown() override {
-        video_top->onShutdown();
+        video_top_left->onShutdown();
+        video_top_right->onShutdown();
         video_bottom_left->onShutdown();
         video_bottom_right->onShutdown();
         map_widget->onShutdown();
@@ -210,7 +214,8 @@ protected:
 private:
     bool layout_initialized = false;
 
-    VideoWidget::SharedPtr video_top;
+    VideoWidget::SharedPtr video_top_left;
+    VideoWidget::SharedPtr video_top_right;
     VideoWidget::SharedPtr video_bottom_left;
     VideoWidget::SharedPtr video_bottom_right;
     RosLogWidget::SharedPtr logs;
@@ -246,8 +251,12 @@ private:
         ImGuiID dock_right_bottom;
         ImGui::DockBuilderSplitNode(node_right, ImGuiDir_Up, 0.6, &dock_right_top, &dock_right_bottom);
 
+        ImGuiID dock_right_top_right;
+        ImGuiID dock_right_top_left;
+        ImGui::DockBuilderSplitNode(dock_right_top, ImGuiDir_Left, 0.5, &dock_right_top_left, &dock_right_top_right);
         ImGui::DockBuilderGetNode(dock_right_top)->SetLocalFlags(ImGuiDockNodeFlags_AutoHideTabBar);
-        ImGui::DockBuilderDockWindow(TOP_STREAM_WIDGET_NAME, dock_right_top);
+        ImGui::DockBuilderDockWindow(TOP_LEFT_STREAM_WIDGET_NAME, dock_right_top_left);
+        ImGui::DockBuilderDockWindow(TOP_RIGHT_STREAM_WIDGET_NAME, dock_right_top_right);
 
         ImGuiID dock_right_bottom_right;
         ImGuiID dock_right_bottom_left;
@@ -278,7 +287,8 @@ private:
             ImGui::End();
         };
 
-        drawStreamWindow(TOP_STREAM_WIDGET_NAME, video_top);
+        drawStreamWindow(TOP_LEFT_STREAM_WIDGET_NAME, video_top_left);
+        drawStreamWindow(TOP_RIGHT_STREAM_WIDGET_NAME, video_top_right);
         drawStreamWindow(BOTTOM_LEFT_STREAM_WIDGET_NAME, video_bottom_left);
         drawStreamWindow(BOTTOM_RIGHT_STREAM_WIDGET_NAME, video_bottom_right);
     }

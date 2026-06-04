@@ -39,6 +39,6 @@ namespace autonomy {
         Subscription<NavSatFix>::SharedPtr navsat_topic;
         ActionClient<FollowGPSWaypoints>::SharedPtr gps_client;
 
-        rclcpp_async::Task<std::optional<WrappedResult<FollowGPSWaypoints>>> navigateToTarget();
+        rclcpp_async::Task<std::optional<WrappedResult<FollowGPSWaypoints>>> navigateToTarget() const;
     };
 }

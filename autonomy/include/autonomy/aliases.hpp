@@ -1,6 +1,5 @@
 #pragma once
 
-#include <ros_aruco_opencv_msgs/msg/aruco_detections.hpp>
 #include <geographic_msgs/msg/geo_pose.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
@@ -13,7 +12,9 @@
 #include <nav2_msgs/action/navigate_to_pose.hpp>
 #include <rclcpp/node.hpp>
 #include <rclcpp_action/rclcpp_action.hpp>
+#include <ros_aruco_opencv_msgs/msg/aruco_detections.hpp>
 #include <rover_msgs/msg/image_detection_array.hpp>
+#include <rover_msgs/srv/set_sil_status.hpp>
 #include <sensor_msgs/msg/nav_sat_fix.hpp>
 
 namespace autonomy {
@@ -36,6 +37,7 @@ namespace autonomy {
     using FollowPath = nav2_msgs::action::FollowPath;
     using ComputePathToPose = nav2_msgs::action::ComputePathToPose;
     using ComputePathThroughPoses = nav2_msgs::action::ComputePathThroughPoses;
+    using SetSILStatus = rover_msgs::srv::SetSILStatus;
 
     using Path = nav_msgs::msg::Path;
     template <typename T>

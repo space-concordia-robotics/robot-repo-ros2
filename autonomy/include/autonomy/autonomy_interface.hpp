@@ -24,5 +24,7 @@ namespace autonomy {
         virtual TargetConfig getTargetConfig() const = 0;
 
         virtual std::shared_ptr<rclcpp_async::CoContext> ctx() const = 0;
+
+        virtual rclcpp_async::Task<> setSILColour(uint8_t r, uint8_t g, uint8_t b, uint8_t brightness) = 0;
     };
 }

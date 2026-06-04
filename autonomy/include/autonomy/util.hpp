@@ -3,16 +3,26 @@
 #include <GeographicLib/Geodesic.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <geometry_msgs/msg/quaternion.hpp>
-#include <std_msgs/msg/header.hpp>
 #include <rclcpp/time.hpp>
+#include <std_msgs/msg/header.hpp>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
+
+namespace tf2 {
+    template <typename A, typename B>
+    B toMsg(const A& a) {
+        return toMsg(a);
+    }
+}
 
 namespace autonomy::util {
     static std::size_t gobbleWhitespace(const std::string& string, const std::size_t start) {
         std::size_t i = 0;
-        while (start + i < string.size() && std::isspace(string[start + i])) i++;
+        while (start + i < string.size() && std::isspace(string[start + i]))
+            i++;
         return i;
     }
 
+    // TODO 2026-06-03 (Will Free): this is not the best parsing code I've ever written, but whatever. it works.
     inline std::chrono::nanoseconds parseDuration(const std::string& string) {
         using namespace std::chrono;
 
@@ -25,7 +35,8 @@ namespace autonomy::util {
                 break;
 
             const auto start = i;
-            while (i < string.size() && (std::isdigit(string[i]) || string[i] == '.')) i++;
+            while (i < string.size() && (std::isdigit(string[i]) || string[i] == '.'))
+                i++;
             if (start == i)
                 throw std::invalid_argument(fmt::format("Expected a number at position {}", i));
 
@@ -45,6 +56,9 @@ namespace autonomy::util {
                 value = value * decimal_factor + decValue;
             }
 
+            if (i == string.size())
+                throw std::invalid_argument("Missing unit after number");
+
             std::string unit;
             if ((string[i] == 'm' || string[i] == 'n') && i + 1 < string.size() && string[i + 1] == 's') {
                 unit = string.substr(i, 2);
@@ -52,9 +66,6 @@ namespace autonomy::util {
             } else {
                 unit = string[i++];
             }
-
-            if (i == string.size())
-                throw std::invalid_argument("Missing unit after number");
 
             if (unit == "d") {
                 total += duration_cast<nanoseconds>(days(value)) / decimal_factor;
@@ -66,6 +77,8 @@ namespace autonomy::util {
                 total += duration_cast<nanoseconds>(seconds(value)) / decimal_factor;
             } else if (unit == "ms") {
                 total += duration_cast<nanoseconds>(milliseconds(value)) / decimal_factor;
+            } else if (unit == "us") {
+                total += duration_cast<nanoseconds>(microseconds(value)) / decimal_factor;
             } else if (unit == "ns") {
                 total += nanoseconds(value) / decimal_factor;
             } else {

@@ -44,8 +44,8 @@ namespace autonomy {
         ActionClient<NavigateThroughPoses>::SharedPtr nav_client;
         ActionClient<FollowGPSWaypoints>::SharedPtr gps_client;
 
-        rclcpp_async::Task<std::optional<WrappedResult<FollowGPSWaypoints>>> navigateToCenter();
-        rclcpp_async::Task<std::optional<WrappedResult<NavigateThroughPoses>>> tryFindArucoPost();
+        rclcpp_async::Task<std::optional<WrappedResult<FollowGPSWaypoints>>> navigateToCenter() const;
+        rclcpp_async::Task<std::optional<WrappedResult<NavigateThroughPoses>>> tryFindArucoPost() const;
         rclcpp_async::Task<std::optional<WrappedResult<NavigateThroughPoses>>> navigateToTag();
     };
 }

@@ -30,6 +30,7 @@ set(DEPENDENCIES
         lifecycle_msgs
         ros_aruco_opencv_msgs
         rover_msgs
+        tf2_geometry_msgs
 
         GeographicLib
 
@@ -57,13 +58,14 @@ foreach (dependency IN LISTS DEPENDENCIES)
     list(APPEND DEPENDENCY_TARGETS ${${dependency}_targets})
 endforeach ()
 
-add_library(autonomy
+add_executable(autonomy
         src/autonomy.cpp
         src/targets/ar_target.cpp
         src/targets/gps_target.cpp
         src/targets/object_target.cpp
 )
-add_library(autonomy::autonomy ALIAS autonomy)
+
+#add_executable(autonomy::autonomy ALIAS autonomy)
 
 target_compile_features(autonomy PUBLIC cxx_std_23)
 

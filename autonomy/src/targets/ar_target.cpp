@@ -1,5 +1,7 @@
 #include "autonomy/targets/ar_target.hpp"
 
+#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
+
 #include "autonomy/util.hpp"
 
 namespace autonomy {
@@ -23,7 +25,7 @@ namespace autonomy {
                 const auto matched_tag = std::ranges::any_of(
                     msg->markers,
                     [&](const ArucoMarker& marker) {
-                        return marker.id == this->tag_id;
+                        return marker.id == static_cast<uint32_t>(this->tag_id);
                     }
                 );
 
@@ -33,6 +35,7 @@ namespace autonomy {
                 }
             }
         );
+
         gps_client = rclcpp_action::create_client<FollowGPSWaypoints>(
             node.get_node_base_interface(),
             node.get_node_graph_interface(),
@@ -40,6 +43,7 @@ namespace autonomy {
             node.get_node_waitables_interface(),
             "follow_gps_waypoints"
         );
+
         nav_client = rclcpp_action::create_client<NavigateThroughPoses>(
             node.get_node_base_interface(),
             node.get_node_graph_interface(),
@@ -114,12 +118,29 @@ namespace autonomy {
         }
 
         // TODO 2026-04-27 (Will Free): retry logic for this
-        navigateToTag();
+
+        if (const auto result = co_await navigateToTag(); !result) {
+            logger.error("Failed to navigate to tag, bailing out.");
+            co_return;
+        }
+
+        const auto ctx = node.ctx();
+
+        using namespace std::chrono_literals;
+
+        for (int i = 0; i < 8; ++i) {
+            // TODO 2026-05-30 (Will Free): make these not hardcoded
+
+            // flash green
+            node.setSILColour(0, 255, 0, i % 2 == 0 ? 255 : 0);
+
+            ctx->sleep(250ms);
+        }
 
         co_return;
     }
 
-    rclcpp_async::Task<std::optional<WrappedResult<FollowGPSWaypoints>>> ARTarget::navigateToCenter() {
+    rclcpp_async::Task<std::optional<WrappedResult<FollowGPSWaypoints>>> ARTarget::navigateToCenter() const {
         const auto ctx = node.ctx();
 
         auto goal_msg = FollowGPSWaypoints::Goal();
@@ -147,7 +168,7 @@ namespace autonomy {
         co_return std::optional(result);
     }
 
-    rclcpp_async::Task<std::optional<WrappedResult<NavigateThroughPoses>>> ARTarget::tryFindArucoPost() {
+    rclcpp_async::Task<std::optional<WrappedResult<NavigateThroughPoses>>> ARTarget::tryFindArucoPost() const {
         const auto ctx = node.ctx();
 
         auto goal_msg = NavigateThroughPoses::Goal();
@@ -193,7 +214,7 @@ namespace autonomy {
         const auto tag_iterator = std::ranges::find_if(
             aruco_detection->markers,
             [&](const ArucoMarker& marker) {
-                return marker.id == this->tag_id;
+                return marker.id == static_cast<uint32_t>(this->tag_id);
             }
         );
 
@@ -204,7 +225,7 @@ namespace autonomy {
 
         auto transform = co_await tf.lookup_transform("map", "base_link", rclcpp::Time(0));
 
-        const auto tag_pose = tag.pose;
+        const geometry_msgs::msg::Pose tag_pose = tag.pose;
         geometry_msgs::msg::Pose tag_base;
         tf2::doTransform(tag_pose, tag_base, transform);
 
@@ -233,7 +254,7 @@ namespace autonomy {
         q.setRPY(0, 0, std::atan2(ty, tx));
         target.pose.orientation = tf2::toMsg<tf2::Quaternion, geometry_msgs::msg::Quaternion>(q);
 
-        goal_msg.poses = {target};
+        goal_msg.poses = std::vector{target};
 
         const auto goal_result = co_await ctx->send_goal<NavigateThroughPoses>(nav_client, goal_msg);
 
