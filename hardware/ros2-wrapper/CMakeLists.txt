@@ -21,8 +21,6 @@ add_executable(can_node
         src/can_controller_node.cpp
 )
 
-#rosidl_target_interfaces(wheels_controller_node
-#        ${PROJECT_NAME} "rosidl_typesupport_cpp")
 
 ament_target_dependencies(
         can_node
