@@ -216,7 +216,7 @@ void CanControllerNode::sendCanFrames() {
                                    ? wheel_rpm_slew_rate_ * dt
                                    : std::numeric_limits<float>::max();
 
-        static constexpr std::array<DeviceId::ID, 6> kWheelIds = {
+        static constexpr std::array<DeviceId::ID, 6> Wheel_IDS = {
             DeviceId::ID::WHEEL_MOT1,
             DeviceId::ID::WHEEL_MOT2,
             DeviceId::ID::WHEEL_MOT3,
@@ -225,12 +225,12 @@ void CanControllerNode::sendCanFrames() {
             DeviceId::ID::WHEEL_MOT6,
         };
 
-        for (size_t i = 0; i < kWheelIds.size(); ++i) {
+        for (size_t i = 0; i < Wheel_IDS.size(); ++i) {
             float delta = target_rpm[i] - wheel_rpm_smoothed_[i];
             if (delta > max_step) delta = max_step;
             if (delta < -max_step) delta = -max_step;
             wheel_rpm_smoothed_[i] += delta;
-            frame_builder_->sendWheelMotorVelocity(kWheelIds[i], wheel_rpm_smoothed_[i]);
+                frame_builder_->sendWheelMotorVelocity(Wheel_IDS[i], wheel_rpm_smoothed_[i]);
         }
 
         frame_builder_->startMotors(0x7E);
@@ -318,9 +318,9 @@ void CanControllerNode::sendCanFrames() {
         }
 
         if (joint_state->velocity.size() >= 7) {
-            constexpr double SERVO_DEADZONE = 0.05;
-            constexpr size_t SPIN_IDX = 5;
-            constexpr size_t CLAMP_IDX = 6;
+            static constexpr double SERVO_DEADZONE = 0.05;
+            static constexpr size_t SPIN_IDX = 5;
+            static constexpr size_t CLAMP_IDX = 6;
 
             const auto shape_input = [](double raw) -> float {
                 return (std::abs(raw) < SERVO_DEADZONE) ? 0.0f : static_cast<float>(raw);
