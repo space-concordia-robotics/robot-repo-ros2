@@ -1,14 +1,10 @@
 #ifndef WHEELS_CONTROLLER_NODE_H
 #define WHEELS_CONTROLLER_NODE_H
 
-#include "rclcpp/rclcpp.hpp"
-#include "std_msgs/msg/string.hpp"
-#include "geometry_msgs/msg/twist.hpp"
-#include "builtin_interfaces/msg/time.hpp"
-#include "action_msgs/msg/goal_status_array.hpp"
-#include "rev_motor_controller.h"
+#include <rclcpp/rclcpp.hpp>
+#include <geometry_msgs/msg/twist.hpp>
+#include <std_msgs/msg/string.hpp>
 
-#include <chrono>
 using namespace std::chrono;
 
 #define DEVICE_1_ID 1
@@ -23,14 +19,9 @@ using namespace std::literals::chrono_literals;
 class WheelsControllerNode : public rclcpp::Node {
 public:
     WheelsControllerNode();
-    void TwistMessageCallback(const geometry_msgs::msg::Twist::SharedPtr twist_msg);
+    void TwistMessageCallback(const geometry_msgs::msg::Twist::UniquePtr& twist_msg) const;
 
 private:
-    void AccelerateTwist(geometry_msgs::msg::Twist);
-    float AccelerateValue(float current, float desired, float rate, float dt);
-
-    void publishStop();
-
     rclcpp::TimerBase::SharedPtr timer_;
     std::shared_ptr<rclcpp::Publisher<std_msgs::msg::String>> pub_;
 

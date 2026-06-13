@@ -29,8 +29,6 @@ namespace ImOsm {
         std::optional<std::string> extension;
     };
 
-    // -----------------------------------------------------------------------------
-
     class TileSourceFsDir : public TileSourceFs {
     public:
         TileSourceFsDir(int request_limit, bool preload, std::filesystem::path base_path, std::optional<std::string> extension);
@@ -43,8 +41,6 @@ namespace ImOsm {
     protected:
         [[nodiscard]] std::filesystem::path dirPath(int z, int x, int y) const override;
     };
-
-    // -----------------------------------------------------------------------------
 
     class TileSourceFsSubDir : public TileSourceFs {
     public:

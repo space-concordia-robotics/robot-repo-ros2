@@ -7,7 +7,7 @@ namespace ImOsm::Rich {
 
     class DistanceCalcWidget {
     public:
-        DistanceCalcWidget(const std::shared_ptr<MarkStorage>& storage);
+        explicit DistanceCalcWidget(const std::shared_ptr<MarkStorage>& storage);
         ~DistanceCalcWidget();
 
         void paint() const;

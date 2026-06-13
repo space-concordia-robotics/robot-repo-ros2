@@ -1,16 +1,18 @@
+import os
+
+from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
-from launch.actions import ExecuteProcess, IncludeLaunchDescription
+from launch.actions import IncludeLaunchDescription
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch_ros.actions import Node
-from ament_index_python.packages import get_package_share_directory
-import os
+
 
 def generate_launch_description():
     zed_launch_file = os.path.join(
         get_package_share_directory('zed_wrapper'),
         'launch',
         'zed_camera.launch.py',
-        {'camera_name':'zed2'}
+        {'camera_name': 'zed2'}
     )
 
     return LaunchDescription([
@@ -54,12 +56,11 @@ def generate_launch_description():
                 {'aruco_dict': 'DICT_4X4_50'},
                 {'cam_base_topic': '/zed/zed_node/rgb/image_rect_color'},
                 {'image_is_rectified': True},
-                {'marker_dict':'DICT_5X5_50'},
+                {'marker_dict': 'DICT_5X5_50'},
             ]
         ),
 
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(zed_launch_file),
         ),
-     ])
-
+    ])

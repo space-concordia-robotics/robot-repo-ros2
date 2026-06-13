@@ -78,7 +78,8 @@ VideoWidget::VideoWidget(
     std::string source_url,
     std::string camera_topic,
     const bool minimap
-) : UiWidget(application) {
+)
+    : UiWidget(application) {
     stream_config.source_url = std::move(source_url);
     stream_config.camera_topic = std::move(camera_topic);
     stream_config.minimap = minimap;

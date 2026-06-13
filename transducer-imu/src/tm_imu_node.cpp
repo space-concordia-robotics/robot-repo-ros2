@@ -10,7 +10,8 @@ EasyProfile eP(&eOD);
 #define DEBUG_MODE_PRINT_TIMER_MS_  (10000)  // 10 seconds
 #endif
 
-TMSerial::TMSerial() : Node("tm_imu") {
+TMSerial::TMSerial()
+    : Node("tm_imu") {
     // Declare node's parameters default value
     // [NOT NECESSARY TO CHANGE THE FOLLOWING, USE ../config/params.yaml INSTEAD !]
     this->declare_parameter("imu_baudrate", 115200);
@@ -23,11 +24,11 @@ TMSerial::TMSerial() : Node("tm_imu") {
     serialib1 = new serialib;
     SerialportOpen();
     // Performance monitor
-#ifdef DEBUG_MODE
+    #ifdef DEBUG_MODE
     count = 0;
     count2 = 0;
     timer_10 = this->create_wall_timer(std::chrono::milliseconds(DEBUG_MODE_PRINT_TIMER_MS_), std::bind(&TMSerial::TimerCallback2, this));
-#endif
+    #endif
     // Set frame id
     imu_data_msg.header.frame_id = this->get_parameter("imu_frame_id").as_string();
     imu_data_rpy_msg.header.frame_id = this->get_parameter("imu_frame_id").as_string();
@@ -57,7 +58,8 @@ TMSerial::~TMSerial() {
 
 void TMSerial::TimerCallback() {
     // Read the values from the Imu sensor
-    if (const bool res = OnSerialRX(); !res) return;
+    if (const bool res = OnSerialRX(); !res)
+        return;
     // Update the header stamp
     // TODO 2026-03-02 (Will Free): use timestamp from the serial data
     imu_data_msg.header.stamp = this->get_clock()->now();
@@ -117,11 +119,12 @@ constexpr auto MAGNETIC_FACTORY_CALIBRATION = 50.5662 / std::nano::den;
 bool TMSerial::OnSerialRX() {
     char serialBuffer[1024];
     int ret = serialib1->readBytes(serialBuffer, sizeof(serialBuffer), 1, 100);
-#ifdef DEBUG_MODE
+    #ifdef DEBUG_MODE
     //RCLCPP_INFO(this->get_logger(), "rxsize = %d",ret);
     count2 += ret;
-#endif
-    if (ret <= 0) return false;
+    #endif
+    if (ret <= 0)
+        return false;
     // Step 1: read the received data buffer of the Serial Port
     char* rxData = serialBuffer; //         and then convert it to data types acceptable by the
     int rxSize = ret; //         Communication Abstraction Layer (CAL).
@@ -181,9 +184,9 @@ bool TMSerial::OnSerialRX() {
                 imu_data_mag_msg.magnetic_field.x = mag_x;
                 imu_data_mag_msg.magnetic_field.y = mag_y;
                 imu_data_mag_msg.magnetic_field.z = mag_z;
-#ifdef DEBUG_MODE
+                #ifdef DEBUG_MODE
                 //RCLCPP_INFO(this->get_logger(), "RAW pkg");
-#endif
+                #endif
             }
         }
         break;
@@ -212,9 +215,9 @@ bool TMSerial::OnSerialRX() {
                 imu_data_msg.orientation.x = q2;
                 imu_data_msg.orientation.y = q3;
                 imu_data_msg.orientation.z = q4;
-#ifdef DEBUG_MODE
+                #ifdef DEBUG_MODE
                 //RCLCPP_INFO(this->get_logger(), "QS1 pkg");
-#endif
+                #endif
             }
         }
         break;
@@ -244,9 +247,9 @@ bool TMSerial::OnSerialRX() {
                 imu_data_rpy_msg.magnetic_field.x = roll;
                 imu_data_rpy_msg.magnetic_field.y = pitch;
                 imu_data_rpy_msg.magnetic_field.z = yaw;
-#ifdef DEBUG_MODE
+                #ifdef DEBUG_MODE
                 //RCLCPP_INFO(this->get_logger(), "RPY pkg");
-#endif
+                #endif
             }
         }
         break;
@@ -306,16 +309,16 @@ bool TMSerial::OnSerialRX() {
                 imu_data_mag_msg.magnetic_field.y = my;
                 imu_data_mag_msg.magnetic_field.z = mz;
 
-#ifdef DEBUG_MODE
+                #ifdef DEBUG_MODE
                 //RCLCPP_INFO(this->get_logger(), "Combo pkg");
-#endif
+                #endif
             }
         }
         break;
         }
-#ifdef DEBUG_MODE
+        #ifdef DEBUG_MODE
         count++;
-#endif
+        #endif
     } // while()
     return true;
 }

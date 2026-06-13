@@ -6,7 +6,8 @@
 #include "foc2-gui/osm/osm_itile_source.hpp"
 
 namespace ImOsm {
-    TileLoader::TileLoader(const std::shared_ptr<ITileSource>& source) : source(source) {}
+    TileLoader::TileLoader(const std::shared_ptr<ITileSource>& source)
+        : source(source) {}
 
     void TileLoader::beginLoad(int z, int xmin, int xmax, int ymin, int ymax) {
         const auto cond{

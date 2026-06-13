@@ -6,7 +6,8 @@
 #include "foc2-gui/osm/osm_itile_source.hpp"
 
 namespace ImOsm {
-    TileGrabber::TileGrabber(const std::shared_ptr<ITileSource>& source, const std::shared_ptr<ITileSaver>& saver) : source(source), saver(saver) {}
+    TileGrabber::TileGrabber(const std::shared_ptr<ITileSource>& source, const std::shared_ptr<ITileSaver>& saver)
+        : source(source), saver(saver) {}
 
     TileGrabber::~TileGrabber() {}
 
@@ -23,8 +24,8 @@ namespace ImOsm {
         stopped = true;
     }
 
-    TileGrabber::FutureData
-    TileGrabber::onLaunchGrab(const double minLat, const double maxLat, const double minLon, const double maxLon, const int minZ, const int maxZ) {
+    TileGrabber::FutureData TileGrabber::onLaunchGrab(const double minLat, const double maxLat, const double minLon, const double maxLon, const int minZ,
+                                                      const int maxZ) {
         tile_counter = 0;
         std::vector<std::shared_ptr<ITile>> tiles;
         tiles.reserve(source->requestLimit());

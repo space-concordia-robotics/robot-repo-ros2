@@ -21,9 +21,8 @@
 #pragma once
 
 #include <string>
-#include <vector>
 #include <utility>
-
+#include <vector>
 #include <opencv2/aruco.hpp>
 
 namespace ros_aruco_opencv {
@@ -46,4 +45,4 @@ namespace ros_aruco_opencv {
             std::string& error_message
         );
     };
-} // namespace aruco_opencv
+}

@@ -39,7 +39,7 @@ namespace ImOsm::Old {
                 tiles.insert(
                     it,
                     Tile{
-                        .zxy = {z, x, y},
+                        .zxy    = {z, x, y},
                         .future = std::async(std::launch::async, &TileLoaderUrl::onHandleRequest, this, std::array < int, 3 > ( {
                             z, x, y
                         })),

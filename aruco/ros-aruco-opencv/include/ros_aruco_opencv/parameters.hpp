@@ -23,7 +23,6 @@
 #include <string>
 #include <vector>
 #include <opencv2/aruco.hpp>
-#include <opencv2/calib3d.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp_lifecycle/lifecycle_node.hpp>
 
@@ -59,7 +58,7 @@ namespace ros_aruco_opencv {
 
     struct DetectorParams {
         double marker_size;
-        PoseSelectorConfig pose_selector{};
+        PoseSelectorConfig pose_selector;
     };
 
     void declare_all_parameters(rclcpp_lifecycle::LifecycleNode& node);

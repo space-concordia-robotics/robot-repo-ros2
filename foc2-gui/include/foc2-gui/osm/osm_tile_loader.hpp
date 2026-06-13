@@ -11,7 +11,7 @@ namespace ImOsm {
 
     class TileLoader : public ITileLoader {
     public:
-        TileLoader(const std::shared_ptr<ITileSource>& source);
+        explicit TileLoader(const std::shared_ptr<ITileSource>& source);
         ~TileLoader() override = default;
 
         void beginLoad(int z, int xmin, int xmax, int ymin, int ymax) override;

@@ -9,7 +9,9 @@
 #include <rtsp_camera/rtsp_camera.hpp>
 
 
-RTSPCameraNode::RTSPCameraNode() : Node("rtsp_camera_node"), logger(this->get_logger()), camera_info_manager(this) {
+RTSPCameraNode::RTSPCameraNode()
+    : Node("rtsp_camera_node"),
+      logger(this->get_logger()), camera_info_manager(this) {
     // Parameters
     this->declare_parameter<int>("port", 8445);
     this->declare_parameter<string>("templates.v4l2", "v4l2src do-timestamp=1");
@@ -32,10 +34,10 @@ RTSPCameraNode::RTSPCameraNode() : Node("rtsp_camera_node"), logger(this->get_lo
         logger.info("Adding encoder: {}", encoder_name);
 
         encoders[encoder_name] = RTSPStreamEncoder{
-            .encoder = this->declare_parameter<string>(fmt::format("templates.encode.{}.encoder", encoder_name)),
+            .encoder       = this->declare_parameter<string>(fmt::format("templates.encode.{}.encoder", encoder_name)),
             .bitrate_param = this->declare_parameter<string>(fmt::format("templates.encode.{}.bitrate_param", encoder_name)),
-            .pipeline = this->declare_parameter<string>(fmt::format("templates.encode.{}.pipeline", encoder_name)),
-            .rtp_pay = this->declare_parameter<string>(fmt::format("templates.encode.{}.rtph_pay", encoder_name)),
+            .pipeline      = this->declare_parameter<string>(fmt::format("templates.encode.{}.pipeline", encoder_name)),
+            .rtp_pay       = this->declare_parameter<string>(fmt::format("templates.encode.{}.rtph_pay", encoder_name)),
         };
     }
 
@@ -74,28 +76,28 @@ RTSPCameraNode::RTSPCameraNode() : Node("rtsp_camera_node"), logger(this->get_lo
             const auto scale = this->declare_parameter<double>(fmt::format("streams.{}.image_topic.scale", stream_name));
 
             publishing = {
-                .topic_name = this->declare_parameter<string>(fmt::format("streams.{}.image_topic.name", stream_name)),
+                .topic_name   = this->declare_parameter<string>(fmt::format("streams.{}.image_topic.name", stream_name)),
                 .uncompressed = this->declare_parameter<bool>(fmt::format("streams.{}.image_topic.uncompressed", stream_name)),
-                .compressed = this->declare_parameter<bool>(fmt::format("streams.{}.image_topic.compressed", stream_name)),
+                .compressed   = this->declare_parameter<bool>(fmt::format("streams.{}.image_topic.compressed", stream_name)),
                 // .ffmpeg = this->declare_parameter<bool>(fmt::format("streams.{}.image_topic.ffmpeg", stream_name)),
-                .fps = this->declare_parameter<int>(fmt::format("streams.{}.image_topic.fps", stream_name)),
-                .width = lround(width * scale),
-                .height = lround(height * scale),
-                .format = "RGB", // for now we're only supporting RGB
+                .fps             = this->declare_parameter<int>(fmt::format("streams.{}.image_topic.fps", stream_name)),
+                .width           = lround(width * scale),
+                .height          = lround(height * scale),
+                .format          = "RGB", // for now we're only supporting RGB
                 .sensor_data_qos = this->declare_parameter<bool>("use_sensor_data_qos", false),
             };
         }
 
         RTSPStreamConfig stream = {
-            .name = stream_name,
-            .type = type.value(),
-            .source = this->declare_parameter<string>(fmt::format("streams.{}.source", stream_name)),
+            .name       = stream_name,
+            .type       = type.value(),
+            .source     = this->declare_parameter<string>(fmt::format("streams.{}.source", stream_name)),
             .mountpoint = this->declare_parameter<string>(fmt::format("streams.{}.mountpoint", stream_name)),
-            .encoder = encoders[encoder_str],
-            .bitrate = this->declare_parameter<int>(fmt::format("streams.{}.bitrate", stream_name)),
-            .fps = this->declare_parameter<int>(fmt::format("streams.{}.fps", stream_name), 30),
-            .width = width,
-            .height = height,
+            .encoder    = encoders[encoder_str],
+            .bitrate    = this->declare_parameter<int>(fmt::format("streams.{}.bitrate", stream_name)),
+            .fps        = this->declare_parameter<int>(fmt::format("streams.{}.fps", stream_name), 30),
+            .width      = width,
+            .height     = height,
             .publishing = publishing,
         };
         streams.push_back(stream);
@@ -184,8 +186,8 @@ void RTSPCameraNode::create_pipeline(const RTSPStreamConfig& stream_config) {
         .source_pipeline = source_pipeline,
         // .rtsp_pipeline = rtsp_pipeline,
         .topic_pipeline = topic_pipeline,
-        .appsrc = appsrc,
-        .appsink = appsink,
+        .appsrc         = appsrc,
+        .appsink        = appsink,
     };
 
 
@@ -277,11 +279,11 @@ void RTSPCameraNode::start_pipeline(const RTSPStreamConfig& stream_config, RTSPS
         };
 
         auto data = CallbackData{
-            .node = this,
+            .node          = this,
             .stream_config = &stream_config,
-            .publisher = stream_pipeline.publisher,
-            .publishing = publishing,
-            .base_time = gst_element_get_base_time(stream_pipeline.topic_pipeline),
+            .publisher     = stream_pipeline.publisher,
+            .publishing    = publishing,
+            .base_time     = gst_element_get_base_time(stream_pipeline.topic_pipeline),
         };
 
         gst_app_sink_set_callbacks(appsink, &callbacks, &data, nullptr);
@@ -309,7 +311,7 @@ void RTSPCameraNode::start_pipeline(const RTSPStreamConfig& stream_config, RTSPS
     gst_element_set_state(stream_pipeline.source_pipeline, GST_STATE_PLAYING);
 }
 
-sensor_msgs::msg::Image::SharedPtr RTSPCameraNode::img_msg_from_gst_sample(GstSample* sample, const ROSImageTopicConfig* config) {
+sensor_msgs::msg::Image::SharedPtr RTSPCameraNode::img_msg_from_gst_sample(GstSample* sample, const ROSImageTopicConfig* /*config*/) {
     const auto buffer = gst_sample_get_buffer(sample);
     const auto caps = gst_sample_get_caps(sample);
     const auto structure = gst_caps_get_structure(caps, 0);
@@ -324,7 +326,7 @@ sensor_msgs::msg::Image::SharedPtr RTSPCameraNode::img_msg_from_gst_sample(GstSa
     sensor_msgs::msg::Image::SharedPtr msg;
     if (gst_buffer_map(buffer, &map, GST_MAP_READ)) {
         // Convert to OpenCV Mat
-        auto frame = cv::Mat(cv::Size(width, height), CV_8UC3, map.data, cv::Mat::AUTO_STEP);
+        const auto frame = cv::Mat(cv::Size(width, height), CV_8UC3, map.data, cv::Mat::AUTO_STEP);
 
         // Resize the frame if necessary
         // if (width != config->width || height != config->height) {
@@ -628,10 +630,10 @@ void RTSPCameraNode::rtsp_server_add_url(const string& url, const string& pipeli
     };
 
     auto data = MediaConfigureData{
-        .node = this,
-        .url = url,
+        .node            = this,
+        .url             = url,
         .stream_pipeline = &stream_pipeline,
-        .topic_config = topic_config,
+        .topic_config    = topic_config,
     };
 
     g_signal_connect(factory, "media-configure", reinterpret_cast<GCallback>(media_configure), &data);
@@ -651,8 +653,8 @@ void RTSPCameraNode::rtsp_server_add_url(const string& url, const string& pipeli
  * called when a new media pipeline is constructed.
  * We can query the pipeline and configure our appsrc.
  */
-void RTSPCameraNode::media_configure(const string& url, GstRTSPMedia* media, RTSPStreamPipeline* stream_pipeline,
-                                     const optional<ROSImageTopicConfig>& topic_config) {
+void RTSPCameraNode::media_configure(const string& /*url*/, GstRTSPMedia* media, RTSPStreamPipeline* /*stream_pipeline*/,
+                                     const optional<ROSImageTopicConfig>& /*topic_config*/) {
     const auto pipeline = gst_rtsp_media_get_element(media);
 
     // if (topic_config) {
@@ -667,7 +669,7 @@ void RTSPCameraNode::media_configure(const string& url, GstRTSPMedia* media, RTS
     //     /* this instructs appsrc that we will be dealing with timed buffer */
     //     // gst_util_set_object_arg(G_OBJECT(*appsrc), "format", "time");
     // } else {
-    fmt::println("Initializing media factory...");
+    logger.info("Initializing media factory...");
 
     const auto n_streams = gst_rtsp_media_n_streams(media);
 
@@ -688,7 +690,7 @@ void RTSPCameraNode::media_configure(const string& url, GstRTSPMedia* media, RTS
     //     g_object_unref(pool);
     // }
 
-    fmt::println("Initialized media factory with {} streams", n_streams);
+    logger.info("Initialized media factory with {} streams", n_streams);
     // }
 
     gst_object_unref(pipeline);

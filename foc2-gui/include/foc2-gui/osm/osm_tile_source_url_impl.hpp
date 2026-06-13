@@ -2,14 +2,10 @@
 
 #include "foc2-gui/osm/osm_tile_source_url.hpp"
 
-// https://www.arcgis.com/apps/mapviewer/index.html
-// See Basemap
-
 namespace ImOsm {
     class TileSourceUrlCustom : public TileSourceUrl {
     public:
-        TileSourceUrlCustom(int request_limit, bool preload,
-                            std::string url_template);
+        TileSourceUrlCustom(int request_limit, bool preload, std::string url_template);
 
     protected:
         std::string makeUrl(int z, int x, int y) override;
@@ -17,8 +13,6 @@ namespace ImOsm {
     private:
         const std::string url_template;
     };
-
-    // -----------------------------------------------------------------------------
 
     class TileSourceUrlOsm : public TileSourceUrl {
     public:
@@ -31,8 +25,8 @@ namespace ImOsm {
         static constexpr auto URL_TEMPLATE = "https://a.tile.openstreetmap.org/$Z$/$X$/$Y$.png";
     };
 
-    // -----------------------------------------------------------------------------
-
+    // https://www.arcgis.com/apps/mapviewer/index.html
+    // See Basemap
     class TileSourceUrlArcImagery : public TileSourceUrl {
     public:
         TileSourceUrlArcImagery(int request_limit, bool preload);

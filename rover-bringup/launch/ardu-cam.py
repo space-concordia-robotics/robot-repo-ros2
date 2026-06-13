@@ -38,5 +38,6 @@ def generate_launch_description():
                 'autoexposure': True,
                 'exposure': 100,
                 'autofocus': False,
-                'focus': -1}
-            ]) for cam_id in list(enumerate_cameras(cv2.CAP_V4L2)) if cam_id.path == "/dev/video4"])
+                'focus': -1}]
+        ) for cam_id in list(enumerate_cameras(cv2.CAP_V4L2)) if cam_id.path == "/dev/video4"
+    ])

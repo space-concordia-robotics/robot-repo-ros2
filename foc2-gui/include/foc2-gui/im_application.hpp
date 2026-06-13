@@ -1,10 +1,10 @@
 #pragma once
 
 #include <string>
-#include <rclcpp/node.hpp>
 #include <ros2_fmt_logger/logger.hpp>
 #include <tf2_ros/buffer.hpp>
 #include <tf2_ros/transform_listener.hpp>
+#include <rclcpp/node.hpp>
 
 typedef struct SDL_GLContextState* SDL_GLContext;
 typedef struct SDL_Window SDL_Window;
@@ -13,7 +13,7 @@ class ImApplication : public rclcpp::Node {
 public:
     RCLCPP_SMART_PTR_ALIASES_ONLY(ImApplication)
 
-    explicit ImApplication(const std::string& node_name, const std::string& title = "Main Window");
+    explicit ImApplication(const std::string& node_name, std::string title = "Main Window");
     ~ImApplication() override;
 
     int init();

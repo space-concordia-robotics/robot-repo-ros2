@@ -5,55 +5,57 @@
 namespace ImOsm {
     class TileDummy : public ITile {
     public:
-        TileDummy(const int z, const int x, const int y) : z(z), x(x), y(y) {}
+        TileDummy(const int z, const int x, const int y)
+            : z(z), x(x), y(y) {}
+
         ~TileDummy() override = default;
 
-        int getZ() const noexcept override {
+        [[nodiscard]] int getZ() const noexcept override {
             return z;
         }
 
-        int getX() const noexcept override {
+        [[nodiscard]] int getX() const noexcept override {
             return x;
         }
 
-        int getY() const noexcept override {
+        [[nodiscard]] int getY() const noexcept override {
             return y;
         }
 
-        bool isTileZXY(const int z, const int x, const int y) const noexcept override {
+        [[nodiscard]] bool isTileZXY(const int z, const int x, const int y) const noexcept override {
             return this->z == z && this->x == x && this->y == y;
         }
 
-        bool inBounds(const int z, const int xmin, const int xmax, const int ymin, const int ymax) const noexcept override {
+        [[nodiscard]] bool inBounds(const int z, const int xmin, const int xmax, const int ymin, const int ymax) const noexcept override {
             const bool cz = this->z == z;
             const bool cx = this->x >= xmin || this->x <= xmax;
             const bool cy = this->y >= ymin || this->y <= ymax;
             return cz && cx && cy;
         }
 
-        bool isDummy() const noexcept final {
+        [[nodiscard]] bool isDummy() const noexcept final {
             return rawBlob() == nullptr;
         }
 
-        const char* rawBlob() const noexcept override {
+        [[nodiscard]] const char* rawBlob() const noexcept override {
             return nullptr;
         }
 
-        size_t rawBlobSize() const noexcept override {
+        [[nodiscard]] size_t rawBlobSize() const noexcept override {
             return 0;
         }
 
         void rgbaLoad() const noexcept override {}
 
-        const char* rgbaBlob() const noexcept override {
+        [[nodiscard]] const char* rgbaBlob() const noexcept override {
             return nullptr;
         }
 
-        size_t rgbaBlobSize() const noexcept override {
+        [[nodiscard]] size_t rgbaBlobSize() const noexcept override {
             return 0;
         }
 
-        ImTextureID texture() const noexcept override {
+        [[nodiscard]] ImTextureID texture() const noexcept override {
             return 0;
         }
 
