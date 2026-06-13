@@ -6,8 +6,8 @@
 #include <gst/app/gstappsink.h>
 #include <gst/app/gstappsrc.h>
 #include <gst/rtsp-server/rtsp-server-object.h>
-#include <rclcpp/rclcpp.hpp>
 #include <ros2_fmt_logger/ros2_fmt_logger.hpp>
+#include <rclcpp/rclcpp.hpp>
 
 using namespace std;
 using namespace rclcpp;

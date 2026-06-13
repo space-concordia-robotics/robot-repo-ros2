@@ -3,7 +3,8 @@
 #include <stb_image.h>
 
 namespace ImOsm::Old {
-    TileTexture::TileTexture(const int size, const TextureColor color) : width(size), height(size) {
+    TileTexture::TileTexture(const int size, const TextureColor color)
+        : width(size), height(size) {
         blob.resize(width * height * TextureColor::RGBA_SZ);
         blob.shrink_to_fit();
         for (size_t i = 0; i != blob.size(); i = i + TextureColor::RGBA_SZ) {

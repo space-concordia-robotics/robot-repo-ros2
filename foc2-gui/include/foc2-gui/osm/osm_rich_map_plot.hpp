@@ -11,7 +11,7 @@ namespace ImOsm::Rich {
     class RichMapPlot : public MapPlot {
     public:
         RichMapPlot();
-        RichMapPlot(const std::shared_ptr<ITileLoader>& loader);
+        explicit RichMapPlot(const std::shared_ptr<ITileLoader>& loader);
         ~RichMapPlot() override;
 
         void paintOverMap() override;

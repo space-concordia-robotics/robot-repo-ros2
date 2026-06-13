@@ -3,14 +3,14 @@
 #include "foc2-gui/im_application.hpp"
 #include "foc2-gui/overlayable.hpp"
 #include "foc2-gui/widget.hpp"
-#include "foc2-gui/osm/markers/rich_robot_marker.hpp"
 #include "foc2-gui/osm/markers/rich_gps_marker.hpp"
+#include "foc2-gui/osm/markers/rich_robot_marker.hpp"
 
 namespace ImOsm::Rich {
     class RichMapPlot;
 }
 
-class MapWidget : public UiWidget, public UiOverlayable {
+class MapWidget : public UiWidget {
 public:
     RCLCPP_SMART_PTR_ALIASES_ONLY(MapWidget)
 

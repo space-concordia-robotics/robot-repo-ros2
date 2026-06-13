@@ -1,6 +1,7 @@
 #include "autonomy/targets/ar_target.hpp"
 
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
+#include <utility>
 
 #include "autonomy/util.hpp"
 
@@ -25,7 +26,7 @@ namespace autonomy {
                 const auto matched_tag = std::ranges::any_of(
                     msg->markers,
                     [&](const ArucoMarker& marker) {
-                        return marker.id == static_cast<uint32_t>(this->tag_id);
+                        return std::cmp_equal(marker.id, this->tag_id);
                     }
                 );
 

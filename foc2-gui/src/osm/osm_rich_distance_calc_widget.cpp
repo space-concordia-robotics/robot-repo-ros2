@@ -17,7 +17,8 @@ namespace ImOsm::Rich {
         double bearing;
     };
 
-    DistanceCalcWidget::DistanceCalcWidget(const std::shared_ptr<MarkStorage>& storage) : ui(std::make_unique<Ui>()), storage(storage) {}
+    DistanceCalcWidget::DistanceCalcWidget(const std::shared_ptr<MarkStorage>& storage)
+        : ui(std::make_unique<Ui>()), storage(storage) {}
 
     DistanceCalcWidget::~DistanceCalcWidget() = default;
 

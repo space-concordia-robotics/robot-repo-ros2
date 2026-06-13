@@ -1,39 +1,31 @@
-#ifndef ABSENC_H
-#define ABSENC_H
+#pragma once
 
-#include <stdio.h>
-#include <string.h>
-#include <stdint.h>
-#include <fcntl.h>
-#include <errno.h>
-#include <termios.h>
-#include <unistd.h>
-#include <array>
 #include <string>
-#include "rclcpp/rclcpp.hpp"
+#include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/msg/joint_state.hpp>
 
-#define NO_ERROR            0
-#define ERR_SERIAL_FAILURE  1
-#define ERR_SLAVE_INVALID   2
-#define ERR_NO_RESPONSE     3
-#define ERR_FRAME_CORRUPTED 4
+static constexpr auto NO_ERROR = 0;
+static constexpr auto ERR_SERIAL_FAILURE = 1;
+static constexpr auto ERR_SLAVE_INVALID = 2;
+static constexpr auto ERR_NO_RESPONSE = 3;
+static constexpr auto ERR_FRAME_CORRUPTED = 4;
 
-typedef struct {
+struct ABSENC_Error_t {
     int error;
     int cause;
     int line;
-} ABSENC_Error_t;
+};
 
 const char* strAbsencErr(int err);
 
 
-typedef struct {
+// TODO 2026-06-13 (Will Free): wtf is this
+using ABSENC_Meas_t = struct {
     uint8_t slvnum;
     uint16_t status;
     double angval;
     double angspd;
-} ABSENC_Meas_t;
+};
 
 #define no_error (ABSENC_Error_t{0, 0, __LINE__})
 
@@ -47,10 +39,9 @@ public:
 class Absenc : public rclcpp::Node {
 public:
     Absenc();
-    ~Absenc();
+    ~Absenc() override;
 
 private:
-
     float old_angle_4 = 0;
 
     int8_t angle_4_zone = 0;
@@ -66,5 +57,3 @@ private:
     std::string absenc_path_;
     int absenc_polling_rate_;
 };
-
-#endif

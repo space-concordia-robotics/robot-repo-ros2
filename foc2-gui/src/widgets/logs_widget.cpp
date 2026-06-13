@@ -1,3 +1,5 @@
+#include "foc2-gui/widgets/logs_widget.hpp"
+
 #include <imgui.h>
 #include <fmt/chrono.h>
 #include <fmt/format.h>
@@ -5,8 +7,6 @@
 #include <misc/cpp/imgui_stdlib.h>
 
 #include "foc2-gui/util/imgui_util.hpp"
-
-#include "foc2-gui/widgets/logs_widget.hpp"
 
 template <>
 struct fmt::formatter<builtin_interfaces::msg::Time> : formatter<std::chrono::sys_time<std::chrono::nanoseconds>> {
@@ -77,12 +77,12 @@ void RosLogWidget::onLog(const Log::UniquePtr& msg) {
     std::lock_guard lock(mutex);
     const auto entry = LogEntry{
         .timestamp = msg->stamp,
-        .level = intToLogLevel(msg->level),
-        .name = msg->name,
-        .msg = msg->msg,
-        .file = msg->file,
-        .function = msg->function,
-        .line = msg->line
+        .level     = intToLogLevel(msg->level),
+        .name      = msg->name,
+        .msg       = msg->msg,
+        .file      = msg->file,
+        .function  = msg->function,
+        .line      = msg->line
     };
 
     logs.push_back(entry);

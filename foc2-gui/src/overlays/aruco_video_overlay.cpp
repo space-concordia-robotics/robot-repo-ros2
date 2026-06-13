@@ -13,7 +13,9 @@ void ArucoVideoOverlay::onInit() {
     aruco_subscription = application.create_subscription<ArucoDetections>(
         "/aruco_detections",
         10,
-        std::bind(&ArucoVideoOverlay::onDetections, this, std::placeholders::_1)
+        [this](const ArucoDetections::UniquePtr& msg) {
+            onDetections(msg);
+        }
     );
 }
 
@@ -34,22 +36,23 @@ void drawArucoMarker(
     const ImU32 marker_color,
     const ImU32 id_color
 ) {
-    ImVec2 points[corners.size() + 1];
+    std::array<ImVec2, corners.size() + 1> points;
+    // ImVec2 points[corners.size() + 1];
 
     for (auto i = 0u; i < corners.size(); i++) {
-        points[i] = pointToBounds(corners[i], bounds, scale_x, scale_y);
+        points.at(i) = pointToBounds(corners.at(i), bounds, scale_x, scale_y);
     }
 
     // add the 1st point at the end to close the polyline
-    points[corners.size()] = points[0];
+    points.at(corners.size()) = points.at(0);
 
     // TODO 2026-05-05 (Will Free): scale thickness with distance
-    draw_list->AddPolyline(points, corners.size() + 1, marker_color, 0, 1.0);
+    draw_list->AddPolyline(points.data(), corners.size() + 1, marker_color, 0, 1.0);
 
     // marker for the corner
     draw_list->AddRect(
-        {points[0].x - 3, points[0].y - 3},
-        {points[0].x + 3, points[0].y + 3},
+        {points.at(0).x - 3, points.at(0).y - 3},
+        {points.at(0).x + 3, points.at(0).y + 3},
         corners.size() + 1,
         ImGui::ImColor(0, 0, 255, 255),
         0,
@@ -62,7 +65,7 @@ void drawArucoMarker(
 
         const auto& marker_text = marker_label.value();
         // 0 & 2 should be the two diagonal corners
-        const auto center = ImRect(points[0], points[2]).GetCenter();
+        const auto center = ImRect(points.at(0), points.at(2)).GetCenter();
 
         const auto text_size = ImGui::CalcTextSize(marker_text);
 
@@ -105,12 +108,12 @@ inline void ArucoVideoOverlay::onDraw(ImDrawList* draw_list, const ImRect& bound
     std::vector<ProjectedMarker> markers;
     std::vector<RejectedMarker> rejected_markers;
 
-    int camera_width;
-    int camera_height;
+    int camera_width = -1;
+    int camera_height = -1;
 
     {
         // TODO 2026-05-05 (Will Free): there should probably be one mutex for the markers & one for the width/height, but I'm lazy
-        std::lock_guard lock(markers_mutex);
+        std::scoped_lock lock(markers_mutex);
         markers = this->markers;
         rejected_markers = this->rejected_markers;
 
@@ -144,11 +147,11 @@ inline void ArucoVideoOverlay::onDraw(ImDrawList* draw_list, const ImRect& bound
         if (rejected_marker.header.frame_id != camera_frame)
             continue;
 
-        // convert goemetry_msgs's Point32 to cv::Point2f
+        // convert goemetry_msgs' Point32 to cv::Point2f
         std::array<cv::Point2f, 4> corners;
         for (int i = 0; i < 4; ++i) {
-            corners[i].x = rejected_marker.corners[i].x;
-            corners[i].y = rejected_marker.corners[i].y;
+            corners.at(i).x = rejected_marker.corners.at(i).x;
+            corners.at(i).y = rejected_marker.corners.at(i).y;
         }
 
         drawArucoMarker(draw_list, bounds, scale_x, scale_y, corners, std::nullopt, rejected_marker_color, id_color);
@@ -159,11 +162,10 @@ void ArucoVideoOverlay::onDetections(const ArucoDetections::UniquePtr& msg) {
     cv::Matx33d camera_k;
 
     {
-        std::lock_guard lock(camera_mutex);
+        std::scoped_lock lock(camera_mutex);
         camera_k = this->camera_k;
     }
 
-    std::lock_guard lock(markers_mutex);
     const auto msg_markers = msg->markers;
     auto markers_tmp = std::vector<ProjectedMarker>();
     markers_tmp.reserve(msg_markers.size());
@@ -239,20 +241,22 @@ void ArucoVideoOverlay::onDetections(const ArucoDetections::UniquePtr& msg) {
 
         // always exactly 4 points
         for (int i = 0; i < 4; i++) {
-            translated_marker.corners[i] = reprojected_points[i];
+            translated_marker.corners.at(i) = reprojected_points.at(i);
         }
 
         // reproject axes from original frame into the camera's frame
         std::vector<cv::Point2d> projected_axes;
         cv::projectPoints(tag_axes, rotation_vector, translation_vector, camera_k, cv::noArray(), projected_axes);
 
-        translated_marker.axes.origin = projected_axes[0];
-        translated_marker.axes.x_end = projected_axes[1];
-        translated_marker.axes.y_end = projected_axes[2];
-        translated_marker.axes.z_end = projected_axes[3];
+        translated_marker.axes.origin = projected_axes.at(0);
+        translated_marker.axes.x_end = projected_axes.at(1);
+        translated_marker.axes.y_end = projected_axes.at(2);
+        translated_marker.axes.z_end = projected_axes.at(3);
 
         markers_tmp.push_back(translated_marker);
     }
+
+    std::scoped_lock lock(markers_mutex);
 
     markers = markers_tmp;
 

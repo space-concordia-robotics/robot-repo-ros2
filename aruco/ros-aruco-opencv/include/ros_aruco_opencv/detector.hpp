@@ -26,13 +26,12 @@
 #include <vector>
 #include <opencv2/aruco.hpp>
 #include <opencv2/core.hpp>
-#include <rclcpp/rclcpp.hpp>
 #include <ros2_fmt_logger/logger.hpp>
 #include <sensor_msgs/msg/camera_info.hpp>
 
 #include "ros_aruco_opencv/parameters.hpp"
-#include "ros_aruco_opencv_msgs/msg/board_pose.hpp"
 #include "ros_aruco_opencv_msgs/msg/aruco_marker.hpp"
+#include "ros_aruco_opencv_msgs/msg/board_pose.hpp"
 
 namespace ros_aruco_opencv {
     class ArucoDetector {
@@ -129,4 +128,4 @@ namespace ros_aruco_opencv {
 
         mutable std::mutex intrinsics_mutex_;
     };
-} // namespace aruco_opencv
+}

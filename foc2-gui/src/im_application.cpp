@@ -6,6 +6,7 @@
 #include <imgui.h>
 #include <implot.h>
 #include <implot3d.h>
+#include <utility>
 #include <backends/imgui_impl_opengl3.h>
 #include <backends/imgui_impl_sdl3.h>
 #include <SDL3/SDL.h>
@@ -21,16 +22,16 @@
 // io.BackendFlags |= ImGuiBackendFlags_RendererHasVtxOffset' and handle
 // ImDrawCmd::VtxOffset #define ImDrawIdx unsigned int
 
-ImApplication::ImApplication(const std::string& node_name, const std::string& title)
+ImApplication::ImApplication(const std::string& node_name, std::string title)
     : Node(node_name),
       logger(this->get_logger()),
       gl_context(nullptr),
       window(nullptr),
-      title(title),
+      title(std::move(title)),
       tf_buffer(this->get_clock()),
       tf_listener(tf_buffer, this) {}
 
-ImApplication::~ImApplication() {}
+ImApplication::~ImApplication() = default;
 
 int ImApplication::run() {
     onInit();

@@ -25,17 +25,17 @@
 #include <magic_enum/magic_enum.hpp>
 #include <opencv2/aruco.hpp>
 #include <opencv2/calib3d.hpp>
-#include <rclcpp/rclcpp.hpp>
-#include <rclcpp_lifecycle/lifecycle_node.hpp>
-#include <rcl_interfaces/msg/set_parameters_result.hpp>
-#include <sensor_msgs/image_encodings.hpp>
-#include <sensor_msgs/msg/camera_info.hpp>
-#include <sensor_msgs/msg/image.hpp>
-#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #include <tf2_ros/buffer.h>
 #include <tf2_ros/transform_broadcaster.h>
 #include <tf2_ros/transform_listener.h>
 #include <yaml-cpp/yaml.h>
+#include <rcl_interfaces/msg/set_parameters_result.hpp>
+#include <rclcpp/rclcpp.hpp>
+#include <rclcpp_lifecycle/lifecycle_node.hpp>
+#include <sensor_msgs/image_encodings.hpp>
+#include <sensor_msgs/msg/camera_info.hpp>
+#include <sensor_msgs/msg/image.hpp>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 
 #include "ros_aruco_opencv/board_loader.hpp"
 #include "ros_aruco_opencv/detector.hpp"
@@ -43,7 +43,8 @@
 #include "ros_aruco_opencv/utils.hpp"
 #include "ros_aruco_opencv_msgs/msg/aruco_detections.hpp"
 
-using rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface;
+// using rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface;
+using CallbackReturn = rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn;
 
 namespace ros_aruco_opencv {
     class ArucoTracker : public rclcpp_lifecycle::LifecycleNode {
@@ -53,7 +54,7 @@ namespace ros_aruco_opencv {
         CoreParams params_;
         DetectorParams detector_params_;
         cv::Ptr<cv::aruco::DetectorParameters> aruco_parameters_;
-        bool transform_poses_;
+        bool transform_poses_ = false;
 
         // ROS
         OnSetParametersCallbackHandle::SharedPtr on_set_parameter_callback_handle_;
@@ -77,18 +78,19 @@ namespace ros_aruco_opencv {
         std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
 
     public:
-        explicit ArucoTracker(const rclcpp::NodeOptions& options) : LifecycleNode("aruco_tracker", options), logger(get_logger()) {
+        explicit ArucoTracker(const rclcpp::NodeOptions& options)
+            : LifecycleNode("aruco_tracker", options), logger(get_logger()) {
             declare_parameters();
         }
 
-        CallbackReturn on_configure(const rclcpp_lifecycle::State&) override {
+        CallbackReturn on_configure(const rclcpp_lifecycle::State& /*previous_state*/) override {
             logger.info("Configuring");
 
-#if CV_VERSION_MAJOR > 4 || CV_VERSION_MAJOR == 4 && CV_VERSION_MINOR >= 7
+            #if CV_VERSION_MAJOR > 4 || CV_VERSION_MAJOR == 4 && CV_VERSION_MINOR >= 7
             aruco_parameters_ = cv::makePtr<cv::aruco::DetectorParameters>();
-#else
+            #else
             aruco_parameters_ = cv::aruco::DetectorParameters::create();
-#endif
+            #endif
 
             retrieve_parameters();
 
@@ -130,12 +132,12 @@ namespace ros_aruco_opencv {
             detection_pub_->on_activate();
             debug_pub_->on_activate();
 
-            on_set_parameter_callback_handle_ = add_on_set_parameters_callback(
-                std::bind(&ArucoTracker::callback_on_set_parameters, this, std::placeholders::_1)
-            );
-            post_set_parameter_callback_handle_ = add_post_set_parameters_callback(
-                std::bind(&ArucoTracker::callback_post_set_parameters, this, std::placeholders::_1)
-            );
+            on_set_parameter_callback_handle_ = add_on_set_parameters_callback([this](const std::vector<rclcpp::Parameter>& parameters) {
+                return callback_on_set_parameters(parameters);
+            });
+            post_set_parameter_callback_handle_ = add_post_set_parameters_callback([this](const std::vector<rclcpp::Parameter>& parameters) {
+                callback_post_set_parameters(parameters);
+            });
 
             logger.info("Waiting for first camera info...");
 
@@ -146,7 +148,9 @@ namespace ros_aruco_opencv {
 
             cam_info_sub_ = create_subscription<sensor_msgs::msg::CameraInfo>(
                 cam_info_topic, 1,
-                std::bind(&ArucoTracker::callback_camera_info, this, std::placeholders::_1)
+                [this](const sensor_msgs::msg::CameraInfo::ConstSharedPtr& cam_info) {
+                    callback_camera_info(cam_info);
+                }
             );
 
             rmw_qos_profile_t image_sub_qos = rmw_qos_profile_default;
@@ -159,12 +163,16 @@ namespace ros_aruco_opencv {
             if (params_.image_sub_compressed) {
                 compressed_img_sub_ = create_subscription<sensor_msgs::msg::CompressedImage>(
                     fmt::format("{}/{}", image_topic, "compressed"), qos,
-                    std::bind(&ArucoTracker::callback_compressed_image, this, std::placeholders::_1)
+                    [this](const sensor_msgs::msg::CompressedImage::ConstSharedPtr& img_msg) {
+                        callback_compressed_image(img_msg);
+                    }
                 );
             } else {
                 img_sub_ = create_subscription<sensor_msgs::msg::Image>(
                     image_topic, qos,
-                    std::bind(&ArucoTracker::callback_image, this, std::placeholders::_1)
+                    [this](const sensor_msgs::msg::Image::ConstSharedPtr& img_msg) {
+                        callback_image(img_msg);
+                    }
                 );
             }
 
@@ -188,7 +196,7 @@ namespace ros_aruco_opencv {
             return CallbackReturn::SUCCESS;
         }
 
-        CallbackReturn on_cleanup(const rclcpp_lifecycle::State&) override {
+        CallbackReturn on_cleanup(const rclcpp_lifecycle::State& /*previous_state*/) override {
             logger.info("Cleaning up");
 
             tf_broadcaster_.reset();
@@ -275,7 +283,7 @@ namespace ros_aruco_opencv {
                 return;
             }
             boards_ = std::move(loaded);
-            for (const auto& [name, _] : boards_) {
+            for (const auto& name : boards_ | std::views::keys) {
                 logger.info("Successfully loaded configuration for board '{}'", name);
             }
         }
@@ -313,7 +321,8 @@ namespace ros_aruco_opencv {
         }
 
         template <typename ImgMsgT>
-        bool should_process_img_msg(ImgMsgT img_msg) {
+        bool should_process_img_msg(const ImgMsgT& img_msg) {
+            // NOLINTNEXTLINE(*-pro-type-reinterpret-cast)
             logger.debug("Image message address [SUBSCRIBE]:\t{}", reinterpret_cast<const void*>(img_msg.get()));
 
             if (!cam_info_retrieved_) {
@@ -340,7 +349,8 @@ namespace ros_aruco_opencv {
             std::vector<std::vector<cv::Point2f>> rejected_corners;
             detector_->detect(cv_ptr->image, marker_ids, marker_corners, rejected_corners);
 
-            std::vector<cv::Vec3d> rotations_final, translations_final;
+            std::vector<cv::Vec3d> rotations_final;
+            std::vector<cv::Vec3d> translations_final;
 
             ros_aruco_opencv_msgs::msg::ArucoDetections detections;
             detections.header.frame_id = cv_ptr->header.frame_id;
@@ -357,18 +367,18 @@ namespace ros_aruco_opencv {
 
             detections.rejected_markers.resize(rejected_corners.size());
             for (auto i = 0u; i < rejected_corners.size(); ++i) {
-                const auto& corners = rejected_corners[i];
+                const auto& corners = rejected_corners.at(i);
 
                 for (auto j = 0u; j < corners.size(); ++j) {
                     const auto& point = corners.at(j);
-                    auto& corner = detections.rejected_markers[i].corners[j];
+                    auto& corner = detections.rejected_markers.at(i).corners.at(j);
                     corner.x = point.x;
                     corner.y = point.y;
                     corner.z = 0;
                 }
             }
 
-            if (transform_poses_ && (detections.markers.size() > 0 || detections.boards.size() > 0)) {
+            if (transform_poses_ && (!detections.markers.empty() || !detections.boards.empty())) {
                 detections.header.frame_id = params_.output_frame;
                 geometry_msgs::msg::TransformStamped cam_to_output;
                 // Retrieve camera -> output_frame transform
@@ -391,7 +401,7 @@ namespace ros_aruco_opencv {
                 }
             }
 
-            if (params_.publish_tf && detections.markers.size() > 0) {
+            if (params_.publish_tf && !detections.markers.empty()) {
                 std::vector<geometry_msgs::msg::TransformStamped> transforms;
                 for (auto& marker_pose : detections.markers) {
                     geometry_msgs::msg::TransformStamped transform;
@@ -429,15 +439,16 @@ namespace ros_aruco_opencv {
                 cv::aruco::drawDetectedMarkers(debug_cv_ptr->image, rejected_corners, cv::noArray(), cv::Scalar(100, 0, 255));
 
                 {
-                    cv::Mat camera_matrix, distortion_coeffs;
+                    cv::Mat camera_matrix;
+                    cv::Mat distortion_coeffs;
                     detector_->get_intrinsics(camera_matrix, distortion_coeffs);
 
                     for (auto i = 0u; i < rotations_final.size(); i++) {
                         cv::drawFrameAxes(
                             debug_cv_ptr->image,
                             camera_matrix, distortion_coeffs,
-                            rotations_final[i],
-                            translations_final[i],
+                            rotations_final.at(i),
+                            translations_final.at(i),
                             0.2, 3
                         );
                     }
@@ -461,7 +472,8 @@ namespace ros_aruco_opencv {
 
     class ArucoTrackerAutostart : public ArucoTracker {
     public:
-        explicit ArucoTrackerAutostart(const rclcpp::NodeOptions& options) : ArucoTracker(options) {
+        explicit ArucoTrackerAutostart(const rclcpp::NodeOptions& options)
+            : ArucoTracker(options) {
             if (const auto new_state = configure(); new_state.label() == "inactive") {
                 activate();
             }

@@ -15,15 +15,18 @@ namespace ImOsm::Old {
         static constexpr std::array<uint8_t, RGBA_SZ> Slate = {112, 128, 144, 255};
         static constexpr std::array<uint8_t, RGBA_SZ> Coral = {255, 127, 80, 255};
 
-        TextureColor() : rgba(Snow) {}
-        TextureColor(const std::array<uint8_t, RGBA_SZ>& color) : rgba(color) {};
+        TextureColor()
+            : rgba(Snow) {}
+
+        TextureColor(const std::array<uint8_t, RGBA_SZ>& color)
+            : rgba(color) {};
 
         const std::array<uint8_t, RGBA_SZ> rgba = Snow;
     };
 
     class TileTexture {
     public:
-        TileTexture(int size = 256, TextureColor color = TextureColor::Snow);
+        explicit TileTexture(int size = 256, TextureColor color = TextureColor::Snow);
         TileTexture(int size, const std::vector<std::byte>& blob);
         ~TileTexture();
 

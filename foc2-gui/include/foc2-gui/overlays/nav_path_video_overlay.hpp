@@ -2,18 +2,18 @@
 
 #include <mutex>
 #include <optional>
+#include <tf2_ros/buffer.h>
 #include <nav_msgs/msg/path.hpp>
 #include <sensor_msgs/msg/camera_info.hpp>
-#include <tf2_ros/buffer.h>
 
 #include "foc2-gui/overlay.hpp"
 
 class NavPathVideoOverlay : public UiOverlay {
-public:
-    RCLCPP_SMART_PTR_ALIASES_ONLY(NavPathVideoOverlay)
-
     using Path = nav_msgs::msg::Path;
     using CameraInfo = sensor_msgs::msg::CameraInfo;
+
+public:
+    RCLCPP_SMART_PTR_ALIASES_ONLY(NavPathVideoOverlay)
 
     explicit NavPathVideoOverlay(ImApplication& application, std::string path_topic, const ImVec4& path_color);
 

@@ -159,8 +159,8 @@ void NavPathVideoOverlay::onDraw(ImDrawList* draw_list, const ImRect& bounds) {
 
         segments.back().emplace_back(
             PathPoint{
-                .pos = screen_point,
-                .alpha = alpha,
+                .pos       = screen_point,
+                .alpha     = alpha,
                 .thickness = thickness,
             }
         );
@@ -239,13 +239,15 @@ void NavPathVideoOverlay::onDraw(ImDrawList* draw_list, const ImRect& bounds) {
 }
 
 void NavPathVideoOverlay::onCameraInfo(const CameraInfo::SharedPtr& msg) {
-    if (!msg) return;
+    if (!msg)
+        return;
     std::lock_guard lock(mutex);
     camera_info = *msg;
 }
 
 void NavPathVideoOverlay::onPath(const nav_msgs::msg::Path::UniquePtr& msg) {
-    if (!msg) return;
+    if (!msg)
+        return;
     std::lock_guard lock(mutex);
     path = *msg;
 }

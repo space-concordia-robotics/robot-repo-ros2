@@ -10,8 +10,9 @@
 #include "autonomy/targets/object_target.hpp"
 
 namespace autonomy {
-    AutonomyMissionManager::AutonomyMissionManager() : AutonomyMissionManagerInterface("autonomy_mission_manager"),
-                                                       co_ctx(std::make_shared<rclcpp_async::CoContext>(*this)), logger(this->get_logger()) {
+    AutonomyMissionManager::AutonomyMissionManager()
+        : AutonomyMissionManagerInterface("autonomy_mission_manager"),
+          co_ctx(std::make_shared<rclcpp_async::CoContext>(*this)), logger(this->get_logger()) {
         parseConfig();
 
         navsat_topic = this->create_subscription<NavSatFix>(
@@ -171,13 +172,13 @@ namespace autonomy {
         return nearest;
     }
 
-    rclcpp_async::Task<> AutonomyMissionManager::setSILColour(const uint8_t r, const uint8_t g, const uint8_t b, const uint8_t brightness) {
+    rclcpp_async::Task<> AutonomyMissionManager::setSILColour(const uint8_t red, const uint8_t green, const uint8_t blue, const uint8_t brightness) {
         using namespace std::chrono_literals;
 
         const auto sil_request = std::make_shared<SetSILStatus::Request>();
-        sil_request->r = r;
-        sil_request->g = g;
-        sil_request->b = b;
+        sil_request->r = red;
+        sil_request->g = green;
+        sil_request->b = blue;
         sil_request->brightness = brightness;
 
         co_await co_ctx->send_request<SetSILStatus>(sil_client, sil_request);

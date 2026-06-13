@@ -42,39 +42,39 @@ namespace ros_aruco_opencv {
         }
     }
 
-    static cv::Ptr<cv::aruco::Board> make_grid_board(const BoardDescription& bd, const cv::Ptr<cv::aruco::Dictionary>& dict) {
-#if CV_VERSION_MAJOR > 4 || (CV_VERSION_MAJOR == 4 && CV_VERSION_MINOR >= 7)
-        std::vector<int> ids(bd.markers_x * bd.markers_y);
-        std::iota(ids.begin(), ids.end(), bd.first_id);
+    static cv::Ptr<cv::aruco::Board> make_grid_board(const BoardDescription& description, const cv::Ptr<cv::aruco::Dictionary>& dict) {
+        #if CV_VERSION_MAJOR > 4 || (CV_VERSION_MAJOR == 4 && CV_VERSION_MINOR >= 7)
+        std::vector<int> ids(description.markers_x * description.markers_y);
+        std::ranges::iota(ids, description.first_id);
         cv::Ptr<cv::aruco::Board> board = cv::makePtr<cv::aruco::GridBoard>(
-            cv::Size(bd.markers_x, bd.markers_y), bd.marker_size, bd.separation, *dict, ids
+            cv::Size(description.markers_x, description.markers_y), description.marker_size, description.separation, *dict, ids
         );
-#else
+        #else
         cv::Ptr<cv::aruco::Board> board = cv::aruco::GridBoard::create(
-            bd.markers_x, bd.markers_y, bd.marker_size, bd.separation, dict, bd.first_id
+            description.markers_x, description.markers_y, description.marker_size, description.separation, dict, description.first_id
         );
-#endif
-        if (!bd.frame_at_center) {
+        #endif
+        if (!description.frame_at_center) {
             return board;
         }
-        const double offset_x = (bd.markers_x * (bd.marker_size + bd.separation) - bd.separation) / 2.0;
-        const double offset_y = (bd.markers_y * (bd.marker_size + bd.separation) - bd.separation) / 2.0;
-#if CV_VERSION_MAJOR > 4 || (CV_VERSION_MAJOR == 4 && CV_VERSION_MINOR >= 7)
+        const double offset_x = (description.markers_x * (description.marker_size + description.separation) - description.separation) / 2.0;
+        const double offset_y = (description.markers_y * (description.marker_size + description.separation) - description.separation) / 2.0;
+        #if CV_VERSION_MAJOR > 4 || (CV_VERSION_MAJOR == 4 && CV_VERSION_MINOR >= 7)
         auto obj_points = std::vector(board->getObjPoints());
-#else
+        #else
         auto obj_points = std::vector(board->objPoints);
-#endif
+        #endif
         for (auto& obj : obj_points) {
             for (auto& point : obj) {
                 point.x -= offset_x;
                 point.y -= offset_y;
             }
         }
-#if CV_VERSION_MAJOR > 4 || (CV_VERSION_MAJOR == 4 && CV_VERSION_MINOR >= 7)
+        #if CV_VERSION_MAJOR > 4 || (CV_VERSION_MAJOR == 4 && CV_VERSION_MINOR >= 7)
         return cv::makePtr<cv::aruco::Board>(obj_points, *dict, board->getIds());
-#else
+        #else
         return cv::aruco::Board::create(obj_points, dict, board->ids);
-#endif
+        #endif
     }
 
     bool BoardLoader::load_from_file(
@@ -98,13 +98,13 @@ namespace ros_aruco_opencv {
         }
 
         for (const YAML::Node& desc : descriptions) {
-            BoardDescription bd;
-            if (std::string perr; !parse_board(desc, bd, perr)) {
+            BoardDescription board_description;
+            if (std::string perr; !parse_board(desc, board_description, perr)) {
                 error_message = fmt::format("Failed to parse board: {}", perr);
                 return false;
             }
-            auto board = make_grid_board(bd, dictionary);
-            out_boards.push_back(std::make_pair(bd.name, board));
+            auto board = make_grid_board(board_description, dictionary);
+            out_boards.emplace_back(board_description.name, board);
         }
         return true;
     }

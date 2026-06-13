@@ -28,7 +28,7 @@ namespace sil_interface {
 
     controller_interface::InterfaceConfiguration SILController::command_interface_configuration() const {
         return {
-            .type = controller_interface::interface_configuration_type::INDIVIDUAL,
+            .type  = controller_interface::interface_configuration_type::INDIVIDUAL,
             .names = {
                 "sil/red",
                 "sil/green",
@@ -40,7 +40,7 @@ namespace sil_interface {
 
     controller_interface::InterfaceConfiguration SILController::state_interface_configuration() const {
         return {
-            .type = controller_interface::interface_configuration_type::NONE,
+            .type  = controller_interface::interface_configuration_type::NONE,
             .names = {}
         };
     }

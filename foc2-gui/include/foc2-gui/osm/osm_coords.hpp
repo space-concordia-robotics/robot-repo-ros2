@@ -77,9 +77,11 @@ namespace ImOsm {
         double x{};
         double y{};
 
-        OsmCoords(const double x, const double y) : x(x), y(y) {}
+        OsmCoords(const double x, const double y)
+            : x(x), y(y) {}
 
-        OsmCoords(const GeographicLib::GeoCoords& coords) : x(lon2x(coords.Latitude())), y(lat2y(coords.Longitude())) {}
+        explicit OsmCoords(const GeographicLib::GeoCoords& coords)
+            : x(lon2x(coords.Latitude())), y(lat2y(coords.Longitude())) {}
 
         ImPlotPoint toPlotPoint() const {
             return {x, y};

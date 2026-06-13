@@ -18,7 +18,8 @@ std::optional<std::filesystem::path> cacheDirectory(const std::string& name) {
         return std::nullopt;
 }
 
-MapWidget::MapWidget(ImApplication& application) : UiWidget(application) {}
+MapWidget::MapWidget(ImApplication& application)
+    : UiWidget(application) {}
 
 void MapWidget::onInit() {
     std::shared_ptr<ImOsm::ITileLoader> tile_loader;

@@ -2,9 +2,9 @@
 
 #include <functional>
 #include <linux/can.h>
+#include <ros2_fmt_logger/logger.hpp>
 #include <rclcpp/logger.hpp>
 #include <rclcpp/macros.hpp>
-#include <ros2_fmt_logger/logger.hpp>
 
 namespace can_util {
     using CANFrameCallback = std::function<void(uint32_t id, const std::vector<uint8_t>& data)>;
@@ -26,6 +26,7 @@ namespace can_util {
             auto frame = can_frame{};
             frame.can_id = id | CAN_EFF_FLAG;
 
+            // NOLINTNEXTLINE(*-pro-type-union-access): it's only a union to preserve backwards compatibility of the name
             frame.len = static_cast<uint8_t>(data.size());
             memcpy(frame.data, data.data(), data.size());
 
@@ -46,8 +47,9 @@ namespace can_util {
             auto frame = can_frame{};
             frame.can_id = id | CAN_EFF_FLAG;
 
+            // NOLINTNEXTLINE(*-pro-type-union-access): it's only a union to preserve backwards compatibility of the name
             frame.len = static_cast<uint8_t>(data.size());
-            memcpy(frame.data, data.data(), data.size());
+            memcpy(frame.data, data.data(), data.size()); // NOLINT(*-pro-bounds-array-to-pointer-decay)
 
             return trySendBlockingFrame(frame);
         }

@@ -5,6 +5,7 @@
 #include <memory>
 #include <mutex>
 #include <vector>
+
 #include "foc2-gui/im_application.hpp"
 
 template <typename Msg>
@@ -12,10 +13,11 @@ class SubscriptionGroup {
 public:
     RCLCPP_SMART_PTR_DEFINITIONS(SubscriptionGroup);
 
-    explicit SubscriptionGroup(ImApplication& application) : application(application) {}
+    explicit SubscriptionGroup(ImApplication& application)
+        : application(application) {}
 
     void subscribe(const std::string& topic, const rclcpp::QoS& qos) {
-        std::lock_guard lock(mutex);
+        std::scoped_lock lock(mutex);
 
         if (subscription) {
             subscription.reset();
@@ -47,7 +49,7 @@ private:
     };
 
     void addCallbackImpl(std::weak_ptr<void> owner, std::function<void(typename Msg::SharedPtr)> callback) {
-        std::lock_guard lock(mutex);
+        std::scoped_lock lock(mutex);
         callbacks.push_back(CallbackHolder::make_shared(std::move(owner), std::move(callback)));
     }
 
@@ -56,7 +58,7 @@ private:
 
         // copy callbacks to avoid any race conditions where the callbacks vector is mutated as we iterate over them
         {
-            std::lock_guard lock(mutex);
+            std::scoped_lock lock(mutex);
 
             // delete any expired callbacks
             std::erase_if(callbacks, [](auto& sp) {

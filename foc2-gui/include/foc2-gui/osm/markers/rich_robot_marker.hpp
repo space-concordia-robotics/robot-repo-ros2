@@ -18,7 +18,7 @@ public:
 
     void onInit();
 
-    void onShutdown() const;
+    void onShutdown();
 
     bool inBounds(Eigen::AlignedBox2d geo_box) const override;
 

@@ -1,16 +1,18 @@
 #include "can_util/can_controller.hpp"
+
 #include <cstring>
 #include <fcntl.h>
 #include <unistd.h>
 #include <utility>
 #include <net/if.h>
-#include <rclcpp/logging.hpp>
 #include <sys/ioctl.h>
 #include <sys/socket.h>
+#include <rclcpp/logging.hpp>
 
 
 namespace can_util {
-    CANController::CANController(std::string path, rclcpp::Logger logger) : logger(logger.get_child("can_controller")), path(std::move(path)) {}
+    CANController::CANController(std::string path, rclcpp::Logger logger)
+        : logger(logger.get_child("can_controller")), path(std::move(path)) {}
 
     CANController::~CANController() {
         readThread.join();
@@ -22,7 +24,7 @@ namespace can_util {
 
         if (socket_descriptor == -1) {
             logger.fatal("socket error: {} ({})\nPossible causes:\n1. CAN modules not loaded\n2. System resource limitations",
-                         strerror(errno), errno);
+                         strerrordesc_np(errno), errno);
             return false;
         }
 
@@ -34,24 +36,26 @@ namespace can_util {
         // setup canbus socket
 
         auto ifr = ifreq{};
+        // NOLINTNEXTLINE(*-pro-bounds-array-to-pointer-decay)
         strncpy(ifr.ifr_name, path.c_str(), IF_NAMESIZE);
 
-        if (ioctl(socket_descriptor, SIOCGIFINDEX, &ifr) == -1) {
+        if (ioctl(socket_descriptor, SIOCGIFINDEX, &ifr) == -1) { // NOLINT(*-pro-type-vararg)
             logger.fatal("ioctl error: {} ({})\nPossible causes:\n1. CAN interface does not exist\n2. CAN bus not initialized\n3. CAN interface is not up",
-                         strerror(errno), errno);
+                         strerrordesc_np(errno), errno);
             close(socket_descriptor);
             return false;
         }
 
         auto addr = sockaddr_can{
-            .can_family = AF_CAN,
+            .can_family  = AF_CAN,
             .can_ifindex = ifr.ifr_ifindex,
-            .can_addr = {}
+            .can_addr    = {}
         };
 
         // cast sockaddr_can* to a sockaddr*, as bind() uses a sockaddr* even though it can accept a sockaddr_can* for SocketCan
+        // NOLINTNEXTLINE(*-pro-type-reinterpret-cast)
         if (bind(socket_descriptor, reinterpret_cast<sockaddr*>(&addr), sizeof(addr)) < 0) {
-            logger.fatal("bind error: {} ({})\nPossible cause: Another program may be using this interface", strerror(errno), errno);
+            logger.fatal("bind error: {} ({})\nPossible cause: Another program may be using this interface", strerrordesc_np(errno), errno);
             close(socket_descriptor);
             return false;
         }
@@ -60,17 +64,17 @@ namespace can_util {
         // make socket non blocking
         // const int flags = fcntl(socket_descriptor, F_GETFL, 0);
         // if (flags == -1) {
-        //     logger.fatal("fcntl error: {} ({})", strerror(errno), errno);
+        //     logger.fatal("fcntl error: {} ({})", strerrordesc_np(errno), errno);
         //     return false;
         // }
         //
         // if (fcntl(socket_descriptor, F_SETFL, flags | O_NONBLOCK) < 0) {
-        //     logger.fatal("fcntl error: {} ({})", strerror(errno), errno);
+        //     logger.fatal("fcntl error: {} ({})", strerrordesc_np(errno), errno);
         // }
 
         readThread = std::thread([this] {
             while (rclcpp::ok()) {
-                if (auto frame = can_frame{}; readFrameIfAvailable(frame) == true) {
+                if (auto frame = can_frame{}; readFrameIfAvailable(frame)) {
                     const auto id = frame.can_id & CAN_EFF_MASK;
                     // ReSharper disable once CppTemplateArgumentsCanBeDeduced
                     const auto data = std::vector<uint8_t>(std::begin(frame.data), std::end(frame.data));
@@ -100,7 +104,7 @@ namespace can_util {
                         const auto sp = weak_pointer.lock();
                         return !sp || sp.get() == cb;
                     });
-                delete cb;
+                delete cb; // NOLINT(*-owning-memory): this is fine
             }
         );
 
@@ -118,7 +122,7 @@ namespace can_util {
         // Set up the timeout with zero seconds for non-blocking
         // TODO 2026-02-17 (Will Free): Should we set a timeout here?
         auto timeout = timeval{
-            .tv_sec = 0,
+            .tv_sec  = 0,
             .tv_usec = READ_TIMEOUT_US,
         };
 
@@ -145,11 +149,11 @@ namespace can_util {
         const auto byte_count = read(socket_descriptor, &frame, sizeof(struct can_frame));
 
         if (byte_count == -1) {
-            logger.fatal("read error: {} ({})", strerror(errno), errno);
+            logger.fatal("read error: {} ({})", strerrordesc_np(errno), errno);
             return false;
         }
 
-        if (byte_count < static_cast<ssize_t>(sizeof(can_frame))) {
+        if (std::cmp_less(byte_count, sizeof(can_frame))) {
             logger.fatal("read error: incomplete CAN frame");
             return false;
         }
@@ -169,7 +173,7 @@ namespace can_util {
                 continue;
             }
 
-            logger.warn("Failed to send CAN frame: {} ({})", strerror(errno), errno);
+            logger.warn("Failed to send CAN frame: {} ({})", strerrordesc_np(errno), errno);
             return false;
         }
 
@@ -179,12 +183,12 @@ namespace can_util {
     }
 
     bool CANController::sendFrame(const can_frame& frame) const {
-        std::lock_guard lock(mtx);
+        std::scoped_lock lock(mtx);
 
         const auto byte_count = write(socket_descriptor, &frame, sizeof(can_frame));
         const auto original_errno = errno;
         if (byte_count == -1) {
-            logger.fatal("write error: {} ({})", strerror(original_errno), original_errno);
+            logger.fatal("write error: {} ({})", strerrordesc_np(original_errno), original_errno);
             return false;
         }
 

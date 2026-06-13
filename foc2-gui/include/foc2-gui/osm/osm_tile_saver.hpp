@@ -31,8 +31,6 @@ namespace ImOsm {
         std::optional<std::string> extension;
     };
 
-    // -----------------------------------------------------------------------------
-
     class TileSaverDir : public TileSaver {
     public:
         explicit TileSaverDir(std::optional<std::string> extension);
@@ -42,8 +40,6 @@ namespace ImOsm {
     protected:
         [[nodiscard]] std::filesystem::path dirPath(const std::shared_ptr<ITile>& tile) const override;
     };
-
-    // -----------------------------------------------------------------------------
 
     class TileSaverSubDir : public TileSaver {
     public:

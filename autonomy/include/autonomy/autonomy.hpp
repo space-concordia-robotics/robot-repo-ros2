@@ -1,9 +1,9 @@
 #pragma once
 
-#include <geographic_msgs/msg/geo_point.hpp>
+#include <ros2_fmt_logger/logger.hpp>
 #include <rclcpp/node.hpp>
 #include <rclcpp_async/rclcpp_async.hpp>
-#include <ros2_fmt_logger/logger.hpp>
+#include <geographic_msgs/msg/geo_point.hpp>
 #include <sensor_msgs/msg/nav_sat_fix.hpp>
 
 #include "autonomy/autonomy_interface.hpp"
@@ -17,10 +17,15 @@ namespace autonomy {
         AutonomyMissionManager();
         ~AutonomyMissionManager() override = default;
 
+        AutonomyMissionManager(const AutonomyMissionManager& other) = delete;
+        AutonomyMissionManager(AutonomyMissionManager&& other) noexcept = delete;
+        AutonomyMissionManager& operator=(const AutonomyMissionManager& other) = delete;
+        AutonomyMissionManager& operator=(AutonomyMissionManager&& other) noexcept = delete;
+
         //! parses the config file
         void parseConfig();
 
-        //! parses the targest from the config file
+        //! parses the targets from the config file
         std::vector<Target::SharedPtr> parseTargets();
 
         //! parses a specific target from the config file
@@ -34,11 +39,9 @@ namespace autonomy {
         Target::SharedPtr nearestTarget() const;
 
         bool allTargetsDone() const {
-            for (const auto& t : targets) {
-                if (t->getState() != TargetState::COMPLETED && t->getState() != TargetState::FAILED)
-                    return false;
-            }
-            return true;
+            return std::ranges::all_of(targets, [](auto&& target) {
+                return target->getState() != TargetState::COMPLETED && target->getState() != TargetState::FAILED;
+            });
         }
 
         TargetConfig getTargetConfig() const override {
@@ -49,7 +52,7 @@ namespace autonomy {
             return this->co_ctx;
         }
 
-        rclcpp_async::Task<> setSILColour(uint8_t r, uint8_t g, uint8_t b, uint8_t brightness) override;
+        rclcpp_async::Task<> setSILColour(uint8_t red, uint8_t green, uint8_t blue, uint8_t brightness) override;
 
     private:
         std::shared_ptr<rclcpp_async::CoContext> co_ctx;

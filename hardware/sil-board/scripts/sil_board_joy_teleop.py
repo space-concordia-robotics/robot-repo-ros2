@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 """Joystick-driven LED teleop for SIL board — presets, patterns, rate-limited."""
 
-import math
 import sys
 import time
 from enum import IntEnum
 from pathlib import Path
+
+import math
 
 _script_dir = str(Path(__file__).resolve().parent)
 if _script_dir not in sys.path:

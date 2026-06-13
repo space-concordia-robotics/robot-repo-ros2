@@ -1,9 +1,11 @@
 #pragma once
+
 #include <memory>
+#include <tf2_ros/transform_broadcaster.h>
 #include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/msg/imu.hpp>
 #include <sensor_msgs/msg/magnetic_field.hpp>
-#include <tf2_ros/transform_broadcaster.h>
+
 #include "serialib/serialib.h"
 
 // To use the communication library, we need to include the following
@@ -25,12 +27,12 @@ private:
     bool OnSerialRX();
     void FillCovarianceMatrices();
     void PublishTransform();
-#ifdef DEBUG_MODE
+    #ifdef DEBUG_MODE
     rclcpp::TimerBase::SharedPtr timer_10;
     void TimerCallback2();
     int count;
     int count2;
-#endif
+    #endif
 
     serialib* serialib1; // We use linux serialib to interface with serial port.
 
