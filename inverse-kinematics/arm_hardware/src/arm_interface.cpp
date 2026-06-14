@@ -69,12 +69,13 @@ BACKGROUND:
 #include <termios.h>
 #include <unistd.h>
 #include <vector>
-#include <hardware_interface/system_interface.hpp>
 #include <rclcpp/logger.hpp>
 #include <rclcpp/rclcpp.hpp>
 
 static constexpr auto KP_GAIN = 5.0; // tunable constant.
 static constexpr auto MAX_JOINT_VELOCITY = 1.0;
+
+using hardware_interface::return_type;
 
 namespace arm_interface {
     // Input: input parameters, initialize hw_states_position_, hw_states_velocity & hw_command_positions
@@ -92,7 +93,7 @@ namespace arm_interface {
         // Debug: Print joint information
         RCLCPP_INFO(this->get_logger(), "Found %zu joints:", info_.joints.size());
         for (size_t i = 0; i < info_.joints.size(); ++i) {
-            RCLCPP_INFO(this->get_logger(), "  Joint %zu: %s", i, info_.joints[i].name.c_str());
+            RCLCPP_INFO(this->get_logger(), "  Joint %zu: %s", i, info_.joints.at(i).name.c_str());
         }
 
         // Initializing state and commands storage
@@ -153,9 +154,8 @@ namespace arm_interface {
 
         if (serial_fd_ == -1) {
             // Attempt to open encoder port
-            int fd;
-            const ABSENC_Error_t err = AbsencDriver::OpenPort("/dev/ttyUSB0", fd);
-            if (err.error != NO_ERROR) {
+            int fd = 0;
+            if (const ABSENC_Error_t err = AbsencDriver::OpenPort("/dev/ttyUSB0", fd); err.error != NO_ERROR) {
                 RCLCPP_ERROR(this->get_logger(),
                              "Failed to open encoder port '/dev/ttyUSB0' in on_configure(): %s.",
                              strAbsencErr(err.error));
@@ -167,14 +167,14 @@ namespace arm_interface {
         }
 
         if (motor_serial_fd_ == -1) {
-            motor_serial_fd_ = open("/dev/ttyTHS1", O_RDWR);
+            motor_serial_fd_ = open("/dev/ttyTHS1", O_RDWR); // NOLINT(*-pro-type-vararg)
             if (motor_serial_fd_ < 0) {
                 RCLCPP_ERROR(this->get_logger(),
                              "Failed to open motor port '/dev/ttyTHS1' in on_configure(): %s.",
-                             strerror(errno));
+                             strerrordesc_np(errno));
                 return hardware_interface::CallbackReturn::ERROR;
             } else {
-                termios ttycfg;
+                termios ttycfg{};
                 ttycfg.c_cflag = CS8 | CREAD | CLOCAL; // 8N1, ignore modem signals
                 ttycfg.c_lflag = 0;
                 ttycfg.c_iflag = 0;
@@ -194,7 +194,7 @@ namespace arm_interface {
         // 4) Final verification: ensure every joint has exactly one velocity command interface (as required)
         for (const auto& joint : info_.joints) {
             if (joint.command_interfaces.size() != 1 ||
-                joint.command_interfaces[0].name != hardware_interface::HW_IF_VELOCITY) {
+                joint.command_interfaces.at(0).name != hardware_interface::HW_IF_VELOCITY) {
                 RCLCPP_FATAL(this->get_logger(),
                              "Joint '%s' must expose exactly one velocity command interface (found %zu).",
                              joint.name.c_str(), joint.command_interfaces.size());
@@ -220,12 +220,12 @@ namespace arm_interface {
 
         // Copy current state into command buffer to avoid sudden jumps when controller starts
         for (size_t i = 0; i < nj; ++i) {
-            if (!std::isnan(hw_states_position_[i])) {
-                hw_commands_velocity_[i] = hw_states_position_[i];
+            if (!std::isnan(hw_states_position_.at(i))) {
+                hw_commands_velocity_.at(i) = hw_states_position_.at(i);
             } else {
                 // If state is NaN for some reason, set to zero and warno
-                hw_states_position_[i] = 0.0;
-                hw_commands_velocity_[i] = 0.0;
+                hw_states_position_.at(i) = 0.0;
+                hw_commands_velocity_.at(i) = 0.0;
                 RCLCPP_WARN(this->get_logger(),
                             "hw_states_position_[%zu] was NaN on activate; resetting to 0.", i);
             }
@@ -235,15 +235,13 @@ namespace arm_interface {
         return hardware_interface::CallbackReturn::SUCCESS;
     }
 
-    // Input: Everything that was in onActivate()
+    // Input: Everything that was in on_activate()
     // Outputs: Shutting down the hardware interface
     // Errors checks: none for now
-    hardware_interface::CallbackReturn ArmInterface::on_deactivate(const rclcpp_lifecycle::State& previous_state) {
-        (void)previous_state;
-
+    hardware_interface::CallbackReturn ArmInterface::on_deactivate(const rclcpp_lifecycle::State& /*previous_state*/) {
         // setting joint state commands back to 0
-        for (size_t i = 0; i < hw_commands_velocity_.size(); i++) {
-            hw_commands_velocity_[i] = 0.0;
+        for (double& velocity : hw_commands_velocity_) {
+            velocity = 0.0;
         }
 
         RCLCPP_INFO(this->get_logger(), "Hardware interface deactivated successfully.");
@@ -254,29 +252,25 @@ namespace arm_interface {
     // Outputs: Mapping given encorder angles (in radians) to each joint in the URDF and publish angles on terminal
     // Errors checks: Check to see if all encoders are properly working
     return_type ArmInterface::read(const rclcpp::Time& /*time*/, const rclcpp::Duration& /*period*/) {
-        ABSENC_Meas_t absenc_meas_1, absenc_meas_2, absenc_meas_3, absenc_meas_4;
+        ABSENC_Meas_t absenc_meas_1{};
+        ABSENC_Meas_t absenc_meas_2{};
+        ABSENC_Meas_t absenc_meas_3{};
+        ABSENC_Meas_t absenc_meas_4{};
 
-        const auto [error1, cause1, line1] = AbsencDriver::PollSlave(1, &absenc_meas_1, serial_fd_);
-        const auto [error2, cause2, line2] = AbsencDriver::PollSlave(2, &absenc_meas_2, serial_fd_);
-        const auto [error3, cause3, line3] = AbsencDriver::PollSlave(3, &absenc_meas_3, serial_fd_);
-        const auto [error4, cause4, line4] = AbsencDriver::PollSlave(4, &absenc_meas_4, serial_fd_);
+        auto poll = [&](const int id, ABSENC_Meas_t& meas) -> bool {
+            if (const auto [err, cause, line] = AbsencDriver::PollSlave(id, &meas, serial_fd_); err != NO_ERROR) {
+                RCLCPP_ERROR(this->get_logger(), "Error on %d: %s cause 0x%04x line 0x%04x\n", id, strAbsencErr(err), cause, line);
+                return false;
+            }
 
-        if (error1 != NO_ERROR) {
-            RCLCPP_ERROR(this->get_logger(), "Error on 1: %s cause 0x%04x line 0x%04x\n", strAbsencErr(error1), cause1, line1);
-            return return_type::ERROR;
-        }
-        if (error2 != NO_ERROR) {
-            RCLCPP_ERROR(this->get_logger(), "Error on 2: %s cause 0x%04x line 0x%04x\n", strAbsencErr(error2), cause2, line2);
-            return return_type::ERROR;
-        }
-        if (error3 != NO_ERROR) {
-            RCLCPP_ERROR(this->get_logger(), "Error on 3: %s cause 0x%04x line 0x%04x\n", strAbsencErr(error3), cause3, line3);
-            return return_type::ERROR;
-        }
-        if (error4 != NO_ERROR) {
-            RCLCPP_ERROR(this->get_logger(), "Error on 4: %s cause 0x%04x line 0x%04x\n", strAbsencErr(error4), cause4, line4);
-            return return_type::ERROR;
-        }
+            return true;
+        };
+
+        const auto measurements = std::array{&absenc_meas_1, &absenc_meas_2, &absenc_meas_3, &absenc_meas_4};
+
+        for (int i = 0; i < 4; ++i)
+            if (!poll(i + 1, *measurements.at(i)))
+                return return_type::ERROR;
 
         if (absenc_meas_1.status != 0 || absenc_meas_2.status != 0 || absenc_meas_3.status != 0 || absenc_meas_4.status != 0) {
             RCLCPP_ERROR(this->get_logger(),
@@ -286,6 +280,7 @@ namespace arm_interface {
         }
 
         // Fix the Home
+        // TODO 2026-06-13 (Will Free): where are these constants from?
         float angle_1 = absenc_meas_1.angval + 25; //-355
         float angle_2 = absenc_meas_2.angval - 174; //-175
         float angle_3 = absenc_meas_3.angval * -1;
@@ -296,7 +291,7 @@ namespace arm_interface {
         angle_1 = angle_1 < 180 ? angle_1 : angle_1 - 360;
         angle_2 = angle_2 > -180 ? angle_2 : angle_2 + 360;
 
-        // update the old angl
+        // update the old angle
         this->old_angle_4 = angle_4;
 
         angle_4 = angle_4 + this->angle_4_zone * 90 - 30;
@@ -305,22 +300,22 @@ namespace arm_interface {
         constexpr double deg_to_rad = M_PI / 180;
 
         // Map encoders to URDF joint order: joint1, joint2, joint3, joint5
-        hw_states_position_[0] = angle_1 * deg_to_rad; // joint1 <- encoder 1
-        hw_states_velocity_[0] = absenc_meas_1.angspd * deg_to_rad;
+        hw_states_position_.at(0) = angle_1 * deg_to_rad; // joint1 <- encoder 1
+        hw_states_velocity_.at(0) = absenc_meas_1.angspd * deg_to_rad;
 
-        hw_states_position_[1] = angle_2 * deg_to_rad; // joint2 <- encoder 2
-        hw_states_velocity_[1] = absenc_meas_2.angspd * deg_to_rad;
+        hw_states_position_.at(1) = angle_2 * deg_to_rad; // joint2 <- encoder 2
+        hw_states_velocity_.at(1) = absenc_meas_2.angspd * deg_to_rad;
 
-        hw_states_position_[2] = angle_3 * deg_to_rad; // joint3 <- encoder 3
-        hw_states_velocity_[2] = absenc_meas_3.angspd * deg_to_rad;
+        hw_states_position_.at(2) = angle_3 * deg_to_rad; // joint3 <- encoder 3
+        hw_states_velocity_.at(2) = absenc_meas_3.angspd * deg_to_rad;
 
-        hw_states_position_[3] = angle_4 * deg_to_rad; // joint5 <- encoder 4
-        hw_states_velocity_[3] = absenc_meas_4.angspd * deg_to_rad;
+        hw_states_position_.at(3) = angle_4 * deg_to_rad; // joint5 <- encoder 4
+        hw_states_velocity_.at(3) = absenc_meas_4.angspd * deg_to_rad;
 
         if (absenc_meas_1.status == 0 || absenc_meas_2.status == 0 || absenc_meas_3.status == 0 || absenc_meas_4.status == 0) {
             RCLCPP_INFO_THROTTLE(this->get_logger(), steady_clock_, 10,
                                  "Read Pos (rad): [%.3f, %.3f, %.3f, %.3f]",
-                                 hw_states_position_[0], hw_states_position_[1], hw_states_position_[2], hw_states_position_[3]);
+                                 hw_states_position_.at(0), hw_states_position_.at(1), hw_states_position_.at(2), hw_states_position_.at(3));
         }
 
         return return_type::OK;
@@ -339,33 +334,35 @@ namespace arm_interface {
         }
 
         // Create a buffer to send motor commands
-        uint8_t out_buf[1 + 1 + sizeof(float) * 6 + 1] = {}; // 19 bytes total: 1+1+16+1
-        out_buf[0] = SET_MOTOR_SPEED;
-        //out_buf[0] = 0x4E;
-        out_buf[1] = sizeof(float) * 6; // 16 bytes of data
+        std::array<uint8_t, 1 + 1 + sizeof(float) * 6 + 1> out_buf = {
+            // 19 bytes total: 1+1+16+1
+            SET_MOTOR_SPEED,
+            sizeof(float) * 6 // 16 bytes of data
+        };
 
         // const auto joint_state = sensor_msgs::msg::JointState::SharedPtr();
         // joint_state->velocity = hw_commands_velocity_;
 
         // Map command velocities to motor speeds
         for (size_t i = 0; i < hw_commands_velocity_.size() && i < 4; i++) {
-            const double joint_velocities = hw_commands_velocity_[i]; // in rad/s
+            const double joint_velocities = hw_commands_velocity_.at(i); // in rad/s
             float speed = static_cast<float>(joint_velocities) * MAX_MOTOR_SPEED;
-            memcpy(&out_buf[(i * sizeof(float)) + 2], &speed, sizeof(float));
+            memcpy(&out_buf.at(i * sizeof(float) + 2), &speed, sizeof(float));
         }
-        out_buf[14] = 0x0A; // End of message
+        out_buf.at(14) = 0x0A; // End of message
 
         RCLCPP_INFO_THROTTLE(rclcpp::get_logger("ArmInterfac"), steady_clock_, 10, "Writing joint velocity commands [%.2f, %.2f, %.2f, %.2f]",
-                             hw_commands_velocity_[0], hw_commands_velocity_[1], hw_commands_velocity_[2], hw_commands_velocity_[3]);
+                             hw_commands_velocity_.at(0), hw_commands_velocity_.at(1), hw_commands_velocity_.at(2), hw_commands_velocity_.at(3));
 
         // Send the motor commands via the motor serial port
-        const int status = ::write(motor_serial_fd_, out_buf, sizeof(out_buf));
+        const int status = ::write(motor_serial_fd_, out_buf.data(), sizeof(out_buf));
         if (status == -1) {
-            RCLCPP_ERROR(this->get_logger(), "SHORT WRITE: %d/%zu (%s)", status, sizeof(out_buf), strerror(errno));
+            RCLCPP_ERROR(this->get_logger(), "SHORT WRITE: %d/%zu (%s)", status, sizeof(out_buf), strerrordesc_np(errno));
             return return_type::ERROR;
         }
 
-        RCLCPP_INFO_THROTTLE(this->get_logger(), steady_clock_, 10, "status: %d, sizeof out buf: %zu (errno: %s)", status, sizeof(out_buf), strerror(errno));
+        RCLCPP_INFO_THROTTLE(this->get_logger(), steady_clock_, 10, "status: %d, sizeof out buf: %zu (errno: %s)", status, sizeof(out_buf),
+                             strerrordesc_np(errno));
         // RCLCPP_INFO_THROTTLE(this->get_logger(), steady_clock_, 10, "Got status: %d", status);
 
         return return_type::OK;
@@ -373,14 +370,15 @@ namespace arm_interface {
 
     std::vector<hardware_interface::StateInterface> ArmInterface::export_state_interfaces() {
         std::vector<hardware_interface::StateInterface> state_interfaces;
+        state_interfaces.reserve(info_.joints.size() * 2);
 
         // Export state interfaces for all joints defined in the URDF
         for (auto i = 0u; i < info_.joints.size(); i++) {
             // ReSharper disable CppDeprecatedEntity
-            state_interfaces.emplace_back(hardware_interface::StateInterface(
-                info_.joints[i].name, hardware_interface::HW_IF_POSITION, &hw_states_position_[i]));
-            state_interfaces.emplace_back(hardware_interface::StateInterface(
-                info_.joints[i].name, hardware_interface::HW_IF_VELOCITY, &hw_states_velocity_[i]));
+            state_interfaces.emplace_back(
+                info_.joints.at(i).name, hardware_interface::HW_IF_POSITION, &hw_states_position_.at(i));
+            state_interfaces.emplace_back(
+                info_.joints.at(i).name, hardware_interface::HW_IF_VELOCITY, &hw_states_velocity_.at(i));
             // ReSharper restore CppDeprecatedEntity
         }
 
@@ -391,11 +389,11 @@ namespace arm_interface {
     std::vector<hardware_interface::CommandInterface> ArmInterface::export_command_interfaces() {
         std::vector<hardware_interface::CommandInterface> command_interfaces;
 
+        command_interfaces.reserve(info_.joints.size());
         // Export command interfaces for all joints defined in the URDF
         for (auto i = 0u; i < info_.joints.size(); i++) {
             // ReSharper disable CppDeprecatedEntity
-            command_interfaces.emplace_back(hardware_interface::CommandInterface(
-                info_.joints[i].name, hardware_interface::HW_IF_VELOCITY, &hw_commands_velocity_[i]));
+            command_interfaces.emplace_back(info_.joints.at(i).name, hardware_interface::HW_IF_VELOCITY, &hw_commands_velocity_.at(i));
             // ReSharper restore CppDeprecatedEntity
         }
 

@@ -20,7 +20,7 @@ const char* strAbsencErr(int err);
 
 
 // TODO 2026-06-13 (Will Free): wtf is this
-using ABSENC_Meas_t = struct {
+struct ABSENC_Meas_t {
     uint8_t slvnum;
     uint16_t status;
     double angval;

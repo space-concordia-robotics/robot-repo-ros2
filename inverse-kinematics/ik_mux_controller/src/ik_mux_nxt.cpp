@@ -14,16 +14,16 @@
 #include <sensor_msgs/msg/joy.hpp>
 
 // We'll just set up parameters here
-constexpr auto JOY_TOPIC = "/joy";
-constexpr auto TWIST_TOPIC = "/servo_node/delta_twist_cmds";
-constexpr auto JOINT_TOPIC = "/servo_node/delta_joint_cmds";
-constexpr auto WHEEL_VEL_TOPIC = "/cmd_vel";
-constexpr auto EEF_FRAME_ID = "gripper_claw_link";
-constexpr auto BASE_FRAME_ID = "base_structure_link";
+static constexpr auto JOY_TOPIC = "/joy";
+static constexpr auto TWIST_TOPIC = "/servo_node/delta_twist_cmds";
+static constexpr auto JOINT_TOPIC = "/servo_node/delta_joint_cmds";
+static constexpr auto WHEEL_VEL_TOPIC = "/cmd_vel";
+static constexpr auto EEF_FRAME_ID = "gripper_claw_link";
+static constexpr auto BASE_FRAME_ID = "base_structure_link";
 
 // Enums for button names -> axis/button array index
 // For XBOX 1 controller
-enum Axis {
+enum Axis : uint8_t { // NOLINT(*-use-enum-class)
     X       = 0,
     Y       = 1,
     Z       = 5,
@@ -31,7 +31,7 @@ enum Axis {
     A1_SIDE = 8
 };
 
-enum Button {
+enum Button : uint8_t { // NOLINT(*-use-enum-class)
     DEADMAN        = 0,
     A2             = 2,
     PINKY_BUTTON   = 4,
@@ -63,29 +63,30 @@ bool convertJoyToCmd(const std::vector<float>& axes, const std::vector<int>& but
                      const control_msgs::msg::JointJog::UniquePtr& joint) {
     // Give joint jogging priority because it is only buttons
     // If any joint jog command is requested, we are only publishing joint commands
-    if (buttons[THMB_HAT_FWD] || buttons[THMB_HAT_LEFT] || buttons[THMB_HAT_RIGHT] || buttons[THMB_HAT_BCK] ||
-        buttons[A3_FWD] || buttons[A3_LEFT] || buttons[A3_RIGHT] || buttons[A3_BCK] ||
-        buttons[A4_FWD] || buttons[A4_LEFT] || buttons[A4_RIGHT] || buttons[A4_BCK]) {
-        joint->joint_names.push_back("joint1");
-        joint->velocities.push_back(buttons[THMB_HAT_BCK] - buttons[THMB_HAT_FWD]);
-        joint->joint_names.push_back("joint2");
-        joint->velocities.push_back(buttons[THMB_HAT_LEFT] - buttons[THMB_HAT_RIGHT]);
+    if (
+        buttons.at(THMB_HAT_FWD) != 0 || buttons.at(THMB_HAT_LEFT) != 0 || buttons.at(THMB_HAT_RIGHT) != 0 || buttons.at(THMB_HAT_BCK) != 0 ||
+        buttons.at(A3_FWD) != 0 || buttons.at(A3_LEFT) != 0 || buttons.at(A3_RIGHT) != 0 || buttons.at(A3_BCK) != 0 ||
+        buttons.at(A4_FWD) != 0 || buttons.at(A4_LEFT) != 0 || buttons.at(A4_RIGHT) != 0 || buttons.at(A4_BCK) != 0
+    ) {
+        joint->joint_names.emplace_back("joint1");
+        joint->velocities.emplace_back(buttons.at(THMB_HAT_BCK) - buttons.at(THMB_HAT_FWD));
+        joint->joint_names.emplace_back("joint2");
+        joint->velocities.emplace_back(buttons.at(THMB_HAT_LEFT) - buttons.at(THMB_HAT_RIGHT));
 
-        joint->joint_names.push_back("joint3");
-        joint->velocities.push_back(buttons[A3_BCK] - buttons[A3_FWD]);
-        joint->joint_names.push_back("joint5");
-        joint->velocities.push_back(buttons[A4_RIGHT] - buttons[A4_LEFT]);
-        // joint->joint_names.push_back("joint7");
-        // joint->velocities.push_back(buttons[LEFT_STICK_CLICK] - buttons[RIGHT_STICK_CLICK]);
+        joint->joint_names.emplace_back("joint3");
+        joint->velocities.emplace_back(buttons.at(A3_BCK) - buttons.at(A3_FWD));
+        joint->joint_names.emplace_back("joint5");
+        joint->velocities.emplace_back(buttons.at(A4_RIGHT) - buttons.at(A4_LEFT));
+        // joint->joint_names.emplace_back("joint7");
+        // joint->velocities.emplace_back(buttons.at(LEFT_STICK_CLICK) - buttons.at(RIGHT_STICK_CLICK));
         return false;
     }
 
     // The bread and butter: map buttons to twist commands
-    twist->twist.linear.x = axes[X];
-    twist->twist.linear.y = axes[Y];
-    twist->twist.linear.z = axes[A1_UP];
-    twist->twist.angular.z = axes[Z];
-
+    twist->twist.linear.x = axes.at(X);
+    twist->twist.linear.y = axes.at(Y);
+    twist->twist.linear.z = axes.at(A1_UP);
+    twist->twist.angular.z = axes.at(Z);
 
     return true;
 }
@@ -98,10 +99,12 @@ namespace moveit_servo {
             : Node("joy_to_twist_publisher", options), frame_to_publish_(BASE_FRAME_ID) {
             // Setup pub/sub
             joy_sub_ = this->create_subscription<sensor_msgs::msg::Joy>(
-                JOY_TOPIC, rclcpp::SystemDefaultsQoS(),
+                JOY_TOPIC,
+                rclcpp::SystemDefaultsQoS(),
                 [this](const sensor_msgs::msg::Joy::ConstSharedPtr& msg) {
-                    return joyCB(msg);
-                });
+                    joyCB(msg);
+                }
+            );
 
             twist_pub_ = this->create_publisher<geometry_msgs::msg::TwistStamped>(TWIST_TOPIC, rclcpp::SystemDefaultsQoS());
             joint_pub_ = this->create_publisher<control_msgs::msg::JointJog>(JOINT_TOPIC, rclcpp::SystemDefaultsQoS());
@@ -126,7 +129,7 @@ namespace moveit_servo {
             auto joint_msg = std::make_unique<control_msgs::msg::JointJog>();
 
             // Check deadman button state
-            if (const bool deadman_pressed = msg->buttons[DEADMAN] != 0; deadman_pressed != deadman_) {
+            if (const bool deadman_pressed = msg->buttons.at(DEADMAN) != 0; deadman_pressed != deadman_) {
                 deadman_ = deadman_pressed;
                 RCLCPP_INFO(this->get_logger(), deadman_ ? "Deadman Active" : "Deadman Released");
             }

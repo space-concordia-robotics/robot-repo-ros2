@@ -5,12 +5,12 @@
 #pragma once
 
 #include <cstdint>
-#include <cstdio>
+#include <print>
 #include <linux/can.h>
 
 constexpr auto STATUS_BUFFER_SIZE = 1000;
 
-enum status {
+enum status : uint8_t { // NOLINT(*-use-enum-class)
     SUCCESS = 0,
     CAN_ERROR
 };
@@ -30,6 +30,6 @@ public:
     static uint8_t sendBlockingFrame(const can_frame& frame);
 
     static void printStatus() {
-        printf("%s \n", s_StatusBuffer);
+        std::println("{} ", s_StatusBuffer);
     }
 };

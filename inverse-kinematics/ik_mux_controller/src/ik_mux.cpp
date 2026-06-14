@@ -14,16 +14,16 @@
 #include <sensor_msgs/msg/joy.hpp>
 
 // We'll just set up parameters here
-constexpr auto JOY_TOPIC = "/joy";
-constexpr auto TWIST_TOPIC = "/servo_node/delta_twist_cmds";
-constexpr auto JOINT_TOPIC = "/servo_node/delta_joint_cmds";
-constexpr auto WHEEL_VEL_TOPIC = "/cmd_vel";
-constexpr auto EEF_FRAME_ID = "gripper_claw_link";
-constexpr auto BASE_FRAME_ID = "base_structure_link";
+static constexpr auto JOY_TOPIC = "/joy";
+static constexpr auto TWIST_TOPIC = "/servo_node/delta_twist_cmds";
+static constexpr auto JOINT_TOPIC = "/servo_node/delta_joint_cmds";
+static constexpr auto WHEEL_VEL_TOPIC = "/cmd_vel";
+static constexpr auto EEF_FRAME_ID = "gripper_claw_link";
+static constexpr auto BASE_FRAME_ID = "base_structure_link";
 
 // Enums for button names -> axis/button array index
 // For XBOX 1 controller
-enum Axis {
+enum Axis : uint8_t { // NOLINT(*-use-enum-class)
     LEFT_STICK_X  = 0,
     LEFT_STICK_Y  = 1,
     LEFT_TRIGGER  = 2,
@@ -34,7 +34,7 @@ enum Axis {
     D_PAD_Y       = 7
 };
 
-enum Button {
+enum Button : uint8_t { // NOLINT(*-use-enum-class)
     X                 = 0,
     CIRCLE            = 1,
     TRIANGLE          = 2,
@@ -50,8 +50,16 @@ enum Button {
 
 // Some axes have offsets (e.g. the default trigger position is 1.0 not 0)
 // This will map the default values for the axes
-std::map<Axis, double> AXIS_DEFAULTS = {{LEFT_TRIGGER, 1.0}, {RIGHT_TRIGGER, 1.0}};
-std::map<Button, double> BUTTON_DEFAULTS;
+static constexpr std::array AXIS_DEFAULTS = {
+    0.0, /* LEFT_STICK_X */
+    0.0, /* LEFT_STICK_Y */
+    1.0, /* LEFT_TRIGGER */
+    0.0, /* RIGHT_STICK_X */
+    0.0, /* RIGHT_STICK_Y */
+    1.0, /* RIGHT_TRIGGER */
+    0.0, /* D_PAD_X */
+    0.0, /* D_PAD_Y */
+};
 
 // To change controls or setup a new controller, all you should to do is change the above enums and the follow 2
 // functions
@@ -67,37 +75,39 @@ bool convertJoyToCmd(const std::vector<float>& axes, const std::vector<int>& but
                      const control_msgs::msg::JointJog::UniquePtr& joint) {
     // Give joint jogging priority because it is only buttons
     // If any joint jog command is requested, we are only publishing joint commands
-    if (buttons[X] || buttons[CIRCLE] || buttons[TRIANGLE] || buttons[SQUARE] || axes[D_PAD_X] || axes[D_PAD_Y] || buttons[RIGHT_STICK_CLICK] || buttons[
-        LEFT_STICK_CLICK]) {
+    if (
+        buttons.at(X) != 0 || buttons.at(CIRCLE) != 0 || buttons.at(TRIANGLE) != 0 || buttons.at(SQUARE) != 0 ||
+        axes.at(D_PAD_X) != 0 || axes.at(D_PAD_Y) != 0 || buttons.at(RIGHT_STICK_CLICK) != 0 || buttons.at(LEFT_STICK_CLICK) != 0
+    ) {
         // Map the D_PAD to the proximal joints
-        joint->joint_names.push_back("joint1");
-        joint->velocities.push_back(axes[D_PAD_X]);
-        joint->joint_names.push_back("joint2");
-        joint->velocities.push_back(axes[D_PAD_Y]);
+        joint->joint_names.emplace_back("joint1");
+        joint->velocities.emplace_back(axes.at(D_PAD_X));
+        joint->joint_names.emplace_back("joint2");
+        joint->velocities.emplace_back(axes.at(D_PAD_Y));
 
         // Map the diamond to the distal joints
-        joint->joint_names.push_back("joint3");
-        joint->velocities.push_back(buttons[CIRCLE] - buttons[SQUARE]);
-        joint->joint_names.push_back("joint5");
-        joint->velocities.push_back(buttons[TRIANGLE] - buttons[X]);
-        // joint->joint_names.push_back("joint7");
-        // joint->velocities.push_back(buttons[LEFT_STICK_CLICK] - buttons[RIGHT_STICK_CLICK]);
+        joint->joint_names.emplace_back("joint3");
+        joint->velocities.emplace_back(buttons.at(CIRCLE) - buttons.at(SQUARE));
+        joint->joint_names.emplace_back("joint5");
+        joint->velocities.emplace_back(buttons.at(TRIANGLE) - buttons.at(X));
+        // joint->joint_names.emplace_back("joint7");
+        // joint->velocities.emplace_back(buttons[LEFT_STICK_CLICK] - buttons[RIGHT_STICK_CLICK]);
         return false;
     }
 
     // The bread and butter: map buttons to twist commands
-    twist->twist.linear.z = axes[RIGHT_STICK_X];
-    twist->twist.linear.y = axes[RIGHT_STICK_Y];
+    twist->twist.linear.z = axes.at(RIGHT_STICK_X);
+    twist->twist.linear.y = axes.at(RIGHT_STICK_Y);
 
-    const double lin_x_right = -0.5 * (axes[RIGHT_TRIGGER] - AXIS_DEFAULTS.at(RIGHT_TRIGGER));
-    const double lin_x_left = 0.5 * (axes[LEFT_TRIGGER] - AXIS_DEFAULTS.at(LEFT_TRIGGER));
+    const double lin_x_right = -0.5 * (axes.at(RIGHT_TRIGGER) - AXIS_DEFAULTS.at(RIGHT_TRIGGER));
+    const double lin_x_left = 0.5 * (axes.at(LEFT_TRIGGER) - AXIS_DEFAULTS.at(LEFT_TRIGGER));
     twist->twist.linear.x = lin_x_right + lin_x_left;
 
-    twist->twist.angular.y = axes[LEFT_STICK_Y];
-    twist->twist.angular.x = axes[LEFT_STICK_X];
+    twist->twist.angular.y = axes.at(LEFT_STICK_Y);
+    twist->twist.angular.x = axes.at(LEFT_STICK_X);
 
-    const double roll_positive = buttons[RIGHT_BUMPER];
-    const double roll_negative = -1 * (buttons[LEFT_BUMPER]);
+    const double roll_positive = buttons.at(RIGHT_BUMPER);
+    const double roll_negative = -1 * buttons.at(LEFT_BUMPER);
     twist->twist.angular.z = roll_positive + roll_negative;
 
     return true;
@@ -111,15 +121,16 @@ namespace moveit_servo {
             : Node("joy_to_twist_publisher", options), frame_to_publish_(BASE_FRAME_ID) {
             // Setup pub/sub
             joy_sub_ = this->create_subscription<sensor_msgs::msg::Joy>(
-                JOY_TOPIC, rclcpp::SystemDefaultsQoS(),
+                JOY_TOPIC,
+                rclcpp::SystemDefaultsQoS(),
                 [this](const sensor_msgs::msg::Joy::ConstSharedPtr& msg) {
-                    return joyCB(msg);
-                });
+                    joyCB(msg);
+                }
+            );
 
             twist_pub_ = this->create_publisher<geometry_msgs::msg::TwistStamped>(TWIST_TOPIC, rclcpp::SystemDefaultsQoS());
             joint_pub_ = this->create_publisher<control_msgs::msg::JointJog>(JOINT_TOPIC, rclcpp::SystemDefaultsQoS());
-            collision_pub_ =
-                this->create_publisher<moveit_msgs::msg::PlanningScene>("/planning_scene", rclcpp::SystemDefaultsQoS());
+            collision_pub_ = this->create_publisher<moveit_msgs::msg::PlanningScene>("/planning_scene", rclcpp::SystemDefaultsQoS());
 
             // Create a service client to start the ServoNode
             servo_start_client_ = this->create_client<std_srvs::srv::Trigger>("/servo_node/start_servo");

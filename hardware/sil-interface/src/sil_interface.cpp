@@ -141,7 +141,7 @@ namespace sil_interface {
 
     CallbackReturn SILSystemHardware::on_configure(const rclcpp_lifecycle::State& previous_state) {
         // reset values always when configuring hardware
-        for (const auto& [name, descr] : joint_command_interfaces_) {
+        for (const auto& name : joint_command_interfaces_ | std::views::keys) {
             set_command(name, 0.0);
         }
 
