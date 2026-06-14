@@ -2,8 +2,7 @@
 // Created by nik on 06/02/24.
 //
 
-#ifndef REV_WHEELS_CONTROLLER_H
-#define REV_WHEELS_CONTROLLER_H
+#pragma once
 
 #include "can_controller.h"
 
@@ -40,13 +39,9 @@ public:
 
     static void setDeviceId(uint8_t id, uint8_t);
 
-    void initializeDefaultSettings();
-
     static void voltagePercentControl(uint8_t deviceID, float percent);
     static void stopMotor(uint8_t device_id);
     static void velocityControl(uint8_t deviceID, float velocity);
     static void startMotor(uint64_t mask);
     void printStatus();
 };
-
-#endif

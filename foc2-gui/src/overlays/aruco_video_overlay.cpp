@@ -20,6 +20,7 @@ void ArucoVideoOverlay::onInit() {
 }
 
 constexpr ImVec2 pointToBounds(const cv::Point2f point, const ImRect& bounds, const double scale_x, const double scale_y) {
+    // NOLINTNEXTLINE(*-return-braced-init-list)
     return ImVec2(
         point.x * scale_x + bounds.Min.x,
         point.y * scale_y + bounds.Min.y
@@ -108,8 +109,8 @@ inline void ArucoVideoOverlay::onDraw(ImDrawList* draw_list, const ImRect& bound
     std::vector<ProjectedMarker> markers;
     std::vector<RejectedMarker> rejected_markers;
 
-    int camera_width = -1;
-    int camera_height = -1;
+    int camera_width; // NOLINT(*-init-variables)
+    int camera_height; // NOLINT(*-init-variables)
 
     {
         // TODO 2026-05-05 (Will Free): there should probably be one mutex for the markers & one for the width/height, but I'm lazy

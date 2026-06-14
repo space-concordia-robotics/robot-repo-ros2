@@ -11,6 +11,8 @@ Checks:
   - cppcoreguidelines-*,
   - -cppcoreguidelines-avoid-magic-numbers # alias
   - -cppcoreguidelines-narrowing-conversions # alias
+  - -cppcoreguidelines-pro-bounds-array-to-pointer-decay
+  - -cppcoreguidelines-pro-type-vararg
   - modernize-*,
   - -modernize-use-trailing-return-type
   - openmp-*

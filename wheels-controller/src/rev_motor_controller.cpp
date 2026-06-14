@@ -1,6 +1,7 @@
 //
 // Created by nik on 06/02/24.
 //
+
 #include "rev_motor_controller.h"
 
 #include <cstring>
@@ -12,10 +13,10 @@ void RevMotorController::setDeviceId(const uint8_t id, const uint8_t newId) {
     can_frame frame{};
 
     frame.len = 5; // NOLINT(*-pro-type-union-access)
-    frame.can_id = (COMMAND_PREFIX_SET_DEVCE_ID << 8) | id;
+    frame.can_id = COMMAND_PREFIX_SET_DEVICE_ID << 8 | id;
 
     const uint8_t buf[5] = {newId, 0, 0, 0, 1}; // NOLINT(*-avoid-c-arrays)
-    memcpy(frame.data, buf, sizeof(buf)); // NOLINT(*-pro-bounds-array-to-pointer-decay)
+    memcpy(frame.data, buf, sizeof(buf));
 
     CANController::sendFrame(frame);
 }
@@ -45,22 +46,22 @@ void RevMotorController::voltagePercentControl(const uint8_t deviceId, const flo
         frame.can_id = COMMAND_PREFIX_MAINTAIN_SPEED;
         frame.can_id |= CAN_EFF_FLAG;
         frame.len = 8; // NOLINT(*-pro-type-union-access)
-        memcpy(frame.data, &buf_data, sizeof(buf_data)); // NOLINT(*-pro-bounds-array-to-pointer-decay)
+        memcpy(frame.data, &buf_data, sizeof(buf_data));
     } else {
         s_Devices[deviceId].isRunning = true; // NOLINT(*-pro-bounds-constant-array-index)
 
         // For a start move command, the id field needs to be added with 0x80. This command is only issued once per move.
-        frame.can_id = (COMMAND_PREFIX_MOVE_MOTORS << 8) | (deviceId + 0x80);
+        frame.can_id = COMMAND_PREFIX_MOVE_MOTORS << 8 | deviceId + 0x80;
         frame.can_id |= CAN_EFF_FLAG;
         frame.len = 8; // NOLINT(*-pro-type-union-access)
-        memcpy(frame.data, &percent, sizeof(float)); // NOLINT(*-pro-bounds-array-to-pointer-decay)
+        memcpy(frame.data, &percent, sizeof(float));
     }
     CANController::sendFrame(frame);
 }
 
 void RevMotorController::stopMotor(const uint8_t device_id) {
     can_frame frame{};
-    frame.can_id = (COMMAND_PREFIX_MOVE_MOTORS << 8) | (device_id); // NOLINT(*-redundant-parentheses)
+    frame.can_id = COMMAND_PREFIX_MOVE_MOTORS << 8 | device_id; // NOLINT(*-redundant-parentheses)
     frame.len = 8; // NOLINT(*-pro-type-union-access)
 
     CANController::sendFrame(frame);
@@ -72,14 +73,14 @@ void RevMotorController::velocityControl(const uint8_t deviceID, const float vel
     // }
 
     can_frame frame{};
-    frame.can_id = (COMMAND_PREFIX_VELOCITY_CONTROL << 8) | (deviceID + 0x80) | CAN_EFF_FLAG;
-    frame.len = 8;
+    frame.can_id = COMMAND_PREFIX_VELOCITY_CONTROL << 8 | deviceID + 0x80 | CAN_EFF_FLAG;
+    frame.len = 8; // NOLINT(*-pro-type-union-access)
 
     // frame.can_id = (COMMAND_PREFIX_VELOCITY_CONTROL << 8) | (deviceId+0x80);
     // frame.can_id |= CAN_EFF_FLAG;
     // frame.len = 8;
     // frame.data = velocity
-    memcpy(frame.data, &velocity, sizeof(float)); // NOLINT(*-pro-bounds-array-to-pointer-decay)
+    memcpy(frame.data, &velocity, sizeof(float));
 
     CANController::sendBlockingFrame(frame);
 
@@ -104,7 +105,7 @@ void RevMotorController::startMotor(const uint64_t mask) {
     frame.can_id = COMMAND_PREFIX_MAINTAIN_VELOCITY;
     frame.can_id |= CAN_EFF_FLAG;
     frame.len = 8; // NOLINT(*-pro-type-union-access)
-    memcpy(frame.data, &mask, sizeof(mask)); // NOLINT(*-pro-bounds-array-to-pointer-decay)
+    memcpy(frame.data, &mask, sizeof(mask));
 
     CANController::sendBlockingFrame(frame);
 }

@@ -1,5 +1,8 @@
 #pragma once
 
+#include <cstdint>
+#include <string>
+
 namespace hardware_interface {
     /// Constant defining red channel interface name
     constexpr auto HW_IF_RED = "red";

@@ -1,25 +1,13 @@
 #pragma once
 
-#include "arm_hardware/arm_controller_node.h"
+#include <string>
+#include <vector>
+#include <hardware_interface/system_interface.hpp>
+
 #include "arm_hardware/absenc.h"
 
-#include <string>
-#include <unordered_map>
-#include <vector>
-#include <limits>
-
-#include <termios.h>
-#include "hardware_interface/handle.hpp"
-#include "hardware_interface/hardware_info.hpp"
-#include "hardware_interface/system_interface.hpp"
-#include "hardware_interface/types/hardware_interface_return_values.hpp"
-#include "rclcpp/rclcpp.hpp"
-#include "rclcpp/macros.hpp"
-#include "rclcpp_lifecycle/state.hpp"
-#include "rclcpp_lifecycle/node_interfaces/lifecycle_node_interface.hpp"
-#include "hardware_interface/types/hardware_interface_type_values.hpp"
-
-using hardware_interface::return_type;
+static constexpr auto SET_MOTOR_SPEED = 0x4E;
+static constexpr auto MAX_MOTOR_SPEED = 1024.f;
 
 namespace arm_interface {
     class ArmInterface : public hardware_interface::SystemInterface {

@@ -1,5 +1,4 @@
-#ifndef WHEELS_CONTROLLER_NODE_H
-#define WHEELS_CONTROLLER_NODE_H
+#pragma once
 
 #include <rclcpp/rclcpp.hpp>
 #include <geometry_msgs/msg/twist.hpp>
@@ -7,14 +6,12 @@
 
 using namespace std::chrono;
 
-#define DEVICE_1_ID 1
-#define DEVICE_2_ID 2
-#define DEVICE_3_ID 3
-#define DEVICE_4_ID 4
-#define DEVICE_5_ID 5
-#define DEVICE_6_ID 6
-
-using namespace std::literals::chrono_literals;
+static constexpr auto DEVICE_1_ID = 1;
+static constexpr auto DEVICE_2_ID = 2;
+static constexpr auto DEVICE_3_ID = 3;
+static constexpr auto DEVICE_4_ID = 4;
+static constexpr auto DEVICE_5_ID = 5;
+static constexpr auto DEVICE_6_ID = 6;
 
 class WheelsControllerNode : public rclcpp::Node {
 public:
@@ -31,5 +28,3 @@ private:
 
     int multiplier;
 };
-
-#endif

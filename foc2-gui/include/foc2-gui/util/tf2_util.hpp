@@ -22,14 +22,6 @@ namespace tf2 {
     }
 
     template <>
-    inline Quaternion fromMsg(const geometry_msgs::msg::Quaternion& msg) {
-        Quaternion result;
-        fromMsg(msg, result);
-
-        return result;
-    }
-
-    template <>
     constexpr Eigen::Isometry3d fromMsg(const geometry_msgs::msg::Transform& msg) {
         return Eigen::Translation3d(fromMsg<Eigen::Vector3d>(msg.translation)) * fromMsg<Eigen::Quaterniond>(msg.rotation);
     }

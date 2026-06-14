@@ -23,8 +23,11 @@ namespace can_util {
         socket_descriptor = socket(PF_CAN, SOCK_RAW, CAN_RAW);
 
         if (socket_descriptor == -1) {
-            logger.fatal("socket error: {} ({})\nPossible causes:\n1. CAN modules not loaded\n2. System resource limitations",
-                         strerrordesc_np(errno), errno);
+            const auto code = std::make_error_code(static_cast<std::errc>(errno));
+            logger.fatal(
+                "socket error: {} ({})\nPossible causes:\n1. CAN modules not loaded\n2. System resource limitations",
+                code.message(), code.value()
+            );
             return false;
         }
 
@@ -40,8 +43,11 @@ namespace can_util {
         strncpy(ifr.ifr_name, path.c_str(), IF_NAMESIZE);
 
         if (ioctl(socket_descriptor, SIOCGIFINDEX, &ifr) == -1) { // NOLINT(*-pro-type-vararg)
-            logger.fatal("ioctl error: {} ({})\nPossible causes:\n1. CAN interface does not exist\n2. CAN bus not initialized\n3. CAN interface is not up",
-                         strerrordesc_np(errno), errno);
+            const auto code = std::make_error_code(static_cast<std::errc>(errno));
+            logger.fatal(
+                "ioctl error: {} ({})\nPossible causes:\n1. CAN interface does not exist\n2. CAN bus not initialized\n3. CAN interface is not up",
+                code.message(), code.value()
+            );
             close(socket_descriptor);
             return false;
         }
@@ -55,7 +61,8 @@ namespace can_util {
         // cast sockaddr_can* to a sockaddr*, as bind() uses a sockaddr* even though it can accept a sockaddr_can* for SocketCan
         // NOLINTNEXTLINE(*-pro-type-reinterpret-cast)
         if (bind(socket_descriptor, reinterpret_cast<sockaddr*>(&addr), sizeof(addr)) < 0) {
-            logger.fatal("bind error: {} ({})\nPossible cause: Another program may be using this interface", strerrordesc_np(errno), errno);
+            const auto code = std::make_error_code(static_cast<std::errc>(errno));
+            logger.fatal("bind error: {} ({})\nPossible cause: Another program may be using this interface", code.message(), code.value());
             close(socket_descriptor);
             return false;
         }
@@ -64,12 +71,14 @@ namespace can_util {
         // make socket non blocking
         // const int flags = fcntl(socket_descriptor, F_GETFL, 0);
         // if (flags == -1) {
-        //     logger.fatal("fcntl error: {} ({})", strerrordesc_np(errno), errno);
+        //     const auto code = std::make_error_code(static_cast<std::errc>(errno));
+        //     logger.fatal("fcntl error: {} ({})", code.message(), code.value());
         //     return false;
         // }
         //
         // if (fcntl(socket_descriptor, F_SETFL, flags | O_NONBLOCK) < 0) {
-        //     logger.fatal("fcntl error: {} ({})", strerrordesc_np(errno), errno);
+        //     const auto code = std::make_error_code(static_cast<std::errc>(errno));
+        //     logger.fatal("fcntl error: {} ({})", code.message(), code.value());
         // }
 
         readThread = std::thread([this] {
@@ -104,7 +113,7 @@ namespace can_util {
                         const auto sp = weak_pointer.lock();
                         return !sp || sp.get() == cb;
                     });
-                delete cb; // NOLINT(*-owning-memory): this is fine
+                delete cb; // NOLINT(*-owning-memory): this is fine (I think) -Will Free
             }
         );
 

@@ -49,7 +49,7 @@ namespace can_util {
 
             // NOLINTNEXTLINE(*-pro-type-union-access): it's only a union to preserve backwards compatibility of the name
             frame.len = static_cast<uint8_t>(data.size());
-            memcpy(frame.data, data.data(), data.size()); // NOLINT(*-pro-bounds-array-to-pointer-decay)
+            memcpy(frame.data, data.data(), data.size());
 
             return trySendBlockingFrame(frame);
         }
