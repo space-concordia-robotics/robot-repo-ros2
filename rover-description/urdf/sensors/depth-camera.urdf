@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<robot name="ceres"
+       xmlns="https://www.ros.org"
+       xmlns:xacro="https://ros.org/wiki/xacro"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="https://www.ros.org ../../urdf.xsd https://ros.org/wiki/xacro ../../xacro.xsd">
+    <!-- TODO 2026-04-30 (Will Free): Add depth camera -->
+</robot>

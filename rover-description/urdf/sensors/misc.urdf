@@ -1,0 +1,170 @@
+<?xml version="1.0"?>
+<robot name="ceres"
+       xmlns="https://www.ros.org"
+       xmlns:xacro="https://ros.org/wiki/xacro"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="https://www.ros.org ../../urdf.xsd https://ros.org/wiki/xacro ../../xacro.xsd">
+    <!-- region GPS -->
+    <joint name="base_to_gps" type="fixed">
+        <parent link="base_link"/>
+        <child link="gps_link"/>
+    </joint>
+
+    <link name="gps_link"/>
+
+    <xacro:simulation>
+        <gazebo reference="gps_link">
+            <sensor name="navsat" type="navsat">
+                <always_on>true</always_on>
+                <update_rate>1</update_rate>
+                <topic>gps/fix</topic>
+                <gz_frame_id>gps_link</gz_frame_id>
+                <navsat>
+                    <position_sensing>
+                        <horizontal>
+                            <noise type="gaussian">
+                                <mean>0.0</mean>
+                                <stddev>2e-5</stddev>
+                            </noise>
+                        </horizontal>
+                        <vertical>
+                            <noise type="gaussian">
+                                <mean>0.0</mean>
+                                <stddev>2e-5</stddev>
+                            </noise>
+                        </vertical>
+                    </position_sensing>
+                </navsat>
+            </sensor>
+        </gazebo>
+    </xacro:simulation>
+    <!-- endregion -->
+
+    <!-- region IMU -->
+    <joint name="base_to_imu" type="fixed">
+        <parent link="base_link"/>
+        <child link="imu_link"/>
+    </joint>
+
+    <link name="imu_link"/>
+
+    <xacro:simulation>
+        <gazebo>
+            <!-- IMU -->
+            <plugin filename="gz-sim-imu-system" name="gz::sim::systems::Imu"/>
+            <!-- Magnetometer -->
+            <plugin filename="gz-sim-magnetometer-system" name="gz::sim::systems::Magnetometer"/>
+
+            <!-- LiDAR -->
+            <plugin filename="gz-sim-sensors-system" name="gz::sim::systems::Sensors">
+                <render_engine>ogre2</render_engine>
+            </plugin>
+        </gazebo>
+    </xacro:simulation>
+
+    <xacro:simulation>
+        <gazebo reference="imu_link">
+            <sensor name="imu" type="imu">
+                <always_on>1</always_on>
+                <update_rate>1000</update_rate>
+                <visualize>true</visualize>
+                <topic>imu/data</topic>
+                <gz_frame_id>imu_link</gz_frame_id>
+
+                <!-- TODO 2025-09-19 (Will Free): Get the correct values for this -->
+                <imu>
+                    <angular_velocity>
+                        <x>
+                            <noise type="gaussian">
+                                <mean>0.0</mean>
+                                <stddev>2e-4</stddev>
+                                <bias_mean>0.0000075</bias_mean>
+                                <bias_stddev>0.0000008</bias_stddev>
+                            </noise>
+                        </x>
+                        <y>
+                            <noise type="gaussian">
+                                <mean>0.0</mean>
+                                <stddev>2e-4</stddev>
+                                <bias_mean>0.0000075</bias_mean>
+                                <bias_stddev>0.0000008</bias_stddev>
+                            </noise>
+                        </y>
+                        <z>
+                            <noise type="gaussian">
+                                <mean>0.0</mean>
+                                <stddev>2e-4</stddev>
+                                <bias_mean>0.0000075</bias_mean>
+                                <bias_stddev>0.0000008</bias_stddev>
+                            </noise>
+                        </z>
+                    </angular_velocity>
+
+                    <linear_acceleration>
+                        <x>
+                            <noise type="gaussian">
+                                <mean>0.0</mean>
+                                <stddev>1.7e-2</stddev>
+                                <bias_mean>0.1</bias_mean>
+                                <bias_stddev>0.001</bias_stddev>
+                            </noise>
+                        </x>
+                        <y>
+                            <noise type="gaussian">
+                                <mean>0.0</mean>
+                                <stddev>1.7e-2</stddev>
+                                <bias_mean>0.1</bias_mean>
+                                <bias_stddev>0.001</bias_stddev>
+                            </noise>
+                        </y>
+                        <z>
+                            <noise type="gaussian">
+                                <mean>0.0</mean>
+                                <stddev>1.7e-2</stddev>
+                                <bias_mean>0.1</bias_mean>
+                                <bias_stddev>0.001</bias_stddev>
+                            </noise>
+                        </z>
+                    </linear_acceleration>
+                </imu>
+            </sensor>
+
+            <sensor name="magnetometer" type="magnetometer">
+                <always_on>1</always_on>
+                <update_rate>1000</update_rate>
+                <visualize>true</visualize>
+                <topic>imu/mag</topic>
+                <gz_frame_id>imu_link</gz_frame_id>
+
+                <!-- TODO 2025-09-19 (Will Free): Get the correct values for this -->
+                <magnetometer>
+                    <x>
+                        <noise type="gaussian">
+                            <mean>0.0</mean>
+                            <stddev>1.7e-2</stddev>
+                            <bias_mean>0.1</bias_mean>
+                            <bias_stddev>0.001</bias_stddev>
+                        </noise>
+                    </x>
+                    <y>
+                        <noise type="gaussian">
+                            <mean>0.0</mean>
+                            <stddev>1.7e-2</stddev>
+                            <bias_mean>0.1</bias_mean>
+                            <bias_stddev>0.001</bias_stddev>
+                        </noise>
+                    </y>
+                    <z>
+                        <noise type="gaussian">
+                            <mean>0.0</mean>
+                            <stddev>1.7e-2</stddev>
+                            <bias_mean>0.1</bias_mean>
+                            <bias_stddev>0.001</bias_stddev>
+                        </noise>
+                    </z>
+                </magnetometer>
+            </sensor>
+        </gazebo>
+    </xacro:simulation>
+    <!-- endregion -->
+</robot>
