@@ -16,36 +16,70 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: docs
+        working-directory: robot-repo-ros2/docs
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
+        with:
+          path: robot-repo-ros2
+
+      - name: Create Deployment Token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app_id: ${{ secrets.APP_ID }}
+          private_key: ${{ secrets.APP_PRIVATE_KEY }}
+          permission-contents: write
+          repositories: |
+            ${{ github.repository }}
+            space-concordia-robotics.github.io
+
+      - name: Get GitHub App User ID
+        id: get-user-id
+        run: echo "user-id=$(gh api "/users/${{ steps.app-token.outputs.app-slug }}[bot]" --jq .id)" >> "$GITHUB_OUTPUT"
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }
+
+      - uses: actions/checkout@v7
+        with:
+          repository: space-concordia-robotics/space-concordia-robotics.github.io
+          path: pages-target
+          token: '${{ steps.app-token.outputs.token }}'
 
       - name: Configure Git Credentials
         run: |
-          git config user.name github-actions[bot]
-          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git config --global user.name '${{ steps.app-token.outputs.app-slug }}[bot]'
+          git config --global user.email '${{ steps.get-user-id.outputs.user-id }}+${{ steps.app-token.outputs.app-slug }}[bot]@users.noreply.github.com'
+          gh auth setup-git
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+
 
       - name: Setup Python
         uses: actions/setup-python@v6
         with:
-          python-version-file: "docs/pyproject.toml"
+          python-version-file: "robot-repo-ros2/docs/pyproject.toml"
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v7
+        uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # 8.2.0
         with:
           enable-cache: true
+          working-directory: "robot-repo-ros2/docs"
 
       - run: echo "cache_id=$(date --utc '+%V')" >> $GITHUB_ENV
 
-      - uses: actions/cache@v4
+      - uses: actions/cache@v6
         with:
           key: mkdocs-material-${{ env.cache_id }}
-          path: ~/.cache
+          path: ${{ github.workspace }}/pages-target/.cache
           restore-keys: |
             mkdocs-material-
 
       - name: Install dependencies
-        run: uv sync --locked --all-extras --dev
+        run: |
+          uv sync --locked --all-extras --dev
 
-      - run: uv run mkdocs gh-deploy --force
+      - name: Deploy site
+        run: |
+          cd "${{ github.workspace }}/pages-target"
+          uv --project "${{ github.workspace }}/robot-repo-ros2/docs" run mkdocs gh-deploy --config-file "${{ github.workspace }}/robot-repo-ros2/docs/mkdocs.yml" --remote-branch master --clean --force
