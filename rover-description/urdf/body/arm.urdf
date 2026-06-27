@@ -1,0 +1,60 @@
+<?xml version="1.0"?>
+<robot name="ceres"
+       xmlns="https://www.ros.org"
+       xmlns:xacro="https://ros.org/wiki/xacro"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="https://www.ros.org ../../urdf.xsd https://ros.org/wiki/xacro ../../xacro.xsd">
+    <xacro:macro name="arm_attachment">
+        <xacro:property name="arm_base_offset_z" value="-0.02"/>
+        <xacro:property name="arm_base_length" value="0.126671"/>
+        <xacro:property name="arm_base_width" value="0.3067"/>
+        <xacro:property name="arm_base_height" value="0.135"/>
+
+        <joint name="base_to_front_arm_attachment" type="fixed">
+            <parent link="base_link"/>
+            <child link="front_arm_attachment"/>
+            <origin xyz="${body_length} 0 -${body_height + arm_base_offset_z}"/>
+        </joint>
+
+        <link name="front_arm_attachment">
+            <visual>
+                <origin xyz="${arm_base_length/2} 0 ${arm_base_height/2}"/>
+                <geometry>
+                    <box size="${arm_base_length} ${arm_base_width} ${arm_base_height}"/>
+                </geometry>
+                <material name="aluminum"/>
+            </visual>
+            <collision>
+                <origin xyz="${arm_base_length/2} 0 ${arm_base_height/2}"/>
+                <geometry>
+                    <box size="${arm_base_length} ${arm_base_width} ${arm_base_height}"/>
+                </geometry>
+            </collision>
+        </link>
+
+        <xacro:gazebo_color reference="front_arm_attachment" color="aluminum"/>
+
+        <joint name="front_arm_attachment_to_forward_camera" type="fixed">
+            <parent link="front_arm_attachment"/>
+            <child link="forward_camera"/>
+            <origin xyz="0.179667 0 0.0829656"/>
+        </joint>
+
+        <link name="forward_camera">
+            <visual>
+                <geometry>
+                    <sphere radius="0.025"/>
+                </geometry>
+                <material name="plastic-black"/>
+            </visual>
+            <!--
+            <collision>
+            </collision>
+            -->
+        </link>
+
+        <xacro:gazebo_color reference="forward_camera" color="plastic-black"/>
+    </xacro:macro>
+
+    <xacro:arm_attachment/>
+</robot>
