@@ -186,7 +186,8 @@ private:
               _index{0},
               _reverse{false} {}
 
-        explicit BufferIterator(const BufferIterator<>& it)
+        // ReSharper disable once CppNonExplicitConvertingConstructor
+        BufferIterator(const BufferIterator<>& it)
             : _ptrToBuffer{it._ptrToBuffer},
               _offset{it._offset},
               _index{it._index},

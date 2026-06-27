@@ -5,9 +5,10 @@
 #include <memory>
 #include <vector>
 #include <boost/algorithm/string.hpp>
-#include <hardware_interface/lexical_casts.hpp>
 #include <hardware_interface/types/hardware_interface_type_values.hpp>
 #include <rclcpp/rclcpp.hpp>
+
+#include "scrb_common_util/string_parsing.hpp"
 
 namespace wheels_interface {
     using hardware_interface::HW_IF_POSITION;
@@ -94,7 +95,7 @@ namespace wheels_interface {
             return CallbackReturn::ERROR;
         }
 
-        multiplier = hardware_interface::stod(info_.hardware_parameters["multiplier"]);
+        multiplier = scrb::common_util::parse_double(info_.hardware_parameters["multiplier"]);
 
         const auto can_path = info_.hardware_parameters["can_path"];
 
@@ -150,11 +151,11 @@ namespace wheels_interface {
 
             // TODO 2026-02-14 (Will Free): properly handle errors here
 
-            const auto canId = stoi(parameters["can_id"]);
+            const auto canId = scrb::common_util::parse_int32(parameters["can_id"]);
 
             const auto controller = SparkMax::make_shared(rcl_logger, *can_controller, canId);
 
-            const auto radius = hardware_interface::stod(parameters["radius"]);
+            const auto radius = scrb::common_util::parse_double(parameters["radius"]);
 
             const auto wheel = WheelDescription::make_shared(controller, joint.name, radius);
 
