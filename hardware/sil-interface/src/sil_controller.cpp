@@ -11,6 +11,8 @@ namespace sil_interface {
         return static_cast<F>(value) / std::numeric_limits<I>::max();
     }
 
+    using SetSILStatus = rover_msgs::srv::SetSILStatus;
+
     void resetStatus(const std::shared_ptr<SILStatus>& status) {
         status->red = 0;
         status->blue = 0;
@@ -18,7 +20,7 @@ namespace sil_interface {
         status->brightness = 0;
     }
 
-    SILController::SILController() {}
+    SILController::SILController() = default;
 
     controller_interface::CallbackReturn SILController::on_init() {
         logger = std::make_shared<ros2_fmt_logger::Logger>(get_node()->get_logger());
@@ -50,14 +52,11 @@ namespace sil_interface {
 
         const auto& node = get_node();
 
-        sil_status_service = node->create_service<rover_msgs::srv::SetSILStatus>(
+        sil_status_service = node->create_service<SetSILStatus>(
             "~/set_status",
-            std::bind(
-                &SILController::handleSetSILStatus,
-                this,
-                std::placeholders::_1,
-                std::placeholders::_2
-            )
+            [this](const SetSILStatus::Request::SharedPtr& request, const SetSILStatus::Response::SharedPtr& response) {
+                handleSetSILStatus(request, response);
+            }
         );
 
         const auto msg = std::make_shared<SILStatus>();
@@ -89,17 +88,17 @@ namespace sil_interface {
     controller_interface::return_type SILController::update(const rclcpp::Time& /*time*/, const rclcpp::Duration& /*period*/) {
         const auto current_ref = status_ref.readFromRT();
 
-        if (!current_ref)
+        if (current_ref == nullptr)
             return controller_interface::return_type::ERROR;
 
         const auto status = *current_ref;
 
         auto success = true;
         // TODO 2026-05-13 (Will Free): make the indexes for this not hardcoded
-        success &= command_interfaces_[0].set_value(normalize<double>(status->red));
-        success &= command_interfaces_[1].set_value(normalize<double>(status->green));
-        success &= command_interfaces_[2].set_value(normalize<double>(status->blue));
-        success &= command_interfaces_[3].set_value(normalize<double>(status->brightness));
+        success &= command_interfaces_.at(0).set_value(normalize<double>(status->red));
+        success &= command_interfaces_.at(1).set_value(normalize<double>(status->green));
+        success &= command_interfaces_.at(2).set_value(normalize<double>(status->blue));
+        success &= command_interfaces_.at(3).set_value(normalize<double>(status->brightness));
 
         if (!success)
             return controller_interface::return_type::ERROR;
@@ -108,8 +107,8 @@ namespace sil_interface {
     }
 
     void SILController::handleSetSILStatus(
-        const rover_msgs::srv::SetSILStatus::Request::SharedPtr& request,
-        const rover_msgs::srv::SetSILStatus::Response::SharedPtr& /*response*/
+        const SetSILStatus::Request::SharedPtr& request,
+        const SetSILStatus::Response::SharedPtr& /*response*/
     ) {
         const auto status = std::make_shared<SILStatus>(
             request->r,

@@ -37,6 +37,8 @@ set(DEPENDENCIES
         lifecycle_msgs
         ros_aruco_opencv_msgs
         rover_msgs
+
+        scrb_common_util
 )
 
 # Geographiclib installs FindGeographicLib.cmake to this non-standard location on Ubuntu

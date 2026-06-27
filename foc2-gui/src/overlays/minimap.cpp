@@ -1,7 +1,5 @@
 #include "foc2-gui/overlays/minimap.hpp"
 
-#include "foc2-gui/util/tf2_util.hpp"
-
 void MiniMapOverlay::onInit() {
     magnetic_field_subscription = application.create_subscription<MagneticField>(
         "/imu/rpy",

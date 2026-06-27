@@ -20,6 +20,7 @@ set(DEPENDENCIES
         diagnostic_msgs
         pluginlib
         ros2_fmt_logger
+        scrb_common_util
         can_util
 )
 

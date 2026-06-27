@@ -16,6 +16,7 @@
     <depend>diagnostic_msgs</depend>
     <depend>pluginlib</depend>
     <depend>ros2_fmt_logger</depend>
+    <depend>scrb_common_util</depend>
     <depend>can_util</depend>
     <depend>rover_msgs</depend>
 

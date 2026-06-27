@@ -29,12 +29,13 @@ set(DEPENDENCIES
         action_msgs
         lifecycle_msgs
         ros_aruco_opencv_msgs
-        rover_msgs
         tf2_geometry_msgs
+        rover_msgs
 
         GeographicLib
 
         ros2_fmt_logger
+        scrb_common_util
 )
 
 # Geographiclib installs FindGeographicLib.cmake to this non-standard location on Ubuntu

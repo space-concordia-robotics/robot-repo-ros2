@@ -6,14 +6,15 @@
 #include <ranges>
 #include <tuple>
 #include <Eigen/Core>
-#include <geometry_msgs/msg/pose_stamped.hpp>
+#include <Eigen/Geometry>
 #include <opencv2/calib3d.hpp>
 #include <opencv2/core/eigen.hpp>
 #include <opencv2/core/matx.hpp>
+#include <geometry_msgs/msg/pose_stamped.hpp>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 
 #include "foc2-gui/util/imgui_util.hpp"
-#include "foc2-gui/util/tf2_util.hpp"
+#include "scrb_common_util/tf2_util.hpp"
 
 NavPathVideoOverlay::NavPathVideoOverlay(ImApplication& application, std::string path_topic, const ImVec4& path_color)
     : UiOverlay(application),

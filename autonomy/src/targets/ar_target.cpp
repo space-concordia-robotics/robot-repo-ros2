@@ -1,9 +1,10 @@
 #include "autonomy/targets/ar_target.hpp"
 
-#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #include <utility>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 
 #include "autonomy/util.hpp"
+#include "scrb_common_util/tf2_util.hpp"
 
 namespace autonomy {
     void ARTarget::setup() {
@@ -255,7 +256,7 @@ namespace autonomy {
         q.setRPY(0, 0, std::atan2(ty, tx));
         target.pose.orientation = tf2::toMsg<tf2::Quaternion, geometry_msgs::msg::Quaternion>(q);
 
-        goal_msg.poses = std::vector{target};
+        goal_msg.poses = {target};
 
         const auto goal_result = co_await ctx->send_goal<NavigateThroughPoses>(nav_client, goal_msg);
 

@@ -17,9 +17,11 @@
     <depend>action_msgs</depend>
     <depend>lifecycle_msgs</depend>
     <depend>ros_aruco_opencv_msgs</depend>
+    <depend>tf2_geometry_msgs</depend>
     <depend>rover_msgs</depend>
 
     <depend>ros2_fmt_logger</depend>
+    <depend>scrb_common_util</depend>
 
     <buildtool_depend>ament_cmake</buildtool_depend>
 

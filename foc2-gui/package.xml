@@ -21,6 +21,7 @@
     <depend>tf2_ros</depend>
     <depend>image_transport</depend>
     <depend>ros2_fmt_logger</depend>
+    <depend>scrb_common_util</depend>
 
     <depend>gstreamer</depend>
     <depend>GeographicLib</depend>

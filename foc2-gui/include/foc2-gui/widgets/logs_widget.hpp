@@ -1,5 +1,6 @@
 #pragma once
 
+#include <imgui.h>
 #include <rcl_interfaces/msg/log.hpp>
 
 #include "foc2-gui/widget.hpp"

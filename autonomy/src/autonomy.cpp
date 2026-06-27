@@ -1,9 +1,11 @@
 #include "autonomy/autonomy.hpp"
 
 #include <fmt/format.h>
-#include <geographic_msgs/msg/geo_point.hpp>
+#include <fmt/ranges.h>
 #include <magic_enum/magic_enum.hpp>
+#include <geographic_msgs/msg/geo_point.hpp>
 
+#include "scrb_common_util/string_parsing.hpp"
 #include "autonomy/util.hpp"
 #include "autonomy/targets/ar_target.hpp"
 #include "autonomy/targets/gps_target.hpp"
@@ -35,32 +37,32 @@ namespace autonomy {
 
 
     void AutonomyMissionManager::parseConfig() {
-        this->mission_duration = rclcpp::Duration(util::parseDuration(this->declare_parameter<std::string>("mission_duration")));
+        this->mission_duration = rclcpp::Duration(scrb::common_util::parse_duration(this->declare_parameter<std::string>("mission_duration")));
 
         const auto gps_config = TargetConfig::GPSConfig{
             .acceptance_radius = this->declare_parameter<double>("target.gps.acceptance_radius"),
-            .timeout = rclcpp::Duration(util::parseDuration(this->declare_parameter<std::string>("target.gps.timeout"))),
-            .max_retries = this->declare_parameter<int>("target.gps.max_retries"),
+            .timeout           = rclcpp::Duration(scrb::common_util::parse_duration(this->declare_parameter<std::string>("target.gps.timeout"))),
+            .max_retries       = this->declare_parameter<int>("target.gps.max_retries"),
         };
 
         const auto ar_config = TargetConfig::ARConfig{
-            .topic_name = this->declare_parameter<std::string>("target.ar.topic_name"),
-            .acceptance_radius = this->declare_parameter<double>("target.ar.acceptance_radius"),
-            .timeout = rclcpp::Duration(util::parseDuration(this->declare_parameter<std::string>("target.ar.timeout"))),
-            .max_retries = this->declare_parameter<int>("target.ar.max_retries"),
-            .tag_size = this->declare_parameter<double>("target.ar.tag_size"),
-            .confidence = this->declare_parameter<double>("target.ar.confidence"),
-            .spiral_step = this->declare_parameter<double>("target.ar.spiral.step"),
+            .topic_name           = this->declare_parameter<std::string>("target.ar.topic_name"),
+            .acceptance_radius    = this->declare_parameter<double>("target.ar.acceptance_radius"),
+            .timeout              = rclcpp::Duration(scrb::common_util::parse_duration(this->declare_parameter<std::string>("target.ar.timeout"))),
+            .max_retries          = this->declare_parameter<int>("target.ar.max_retries"),
+            .tag_size             = this->declare_parameter<double>("target.ar.tag_size"),
+            .confidence           = this->declare_parameter<double>("target.ar.confidence"),
+            .spiral_step          = this->declare_parameter<double>("target.ar.spiral.step"),
             .spiral_radius_factor = this->declare_parameter<double>("target.ar.spiral.radius_factor"),
         };
 
         const auto object_config = TargetConfig::ObjectConfig{
-            .topic_name = this->declare_parameter<std::string>("target.object.topic_name"),
-            .acceptance_radius = this->declare_parameter<double>("target.object.acceptance_radius"),
-            .timeout = rclcpp::Duration(util::parseDuration(this->declare_parameter<std::string>("target.object.timeout"))),
-            .max_retries = this->declare_parameter<int>("target.object.max_retries"),
-            .confidence = this->declare_parameter<double>("target.object.confidence"),
-            .spiral_step = this->declare_parameter<double>("target.object.spiral.step"),
+            .topic_name           = this->declare_parameter<std::string>("target.object.topic_name"),
+            .acceptance_radius    = this->declare_parameter<double>("target.object.acceptance_radius"),
+            .timeout              = rclcpp::Duration(scrb::common_util::parse_duration(this->declare_parameter<std::string>("target.object.timeout"))),
+            .max_retries          = this->declare_parameter<int>("target.object.max_retries"),
+            .confidence           = this->declare_parameter<double>("target.object.confidence"),
+            .spiral_step          = this->declare_parameter<double>("target.object.spiral.step"),
             .spiral_radius_factor = this->declare_parameter<double>("target.object.spiral.radius_factor"),
         };
 
