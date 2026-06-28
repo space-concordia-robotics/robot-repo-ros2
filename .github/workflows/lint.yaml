@@ -10,7 +10,7 @@ on:
     paths: [ '**.c', '**.cpp', '**.h', '**.hpp', '**.cxx', '**.hxx', '**.cc', '**.hh', '**CMakeLists.txt', 'meson.build', '**.cmake' ]
 
 jobs:
-  build_and_test_ros2:
+  build_and_lint:
     runs-on: ubuntu-latest
     environment: approval
 
