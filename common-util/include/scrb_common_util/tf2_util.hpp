@@ -48,7 +48,7 @@ namespace tf2 {
     }
 
     template <>
-    constexpr Eigen::Isometry3d fromMsg(const geometry_msgs::msg::Transform& msg) {
+    inline Eigen::Isometry3d fromMsg(const geometry_msgs::msg::Transform& msg) {
         return Eigen::Translation3d(fromMsg<Eigen::Vector3d>(msg.translation)) * fromMsg<Eigen::Quaterniond>(msg.rotation);
     }
 

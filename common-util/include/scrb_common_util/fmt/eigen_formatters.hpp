@@ -3,7 +3,7 @@
 #include <string>
 #include <Eigen/Geometry>
 #include <Eigen/Sparse>
-#include <fmt/core.h>
+#include <fmt/format.h>
 
 // NOLINTBEGIN(*-pro-bounds-avoid-unchecked-container-access, *-pro-bounds-constant-array-index)
 

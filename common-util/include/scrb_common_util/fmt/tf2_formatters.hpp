@@ -3,7 +3,6 @@
 #include <tf2/LinearMath/Matrix3x3.hpp>
 #include <tf2/LinearMath/Quaternion.hpp>
 #include <tf2/LinearMath/Transform.hpp>
-#include <tf2/utils.hpp>
 
 #include "scrb_common_util/tf2_util.hpp"
 #include "scrb_common_util/fmt/eigen_formatters.hpp"
