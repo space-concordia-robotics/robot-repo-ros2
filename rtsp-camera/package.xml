@@ -19,6 +19,12 @@
     <depend>fmt</depend>
     <depend>magic_enum</depend>
     <depend>ros2_fmt_logger</depend>
+    <depend>gstreamer1.0</depend>
+    <depend>gstreamer1.0-rtsp</depend>
+
+    <build_depend>libgirepository-dev</build_depend>
+    <build_depend>libgstreamer1.0-dev</build_depend>
+    <build_depend>libgstrtspserver-1.0-dev</build_depend>
 
     <export>
         <build_type>ament_cmake</build_type>
