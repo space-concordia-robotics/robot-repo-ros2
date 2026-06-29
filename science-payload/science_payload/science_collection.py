@@ -1,10 +1,10 @@
+# ruff: noqa: D100, D101, D102, D103, D107
 from enum import Enum
 from pathlib import Path
-from typing import Optional
 
 import numpy
 import numpy as np
-import pandas
+import pandas as pd
 import rclpy
 from numpy.typing import NDArray
 from rclpy.action import ActionClient
@@ -16,20 +16,20 @@ from rover_msgs.action import ScienceSpectrometerScan
 
 
 class SampleType(Enum):
-    BASELINE = 'baseline'
-    PH = 'ph'
-    RESAZURIN = 'resazurin'
+    BASELINE = "baseline"
+    PH = "ph"
+    RESAZURIN = "resazurin"
 
 
 class ScienceCollection(Node):
     __site: int
     __cuvette: int
     __sample: SampleType
-    __characteristic: Optional[str]
+    __characteristic: str | None
     __light_pollution: bool
 
-    __send_goal_future: Optional[Future]
-    __get_result_future: Optional[Future]
+    __send_goal_future: Future | None
+    __get_result_future: Future | None
     __action_client: ActionClient
 
     __background: NDArray[numpy.float64]
@@ -37,26 +37,26 @@ class ScienceCollection(Node):
     __feedback_received: int
 
     def __init__(self):
-        super().__init__('science_collection')
+        super().__init__("science_collection")
 
-        self.__site = self.declare_parameter('site', Parameter.Type.INTEGER).get_parameter_value().integer_value
-        self.__cuvette = self.declare_parameter('cuvette', Parameter.Type.INTEGER).get_parameter_value().integer_value
-        sample = self.declare_parameter('sample', Parameter.Type.STRING).get_parameter_value().string_value
+        self.__site = self.declare_parameter("site", Parameter.Type.INTEGER).get_parameter_value().integer_value
+        self.__cuvette = self.declare_parameter("cuvette", Parameter.Type.INTEGER).get_parameter_value().integer_value
+        sample = self.declare_parameter("sample", Parameter.Type.STRING).get_parameter_value().string_value
         if sample not in [t.value for t in SampleType]:
-            self.get_logger().error(f'parameter sample must be one of: {', '.join(t.value for t in SampleType)}, but was: {sample}')
+            self.get_logger().error(f"parameter sample must be one of: {', '.join(t.value for t in SampleType)}, but was: {sample}")
             rclpy.shutdown()
             return
         self.__sample = SampleType[sample.upper()]
-        self.__characteristic = self.declare_parameter('characteristic', '').get_parameter_value().string_value
-        self.__characteristic = None if self.__characteristic == '' else self.__characteristic
-        self.__light_pollution = self.declare_parameter('light_pollution', False).get_parameter_value().bool_value
+        self.__characteristic = self.declare_parameter("characteristic", "").get_parameter_value().string_value
+        self.__characteristic = None if self.__characteristic == "" else self.__characteristic
+        self.__light_pollution = self.declare_parameter("light_pollution", False).get_parameter_value().bool_value
 
         self.__send_goal_future = None
         self.__get_result_future = None
         self.__action_client = ActionClient(
             self,
             ScienceSpectrometerScan,
-            '/rover/science/scan'
+            "/rover/science/scan",
         )
 
         self.__feedback_received = 0
@@ -76,7 +76,7 @@ class ScienceCollection(Node):
         return self.__sample
 
     @property
-    def characteristic(self) -> Optional[str]:
+    def characteristic(self) -> str | None:
         return self.__characteristic
 
     @property
@@ -100,106 +100,101 @@ class ScienceCollection(Node):
         assert self.__send_goal_future is not None
         self.__send_goal_future.add_done_callback(self.goal_response_callback)
 
-    def feedback_callback(self, feedback):
+    def feedback_callback(self, feedback):  # noqa: ANN001
         self.__feedback_received += 1
         feedback = feedback.feedback
-        wavelengths: NDArray[numpy.float64] = numpy.array(feedback.wavelengths, dtype=numpy.float64)
         intensities: NDArray[numpy.float64] = numpy.array(feedback.raw_intensities, dtype=numpy.float64)
-        self.save_data(None, intensities, f'raw/raw-intensities-{self.feedback_received}')
-        self.get_logger().info(f'Got raw measurement from spectrometer.')
+        self.save_data(intensities, f"raw/raw-intensities-{self.feedback_received}")
+        self.get_logger().info("Got raw measurement from spectrometer.")
 
-    def goal_response_callback(self, future):
+    def goal_response_callback(self, future):  # noqa: ANN001
         goal_handle = future.result()
         if not goal_handle.accepted:
-            self.get_logger().error('spectrometer service rejected goal')
+            self.get_logger().error("spectrometer service rejected goal")
             return
 
         self.__get_result_future = goal_handle.get_result_async()
         assert self.__get_result_future is not None
         self.__get_result_future.add_done_callback(self.get_result_callback)
 
-    def get_result_callback(self, future):
+    def get_result_callback(self, future):  # noqa: ANN001
         result: ScienceSpectrometerScan.Result = future.result().result
 
         wavelengths: NDArray[numpy.float64] = numpy.array(result.wavelengths, dtype=numpy.float64)
         intensities: NDArray[numpy.float64] = numpy.array(result.intensities, dtype=numpy.float64)
 
-        # self.save_data(wavelengths, 'wavelengths')
-        self.save_data(wavelengths, intensities, 'intensities')
+        self.save_data(wavelengths, "wavelengths")
+        self.save_data(intensities, "intensities")
 
         if self.sample == SampleType.BASELINE:
             rclpy.shutdown()
             return
 
-        baseline = self.load_baseline('intensities')
+        baseline = self.load_baseline("intensities")
 
         if baseline is None:
             # could not load baseline, already logged error.
             rclpy.shutdown()
             return
 
-        print(baseline.shape)
-
         background = self.load_background(self.light_pollution)
-
-        print(background.shape)
 
         if background is None:
             # could not load background, already logged error.
             rclpy.shutdown()
             return
 
-        self.save_data(wavelengths, ScienceCollection.intensity_to_absorbance(intensities, background), 'intensities-absorbance')
+        self.save_data(
+            ScienceCollection.intensity_to_absorbance(intensities, background),
+            "intensities-absorbance",
+        )
 
         intensity_no_baseline = numpy.subtract(intensities, baseline)
         intensity_no_background = numpy.subtract(intensities, background)
-        print(intensity_no_baseline.shape)
-        print(intensity_no_background.shape)
 
-        self.save_data(wavelengths, intensity_no_baseline, 'no-baseline')
-        self.save_data(wavelengths, intensity_no_background, 'no-background')
+        self.save_data(intensity_no_baseline, "no-baseline")
+        self.save_data(intensity_no_background, "no-background")
 
-        self.save_data(wavelengths, ScienceCollection.intensity_to_absorbance(intensity_no_baseline, background), 'no-baseline-absorbance')
-        self.save_data(wavelengths, ScienceCollection.intensity_to_absorbance(intensity_no_background, background), 'no-background-absorbance')
+        self.save_data(
+            ScienceCollection.intensity_to_absorbance(intensity_no_baseline, background),
+            "no-baseline-absorbance",
+        )
+        self.save_data(
+            ScienceCollection.intensity_to_absorbance(intensity_no_background, background),
+            "no-background-absorbance",
+        )
 
         rclpy.shutdown()
 
-    def save_data(self, wavelengths: NDArray[numpy.float64], data: NDArray[numpy.float64], prefix: str):
-        # spectrum = numpy.vstack(
-        #     (
-        #         wavelengths,
-        #         data
-        #     )
-        # )
-        dataframe = pandas.DataFrame(data)
-        filename = ScienceCollection.filename(prefix, 'csv', self.site, self.cuvette, self.sample, self.characteristic)
+    def save_data(self, data: NDArray[numpy.float64], prefix: str):
+        dataframe = pd.DataFrame(data)
+        filename = ScienceCollection.filename(prefix, "csv", self.site, self.cuvette, self.sample, self.characteristic)
         Path(filename).parent.mkdir(parents=True, exist_ok=True)
-        self.get_logger().info(f'Saving data to {filename}')
+        self.get_logger().info(f"Saving data to {filename}")
         dataframe.to_csv(filename)
 
-    def load_baseline(self, prefix: str) -> Optional[NDArray[numpy.float64]]:
-        filename = ScienceCollection.filename(prefix, 'csv', self.site, self.cuvette, SampleType.BASELINE, self.characteristic)
+    def load_baseline(self, prefix: str) -> NDArray[numpy.float64] | None:
+        filename = ScienceCollection.filename(prefix, "csv", self.site, self.cuvette, SampleType.BASELINE, self.characteristic)
 
         if not Path(filename).exists():
-            self.get_logger().info(f'Cannot load data from {filename}, did you measure the baseline?')
+            self.get_logger().info(f"Cannot load data from {filename}, did you measure the baseline?")
             return None
 
-        self.get_logger().info(f'Loading baseline from {filename}')
+        self.get_logger().info(f"Loading baseline from {filename}")
 
-        tmp = pandas.read_csv(filename, index_col=0).to_numpy(dtype=numpy.float64)
+        tmp = pd.read_csv(filename, index_col=0).to_numpy(dtype=numpy.float64)
         return tmp.reshape((tmp.shape[0],))
 
-    def load_background(self, light_pollution: bool) -> NDArray[numpy.float64]:
-        filename = 'StrayLightLidOff.csv' if light_pollution else 'StrayLightLidOn.csv'
+    def load_background(self, light_pollution: bool) -> NDArray[numpy.float64] | None:
+        filename = "StrayLightLidOff.csv" if light_pollution else "StrayLightLidOn.csv"
 
         if not Path(filename).exists():
-            self.get_logger().info(f'Cannot load data from {filename}, are the background values in the right place?')
+            self.get_logger().info(f"Cannot load data from {filename}, are the background values in the right place?")
             return None
 
-        self.get_logger().info(f'Loading background from {filename}')
+        self.get_logger().info(f"Loading background from {filename}")
 
-        tmp: NDArray[numpy.float64] = pandas.read_csv(filename, header=None, index_col=False, usecols=[1]).to_numpy(dtype=numpy.float64)
-        print(tmp.shape)
+        tmp: NDArray[numpy.float64] = pd.read_csv(filename, header=None, index_col=False, usecols=[1]).to_numpy(dtype=numpy.float64)
         return tmp.reshape((tmp.shape[0],))
 
     @staticmethod
@@ -213,16 +208,15 @@ class ScienceCollection(Node):
         return numpy.log10(np.maximum(0, data / background))
 
     @staticmethod
-    def filename(prefix: str, ext: str, site: int, cuvette: int, sample: SampleType, characteristic: Optional[str]) -> str:
+    def filename(prefix: str, ext: str, site: int, cuvette: int, sample: SampleType, characteristic: str | None) -> str:
         if characteristic is not None:
-            return f'site-{site}/{prefix}.cu-{cuvette}.{sample.value}.{characteristic}.{ext}'
-        else:
-            return f'site-{site}/{prefix}.cu-{cuvette}.{sample.value}.{ext}'
+            return f"site-{site}/{prefix}.cu-{cuvette}.{sample.value}.{characteristic}.{ext}"
+        return f"site-{site}/{prefix}.cu-{cuvette}.{sample.value}.{ext}"
 
 
-def main(args=None):
+def main():
     try:
-        rclpy.init(args=args)
+        rclpy.init()
 
         node = ScienceCollection()
         rclpy.spin(node)
@@ -232,60 +226,5 @@ def main(args=None):
 
     rclpy.shutdown()
 
-
-# Skeleton version of the science payload code
-
-# Pre-sets
-# BoxcarWidth = 5
-# ScansToAverage = 10
-# IntegrationTime = 20
-# SampleID = 1  # sample number
-# Characteristic = ""  # <-- text field for notes
-#
-# # Required Variables
-# CuvetteID = "Number from cuvette rotating"
-# BlankCuvetteIDs = []
-#
-#
-# # Return data from spectrophotometer
-# def AverageRawData():
-#     # For all wavelengths across 10 different scans -> Return the average of all values of each wavelength.
-#     # return the array of average values against wavelengths as a CSV.
-#     # Then return the average values against wavelengths as a graph exporting to a PNG.
-#     # Naming Convention : SampleNumber_CuvetteID_AverageRaw_FILETYPE_Characteristic
-#     pass
-#
-#
-# def BackgroundRemoval():
-#     if CuvetteID != "CuvetteIDthatdoesn't have a lid":
-#         # For all wavelengths from AverageRawData() subtract the Equivalent wavelegth from StrayLightLidOn.
-#         for i in len(AverageRawData()):
-#             BackgroundRemoved = AverageRawData()[i] - "StrayLightLidOn.exe"[i]
-#             # Append to new array BackgroundRemoved
-#             # Return array of values against wavelength and graph of the same (graph as PNG)
-#             # Naming Convention : SampleNumber_CuvetteID_BackgroundLightRemoved_FILETYPE_Characteristic
-#     else:
-#         pass
-#         # For all wavelengths from AverageRawData() subtract the value equivalent wavelegth from StrayLightLidOFF.
-#         # Append to new array BackgroundRemoved
-#         # Return array of values against wavelength and graph of the same (graph as PNG)
-#         # Naming Convention : SampleNumber_CuvetteID_BackgroundLightRemoved_FILETYPE_Characteristic
-#
-#
-# # Make this something we activate manually from the TUI please
-# def ResultsAgainstBlank(Data, Blank):
-#     pass
-#     # Select two arrays and subtract each value of data from the value at the equivalent wavelength of blank.
-#     # Return array of values against wavelength and graph of the same (graph as PNG)
-#     # Naming Convention : SampleNumber_CuvetteID_FinalData_FILETYPE_Characteristic
-#
-#
-# def IntensityToAbsorbance(Input):
-#     # Select CSV from ResultsAgainstBlank or BackgroundRemoval
-#     Absorbance = log(Input / Background)  # log base 10
-#     # Return array of values against wavelength and graph of the same (graph as PNG)
-#     # Naming Convention : SampleNumber_CuvetteID_Absorbance_FILETYPE_Characteristic
-
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
