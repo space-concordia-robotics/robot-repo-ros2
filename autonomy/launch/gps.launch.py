@@ -9,7 +9,7 @@ def generate_launch_description():
         name="gps_node",
         parameters=[sl.params(package="rover_description", file="ublox-gps.yaml")],
         remappings={
-            "/gps_node/fix": "/ceres/gps/fix"
+            "/gps_node/fix": "/ceres/gps/fix",
         }.items(),
         # namespace=""
     )
