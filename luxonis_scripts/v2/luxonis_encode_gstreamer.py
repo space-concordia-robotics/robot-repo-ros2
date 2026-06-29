@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
-"""DepthAI → H.265 → RTSP (port 8554). FFC 4P and/or OAK-D; USB or Ethernet devices.
+# ruff: noqa: D101, D102, D103, D107
+"""
+DepthAI → H.265 → RTSP (port 8554). FFC 4P and/or OAK-D; USB or Ethernet devices.
 
 Deps: see system_deps_encoder.txt (apt `gi` + pip `depthai`, often venv with system site-packages).
 Viewer: luxonis_viewer.py (start this script first).
@@ -8,8 +10,8 @@ Viewer: luxonis_viewer.py (start this script first).
 import argparse
 import json
 import os
-import threading
 import queue
+import threading
 import time
 
 try:
@@ -18,13 +20,13 @@ except ModuleNotFoundError as e:
     raise SystemExit(
         "Missing Python module `gi` (install with apt, not pip `gi`).\n"
         "  sudo apt install python3-gi gir1.2-gstreamer-1.0 gir1.2-gst-rtsp-server-1.0\n"
-        "Details: luxonis_scripts/system_deps_encoder.txt"
+        "Details: luxonis_scripts/system_deps_encoder.txt",
     ) from e
 
 gi.require_version("Gst", "1.0")
 gi.require_version("GstRtspServer", "1.0")
 
-from gi.repository import Gst, GstRtspServer, GLib
+from gi.repository import GLib, Gst, GstRtspServer  # noqa: E402
 
 try:
     import depthai as dai
@@ -32,7 +34,7 @@ except ModuleNotFoundError as e:
     raise SystemExit(
         "Missing `depthai` (pip install depthai in the same Python you use here).\n"
         "For apt `gi` + pip packages, use a venv with system site-packages — see\n"
-        "luxonis_scripts/system_deps_encoder.txt"
+        "luxonis_scripts/system_deps_encoder.txt",
     ) from e
 
 FFC_STREAMS = ["FRONT", "RIGHT", "LEFT", "BACK"] # CAMC = LEFT, CAMD = BACK, CAMA = FRONT, CAMB = RIGHT
@@ -325,10 +327,10 @@ def main():
 
     print("\nSearching for DepthAI devices...")
     print(
-        f"  Mode: --sources {sources} (expecting at least {expected} device(s) on USB/network for full setup)"
+        f"  Mode: --sources {sources} (expecting at least {expected} device(s) on USB/network for full setup)",
     )
     devices = discover_devices(
-        expected=expected, max_attempts=args.discovery_attempts, delay=args.discovery_delay
+        expected=expected, max_attempts=args.discovery_attempts, delay=args.discovery_delay,
     )
 
     ffc_info, oakd_info = identify_devices(devices, ffc_mxid, oakd_mxid)
@@ -347,7 +349,7 @@ def main():
     if sources == "both" and (ffc_info is None or oakd_info is None):
         print(
             "\n  Note: --sources both but one device type was not found; "
-            "RTSP will only expose streams for connected hardware."
+            "RTSP will only expose streams for connected hardware.",
         )
 
     stream_names = []
