@@ -7,18 +7,7 @@
 #include <misc/cpp/imgui_stdlib.h>
 
 #include "foc2-gui/util/imgui_util.hpp"
-
-template <>
-struct fmt::formatter<builtin_interfaces::msg::Time> : formatter<std::chrono::sys_time<std::chrono::nanoseconds>> {
-    auto format(const builtin_interfaces::msg::Time& time, format_context& ctx) const {
-        using namespace std::chrono;
-
-        const auto tp = sys_time(
-            seconds(time.sec) + nanoseconds(time.nanosec)
-        );
-        return formatter<sys_time<nanoseconds>>::format(tp, ctx);
-    }
-};
+#include "scrb_common_util/fmt/ros_formatters.hpp"
 
 void RosLogWidget::onInit() {
     UiWidget::onInit();
@@ -47,7 +36,7 @@ void RosLogWidget::draw() {
     const auto available = ImGui::GetContentRegionAvail();
     ImGui::BeginChild("ROS Logs", available, 0);
 
-    std::lock_guard lock(mutex);
+    std::scoped_lock lock(mutex);
 
     const std::string search = search_buf;
 
@@ -74,7 +63,7 @@ void RosLogWidget::draw() {
 }
 
 void RosLogWidget::onLog(const Log::UniquePtr& msg) {
-    std::lock_guard lock(mutex);
+    std::scoped_lock lock(mutex);
     const auto entry = LogEntry{
         .timestamp = msg->stamp,
         .level     = intToLogLevel(msg->level),
@@ -134,14 +123,18 @@ void RosLogWidget::drawFilters() {
     ImGui::SameLine();
 
     const auto current_level_name = magic_enum::enum_name(level_filter);
+
+    // NOLINTNEXTLINE(*-suspicious-stringview-data-usage): current_level_name is null terminated
     if (ImGui::BeginCombo("", current_level_name.data(), ImGuiComboFlags_WidthFitPreview)) {
         constexpr auto level_entries = magic_enum::enum_entries<LogLevel>();
         const auto level_index = magic_enum::enum_index(level_filter);
 
         for (auto i = 0u; i < level_entries.size(); i++) {
             const bool is_selected = level_index.value() == i;
-            if (ImGui::Selectable(level_entries[i].second.data(), is_selected))
-                level_filter = level_entries[i].first;
+
+            // NOLINTNEXTLINE(*-suspicious-stringview-data-usage): level_entries[i].second is null terminated
+            if (ImGui::Selectable(level_entries.at(i).second.data(), is_selected))
+                level_filter = level_entries.at(i).first;
 
             if (is_selected)
                 ImGui::SetItemDefaultFocus();

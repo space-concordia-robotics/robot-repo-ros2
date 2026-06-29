@@ -27,9 +27,10 @@ ImApplication::ImApplication(const std::string& node_name, std::string title)
       logger(this->get_logger()),
       gl_context(nullptr),
       window(nullptr),
-      title(std::move(title)),
-      tf_buffer(this->get_clock()),
-      tf_listener(tf_buffer, this) {}
+      title(std::move(title)) {
+    tf_buffer = std::make_unique<tf2_ros::Buffer>(this->get_clock());
+    tf_listener = std::make_unique<tf2_ros::TransformListener>(*tf_buffer, this);
+}
 
 ImApplication::~ImApplication() = default;
 
@@ -54,6 +55,10 @@ int ImApplication::run() {
     quit();
 
     return 0;
+}
+
+tf2_ros::Buffer& ImApplication::tfBuffer() const {
+    return *tf_buffer;
 }
 
 void ImApplication::onInit() {}

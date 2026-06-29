@@ -1,5 +1,6 @@
 #pragma once
 
+#include <fmt/format.h>
 #include <opencv2/core/eigen.hpp>
 
 #include "scrb_common_util/fmt/eigen_formatters.hpp"

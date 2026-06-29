@@ -5,14 +5,15 @@ Checks:
   - -bugprone-easily-swappable-parameters
   - -bugprone-narrowing-conversions
   - -bugprone-throwing-static-initialization # AllowedTypes does not seem to work
-  - clang-diagnostic-*
-  - clang-analyzer-*
+  - -clang-diagnostic-*
+  - -clang-analyzer-*
   - concurrency-*
   - cppcoreguidelines-*,
   - -cppcoreguidelines-avoid-magic-numbers # alias
   - -cppcoreguidelines-narrowing-conversions # alias
   - -cppcoreguidelines-pro-bounds-array-to-pointer-decay
   - -cppcoreguidelines-pro-type-vararg
+  - -cppcoreguidelines-pro-type-reinterpret-cast
   - modernize-*,
   - -modernize-use-trailing-return-type
   - openmp-*
@@ -37,7 +38,7 @@ ImplementationFileExtensions:
   - cc
   - cpp
   - cxx
-HeaderFilterRegex: ''
+HeaderFilterRegex: 'src/|include/'
 ExcludeHeaderFilterRegex: ''
 FormatStyle: file
 CheckOptions:
@@ -46,6 +47,7 @@ CheckOptions:
     ::YAML::Node;
     ::cv::Vec.*;
     ::tf2::.*
+  cppcoreguidelines-pro-type-member-init.UseAssignment: true
   cppcoreguidelines-pro-bounds-avoid-unchecked-container-access.FixMode: at
   readability-function-cognitive-complexity.Threshold: 32
   readability-function-cognitive-complexity.DescribeBasicIncrements: true
