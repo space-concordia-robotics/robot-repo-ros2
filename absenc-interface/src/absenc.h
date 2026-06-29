@@ -57,7 +57,6 @@ private:
     rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr angles_publisher_;
 
     std::string absenc_path_;
-    int absenc_polling_rate_;
 };
 
 #endif
