@@ -13,3 +13,5 @@
 #if __has_include(<tf2/convert.hpp>)
 #include "scrb_common_util/fmt/tf2_formatters.hpp"
 #endif
+
+#include "scrb_common_util/fmt/ros_formatters.hpp"

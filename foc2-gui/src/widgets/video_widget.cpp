@@ -2,20 +2,22 @@
 
 #include <IconsFontAwesome7.h>
 #include <imgui.h>
-#include <gst/app/gstappsink.h>
+#include <cstddef>
 #include <image_transport/camera_common.hpp>
 #include <magic_enum/magic_enum.hpp>
 #include <misc/cpp/imgui_stdlib.h>
-#include <peel/GLib/MainLoop.h>
-#include <peel/Gst/Element.h>
-#include <peel/Gst/functions.h>
-#include <peel/Gst/Pad.h>
+#include <peel/Gst/Bin.h>
+#include <peel/Gst/MapFlags.h>
+#include <peel/Gst/MapInfo.h>
+#include <peel/Gst/MessageType.h>
 #include <peel/Gst/PadProbeInfo.h>
 #include <peel/Gst/PadProbeReturn.h>
 #include <peel/Gst/PadProbeType.h>
 #include <peel/Gst/State.h>
 #include <peel/Gst/StateChangeReturn.h>
+#include <peel/Gst/functions.h>
 #include <peel/GstApp/AppSink.h>
+#include <sensor_msgs/msg/camera_info.hpp>
 
 #include "foc2-gui/overlays/aruco_video_overlay.hpp"
 #include "foc2-gui/overlays/crosshair_overlay.hpp"
@@ -98,21 +100,21 @@ VideoWidget::VideoWidget(
 
     camera_info_subscription->addCallback(
         aruco_overlay,
-        [overlay =aruco_overlay](const CameraInfo::SharedPtr& camera_info) mutable {
+        [overlay = aruco_overlay](const CameraInfo::SharedPtr& camera_info) {
             overlay->onCameraInfo(camera_info);
         }
     );
 
     camera_info_subscription->addCallback(
         local_nav_overlay,
-        [overlay = local_nav_overlay](auto&& camera_info) mutable {
+        [overlay = local_nav_overlay](const CameraInfo::SharedPtr& camera_info) mutable {
             overlay->onCameraInfo(camera_info);
         }
     );
 
     camera_info_subscription->addCallback(
         global_nav_overlay,
-        [overlay = global_nav_overlay](auto&& camera_info) mutable {
+        [overlay = global_nav_overlay](const CameraInfo::SharedPtr& camera_info) mutable {
             overlay->onCameraInfo(camera_info);
         }
     );
@@ -135,7 +137,7 @@ void VideoWidget::onInit() {
     // if this 50ms value is changed, also update the value in the video stats overlay
     stats_timer = this->application.create_timer(50ms, [this] {
         if (this->stats_overlay) {
-            std::lock_guard lock(this->stats_mutex);
+            std::scoped_lock lock(this->stats_mutex);
 
             this->stats_overlay->updateStats(this->video_stats);
         }
@@ -149,7 +151,7 @@ void VideoWidget::onShutdown() {
     running = false;
     gst_thread.join();
 
-    if (texture_id) {
+    if (texture_id != 0u) {
         glDeleteTextures(1, &texture_id);
         texture_id = 0;
         texture_width = 0;
@@ -188,7 +190,7 @@ void VideoWidget::draw() {
 
     const auto avail = ImGui::GetContentRegionAvail();
 
-    if (texture_id) {
+    if (texture_id != 0u) {
         const float video_aspect = static_cast<float>(current_frame.cols) / static_cast<float>(current_frame.rows);
 
         ImVec2 size = avail;
@@ -228,6 +230,8 @@ void VideoWidget::draw() {
     }
 
     ImGui::EndChild();
+
+    //
 
     drawConfigWindow();
 }
@@ -292,14 +296,16 @@ void VideoWidget::drawFiltersMenu() {
         const auto current_index = magic_enum::enum_index(filters.rotation).value_or(0);
         const auto preview_value = magic_enum::enum_name(filters.rotation);
 
+        // NOLINTNEXTLINE(*-suspicious-stringview-data-usage): preview_value is null terminated
         if (ImGui::BeginCombo("Rotation", preview_value.data(), ImGuiComboFlags_None)) {
             for (auto i = 0u; i < VIDEO_FLIP_ENTRIES.size(); ++i) {
-                const auto [enum_val, name] = VIDEO_FLIP_ENTRIES[i];
+                const auto [enum_val, name] = VIDEO_FLIP_ENTRIES.at(i);
 
                 ImGui::PushID(static_cast<int>(i));
 
                 const auto selected = i == current_index;
 
+                // NOLINTNEXTLINE(*-suspicious-stringview-data-usage): name is null terminated
                 if (ImGui::Selectable(name.data(), selected)) {
                     filters.rotation = enum_val;
                     changed = true;
@@ -453,7 +459,7 @@ FloatPtr<Gst::Bin> VideoWidget::createPipeline() const {
 
     auto pipeline = Gst::parse_launch(GSTREAMER_PIPELINE, &error);
 
-    if (!pipeline || error) {
+    if (pipeline == nullptr || error != nullptr) {
         logger.error("Failed to create GStreamer pipeline: {}", error ? error->message : "unknown");
         return nullptr;
     }
@@ -474,7 +480,7 @@ void VideoWidget::configureAppsink() {
 
     auto appsink_callbacks = GstAppSinkCallbacks{};
     appsink_callbacks.new_sample = [](GstAppSink* appsink, void* widget) -> GstFlowReturn {
-        return static_cast<VideoWidget*>(widget)->onNewSample(appsink);
+        return static_cast<VideoWidget*>(widget)->onNewSample(reinterpret_cast<GstApp::AppSink*>(appsink));
     };
 
     appsink->set_callbacks(reinterpret_cast<GstApp::AppSinkCallbacks*>(&appsink_callbacks), this, nullptr);
@@ -491,13 +497,13 @@ void VideoWidget::configureJitterbuffer() {
     }
 }
 
-Gst::Pad::ProbeReturn VideoWidget::onJitterbufferProbe(Gst::Pad*, const Gst::Pad::ProbeInfo* info) {
-    if (!info)
+Gst::Pad::ProbeReturn VideoWidget::onJitterbufferProbe(Gst::Pad* /*pad*/, const Gst::Pad::ProbeInfo* info) {
+    if (info == nullptr)
         return Gst::Pad::ProbeReturn::HANDLED;
 
     const auto buf = GST_PAD_PROBE_INFO_BUFFER(info);
 
-    if (!buf)
+    if (buf == nullptr)
         return Gst::Pad::ProbeReturn::OK;
 
     auto avg_jitter = 0uL;
@@ -525,7 +531,7 @@ Gst::Pad::ProbeReturn VideoWidget::onJitterbufferProbe(Gst::Pad*, const Gst::Pad
     }
 
     {
-        std::lock_guard lock(stats_mutex);
+        std::scoped_lock lock(stats_mutex);
 
         const auto now = steady_clock::now();
 
@@ -602,85 +608,78 @@ void VideoWidget::runPipelineLoop() {
     // );
 
     while (running && !reconnect) {
-        // TODO 2026-05-21 (Will Free): timed_pop_filtered does not exist on the peel type
-        const auto msg = gst_bus_timed_pop_filtered(
-            bus->cast<GstBus>(),
-            500ms / 1ns,
-            static_cast<GstMessageType>(GST_MESSAGE_ERROR | GST_MESSAGE_EOS | GST_MESSAGE_LATENCY)
-        );
+        const auto msg = bus->timed_pop_filtered(500ms / 1ns, Gst::Message::Type::ERROR_ | Gst::Message::Type::EOS | Gst::Message::Type::LATENCY);
 
         if (!msg)
             continue;
 
         switch (msg->type) {
-        case GST_MESSAGE_ERROR: {
-            GError* err = nullptr;
-            gchar* debug = nullptr;
+        case Gst::Message::Type::ERROR_: {
+            peel::UniquePtr<GLib::Error> err = nullptr;
+            String debug = nullptr;
 
-            gst_message_parse_error(msg, &err, &debug);
+            msg->parse_error(&err, &debug);
 
-            logger.error("Error received from element {}: {} ({})", msg->src->name, err->message, debug ? debug : "no debug");
-
-            g_clear_error(&err);
-            g_free(debug);
+            logger.error("Error received from element {}: {} ({})", msg->src->get_name(), err->message, debug ? debug : "no debug");
 
             reconnect = true;
             break;
         }
-        case GST_MESSAGE_EOS:
+        case Gst::Message::Type::EOS:
             logger.warn("Got end-of-stream, reconnecting...");
             reconnect = true;
             break;
         default:
             break;
         }
-
-        gst_message_unref(msg);
     }
 
     pipeline->set_state(Gst::State::NULL_);
 }
 
-GstFlowReturn VideoWidget::onNewSample(GstAppSink* sink) {
-    const auto sample = gst_app_sink_pull_sample(sink);
+GstFlowReturn VideoWidget::onNewSample(GstApp::AppSink* sink) {
+    const auto sample = sink->pull_sample();
 
-    if (!sample)
+    if (sample == nullptr)
         return GST_FLOW_FLUSHING;
 
-    const GstCaps* caps = gst_sample_get_caps(sample);
-    const GstStructure* s = gst_caps_get_structure(caps, 0);
+    const auto caps = sample->get_caps();
+    const auto caps_structure = caps->get_structure(0);
 
-    int width = 0, height = 0;
-    gst_structure_get_int(s, "width", &width);
-    gst_structure_get_int(s, "height", &height);
+    int width = 0;
+    int height = 0;
+    caps_structure->get_int("width", &width);
+    caps_structure->get_int("height", &height);
 
-    GstBuffer* buffer = gst_sample_get_buffer(sample);
-    GstMapInfo map;
-    if (gst_buffer_map(buffer, &map, GST_MAP_READ)) {
+    const auto buffer = sample->get_buffer();
+    Gst::MapInfo map; // NOLINT(*-pro-type-member-init)
+    if (buffer->map(&map, Gst::MapFlags::READ)) {
         {
-            std::lock_guard lock(frame_mutex);
+            std::scoped_lock lock(frame_mutex);
 
             if (next_frame.cols != width || next_frame.rows != height || next_frame.type() != CV_8UC4) {
                 next_frame = cv::Mat(height, width, CV_8UC4);
             }
 
             {
-                std::lock_guard stats_lock(stats_mutex);
+                std::scoped_lock stats_lock(stats_mutex);
                 video_stats.width = current_frame.cols;
                 video_stats.height = current_frame.rows;
             }
 
-            std::memcpy(next_frame.data, map.data, width * height * 4);
+            // note: this currently assumes that the matrix type is always a CV_8U/CV_8S
+            // and does not account for scenarios where the matrix type uses more than 1 byte per element.
+            // this is probably fine, as we only ever use CV_8UC4.
+            // so long as that doesn't change, this should be equivalent to just width * height * 4.
+            buffer->extract(0, ArrayRef(next_frame.data, static_cast<size_t>(next_frame.rows * next_frame.cols * next_frame.channels())));
             new_frame_available = true;
         }
 
-        gst_buffer_unmap(buffer, &map);
+        buffer->unmap(&map);
     }
 
-    gst_sample_unref(sample);
-
     {
-        std::lock_guard lock(stats_mutex);
+        std::scoped_lock lock(stats_mutex);
 
         const auto now = steady_clock::now();
 
@@ -692,7 +691,8 @@ GstFlowReturn VideoWidget::onNewSample(GstAppSink* sink) {
 
 void VideoWidget::updateTexture() {
     {
-        auto lock = std::lock_guard(frame_mutex);
+        std::scoped_lock lock(frame_mutex);
+
         if (!new_frame_available)
             return;
 
@@ -763,7 +763,7 @@ void VideoWidget::applyMinimap() {
 }
 
 void VideoWidget::applyStreamConfig() {
-    if (!pipeline)
+    if (pipeline == nullptr)
         return;
 
     rtspsrc->set_property<String>("location", stream_config.source_url.data());
@@ -773,7 +773,7 @@ void VideoWidget::applyStreamConfig() {
 }
 
 void VideoWidget::applyFilters(const FilterState& filters, const bool update_flip) const {
-    if (!pipeline)
+    if (pipeline == nullptr)
         return;
 
     if (balance) {

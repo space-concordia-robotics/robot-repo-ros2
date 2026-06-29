@@ -1,11 +1,11 @@
 #define IMGUI_USER_CONFIG "foc2-gui/imgui_user.hpp"
 
-#include <filesystem>
 #include <IconsFontAwesome7.h>
+#include <filesystem>
 #include <imgui.h>
 #include <lunasvg.h>
-#include <ament_index_cpp/get_package_share_directory.hpp>
 #include <SDL3/SDL.h>
+#include <ament_index_cpp/get_package_share_directory.hpp>
 #include <rclcpp/executors.hpp>
 #include <rclcpp/utilities.hpp>
 
