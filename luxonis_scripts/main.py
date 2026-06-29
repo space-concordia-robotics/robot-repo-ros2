@@ -1,20 +1,22 @@
+# ruff: noqa: D100, D101, D102, D103, D107, INP001, T201
 import argparse
-import os
+import contextlib
 import subprocess
 import threading
 import time
+import typing
+from argparse import Namespace
+from pathlib import Path
+from typing import Any, Literal, TypeAlias
 
-import cv2
 import depthai as dai
-import numpy as np
-
 from rtsp_server import RtspServer
 
 FFC_MXID = "14442C10014791D700"
 OAKD_MXID = "1944301001EDE12E00"
 STREAM_NAMES = ["FRONT", "RIGHT", "LEFT", "BACK", "RGB", "DEPTH"]
 
-MODES = {
+MODES: dict[str, dict[str, int]] = {
     "ffc_all": {"bitrate": 2000000, "fps": 30},
     "ffc_front": {"bitrate": 7000000, "fps": 30},
     "ffc_back": {"bitrate": 7000000, "fps": 30},
@@ -24,8 +26,11 @@ MODES = {
     "oakd_yolo": {"bitrate": 4000000, "fps": 15},
 }
 
+# TODO 2026-06-29 (Will Free): this should really be an enum
+ModeType: TypeAlias = Literal["ffc_all", "ffc_front", "ffc_back", "ffc_right", "ffc_left", "oakd_rgb", "oakd_yolo"]
+
 ALL_MODES = list(MODES.keys())
-MODEL_PATH = os.path.join(os.path.dirname(__file__), "best_190_Epoch.rvc2.tar.xz")
+MODEL_PATH = Path(__file__).parent / "best_190_Epoch.rvc2.tar.xz"
 
 
 class StreamMetrics:
@@ -35,12 +40,13 @@ class StreamMetrics:
         self._frames = {}
         self._last_sample = time.monotonic()
 
-    def record(self, name, byte_count):
+    def record(self, name: str, byte_count: int):
         with self._lock:
             self._bytes[name] = self._bytes.get(name, 0) + byte_count
             self._frames[name] = self._frames.get(name, 0) + 1
 
-    def sample(self):
+    # TODO 2026-06-29 (Will Free): this is the auto-generated type from my IDE, and it is 5 am right now and I cba to determine the correct type
+    def sample(self) -> tuple[dict[Any, dict[str, Any]], float]:
         with self._lock:
             now = time.monotonic()
             elapsed = max(now - self._last_sample, 1e-6)
@@ -64,7 +70,9 @@ class StreamMetrics:
 
 
 class PipelineSession:
-    def __init__(self, server, metrics, visualizer):
+    # TODO 2026-06-29 (Will Free): type hints for fields
+
+    def __init__(self, server: RtspServer, metrics: StreamMetrics, visualizer: dai.RemoteConnection):
         self._server = server
         self._metrics = metrics
         self._visualizer = visualizer
@@ -79,7 +87,7 @@ class PipelineSession:
         self._rgb_lock = threading.Lock()
         self._latest_rgb = None
 
-    def start(self, mode, device_id):
+    def start(self, mode: ModeType, device_id: str):
         with self._lock:
             self._stop_locked()
             self._stop_event.clear()
@@ -104,11 +112,11 @@ class PipelineSession:
         with self._lock:
             self._stop_locked()
 
-    def is_running(self):
+    def is_running(self) -> bool:
         with self._lock:
             return self._thread is not None and self._thread.is_alive()
 
-    def current_mode(self):
+    def current_mode(self) -> ModeType | None:
         return self._mode if self.is_running() else None
 
     def _stop_locked(self):
@@ -127,7 +135,7 @@ class PipelineSession:
         with self._rgb_lock:
             return None if self._latest_rgb is None else self._latest_rgb
 
-    def _worker(self, mode, device_id):
+    def _worker(self, mode: ModeType, device_id: str):
         try:
             profile = profile_for(mode)
             fps = profile["fps"]
@@ -136,11 +144,9 @@ class PipelineSession:
             device = dai.Device(dai.DeviceInfo(device_id))
 
             if mode in ("oakd_yolo", "oakd_depth", "oakd_all"):
-                try:
+                with contextlib.suppress(Exception):
                     device.setIrLaserDotProjectorIntensity(1.0)
                     device.setIrFloodLightIntensity(0.5)
-                except Exception:
-                    pass
 
             with dai.Pipeline(device) as pipeline:
                 bitstream_queues, extra_queues = build_pipeline(pipeline, mode, fps, bitrate, self._visualizer)
@@ -159,7 +165,7 @@ class PipelineSession:
                         with self._detection_lock:
                             self._latest_detections = detection_queue.get()
                     self._visualizer.waitKey(1)
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             self._error = str(e)
         finally:
             self._metrics.reset()
@@ -173,7 +179,7 @@ def main():
     metrics = StreamMetrics()
     visualizer = dai.RemoteConnection(webSocketPort=8765, httpPort=8082)
     session = PipelineSession(server, metrics, visualizer)
-    
+
     if args.mode:
         device_id = resolve_device(args.mode, args.device)
         print(f"Connecting to {kit_name(args.mode).upper()} ({device_id})...")
@@ -185,8 +191,8 @@ def main():
 
     print_help()
 
-
-    try:
+    with contextlib.suppress(KeyboardInterrupt):
+        # TODO 2026-06-29 (Will Free): this feels... Bad.
         while True:
             try:
                 line = input("> ").strip()
@@ -225,9 +231,9 @@ def main():
                 else:
                     for d in detections.detections:
                         print(f"  {d.labelName:<16} conf={d.confidence:.2f}  "
-                            f"X={d.spatialCoordinates.x:>7.0f}mm  "
-                            f"Y={d.spatialCoordinates.y:>7.0f}mm  "
-                            f"Z={d.spatialCoordinates.z:>7.0f}mm")   
+                              f"X={d.spatialCoordinates.x:>7.0f}mm  "
+                              f"Y={d.spatialCoordinates.y:>7.0f}mm  "
+                              f"Z={d.spatialCoordinates.z:>7.0f}mm")
             elif cmd == "watch_detections":
                 interval = float(parts[1]) if len(parts) >= 2 else 1.0
                 try:
@@ -237,50 +243,50 @@ def main():
                             print(f"\n[{session.current_mode()}] Detections:")
                             for d in detections.detections:
                                 print(f"  {d.labelName:<16} conf={d.confidence:.2f}  "
-                                    f"X={d.spatialCoordinates.x:>7.0f}mm  "
-                                    f"Y={d.spatialCoordinates.y:>7.0f}mm  "
-                                    f"Z={d.spatialCoordinates.z:>7.0f}mm")   
+                                      f"X={d.spatialCoordinates.x:>7.0f}mm  "
+                                      f"Y={d.spatialCoordinates.y:>7.0f}mm  "
+                                      f"Z={d.spatialCoordinates.z:>7.0f}mm")
                         else:
                             print(f"\n[{session.current_mode()}] No detections yet.")
                         time.sleep(interval)
                 except KeyboardInterrupt:
-                    print() # Create a new line after CTRL+C
+                    print()  # Create a new line after CTRL+C
             elif cmd == "mode":
-                if len(parts) < 2:
+                if len(parts) < 2:  # noqa: PLR2004
                     print("Usage: mode <name> [device_id]")
                     continue
-                mode = parts[1]
+                mode: ModeType = typing.cast(ModeType, parts[1])
                 if mode not in ALL_MODES:
                     print(f"Unknown mode: {mode}")
                     continue
-                device_id = parts[2] if len(parts) >= 3 else resolve_device(mode, args.device)
+                device_id = parts[2] if len(parts) >= 3 else resolve_device(mode, args.device)  # noqa: PLR2004
                 print(f"Connecting to {kit_name(mode).upper()} ({device_id})...")
                 try:
                     session.start(mode, device_id)
                     print(f"Started: {mode}")
                 except RuntimeError as e:
                     print(f"Failed: {e}")
-    except KeyboardInterrupt:
-        pass
-    finally:
-        print("\nShutting down.")
-        session.stop()
-        subprocess.Popen(["pkill", "-f", "run_cameras.sh"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+    print("\nShutting down.")
+    session.stop()
+    # TODO 2026-06-29 (Will Free): this is an awful solution
+    subprocess.Popen(["pkill", "-f", "run_cameras.sh"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)  # noqa: S607
 
 
-def resolve_device(mode, override):
+def resolve_device(mode: ModeType, override: str) -> str:
     if override:
         return override
     return FFC_MXID if mode.startswith("ffc_") else OAKD_MXID
 
 
-def kit_name(mode):
+def kit_name(mode: ModeType) -> str:
     return "ffc" if mode.startswith("ffc_") else "oakd"
 
 
 def print_help():
     print("Commands:")
-    print("  mode <name> [device_id]  switch pipeline, device_id/IP is optional.  For the black mydlink router, 192.168.0.100, and 192.168.0.102 were usually either the OAK-D or FFC")
+    print(
+        "  mode <name> [device_id]  switch pipeline, device_id/IP is optional.  For the black mydlink router, 192.168.0.100, and 192.168.0.102 were usually either the OAK-D or FFC")
     print("  stop                     stop current pipeline")
     print("  status                   show current state")
     print("  bw                       bandwidth + fps per stream")
@@ -292,7 +298,7 @@ def print_help():
 
 
 ## RUN bw to print the current bandwidth and fps
-def print_bandwidth(metrics, mode):
+def print_bandwidth(metrics: StreamMetrics, mode: ModeType | None):
     snap, elapsed = metrics.sample()
     if not snap:
         print(f"[{mode}] no traffic in last {elapsed:.2f}s")
@@ -307,35 +313,41 @@ def print_bandwidth(metrics, mode):
 
 
 ## RUN watch [interval] to print bandwidth at set interval (in seconds)
-def watch_bandwidth(metrics, session, interval):
-    metrics.sample() 
+def watch_bandwidth(metrics: StreamMetrics, session: PipelineSession, interval: float):
+    metrics.sample()
     try:
         while session.is_running():
             time.sleep(interval)
             print_bandwidth(metrics, session.current_mode())
     except KeyboardInterrupt:
-        print() # Create a new line after CTRL+C
+        print()  # Create a new line after CTRL+C
     if not session.is_running():
         print("Idle.")
 
 
-def parse_args():
+def parse_args() -> Namespace:
     parser = argparse.ArgumentParser(description="Luxonis camera encoder script")
     parser.add_argument(
         "--mode",
         choices=ALL_MODES,
         default="ffc_all",
-        help="Initial pipeline mode"
+        help="Initial pipeline mode",
     )
     parser.add_argument(
         "-d", "--device",
         default=None,
-        help="Default device MxId or IP"
+        help="Default device MxId or IP",
     )
     return parser.parse_args()
 
 
-def build_pipeline(pipeline, mode, maxFps, bitrate, visualizer):
+def build_pipeline(
+        pipeline: dai.Pipeline,
+        mode: ModeType,
+        max_fps: int,
+        bitrate: int,
+        visualizer: dai.RemoteConnection,
+) -> tuple[dict[Any, Any] | dict[str, Any], dict[Any, Any] | dict[str, Any]]:
     sockets = []
     if mode == "ffc_all" or mode == "ffc_yolo":
         sockets = [
@@ -360,13 +372,13 @@ def build_pipeline(pipeline, mode, maxFps, bitrate, visualizer):
 
     for socket, name in sockets:
         cam = pipeline.create(dai.node.Camera).build(socket)
-        cam_out = cam.requestOutput((1920, 1080), fps=maxFps, type=dai.ImgFrame.Type.NV12)
+        cam_out = cam.requestOutput((1920, 1080), fps=max_fps, type=dai.ImgFrame.Type.NV12)
 
         enc = pipeline.create(dai.node.VideoEncoder)
-        enc.setDefaultProfilePreset(maxFps, dai.VideoEncoderProperties.Profile.H264_MAIN)
+        enc.setDefaultProfilePreset(max_fps, dai.VideoEncoderProperties.Profile.H264_MAIN)
         enc.setRateControlMode(dai.VideoEncoderProperties.RateControlMode.CBR)
         enc.setBitrate(bitrate)
-        enc.setKeyframeFrequency(maxFps)
+        enc.setKeyframeFrequency(max_fps)
         cam_out.link(enc.input)
         bitstream_queues[name] = enc.out.createOutputQueue(maxSize=30, blocking=True)
 
@@ -374,38 +386,38 @@ def build_pipeline(pipeline, mode, maxFps, bitrate, visualizer):
         # Group "images" matches DepthAI visualizer_encoded.py for compressed video.
         visualizer.addTopic(name, enc.out, "images")
 
-
     if mode == "oakd_yolo":
-        cam_rgb   = pipeline.create(dai.node.Camera).build(dai.CameraBoardSocket.CAM_A, sensorFps=maxFps)
-        mono_left = pipeline.create(dai.node.Camera).build(dai.CameraBoardSocket.CAM_B, sensorFps=maxFps)
-        mono_right= pipeline.create(dai.node.Camera).build(dai.CameraBoardSocket.CAM_C, sensorFps=maxFps)
-        
+        cam_rgb = pipeline.create(dai.node.Camera).build(dai.CameraBoardSocket.CAM_A, sensorFps=max_fps)
+        mono_left = pipeline.create(dai.node.Camera).build(dai.CameraBoardSocket.CAM_B, sensorFps=max_fps)
+        mono_right = pipeline.create(dai.node.Camera).build(dai.CameraBoardSocket.CAM_C, sensorFps=max_fps)
+
         stereo = pipeline.create(dai.node.StereoDepth)
         stereo.setRectification(True)
         stereo.setLeftRightCheck(True)
-        stereo.setExtendedDisparity(True) #helps with close up objects
+        stereo.setExtendedDisparity(True)  # helps with close up objects
 
         mono_left.requestOutput((640, 400)).link(stereo.left)
         mono_right.requestOutput((640, 400)).link(stereo.right)
 
-        archive = dai.NNArchive(MODEL_PATH) # Gets yolo model
+        archive = dai.NNArchive(MODEL_PATH)  # Gets yolo model
 
         spatial_nn = pipeline.create(dai.node.SpatialDetectionNetwork).build(cam_rgb, stereo, archive)
         spatial_nn.input.setBlocking(False)
+        # TODO 2026-06-29 (Will Free): parameters for these
         spatial_nn.setConfidenceThreshold(0.5)
         spatial_nn.setDepthLowerThreshold(200)  # sets cutoff distance to < 20 cm
-        spatial_nn.setDepthUpperThreshold(8000) # sets cutoff distance > 8 m
+        spatial_nn.setDepthUpperThreshold(8000)  # sets cutoff distance > 8 m
 
-        rgb_out = cam_rgb.requestOutput((1920, 1080), fps=maxFps, type=dai.ImgFrame.Type.NV12) # encode rgb cam output for rtsp server
-        
+        rgb_out = cam_rgb.requestOutput((1920, 1080), fps=max_fps, type=dai.ImgFrame.Type.NV12)  # encode rgb cam output for rtsp server
+
         enc = pipeline.create(dai.node.VideoEncoder)
-        enc.setDefaultProfilePreset(maxFps, dai.VideoEncoderProperties.Profile.H264_MAIN)
+        enc.setDefaultProfilePreset(max_fps, dai.VideoEncoderProperties.Profile.H264_MAIN)
         enc.setRateControlMode(dai.VideoEncoderProperties.RateControlMode.CBR)
         enc.setBitrate(bitrate)
-        enc.setKeyframeFrequency(maxFps)
+        enc.setKeyframeFrequency(max_fps)
 
         rgb_out.link(enc.input)
-        
+
         bitstream_queues = {"RGB": enc.out.createOutputQueue(maxSize=30, blocking=True)}
 
         extra_queues = {
@@ -417,11 +429,11 @@ def build_pipeline(pipeline, mode, maxFps, bitrate, visualizer):
         visualizer.addTopic("Detections", spatial_nn.out, "img")
 
     return bitstream_queues, extra_queues
-    
- 
+
+
 ### Helper Functions ####
 
-def profile_for(mode):
+def profile_for(mode: str) -> dict[str, int]:
     if mode not in MODES:
         raise ValueError(f"No profile for mode '{mode}'")
     return MODES[mode]
