@@ -155,10 +155,10 @@ namespace arm_interface {
         if (serial_fd_ == -1) {
             // Attempt to open encoder port
             int fd = 0;
-            if (const ABSENC_Error_t err = AbsencDriver::OpenPort("/dev/ttyUSB0", fd); err.error != NO_ERROR) {
+            if (const AbsencError err = AbsencDriver::openPort("/dev/ttyUSB0", fd); err.error != AbsencErrorCause::NONE) {
                 RCLCPP_ERROR(this->get_logger(),
                              "Failed to open encoder port '/dev/ttyUSB0' in on_configure(): %s.",
-                             strAbsencErr(err.error));
+                             to_string(err.error));
                 return hardware_interface::CallbackReturn::ERROR;
             } else {
                 serial_fd_ = fd;
@@ -252,14 +252,14 @@ namespace arm_interface {
     // Outputs: Mapping given encorder angles (in radians) to each joint in the URDF and publish angles on terminal
     // Errors checks: Check to see if all encoders are properly working
     return_type ArmInterface::read(const rclcpp::Time& /*time*/, const rclcpp::Duration& /*period*/) {
-        ABSENC_Meas_t absenc_meas_1{};
-        ABSENC_Meas_t absenc_meas_2{};
-        ABSENC_Meas_t absenc_meas_3{};
-        ABSENC_Meas_t absenc_meas_4{};
+        AbsencMeasurement absenc_meas_1{};
+        AbsencMeasurement absenc_meas_2{};
+        AbsencMeasurement absenc_meas_3{};
+        AbsencMeasurement absenc_meas_4{};
 
-        auto poll = [&](const int id, ABSENC_Meas_t& meas) -> bool {
-            if (const auto [err, cause, line] = AbsencDriver::PollSlave(id, &meas, serial_fd_); err != NO_ERROR) {
-                RCLCPP_ERROR(this->get_logger(), "Error on %d: %s cause 0x%04x line 0x%04x\n", id, strAbsencErr(err), cause, line);
+        auto poll = [&](const int id, AbsencMeasurement& meas) -> bool {
+            if (const auto [err, cause, line] = AbsencDriver::pollSlave(id, &meas, serial_fd_); err != AbsencErrorCause::NONE) {
+                RCLCPP_ERROR(this->get_logger(), "Error on %d: %s cause 0x%04x line 0x%04x\n", id, to_string(err), cause, line);
                 return false;
             }
 
