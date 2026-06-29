@@ -1,3 +1,4 @@
+# ruff: noqa: INP001
 """Shared LED preset names and RGBA tuples for SIL board teleop nodes."""
 
 PRESETS: dict[str, tuple[int, int, int, int]] = {
