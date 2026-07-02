@@ -19,12 +19,14 @@ import os
 import socket
 import threading
 import time
+import typing
 from pathlib import Path
-from typing import Literal
+from typing import Any, Literal
 
 import cv2
 import numpy as np
-from cv2 import VideoCapture
+from cv2 import Mat, VideoCapture
+from numpy import dtype, floating, integer, ndarray
 
 FFC_STREAMS = ["FRONT", "RIGHT", "LEFT", "BACK"]
 OAKD_STREAMS = ["oakd_rgb", "oakd_left", "oakd_right"]
@@ -64,7 +66,7 @@ def gstreamer_pipeline(url: str, latency_ms: int = 200) -> str:
 
 
 # TODO 2026-06-29 (Will Free): this is an awful type, but it is 5 am and I cba to fix this
-def open_rtsp_capture(url: str, backend: str) -> tuple[VideoCapture, Literal["gstreamer"]] | tuple[None, None] | tuple[VideoCapture, Literal["ffmpeg"]]:
+def open_rtsp_capture(url: str, backend: str) -> tuple[VideoCapture, Literal["gstreamer", "ffmpeg"]] | tuple[None, None]:
     """Open RTSP URL; return (cap, backend_name) or (None, None)."""
     if backend in ("auto", "gstreamer"):
         cap = cv2.VideoCapture(gstreamer_pipeline(url), cv2.CAP_GSTREAMER)
@@ -103,9 +105,10 @@ class FrameReader(threading.Thread):
     def run(self) -> None:
         # TODO 2026-06-29 (Will Free): globals are ontologically evil
         global _rtsp_wait_detail_printed
-        cap = None
-        used = None
+        cap: VideoCapture | None = None
+        used: Literal["gstreamer", "ffmpeg"] | None = None
         n_try = 0
+
         while self._running and cap is None:
             cap, used = open_rtsp_capture(self.url, self.backend)
             if cap is None:
@@ -122,15 +125,25 @@ class FrameReader(threading.Thread):
                 elif n_try % 20 == 0:
                     print(f"[{self.name}] still waiting for RTSP …")
                 time.sleep(1.0)
+
         if not self._running:
             if cap is not None:
                 cap.release()
             return
+
+        # cap & used are never None here.
+        # if running is true & cap + used are None -> above loop retries until they are not None
+        # if running is false -> returns before reaching this point
+        assert cap is not None
+        assert used is not None
+
         if self.backend == "auto":
             print(f"[{self.name}] opened via {used}")
         elif self.backend == "ffmpeg":
             print(f"[{self.name}] opened via ffmpeg")
         while self._running:
+            ret: bool
+            frame: Mat | ndarray[Any, dtype[integer[Any] | floating[Any]]]
             ret, frame = cap.read()
             if not ret:
                 time.sleep(0.01)
@@ -177,38 +190,20 @@ def draw_label_bar(img: np.ndarray, text: str, show: bool) -> None:
     )
 
 
-def extract_boxes(results, model, min_conf: float):
-    boxes = []
-    for r in results:
-        for box in r.boxes:
-            conf = float(box.conf[0])
-            if conf < min_conf:
-                continue
-            x1, y1, x2, y2 = map(int, box.xyxy[0])
-            cls = int(box.cls[0])
-            label = model.names[cls]
-            boxes.append((x1, y1, x2, y2, label, conf))
-    return boxes
-
-
-def draw_boxes(
-        frame: np.ndarray, boxes: list[tuple[int, int, int, int, str, float]],
-) -> None:
-    for x1, y1, x2, y2, label, conf in boxes:
-        cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
-        cv2.putText(
-            frame,
-            f"{label} {conf:.2f}",
-            (x1, max(y1 - 8, 0)),
-            cv2.FONT_HERSHEY_SIMPLEX,
-            0.5,
-            (0, 255, 0),
-            1,
-            cv2.LINE_AA,
-        )
-
-
 class YoloRunner:
+    # TODO 2026-06-29 (Will Free): why are we not running the YOLO model on the device? that's literally why we got them...
+    from ultralytics import YOLO  # noqa: PLC0415
+    from ultralytics.engine.results import Results  # noqa: PLC0415
+
+    model: YOLO
+    min_conf: float
+    stride: int
+    imgsz: int
+    half: bool
+    yolo_rgb_only: bool
+    _counts: dict[str, int]
+    _cache: dict[str, list[tuple[int, int, int, int, str, float]]]
+
     def __init__(
             self,
             model_path: str,
@@ -218,17 +213,15 @@ class YoloRunner:
             half: bool,
             yolo_rgb_only: bool,
     ):
-        # TODO 2026-06-29 (Will Free): why are we not running the YOLO model on the device? that's literally why we got them...
         from ultralytics import YOLO  # noqa: PLC0415
-
         self.model = YOLO(model_path)
         self.min_conf = min_conf
         self.stride = max(1, stride)
         self.imgsz = imgsz
         self.half = half
         self.yolo_rgb_only = yolo_rgb_only
-        self._counts: dict[str, int] = {}
-        self._cache: dict[str, list[tuple[int, int, int, int, str, float]]] = {}
+        self._counts = {}
+        self._cache = {}
 
     def should_run(self, stream_name: str) -> bool:
         return not (self.yolo_rgb_only and stream_name != "oakd_rgb")
@@ -239,16 +232,56 @@ class YoloRunner:
         c = self._counts.get(stream_name, 0)
         self._counts[stream_name] = c + 1
         if c % self.stride != 0:
-            draw_boxes(frame, self._cache.get(stream_name, []))
+            YoloRunner.draw_boxes(frame, self._cache.get(stream_name, []))
             return frame
-        kwargs = {"verbose": False, "imgsz": self.imgsz}
+        kwargs: dict[str, Any] = {"verbose": False, "imgsz": self.imgsz}
         if self.half:
             kwargs["half"] = True
         results = self.model(frame, **kwargs)
-        boxes = extract_boxes(results, self.model, self.min_conf)
+        boxes = YoloRunner.extract_boxes(results, self.model, self.min_conf)
         self._cache[stream_name] = boxes
-        draw_boxes(frame, boxes)
+        YoloRunner.draw_boxes(frame, boxes)
         return frame
+
+    @staticmethod
+    def extract_boxes(
+            results: list[Results],
+            model: YOLO,
+            min_conf: float,
+    ) -> list[tuple[int, int, int, int, str, float]]:
+        from ultralytics.engine.results import Boxes  # noqa: PLC0415
+
+        boxes: list[tuple[int, int, int, int, str, float]] = []
+        for r in results:
+            box: Boxes
+            for box in typing.cast(Boxes, r.boxes):
+                conf = float(box.conf[0])
+                if conf < min_conf:
+                    continue
+                x1, y1, x2, y2 = map(int, box.xyxy[0])
+                cls_ = box.cls[0]
+                cls = int(cls_)
+                label = model.names[cls]
+                boxes.append((x1, y1, x2, y2, label, conf))
+        return boxes
+
+    @staticmethod
+    def draw_boxes(
+            frame: np.ndarray,
+            boxes: list[tuple[int, int, int, int, str, float]],
+    ) -> None:
+        for x1, y1, x2, y2, label, conf in boxes:
+            cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
+            cv2.putText(
+                frame,
+                f"{label} {conf:.2f}",
+                (x1, max(y1 - 8, 0)),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.5,
+                (0, 255, 0),
+                1,
+                cv2.LINE_AA,
+            )
 
 
 def build_grid(
@@ -341,7 +374,7 @@ def draw_bar_bottom(img: np.ndarray, text: str) -> None:
 
 
 def draw_bar_top(img: np.ndarray, text: str) -> None:
-    h, w = img.shape[:2]
+    _h, w = img.shape[:2]
     bar = 36
     cv2.rectangle(img, (0, 0), (w, bar), (0, 0, 0), -1)
     cv2.putText(
