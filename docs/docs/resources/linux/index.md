@@ -1,6 +1,6 @@
 # Linux
 
-In order to do ROS development, we are using Linux. More specifically, Ubuntu 22.04.
+In order to do ROS development, we are using Linux. More specifically, Ubuntu 24.04.
 To see how to install Ubuntu, please reference the [Installing](./installing.md) page.
 
 ## General Resources
