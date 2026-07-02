@@ -186,4 +186,5 @@ extra_javascript:
   #- https://unpkg.com/mathjax@4/tex-mml-chtml.js
 
 extra_css:
+  - assets/css/extra.css
   - https://unpkg.com/katex@0/dist/katex.min.css
