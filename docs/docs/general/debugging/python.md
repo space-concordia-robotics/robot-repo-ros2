@@ -20,7 +20,3 @@ Here are some of the commands you can then use to help debug the program:
 - `p expression`: Evaluate *expression* in the current context and print its value.
 
 The full list of commands can be found [here](https://docs.python.org/3/library/pdb.html#pdbcommand-help).
-
-## Address Sanitizer, Thread Sanitizer, and Memory Sanitizer
-
-TODO
