@@ -1,24 +1,22 @@
 # Introduction Task Guide
 
-![][image1]
-
 ## Your Starter Checklist
 
 To help you get up and running smoothly, here's a list of foundational topics to explore and become comfortable with:
 
-- **Git & GitHub Basics**  
+- [ ] **Git & GitHub Basics**  
   Learn essential Git commands:  
   `git fetch`, `git pull`, `git commit`, `git push`, `git switch`, `git log`, etc.
-- **Linux Command Lines**  
+- [ ] **Linux Command Lines**  
   Get familiar with:
     - `cd`, `ls`, `mkdir`, `code .`
     - How to source your ROS workspace in `.bashrc`
     - Creating and managing ROS 2 workspaces and packages
-- **ROS 2 Fundamentals**  
+- [ ] **ROS 2 Fundamentals**  
   Understand the core structure and purpose of ROS 2\. Learn how it enables distributed robot systems.
-- **Nodes & Topics**  
+- [ ] **Nodes & Topics**  
   These are the building blocks of ROS-based applications. Get to know how they work and interact.
-- **The Rover**  
+- [ ] **The Rover**  
   Finally, start learning about the rover itself&mdash;its architecture, components, and how you'll interface with it through code and testing. Hands-on time is
   highly encouraged!
 
@@ -28,13 +26,6 @@ There are many sources you can use in order to get the ball rolling on your lear
 look at to familiarize yourself with ROS2:
 
 ### Videos
-
-[//]: # (@formatter:off)
-
-!!! note inline end
-    If you decide to follow the udemy course above, make sure to download **ROS2 HUMBLE** on **UBUNTU 22.04** and not ROS2 Jazzy on Ubuntu 24.04! That is the only change you need to make. 
-
-[//]: # (@formatter:on)
 
 This is a great [starter course](https://concordia.udemy.com/course/ros2-for-beginners/) on everything there is to know about ROS2 basics \[Concordia has a
 partnership with udemy therefore, you can watch all of this for free!\])
@@ -46,9 +37,9 @@ partnership with udemy therefore, you can watch all of this for free!\])
 
 - [This website](../resources/index.md)
 - [ROS2 Cookbook (A General Guide)](https://fer.gs/ros2_cookbook/client_libraries/index.html)
-- [ROS2 Humble Concept Documention](https://docs.ros.org/en/humble/Concepts/Basic.html)
-- [ROS2 Humble Ubuntu Installation](https://docs.ros.org/en/humble/Installation/Ubuntu-Install-Debs.html) (ROS2 humble download documentation)
-- [Ubuntu 22.04 download](https://releases.ubuntu.com/jammy/%20) (select the *desktop image*)
+- [ROS2 Jazzy Concept Documention](https://docs.ros.org/en/jazzy/Concepts/Basic.html)
+- [ROS2 Jazzy Ubuntu Installation](https://docs.ros.org/en/jazzy/Installation/Ubuntu-Install-Debs.html) (ROS2 jazzy download documentation)
+- [Ubuntu 24.04 download](https://releases.ubuntu.com/noble/) (select the *desktop image*)
 - [Oracle Virtualbox](https://www.virtualbox.org/) (Good for virtualizing linux on your machine)
 - [Github Command Cheat Sheet](https://education.github.com) (Good Refresher)
 
@@ -63,7 +54,7 @@ Feel free to use any of the videos/documentation found above!
 1. **Create a new GitHub repository**  
    This is where you'll upload your code for this task and future personal practice. Make it public or private &mdash; up to you!
 2. **Set up a new ROS2 workspace**  
-   Use either your virtual machine or your local Linux setup (Ubuntu 22.04). Make sure the workspace builds and sources correctly.
+   Use either your virtual machine or your local Linux setup (Ubuntu 24.04). Make sure the workspace builds and sources correctly.
 3. **Inside that workspace, create two packages:**
     - A **Python** package (using `ament_python`)
     - A **C++** package (using `ament_cmake`)
@@ -92,5 +83,3 @@ If you're ever unsure about anything, don't hesitate to ask questions &mdash; ev
     - Always let us know in the team chat when:
         - You've completed a task.
         - You're stuck and need help.
-
-[image1]: <data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAnAAAAAFCAYAAADFY9H4AAAANklEQVR4Xu3WMQ0AQAzDwGILf079/RE00g23GIEnyQIA0GP+AADAbQYOAKCMgQMAKGPgAADKPEdBkixITlWHAAAAAElFTkSuQmCC>

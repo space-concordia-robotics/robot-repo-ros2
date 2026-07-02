@@ -8,11 +8,11 @@ You'll gain hands-on experience with the core tools and concepts that power mode
 
 ## **Tools You'll Be Working With:**
 
-- **Ubuntu 22.04 (Jammy Jellyfish)**  
+- **Ubuntu 24.04 (Noble Numbat)**  
   Our preferred open-source Linux distribution for robotics development.
 - **Virtual Machines (VMs)**  
   If you cannot run Ubuntu directly on your device, we use **Oracle VirtualBox** or **UTM** (for Mac) for our development environments.
-- **ROS 2 (Humble)**  
+- **ROS 2 (Jazzy)**  
   The Robot Operating System (ROS) enables communication between various parts of the robot. It's central to everything we build.
 - **C++ and Python**  
   Our primary programming languages for building robot behavior, control algorithms, and infrastructure.

@@ -5,7 +5,7 @@ However, if for whatever reason you cannot dual boot, or you do not want to dual
 
 [//]: # (TODO: add installation instructions)
 
-- [Ubuntu 22.04 download](https://releases.ubuntu.com/jammy/) (select the "desktop" image)
+- [Ubuntu 24.04 download](https://releases.ubuntu.com/noble/) (select the "desktop" image)
 
 ## Virtualizing
 
