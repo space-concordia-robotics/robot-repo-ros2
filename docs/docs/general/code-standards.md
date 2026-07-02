@@ -7,7 +7,12 @@ As such, this guideline outlines the set of standards that everyone is expected 
 
 ### Naming
 
-All packages are named using `kebab-case` for the folder name, however the actual package name itself is named using `snake_case`.
+- All packages are named using `kebab-case` for the folder name, however the actual package name itself is named using `snake_case`.
+  For example, a package with the directory `arm-controller` would have the name `arm_controller`.  
+  Note that sometimes the folder name does not always reflect the exact name of the package (but it should be similar),
+  for example the `scrb_common_util` package has the folder name `common-util`,
+  this is because the `scrb` part is used to differentiate it from everything else but that is not necessary in the file tree.
+- Scripts should be named in `snake_case`
 
 ### Formatting
 
@@ -57,6 +62,7 @@ When working in C++, you should use modern C++ features, for example:
 - [`std::variant`](https://en.cppreference.com/cpp/utility/variant)
 - [`std::ranges`](https://en.cppreference.com/cpp/header/ranges)
 - [`std::chrono`](https://en.cppreference.com/cpp/header/chrono)
+- [`std::numbers`](https://en.cppreference.com/cpp/header/numbers)
 - & more
 
 ### Avoid C-isms
@@ -77,6 +83,29 @@ You should try to avoid C-isms, for example:
 - `memcpy`
 - untyped durations (e.g. a parameter in milliseconds which takes an `#!cpp int`), prefer `std::chrono`
 - header/include guards, prefer `#!cpp #pragma once`
+- the `#!cpp []` operator for arrays, vectors, etc., prefer `#!cpp .at()` (e.g. do `#!cpp vec.at(0)` instead of `#!cpp vec[0]`)
+- `#!cpp strerror(errno)`, prefer
+  ```cpp title=""
+  const auto code = std::make_error_code(static_cast<std::errc>(errno))
+  code.message()
+  ```
+- `#!cpp typedef struct {} Foo`, prefer `#!cpp struct Foo {}`
+
+### Miscellaneous
+
+- Do not add `#!cpp // namespace foo` comments at the end of a namespace.
+
+### Clang-Tidy & Clang-Format
+
+All files should be reformatted using Clang-Format, using the `.clang-format` config in the root of this repository.
+
+Clang-Tidy should be used to lint all files prior to committing or PRing. Please try to fix all the warnings that it shows, it shows them for a reason.  
+If you really cannot fix the warning, then you can suppress the warning, however you should provide a reason for the suppression, for example:
+
+```cpp
+// NOLINTNEXTLINE(*-suspicious-stringview-data-usage): name is null terminated
+if (ImGui::Selectable(name.data(), selected)) {
+```
 
 ### Libraries
 
@@ -92,10 +121,6 @@ You should also try to use the following libraries where possible:
 
 - [Eigen](https://libeigen.gitlab.io/eigen/docs-3.4/)
 - [OpenCV](https://docs.opencv.org/4.13.0/index.html)
-
-### clang-tidy & clang-format
-
-==TODO==
 
 ## Python
 
