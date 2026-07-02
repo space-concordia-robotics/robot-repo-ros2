@@ -1,0 +1,9 @@
+.md-grid {
+    max-width: 72rem;
+}
+
+@media screen and (min-width:45em) {
+    .md-typeset .inline {
+        width:16rem;
+    }
+}
