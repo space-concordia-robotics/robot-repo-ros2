@@ -3,7 +3,6 @@ IndentWidth: 4
 TabWidth: 4
 UseTab: Never
 BasedOnStyle: LLVM
----
 Language: Cpp
 AccessModifierOffset: -4
 AlignAfterOpenBracket: true
@@ -15,12 +14,13 @@ AllowShortBlocksOnASingleLine: Empty
 AllowShortCaseLabelsOnASingleLine: false
 AllowShortFunctionsOnASingleLine: None
 AllowShortIfStatementsOnASingleLine: false
+AllowShortLambdasOnASingleLine: Empty
 AllowShortLoopsOnASingleLine: false
 AlwaysBreakAfterDefinitionReturnType: None
 AlwaysBreakAfterReturnType: None
 AlwaysBreakTemplateDeclarations: Yes
 BinPackArguments: true
-BinPackParameters: true
+BinPackParameters: OnePerLine
 BraceWrapping:
   AfterCaseLabel: false
   AfterClass: false
@@ -48,6 +48,7 @@ ConstructorInitializerAllOnOneLineOrOnePerLine: false
 ContinuationIndentWidth: 4
 EmptyLineAfterAccessModifier: Never
 EmptyLineBeforeAccessModifier: LogicalBlock
+FixNamespaceComments: false
 IncludeBlocks: Regroup
 IncludeCategories:
   - Regex: '^<rcl.*'
@@ -60,9 +61,9 @@ IncludeCategories:
     Priority: 1
     SortPriority: 0
   - Regex: '^".*'
-    Priority: 2
+    Priority: 4
   - Regex: '.*'
-    Priority: 3
+    Priority: 1
 IncludeIsMainRegex: '([-_](test|unittest))?$'
 IndentCaseBlocks: false
 IndentCaseLabels: false
