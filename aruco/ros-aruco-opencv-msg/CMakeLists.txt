@@ -1,22 +1,19 @@
 cmake_minimum_required(VERSION 3.22)
 project(ros_aruco_opencv_msgs)
 
-if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    add_compile_options(-Wall -Wextra -Wpedantic)
-endif ()
+find_package(scrb_cmake_utils REQUIRED)
 
-set(DEPENDENCIES
+## DEPENDENCIES
+
+find_package(ament_cmake REQUIRED)
+find_package(rosidl_default_generators REQUIRED)
+
+find_dependencies(
         std_msgs
         geometry_msgs
 )
 
-# find dependencies
-find_package(ament_cmake REQUIRED)
-find_package(rosidl_default_generators REQUIRED)
-
-foreach (dependency IN ITEMS ${DEPENDENCIES})
-    find_package(${dependency} REQUIRED)
-endforeach ()
+## COMPILE
 
 rosidl_generate_interfaces(${PROJECT_NAME}
         "msg/ArucoDetections.msg"
@@ -26,9 +23,13 @@ rosidl_generate_interfaces(${PROJECT_NAME}
         DEPENDENCIES ${DEPENDENCIES}
 )
 
+## TESTING
+
 if (BUILD_TESTING)
     find_package(ament_lint_auto REQUIRED)
     ament_lint_auto_find_test_dependencies()
 endif ()
+
+## EXPORTS
 
 ament_package()

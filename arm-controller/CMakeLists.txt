@@ -1,28 +1,36 @@
 cmake_minimum_required(VERSION 3.22)
 project(arm_controller)
 
-if(NOT CMAKE_CXX_STANDARD)
-    set(CMAKE_CXX_STANDARD 17)
-endif()
+find_package(scrb_cmake_utils REQUIRED)
 
-if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    add_compile_options(-Wall -Wextra -Wpedantic)
-endif()
+## DEPENDENCIES
 
 find_package(ament_cmake REQUIRED)
-find_package(rclcpp REQUIRED)
-find_package(std_msgs REQUIRED)
-find_package(geometry_msgs REQUIRED) # Include geometry_msgs for the ArmController class
-find_package(sensor_msgs REQUIRED)
+
+find_dependencies(
+        rclcpp
+        std_msgs
+        sensor_msgs
+)
+
+## COMPILE
 
 include_directories(include)
 
-add_executable(arm_controller_node src/arm_controller_node.cpp)
+scrb_add_executable(${PROJECT_NAME}_node src/arm_controller_node.cpp)
 
-ament_target_dependencies(arm_controller_node rclcpp sensor_msgs std_msgs)
+target_link_libraries(${PROJECT_NAME}_node PUBLIC ${DEPENDENCY_TARGETS})
 
-install(TARGETS
-        arm_controller_node
-        DESTINATION lib/${PROJECT_NAME})
+## INSTALL
+
+install(
+        TARGETS ${PROJECT_NAME}_node
+        EXPORT export_${PROJECT_NAME}
+        ARCHIVE DESTINATION lib
+        LIBRARY DESTINATION lib
+        RUNTIME DESTINATION bin
+)
+
+## EXPORTS
 
 ament_package()

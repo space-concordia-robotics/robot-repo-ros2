@@ -1,77 +1,56 @@
 cmake_minimum_required(VERSION 3.22)
 project(arm_hardware)
 
-if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 17)
-endif()
+if (POLICY CMP0167)
+    cmake_policy(SET CMP0167 NEW)
+endif ()
 
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
+find_package(scrb_cmake_utils REQUIRED)
 
-if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  add_compile_options(-Wall -Wextra -Wpedantic)
-endif()
+## DEPENDENCIES
 
-# find dependencies
 find_package(ament_cmake REQUIRED)
-find_package(rclcpp REQUIRED)
-find_package(rclcpp_lifecycle REQUIRED)
-find_package(hardware_interface REQUIRED)
-find_package(sensor_msgs REQUIRED)
-find_package(pluginlib REQUIRED)
 
-add_library(arm_interface SHARED
+find_dependencies(
+        rclcpp
+        rclcpp_lifecycle
+        hardware_interface
+        sensor_msgs
+        pluginlib
+)
+
+## COMPILE
+
+scrb_add_library(arm_interface SHARED
         src/arm_interface.cpp
         src/absenc.cpp
 )
 
-target_include_directories(arm_interface
-  PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-    $<INSTALL_INTERFACE:include>
+target_include_directories(arm_interface PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:include>
 )
 
-ament_target_dependencies(arm_interface
-  rclcpp
-  rclcpp_lifecycle
-  hardware_interface
-  sensor_msgs
-  pluginlib
-)
+target_link_libraries(arm_interface PUBLIC ${DEPENDENCY_TARGETS})
 
-# Export the plugin
 pluginlib_export_plugin_description_file(hardware_interface rover_hardware_interface.xml)
 
-# --- INSTALL RULES ---
+## INSTALL
 
 install(
-  TARGETS arm_interface
-  EXPORT export_${PROJECT_NAME}
-  ARCHIVE DESTINATION lib
-  LIBRARY DESTINATION lib
-  RUNTIME DESTINATION bin
-  INCLUDES DESTINATION include
+        TARGETS arm_interface
+        EXPORT export_${PROJECT_NAME}
+        ARCHIVE DESTINATION lib
+        LIBRARY DESTINATION lib
+        RUNTIME DESTINATION bin
+        INCLUDES DESTINATION include
 )
 
-#install files
-install(FILES
-        rover_hardware_interface.xml
-  DESTINATION share/${PROJECT_NAME}
-)
-
-# Install headers
-install(
-  DIRECTORY include
-  DESTINATION include
-)
-
-install(
-  EXPORT export_${PROJECT_NAME}
-  DESTINATION share/${PROJECT_NAME}/cmake
-)
+## EXPORT
 
 ament_export_include_directories(include)
 ament_export_libraries(arm_interface)
 ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
+ament_export_dependencies(${DEPENDENCIES})
 
 ament_package()

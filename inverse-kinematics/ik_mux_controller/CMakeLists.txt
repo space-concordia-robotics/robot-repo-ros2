@@ -1,47 +1,38 @@
 cmake_minimum_required(VERSION 3.22)
 project(ik_mux_controller)
 
-if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  add_compile_options(-Wall -Wextra -Wpedantic)
-endif()
+find_package(scrb_cmake_utils REQUIRED)
 
-# find dependencies
+## DEPENDENCIES
+
 find_package(ament_cmake REQUIRED)
-find_package(rclcpp REQUIRED)
-find_package(control_msgs REQUIRED)
-find_package(geometry_msgs REQUIRED)
-find_package(moveit_msgs REQUIRED)
-find_package(std_srvs REQUIRED)
-find_package(sensor_msgs REQUIRED)
 
-
-add_executable(ik_mux src/ik_mux.cpp)
-ament_target_dependencies(ik_mux
-  rclcpp
-  control_msgs
-  moveit_msgs
-  geometry_msgs
-  sensor_msgs
-  std_srvs
+find_dependencies(
+        rclcpp
+        control_msgs
+        moveit_msgs
+        geometry_msgs
+        sensor_msgs
+        std_srvs
 )
 
-add_executable(ik_nxt src/ik_mux_nxt.cpp)
-ament_target_dependencies(ik_nxt
-  rclcpp
-  control_msgs
-  moveit_msgs
-  geometry_msgs
-  sensor_msgs
-  std_srvs
+## COMPILE
+
+scrb_add_executable(ik_mux src/ik_mux.cpp)
+target_link_libraries(ik_mux PUBLIC ${DEPENDENCY_TARGETS})
+
+scrb_add_executable(ik_nxt src/ik_mux_nxt.cpp)
+target_link_libraries(ik_nxt PUBLIC ${DEPENDENCY_TARGETS})
+
+## INSTALL
+
+install(
+        TARGETS ik_mux ik_nxt
+        EXPORT export_${PROJECT_NAME}
+        ARCHIVE DESTINATION lib
+        LIBRARY DESTINATION lib
+        RUNTIME DESTINATION bin
 )
 
-install(TARGETS
-
-  ik_mux
-  ik_nxt
-  DESTINATION lib/${PROJECT_NAME}
-)
-
-
-
+## EXPORT
 ament_package()
