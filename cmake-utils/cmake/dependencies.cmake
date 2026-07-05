@@ -31,7 +31,6 @@ macro(find_dependencies)
         endif ()
         if (NOT use_modern_cmake)
             # otherwise use the classic CMake variables
-            message(WARNING "${${dependency}_LIBRARIES}")
             foreach (library ${${dependency}_LIBRARIES})
                 if (NOT "${${dependency}_LIBRARY_DIRS}" STREQUAL "")
                     if (NOT IS_ABSOLUTE ${library} OR NOT EXISTS ${library})
@@ -48,8 +47,6 @@ macro(find_dependencies)
 
         list(APPEND DEPENDENCY_TARGETS ${${dependency}_TARGETS})
     endforeach ()
-
-    message(WARNING "dependencies: ${DEPENDENCIES}, dependency targets: ${DEPENDENCY_TARGETS}")
 
     # clean up variables
     unset(dependencies)
