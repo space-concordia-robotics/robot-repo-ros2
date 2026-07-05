@@ -1,72 +1,18 @@
 cmake_minimum_required(VERSION 3.22)
 project(rtsp_camera)
 
-set(CMAKE_CXX_STANDARD 23)
+find_package(scrb_cmake_utils REQUIRED)
 
-if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    add_compile_options(-Wall -Wextra -Wpedantic)
-endif ()
+## DEPENDENCIES
 
-include(../cmake/CPM.cmake)
+cpm()
 
-# find dependencies
 CPMAddPackage("gh:fmtlib/fmt#11.2.0")
 CPMAddPackage("gh:Neargye/magic_enum#v0.9.7")
 
 find_package(ament_cmake REQUIRED)
-find_package(rclcpp REQUIRED)
-find_package(rclcpp_components REQUIRED)
-find_package(rclcpp_lifecycle REQUIRED)
-find_package(sensor_msgs REQUIRED)
-find_package(image_transport REQUIRED)
-find_package(cv_bridge REQUIRED)
-#find_package(OpenCV REQUIRED)
-find_package(camera_info_manager REQUIRED)
-#find_package(fmt REQUIRED)
-find_package(ros2_fmt_logger REQUIRED)
-find_package(magic_enum REQUIRED)
 
-#find_package(generate_parameter_library REQUIRED)
-#generate_parameter_library(rtsp_camera_parameters src/rtsp_camera_parameters.yaml)
-
-find_package(PkgConfig REQUIRED)
-
-pkg_check_modules(GSTREAMER REQUIRED
-        gstreamer-1.0
-)
-pkg_check_modules(GSTREAMER_RTSP_SERVER REQUIRED
-        gstreamer-video-1.0
-        gstreamer-sdp-1.0
-        gstreamer-net-1.0
-        gstreamer-rtp-1.0
-        gstreamer-rtsp-1.0
-        gstreamer-rtsp-server-1.0
-)
-pkg_check_modules(GSTREAMER_APP REQUIRED gstreamer-app-1.0)
-
-include_directories(
-        include
-        ${GSTREAMER_INCLUDE_DIRS}
-        ${GSTREAMER_APP_INCLUDE_DIRS}
-        ${GSTREAMER_RTSP_SERVER_INCLUDE_DIRS}
-)
-
-add_executable(
-        rtsp_camera_node
-        src/rtsp_camera_node.cpp
-)
-
-target_compile_features(rtsp_camera_node PUBLIC cxx_std_20)
-
-target_include_directories(
-        rtsp_camera_node PUBLIC
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-        $<INSTALL_INTERFACE:include>
-)
-
-
-ament_target_dependencies(
-        rtsp_camera_node
+find_dependencies(
         rclcpp
         rclcpp_components
         rclcpp_lifecycle
@@ -75,32 +21,55 @@ ament_target_dependencies(
         cv_bridge
         camera_info_manager
         ros2_fmt_logger
+        magic_enum
 )
 
-target_link_libraries(
-        rtsp_camera_node
-        #rtsp_camera_parameters
-        ${GSTREAMER_LIBRARIES}
-        ${GSTREAMER_APP_LIBRARIES}
-        ${GSTREAMER_RTSP_SERVER_LIBRARIES}
-        fmt::fmt
-        magic_enum::magic_enum
+list(APPEND DEPENDENCY_TARGETS magic_enum::magic_enum fmt::fmt)
+
+#find_package(generate_parameter_library REQUIRED)
+#generate_parameter_library(rtsp_camera_parameters src/rtsp_camera_parameters.yaml)
+
+find_package(PkgConfig REQUIRED)
+
+pkg_check_modules(Gst REQUIRED IMPORTED_TARGET gstreamer-1.0)
+pkg_check_modules(GstApp REQUIRED IMPORTED_TARGET gstreamer-app-1.0)
+pkg_check_modules(GstRtspServer REQUIRED IMPORTED_TARGET
+        gstreamer-video-1.0
+        gstreamer-sdp-1.0
+        gstreamer-net-1.0
+        gstreamer-rtp-1.0
+        gstreamer-rtsp-1.0
+        gstreamer-rtsp-server-1.0
 )
+
+list(APPEND DEPENDENCY_TARGETS PkgConfig::Gst PkgConfig::GstApp PkgConfig::GstRtspServer)
+
+## COMPILE
+
+scrb_add_executable(${PROJECT_NAME}_node
+        src/rtsp_camera_node.cpp
+)
+
+target_include_directories(${PROJECT_NAME}_node PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:include>
+)
+
+target_link_libraries(${PROJECT_NAME}_node PRIVATE ${DEPENDENCY_TARGETS})
+
+## INSTALL
 
 install(
         TARGETS rtsp_camera_node
-        DESTINATION lib/${PROJECT_NAME}
+        ARCHIVE DESTINATION lib
+        LIBRARY DESTINATION lib
+        RUNTIME DESTINATION bin
 )
 
 #install(
 #        TARGETS rtsp_camera_node rtsp_camera_parameters
 #        DESTINATION ${PROJECT_NAME}Targets
 #)
-
-install(
-        DIRECTORY include
-        DESTINATION include/${PROJECT_NAME}
-)
 
 install(
         DIRECTORY launch
@@ -112,16 +81,6 @@ install(
         DESTINATION share/${PROJECT_NAME}
 )
 
-if (BUILD_TESTING)
-    find_package(ament_lint_auto REQUIRED)
-    # the following line skips the linter which checks for copyrights
-    # comment the line when a copyright and license is added to all source files
-    set(ament_cmake_copyright_FOUND TRUE)
-    # the following line skips cpplint (only works in a git repo)
-    # comment the line when this package is in a git repo and when
-    # a copyright and license is added to all source files
-    set(ament_cmake_cpplint_FOUND TRUE)
-    ament_lint_auto_find_test_dependencies()
-endif ()
+## PACKAGE
 
 ament_package()

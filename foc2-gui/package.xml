@@ -35,6 +35,7 @@
 
     <build_depend>libgstreamer1.0-dev</build_depend>
     <build_depend>libgstrtspserver-1.0-dev</build_depend>
+    <build_depend>scrb_cmake_utils</build_depend>
 
     <buildtool_depend>ament_cmake</buildtool_depend>
 

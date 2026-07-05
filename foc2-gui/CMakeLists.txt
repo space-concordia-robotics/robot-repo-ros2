@@ -1,15 +1,27 @@
 cmake_minimum_required(VERSION 3.22)
 project(foc2_gui)
 
-if (NOT CMAKE_CXX_STANDARD)
-    set(CMAKE_CXX_STANDARD 23)
+if (POLICY CMP0135)
+    cmake_policy(SET CMP0135 NEW)
 endif ()
+
+find_package(scrb_cmake_utils REQUIRED)
 
 ## DEPENDENCIES
 
 include(external/dependencies.cmake)
 
-set(DEPENDENCIES
+# Geographiclib installs FindGeographicLib.cmake to this non-standard location on Ubuntu
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "/usr/share/cmake/geographiclib/")
+
+cpm()
+
+CPMAddPackage("gh:fmtlib/fmt#11.2.0")
+CPMAddPackage("gh:Neargye/magic_enum#v0.9.7")
+
+find_package(ament_cmake REQUIRED)
+
+find_dependencies(
         rclcpp
         rclcpp_components
         rclcpp_action
@@ -28,6 +40,7 @@ set(DEPENDENCIES
         GeographicLib
         magic_enum
         CURL
+        "Boost REQUIRED CONFIG COMPONENTS"
 
         geometry_msgs
         tf2_geometry_msgs
@@ -41,34 +54,35 @@ set(DEPENDENCIES
         scrb_common_util
 )
 
-# Geographiclib installs FindGeographicLib.cmake to this non-standard location on Ubuntu
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "/usr/share/cmake/geographiclib/")
+list(APPEND DEPENDENCY_TARGETS magic_enum::magic_enum Boost)
 
-include(../cmake/CPM.cmake)
+list(APPEND DEPENDENCY_TARGETS
+        SDL3::SDL3
 
-# find dependencies
-CPMAddPackage("gh:fmtlib/fmt#11.2.0")
-CPMAddPackage("gh:Neargye/magic_enum#v0.9.7")
+        imgui
+        implot
+        implot3d
+        imfonts
 
-find_package(ament_cmake REQUIRED)
-find_package(backward_ros REQUIRED)
+        iconfonts
 
-foreach (dependency IN ITEMS ${DEPENDENCIES})
-    find_package(${dependency} REQUIRED)
-endforeach ()
+        lunasvg
+
+        stb
+)
 
 find_package(PkgConfig REQUIRED)
 
-pkg_check_modules(GSTREAMER REQUIRED gstreamer-1.0)
-pkg_check_modules(GSTREAMER_APP REQUIRED gstreamer-app-1.0)
-pkg_check_modules(GSTREAMER_RTSP REQUIRED
+pkg_check_modules(Gst REQUIRED IMPORTED_TARGET gstreamer-1.0)
+pkg_check_modules(GstApp REQUIRED IMPORTED_TARGET gstreamer-app-1.0)
+pkg_check_modules(GstRtsp REQUIRED IMPORTED_TARGET
         gstreamer-sdp-1.0
         gstreamer-net-1.0
         gstreamer-rtp-1.0
         gstreamer-rtsp-1.0
 )
 
-list(APPEND DEPENDENCIES GSTREAMER GSTREAMER_APP GSTREAMER_RTSP)
+list(APPEND DEPENDENCY_TARGETS PkgConfig::Gst PkgConfig::GstApp PkgConfig::GstRtsp)
 
 set(API_TWEAKS_FILE "${CMAKE_CURRENT_BINARY_DIR}/api-tweaks.txt")
 file(WRITE "${API_TWEAKS_FILE}" "
@@ -95,15 +109,20 @@ peel_generate(GstApp 1.0 RECURSIVE TWEAKS "${API_TWEAKS_FILE}")
 peel_generate(GstRtsp 1.0 RECURSIVE TWEAKS "${API_TWEAKS_FILE}")
 peel_generate(GstRtspServer 1.0 RECURSIVE TWEAKS "${API_TWEAKS_FILE}")
 
-find_package(Boost REQUIRED CONFIG COMPONENTS)
+list(APPEND DEPENDENCY_TARGETS
+        peel::peel
+        peel::Gst
+        peel::GstNet
+        peel::GstApp
+        peel::GstRtsp
+        peel::GstRtspServer
+)
 
-list(APPEND DEPENDENCIES Boost)
-
-## TARGETS
+## COMPILE
 
 # TODO 2026-05-05 (Will Free): split these out into multiple libraries to improve compile times.
 
-add_executable(${PROJECT_NAME}
+scrb_add_executable(${PROJECT_NAME}
         src/main.cpp
         src/im_application.cpp
 
@@ -147,41 +166,11 @@ add_executable(${PROJECT_NAME}
         src/osm/markers/rich_gps_marker.cpp
 )
 
-ament_target_dependencies(${PROJECT_NAME} PUBLIC ${DEPENDENCIES})
-
-target_link_libraries(${PROJECT_NAME} PUBLIC
-        magic_enum::magic_enum
-
-        SDL3::SDL3
-
-        imgui
-        implot
-        implot3d
-        imfonts
-
-        iconfonts
-
-        peel::peel
-        peel::Gst
-        peel::GstNet
-        peel::GstApp
-        peel::GstRtsp
-        peel::GstRtspServer
-
-        lunasvg
-
-        stb
-)
+target_link_libraries(${PROJECT_NAME} PUBLIC ${DEPENDENCY_TARGETS})
 
 # fixes issue with mold
 # TODO 2026-05-02 (Will Free): remove
 target_link_options(${PROJECT_NAME} PUBLIC -static-libgcc -static-libstdc++)
-
-target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_23)
-
-if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -Wpedantic)
-endif ()
 
 target_include_directories(${PROJECT_NAME} PUBLIC
         $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
@@ -232,5 +221,6 @@ install(
 )
 
 ## EXPORTS
+
 ament_export_targets(export_${PROJECT_NAME})
 ament_package()
