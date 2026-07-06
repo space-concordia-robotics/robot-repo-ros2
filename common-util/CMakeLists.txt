@@ -38,6 +38,17 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 
 target_link_libraries(${PROJECT_NAME} PUBLIC ${DEPENDENCY_TARGETS})
 
+target_precompile_headers(${PROJECT_NAME} PRIVATE
+        <rclcpp/rclcpp.hpp>
+        <fmt/format.h>
+        <Eigen/Core>
+        <Eigen/Geometry>
+        <Eigen/Sparse>
+        <opencv2/core/eigen.hpp>
+        <tf2/convert.hpp>
+        <tf2_eigen/tf2_eigen.hpp>
+)
+
 ## INSTALL
 
 install(

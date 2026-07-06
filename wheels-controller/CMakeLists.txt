@@ -30,6 +30,10 @@ scrb_add_executable(${PROJECT_NAME}_node
 
 target_link_libraries(${PROJECT_NAME}_node PRIVATE ${DEPENDENCY_TARGETS})
 
+target_precompile_headers(${PROJECT_NAME}_node PRIVATE
+        <rclcpp/rclcpp.hpp>
+)
+
 ## INSTALL
 
 install(

@@ -54,7 +54,7 @@ find_dependencies(
         scrb_common_util
 )
 
-list(APPEND DEPENDENCY_TARGETS magic_enum::magic_enum Boost)
+list(APPEND DEPENDENCY_TARGETS magic_enum::magic_enum)
 
 list(APPEND DEPENDENCY_TARGETS
         SDL3::SDL3
@@ -186,6 +186,25 @@ target_include_directories(${PROJECT_NAME} PRIVATE ${GENERATED_INCLUDE_DIR})
 set(FONT_AWESOME_PATH "share/resources/fonts/fa-solid-900.ttf")
 
 target_compile_definitions(${PROJECT_NAME} INTERFACE FONT_AWESOME_PATH="${FONT_AWESOME_PATH}")
+
+target_precompile_headers(${PROJECT_NAME} PRIVATE
+        <filesystem>
+        <rclcpp/rclcpp.hpp>
+        <tf2_ros/buffer.hpp>
+        <fmt/format.h>
+        <ros2_fmt_logger/logger.hpp>
+        <Eigen/Core>
+        <Eigen/Dense>
+        <opencv2/opencv.hpp>
+        <opencv2/core/eigen.hpp>
+        <imgui.h>
+        <imgui_internal.h>
+        <implot.h>
+        <implot3d.h>
+        <peel/Gst/Gst.h>
+        <peel/GstApp/GstApp.h>
+        #<peel/GstRtsp/GstRtsp.h> # <-- causes compile errors
+)
 
 ## INSTALL
 

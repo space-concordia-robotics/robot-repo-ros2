@@ -50,6 +50,12 @@ target_include_directories(${PROJECT_NAME} PRIVATE
 
 target_link_libraries(${PROJECT_NAME} PUBLIC ${DEPENDENCY_TARGETS})
 
+target_precompile_headers(${PROJECT_NAME} PRIVATE
+        <rclcpp/rclcpp.hpp>
+        <opencv2/opencv.hpp>
+        <yaml-cpp/yaml.h>
+)
+
 rclcpp_components_register_node(${PROJECT_NAME}
         PLUGIN "ros_aruco_opencv::ArucoTracker"
         EXECUTABLE "aruco_tracker"

@@ -55,6 +55,12 @@ else ()
     target_compile_definitions(wheels_interface PUBLIC HARDWARE_INTERFACE_IS_JAZZY=0)
 endif ()
 
+target_precompile_headers(${PROJECT_NAME} PRIVATE
+        <rclcpp/rclcpp.hpp>
+        <hardware_interface/hardware_component_interface.hpp>
+        <realtime_tools/realtime_buffer.hpp>
+        <ros2_fmt_logger/logger.hpp>
+)
 
 # Export hardware plugins
 pluginlib_export_plugin_description_file(hardware_interface wheels_interface.xml)
