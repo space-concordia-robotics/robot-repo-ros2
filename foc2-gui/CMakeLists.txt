@@ -201,9 +201,6 @@ target_precompile_headers(${PROJECT_NAME} PRIVATE
         <imgui_internal.h>
         <implot.h>
         <implot3d.h>
-        <peel/Gst/Gst.h>
-        <peel/GstApp/GstApp.h>
-        #<peel/GstRtsp/GstRtsp.h> # <-- causes compile errors
 )
 
 ## INSTALL
