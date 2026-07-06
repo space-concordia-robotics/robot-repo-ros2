@@ -19,6 +19,10 @@ scrb_add_executable(absenc_node src/absenc_node.cpp src/absenc.cpp)
 
 target_link_libraries(absenc_node PUBLIC ${DEPENDENCY_TARGETS})
 
+target_precompile_headers(absenc_node PRIVATE
+        <rclcpp/rclcpp.hpp>
+)
+
 ## INSTALL
 
 install(

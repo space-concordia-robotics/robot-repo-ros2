@@ -21,24 +21,29 @@ find_dependencies(
 
 ## COMPILE
 
-scrb_add_library(arm_interface SHARED
+scrb_add_library(${PROJECT_NAME} SHARED
         src/arm_interface.cpp
         src/absenc.cpp
 )
 
-target_include_directories(arm_interface PUBLIC
+target_include_directories(${PROJECT_NAME} PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include>
 )
 
-target_link_libraries(arm_interface PUBLIC ${DEPENDENCY_TARGETS})
+target_link_libraries(${PROJECT_NAME} PUBLIC ${DEPENDENCY_TARGETS})
+
+target_precompile_headers(${PROJECT_NAME} PRIVATE
+        <rclcpp/rclcpp.hpp>
+        <hardware_interface/hardware_component_interface.hpp>
+)
 
 pluginlib_export_plugin_description_file(hardware_interface rover_hardware_interface.xml)
 
 ## INSTALL
 
 install(
-        TARGETS arm_interface
+        TARGETS ${PROJECT_NAME}
         EXPORT export_${PROJECT_NAME}
         ARCHIVE DESTINATION lib
         LIBRARY DESTINATION lib
@@ -49,7 +54,7 @@ install(
 ## EXPORT
 
 ament_export_include_directories(include)
-ament_export_libraries(arm_interface)
+ament_export_libraries(${PROJECT_NAME})
 ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
 ament_export_dependencies(${DEPENDENCIES})
 

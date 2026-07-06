@@ -41,6 +41,14 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 
 target_link_libraries(${PROJECT_NAME} PUBLIC ${DEPENDENCY_TARGETS})
 
+target_precompile_headers(${PROJECT_NAME} PRIVATE
+        <rclcpp/rclcpp.hpp>
+        <controller_interface/controller_interface.hpp>
+        <hardware_interface/hardware_component_interface.hpp>
+        <realtime_tools/realtime_buffer.hpp>
+        <ros2_fmt_logger/logger.hpp>
+)
+
 # Export hardware plugins
 pluginlib_export_plugin_description_file(hardware_interface sil_interface.xml)
 pluginlib_export_plugin_description_file(controller_interface sil_interface.xml)

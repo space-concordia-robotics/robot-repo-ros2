@@ -21,6 +21,10 @@ scrb_add_executable(${PROJECT_NAME}_node src/arm_controller_node.cpp)
 
 target_link_libraries(${PROJECT_NAME}_node PUBLIC ${DEPENDENCY_TARGETS})
 
+target_precompile_headers(${PROJECT_NAME}_node PRIVATE
+        <rclcpp/rclcpp.hpp>
+)
+
 ## INSTALL
 
 install(

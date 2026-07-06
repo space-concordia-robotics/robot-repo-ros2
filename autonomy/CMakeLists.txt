@@ -58,6 +58,22 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 
 target_link_libraries(${PROJECT_NAME} PUBLIC ${DEPENDENCY_TARGETS})
 
+target_precompile_headers(${PROJECT_NAME} PRIVATE
+        <rclcpp/rclcpp.hpp>
+        <rclcpp_action/rclcpp_action.hpp>
+        <rclcpp_async/rclcpp_async.hpp>
+        <fmt/format.h>
+        # I (Will) profiled it, and these ones are the messages that contribute most significantly to the compile time
+        <nav2_msgs/action/compute_path_through_poses.hpp>
+        <nav2_msgs/action/follow_gps_waypoints.hpp>
+        <nav2_msgs/action/follow_waypoints.hpp>
+        <nav2_msgs/action/navigate_through_poses.hpp>
+        <nav2_msgs/action/follow_path.hpp>
+        <nav2_msgs/action/navigate_to_pose.hpp>
+        <nav2_msgs/action/compute_path_to_pose.hpp>
+        <ros_aruco_opencv_msgs/msg/aruco_detections.hpp>
+)
+
 ## INSTALL
 
 install(

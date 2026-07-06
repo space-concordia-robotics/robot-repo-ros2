@@ -57,6 +57,12 @@ target_include_directories(${PROJECT_NAME}_node PUBLIC
 
 target_link_libraries(${PROJECT_NAME}_node PRIVATE ${DEPENDENCY_TARGETS})
 
+target_precompile_headers(${PROJECT_NAME}_node PRIVATE
+        <rclcpp/rclcpp.hpp>
+        <ros2_fmt_logger/logger.hpp>
+        <opencv2/opencv.hpp>
+)
+
 ## INSTALL
 
 install(
