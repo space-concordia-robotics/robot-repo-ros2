@@ -1,10 +1,11 @@
 #ifndef ABSENC_H
 #define ABSENC_H
 
-#include <stdint.h>
 #include <string>
-#include <rclcpp/rclcpp.hpp>
+#include <rclcpp/node.hpp>
 #include <sensor_msgs/msg/joint_state.hpp>
+
+const char* foo();
 
 enum class AbsencErrorCause : uint8_t {
     NONE,
@@ -29,7 +30,11 @@ struct AbsencMeasurement {
     double angspd;
 };
 
-static constexpr auto NO_ERROR = AbsencError{AbsencErrorCause::NONE, 0, __LINE__};
+static constexpr auto NO_ERROR = AbsencError{
+    .error = AbsencErrorCause::NONE,
+    .cause = 0,
+    .line  = __LINE__,
+};
 
 class AbsencDriver {
 public:
