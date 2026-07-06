@@ -14,6 +14,7 @@ find_dependencies(
         geometry_msgs
         tf2
         tf2_ros
+        ros2_fmt_logger
 )
 
 ## COMPILE
@@ -39,6 +40,7 @@ target_link_libraries(transducer_m_imu ${DEPENDENCY_TARGETS})
 
 target_precompile_headers(transducer_m_imu PRIVATE
         <rclcpp/rclcpp.hpp>
+        <ros2_fmt_logger/logger.hpp>
 )
 
 ## INSTALL

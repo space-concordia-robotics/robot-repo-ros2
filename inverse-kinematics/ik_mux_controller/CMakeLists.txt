@@ -14,6 +14,7 @@ find_dependencies(
         geometry_msgs
         sensor_msgs
         std_srvs
+        ros2_fmt_logger
 )
 
 ## COMPILE
@@ -23,6 +24,7 @@ target_link_libraries(ik_mux PUBLIC ${DEPENDENCY_TARGETS})
 
 target_precompile_headers(ik_mux PRIVATE
         <rclcpp/rclcpp.hpp>
+        <ros2_fmt_logger/logger.hpp>
 )
 
 scrb_add_executable(ik_nxt src/ik_mux_nxt.cpp)
@@ -30,6 +32,7 @@ target_link_libraries(ik_nxt PUBLIC ${DEPENDENCY_TARGETS})
 
 target_precompile_headers(ik_nxt PRIVATE
         <rclcpp/rclcpp.hpp>
+        <ros2_fmt_logger/logger.hpp>
 )
 
 ## INSTALL

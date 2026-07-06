@@ -13,6 +13,7 @@ find_dependencies(
         geometry_msgs
         action_msgs
         builtin_interfaces
+        ros2_fmt_logger
 )
 
 ## COMPILE
@@ -32,6 +33,7 @@ target_link_libraries(${PROJECT_NAME}_node PRIVATE ${DEPENDENCY_TARGETS})
 
 target_precompile_headers(${PROJECT_NAME}_node PRIVATE
         <rclcpp/rclcpp.hpp>
+        <ros2_fmt_logger/logger.hpp>
 )
 
 ## INSTALL

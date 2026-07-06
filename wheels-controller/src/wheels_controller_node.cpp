@@ -6,15 +6,15 @@
 using namespace std::literals::chrono_literals;
 
 WheelsControllerNode::WheelsControllerNode()
-    : Node("wheels_controller_node") {
+    : Node("wheels_controller_node"), logger(get_logger()) {
     this->declare_parameter("can_path", "can0");
     multiplier = this->declare_parameter("multiplier", 500);
 
     if (CANController::configureCAN("can0") != SUCCESS) {
-        RCLCPP_ERROR(this->get_logger(), "Failed to configure CAN interface");
+        logger.error("Failed to configure CAN interface");
         rclcpp::shutdown();
     }
-    RCLCPP_INFO(this->get_logger(), "Initialized CAN interface: %s", "can0");
+    logger.info("Initialized CAN interface: {}", "can0");
     // Subscribe to cmd_vel
     twist_msg_callback = this->create_subscription<geometry_msgs::msg::Twist>(
         "cmd_vel",
@@ -34,13 +34,13 @@ WheelsControllerNode::WheelsControllerNode()
     multiplier_callback_handle = parameter_event_handler->add_parameter_callback("multiplier", multiplier_callback);
 
 
-    RCLCPP_INFO(this->get_logger(), "Subscribed to cmd_vel topic.");
+    logger.info("Subscribed to cmd_vel topic.");
 
     // Start the motors
     constexpr uint64_t mask = 0x7E;
     RevMotorController::startMotor(mask);
 
-    RCLCPP_INFO(this->get_logger(), "Movement controller initialized.");
+    logger.info("Movement controller initialized.");
 }
 
 void WheelsControllerNode::TwistMessageCallback(const geometry_msgs::msg::Twist::UniquePtr& twist_msg) const {
@@ -74,7 +74,7 @@ void WheelsControllerNode::TwistMessageCallback(const geometry_msgs::msg::Twist:
     constexpr uint64_t mask = 0x7E;
     RevMotorController::startMotor(mask);
 
-    RCLCPP_INFO(this->get_logger(), "Motor commands sent: Right RPM = %.2f, Left RPM = %.2f", right_wheels_vel_rpm, left_wheels_vel_rpm);
+    logger.info("Motor commands sent: Right RPM = {:.2f}, Left RPM = {:.2f}", right_wheels_vel_rpm, left_wheels_vel_rpm);
 }
 
 int main(const int argc, char* argv[]) {

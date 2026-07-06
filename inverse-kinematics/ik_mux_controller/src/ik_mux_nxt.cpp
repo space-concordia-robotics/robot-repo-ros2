@@ -1,4 +1,5 @@
 #include <thread>
+#include <ros2_fmt_logger/ros2_fmt_logger.hpp>
 #include <std_srvs/srv/trigger.hpp>
 #include <rclcpp/client.hpp>
 #include <rclcpp/node.hpp>
@@ -96,7 +97,7 @@ namespace moveit_servo {
     class JoyToServoPub : public rclcpp::Node {
     public:
         explicit JoyToServoPub(const rclcpp::NodeOptions& options)
-            : Node("joy_to_twist_publisher", options), frame_to_publish_(BASE_FRAME_ID) {
+            : Node("joy_to_twist_publisher", options), frame_to_publish_(BASE_FRAME_ID), logger(get_logger()) {
             // Setup pub/sub
             joy_sub_ = this->create_subscription<sensor_msgs::msg::Joy>(
                 JOY_TOPIC,
@@ -115,7 +116,7 @@ namespace moveit_servo {
             servo_start_client_ = this->create_client<std_srvs::srv::Trigger>("/servo_node/start_servo");
             servo_start_client_->wait_for_service(std::chrono::seconds(1));
             servo_start_client_->async_send_request(std::make_shared<std_srvs::srv::Trigger::Request>());
-            RCLCPP_INFO(this->get_logger(), "Ik mux node publishing topic data");
+            logger.info("Ik mux node publishing topic data");
         }
 
         ~JoyToServoPub() override {
@@ -163,6 +164,8 @@ namespace moveit_servo {
 
         std::thread collision_pub_thread_;
         bool deadman_ = false;
+
+        ros2_fmt_logger::Logger logger;
     };
 }
 

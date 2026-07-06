@@ -19,7 +19,7 @@ float scaleClamp(float val, const float scale, const float min, const float max)
 }
 
 Absenc::Absenc()
-    : Node("absenc_node") {
+    : Node("absenc_node"), logger(get_logger()) {
     // Declare parameters
     this->declare_parameter("absenc_path", "/dev/ttyUSB0");
     this->declare_parameter("absenc_polling_rate", 100);
@@ -40,10 +40,10 @@ Absenc::Absenc()
     // Open serial connection
     if (AbsencError err = AbsencDriver::openPort(this->get_parameter("absenc_path").as_string().c_str(), s_fd); err.error != AbsencErrorCause::NONE) {
         const auto code = std::make_error_code(static_cast<std::errc>(err.cause));
-        RCLCPP_ERROR(this->get_logger(), "Error opening file: %i. Message: %s", err.cause, code.message().c_str());
+        logger.error("Error opening file: {}. Message: {}", err.cause, code.message());
         rclcpp::shutdown();
     } else {
-        RCLCPP_INFO(this->get_logger(), "Successfully opened serial connection to %s", absenc_path_.c_str());
+        logger.info("Successfully opened serial connection to {}", absenc_path_);
     }
 }
 
@@ -67,22 +67,23 @@ void Absenc::absEncPollingCallback() {
     auto [error4, cause4, line4] = AbsencDriver::pollSlave(4, &absenc_meas_4, s_fd);
 
     if (error1 != AbsencErrorCause::NONE) {
-        RCLCPP_ERROR(this->get_logger(), "Error on 1: %s cause %d line %d\n", to_string(error1), cause1, line1);
+        logger.error("Error on 1: {} cause {} line {}\n", to_string(error1), cause1, line1);
     }
     if (error2 != AbsencErrorCause::NONE) {
-        RCLCPP_ERROR(this->get_logger(), "Error on 2: %s cause %d line %d\n", to_string(error2), cause2, line2);
+        logger.error("Error on 2: {} cause {} line {}\n", to_string(error2), cause2, line2);
     }
     if (error3 != AbsencErrorCause::NONE) {
-        RCLCPP_ERROR(this->get_logger(), "Error on 3: %s cause %d line %d\n", to_string(error3), cause3, line3);
+        logger.error("Error on 3: {} cause {} line {}\n", to_string(error3), cause3, line3);
     }
     if (error4 != AbsencErrorCause::NONE) {
-        RCLCPP_ERROR(this->get_logger(), "Error on 4: %s cause %d line %d\n", to_string(error4), cause4, line4);
+        logger.error("Error on 4: {} cause {} line {}\n", to_string(error4), cause4, line4);
     }
 
     if (absenc_meas_1.status != 0 || absenc_meas_2.status != 0 || absenc_meas_3.status != 0 || absenc_meas_4.status != 0) {
-        RCLCPP_ERROR(this->get_logger(),
-                     "One of the absenc status returned an error. Here are the error codes: 0x%04x 0x%04x 0x%04x 0x%04x\n",
-                     absenc_meas_1.status, absenc_meas_2.status, absenc_meas_3.status, absenc_meas_4.status);
+        logger.error(
+            "One of the absenc status returned an error. Here are the error codes: 0x{:04x} 0x{:04x} 0x{:04x} 0x{:04x}\n",
+            absenc_meas_1.status, absenc_meas_2.status, absenc_meas_3.status, absenc_meas_4.status
+        );
         //return;
     }
 
@@ -115,7 +116,7 @@ void Absenc::absEncPollingCallback() {
 
     // Print angles to the terminal
     if (absenc_meas_1.status == 0 || absenc_meas_2.status == 0 || absenc_meas_3.status == 0 || absenc_meas_4.status == 0) {
-        RCLCPP_INFO(this->get_logger(), "Angles: [%f, %f, %f, %f]", angle_4, angle_1, angle_2, angle_3);
+        logger.info("Angles: [{}, {}, {}, {}]", angle_4, angle_1, angle_2, angle_3);
     }
 }
 

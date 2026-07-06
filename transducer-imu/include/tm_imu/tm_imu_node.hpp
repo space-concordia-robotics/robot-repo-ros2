@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <ros2_fmt_logger/ros2_fmt_logger.hpp>
 #include <tf2_ros/transform_broadcaster.h>
 #include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/msg/imu.hpp>
@@ -46,4 +47,6 @@ private:
     rclcpp::Publisher<sensor_msgs::msg::MagneticField>::SharedPtr publisher_IMU_MAG;
 
     std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
+
+    ros2_fmt_logger::Logger logger;
 };

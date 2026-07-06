@@ -1,5 +1,6 @@
 #pragma once
 
+#include <ros2_fmt_logger/ros2_fmt_logger.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <geometry_msgs/msg/twist.hpp>
 #include <std_msgs/msg/string.hpp>
@@ -27,4 +28,6 @@ private:
     rclcpp::ParameterCallbackHandle::SharedPtr multiplier_callback_handle;
 
     int multiplier;
+
+    ros2_fmt_logger::Logger logger;
 };

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <ros2_fmt_logger/ros2_fmt_logger.hpp>
+
 #include "rclcpp/rclcpp.hpp"
 #include "sensor_msgs/msg/joint_state.hpp" // Updated to use JointState
 
@@ -18,4 +20,6 @@ private:
 
     int fd;
     int controller_type = -1;
+
+    ros2_fmt_logger::Logger logger;
 };

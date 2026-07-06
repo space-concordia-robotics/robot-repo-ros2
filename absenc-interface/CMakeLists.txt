@@ -11,6 +11,7 @@ find_dependencies(
         rclcpp
         std_msgs
         sensor_msgs
+        ros2_fmt_logger
 )
 
 ## COMPILE
@@ -21,6 +22,7 @@ target_link_libraries(absenc_node PUBLIC ${DEPENDENCY_TARGETS})
 
 target_precompile_headers(absenc_node PRIVATE
         <rclcpp/rclcpp.hpp>
+        <ros2_fmt_logger/logger.hpp>
 )
 
 ## INSTALL
