@@ -11,7 +11,7 @@ EasyProfile eP(&eOD);
 #endif
 
 TMSerial::TMSerial()
-    : Node("tm_imu") {
+    : Node("tm_imu"), logger(get_logger()) {
     // Declare node's parameters default value
     // [NOT NECESSARY TO CHANGE THE FOLLOWING, USE ../config/params.yaml INSTEAD !]
     this->declare_parameter("imu_baudrate", 115200);
@@ -76,8 +76,7 @@ void TMSerial::TimerCallback() {
 
 #ifdef DEBUG_MODE
 void TMSerial::TimerCallback2() {
-    RCLCPP_INFO(this->get_logger(),
-                "Rx byte cnt=%d, TrasnducerM pkg cnt = %d (%f Hz)", count2, count, 1000 * ((float)count) / (DEBUG_MODE_PRINT_TIMER_MS_));
+    logger.info("Rx byte cnt={}, TrasnducerM pkg cnt = {} ({} Hz)", count2, count, 1000 * ((float)count) / (DEBUG_MODE_PRINT_TIMER_MS_));
     count = 0;
     count2 = 0;
 }
@@ -90,12 +89,12 @@ char TMSerial::SerialportOpen() const {
                                            SERIAL_DATABITS_8, SERIAL_PARITY_NONE, SERIAL_STOPBITS_1); // Open serial link at the specified baudrate
     if (Ret != 1) {
         // If an error occured...
-        RCLCPP_INFO(this->get_logger(), "Error while opening port. Permission problem ?"); // ... display a message ...
-        RCLCPP_INFO(this->get_logger(), "imu_port:%s imu_baudrate:%d", this->get_parameter("imu_port").as_string().c_str(), baudrate);
+        logger.info("Error while opening port. Permission problem ?"); // ... display a message ...
+        logger.info("imu_port:{} imu_baudrate:{}", this->get_parameter("imu_port").as_string(), baudrate);
         return Ret; // ... quit the application
     }
-    RCLCPP_INFO(this->get_logger(), "Serial port opened successfully !");
-    RCLCPP_INFO(this->get_logger(), "imu_port:%s imu_baudrate:%d", this->get_parameter("imu_port").as_string().c_str(), baudrate);
+    logger.info("Serial port opened successfully !");
+    logger.info("imu_port:{} imu_baudrate:{}", this->get_parameter("imu_port").as_string(), baudrate);
     return 1;
 }
 
@@ -120,7 +119,7 @@ bool TMSerial::OnSerialRX() {
     char serialBuffer[1024];
     int ret = serialib1->readBytes(serialBuffer, sizeof(serialBuffer), 1, 100);
     #ifdef DEBUG_MODE
-    //RCLCPP_INFO(this->get_logger(), "rxsize = %d",ret);
+    //logger.info("rxsize = {}", ret);
     count2 += ret;
     #endif
     if (ret <= 0)
@@ -185,7 +184,7 @@ bool TMSerial::OnSerialRX() {
                 imu_data_mag_msg.magnetic_field.y = mag_y;
                 imu_data_mag_msg.magnetic_field.z = mag_z;
                 #ifdef DEBUG_MODE
-                //RCLCPP_INFO(this->get_logger(), "RAW pkg");
+                //logger.info("RAW pkg");
                 #endif
             }
         }
@@ -216,7 +215,7 @@ bool TMSerial::OnSerialRX() {
                 imu_data_msg.orientation.y = q3;
                 imu_data_msg.orientation.z = q4;
                 #ifdef DEBUG_MODE
-                //RCLCPP_INFO(this->get_logger(), "QS1 pkg");
+                //logger.info("QS1 pkg");
                 #endif
             }
         }
@@ -248,7 +247,7 @@ bool TMSerial::OnSerialRX() {
                 imu_data_rpy_msg.magnetic_field.y = pitch;
                 imu_data_rpy_msg.magnetic_field.z = yaw;
                 #ifdef DEBUG_MODE
-                //RCLCPP_INFO(this->get_logger(), "RPY pkg");
+                //logger.info("RPY pkg");
                 #endif
             }
         }
@@ -310,7 +309,7 @@ bool TMSerial::OnSerialRX() {
                 imu_data_mag_msg.magnetic_field.z = mz;
 
                 #ifdef DEBUG_MODE
-                //RCLCPP_INFO(this->get_logger(), "Combo pkg");
+                //logger.info("Combo pkg");
                 #endif
             }
         }

@@ -17,6 +17,7 @@ find_dependencies(
         hardware_interface
         sensor_msgs
         pluginlib
+        ros2_fmt_logger
 )
 
 ## COMPILE
@@ -36,6 +37,7 @@ target_link_libraries(${PROJECT_NAME} PUBLIC ${DEPENDENCY_TARGETS})
 target_precompile_headers(${PROJECT_NAME} PRIVATE
         <rclcpp/rclcpp.hpp>
         <hardware_interface/hardware_component_interface.hpp>
+        <ros2_fmt_logger/logger.hpp>
 )
 
 pluginlib_export_plugin_description_file(hardware_interface rover_hardware_interface.xml)

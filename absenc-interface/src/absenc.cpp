@@ -6,10 +6,6 @@
 #include <unistd.h>
 #include <utility>
 
-const char* foo() {
-    return "foo";
-}
-
 // We basically re-invented strerr()
 const char* to_string(const AbsencErrorCause cause) {
     switch (cause) {
@@ -24,7 +20,7 @@ const char* to_string(const AbsencErrorCause cause) {
     case AbsencErrorCause::FRAME_CORRUPTED:
         return "Frame corrupted";
     default:
-        return foo();
+        return "Unknown code";
     }
 }
 

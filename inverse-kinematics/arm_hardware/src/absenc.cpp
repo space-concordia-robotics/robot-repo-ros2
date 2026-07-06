@@ -29,9 +29,9 @@ AbsencError AbsencDriver::openPort(const char* path, int& s_fd) {
     s_fd = open(path, O_RDWR);
     if (s_fd < 0) {
         return AbsencError{
-            AbsencErrorCause::SERIAL_FAILURE,
-            errno,
-            __LINE__,
+            .error = AbsencErrorCause::SERIAL_FAILURE,
+            .cause = errno,
+            .line  = __LINE__,
         };
     }
     // We do need to configure the TTY port
@@ -49,9 +49,9 @@ AbsencError AbsencDriver::openPort(const char* path, int& s_fd) {
 
     if (tcsetattr(s_fd, TCSANOW, &ttycfg) > 0) {
         return AbsencError{
-            AbsencErrorCause::SERIAL_FAILURE,
-            errno,
-            __LINE__,
+            .error = AbsencErrorCause::SERIAL_FAILURE,
+            .cause = errno,
+            .line  = __LINE__,
         };
     }
 
@@ -65,9 +65,9 @@ AbsencError AbsencDriver::pollSlave(const int slvnum, AbsencMeasurement* meas, c
     // Sanity check for slave numbers
     if (slvnum < 0 || slvnum > 9) {
         return AbsencError{
-            AbsencErrorCause::SLAVE_INVALID,
-            0,
-            __LINE__,
+            .error = AbsencErrorCause::SLAVE_INVALID,
+            .cause = 0,
+            .line  = __LINE__,
         };
     }
     tcflush(s_fd, TCIOFLUSH); // Flush to ensure no pending TX/RX bytes at port
@@ -76,9 +76,9 @@ AbsencError AbsencDriver::pollSlave(const int slvnum, AbsencMeasurement* meas, c
     const std::array<char, 3> txbuf = {'#', static_cast<char>('0' + slvnum), '\n'};
     if (const int nsend = write(s_fd, txbuf.data(), txbuf.size()); nsend < 0) {
         return AbsencError{
-            AbsencErrorCause::SERIAL_FAILURE,
-            errno,
-            __LINE__,
+            .error = AbsencErrorCause::SERIAL_FAILURE,
+            .cause = errno,
+            .line  = __LINE__,
         };
     }
     // tcdrain(s_fd); // Flush TX buffer? seems not needed
@@ -91,17 +91,17 @@ AbsencError AbsencDriver::pollSlave(const int slvnum, AbsencMeasurement* meas, c
         const int received = read(s_fd, &start_of_frame, 1);
         if (received < 0) {
             return AbsencError{
-                AbsencErrorCause::SERIAL_FAILURE,
-                (errno),
-                __LINE__,
+                .error = AbsencErrorCause::SERIAL_FAILURE,
+                .cause = errno,
+                .line  = __LINE__,
             };
         }
         if (received == 0) {
             // Timed out (encoder died)
             return AbsencError{
-                AbsencErrorCause::NO_RESPONSE,
-                0,
-                __LINE__,
+                .error = AbsencErrorCause::NO_RESPONSE,
+                .cause = 0,
+                .line  = __LINE__,
             };
         }
         if (start_of_frame == '>')
@@ -112,9 +112,9 @@ AbsencError AbsencDriver::pollSlave(const int slvnum, AbsencMeasurement* meas, c
     if (start_of_frame != '>') {
         // Not SOF and search limit exceeded. The frame is corrupted or goes very out-of-sync.
         return AbsencError{
-            AbsencErrorCause::FRAME_CORRUPTED,
-            0,
-            __LINE__,
+            .error = AbsencErrorCause::FRAME_CORRUPTED,
+            .cause = 0,
+            .line  = __LINE__,
         };
     }
 
@@ -124,16 +124,16 @@ AbsencError AbsencDriver::pollSlave(const int slvnum, AbsencMeasurement* meas, c
     const int received = read(s_fd, rxbuf.data(), rxbuf.size());
     if (received < 0) {
         return AbsencError{
-            AbsencErrorCause::SERIAL_FAILURE,
-            (errno),
-            __LINE__,
+            .error = AbsencErrorCause::SERIAL_FAILURE,
+            .cause = errno,
+            .line  = __LINE__,
         };
     }
-    if (received < static_cast<int>(sizeof(rxbuf))) {
+    if (std::cmp_less(received, sizeof(rxbuf))) {
         return AbsencError{
-            AbsencErrorCause::FRAME_CORRUPTED,
-            0,
-            __LINE__,
+            .error = AbsencErrorCause::FRAME_CORRUPTED,
+            .cause = 0,
+            .line  = __LINE__,
         };
     }
 
@@ -164,9 +164,9 @@ AbsencError AbsencDriver::pollSlave(const int slvnum, AbsencMeasurement* meas, c
                 nibble = nibble - 'a' + 10;
             else
                 return AbsencError{
-                    AbsencErrorCause::FRAME_CORRUPTED,
-                    0,
-                    __LINE__,
+                    .error = AbsencErrorCause::FRAME_CORRUPTED,
+                    .cause = 0,
+                    .line  = __LINE__,
                 };
             // Attach the nibble to the value, big-endian format
             value = value << 4 | nibble;

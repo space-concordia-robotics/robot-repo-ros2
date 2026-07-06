@@ -2,10 +2,9 @@
 #define ABSENC_H
 
 #include <string>
+#include <ros2_fmt_logger/ros2_fmt_logger.hpp>
 #include <rclcpp/node.hpp>
 #include <sensor_msgs/msg/joint_state.hpp>
-
-const char* foo();
 
 enum class AbsencErrorCause : uint8_t {
     NONE,
@@ -62,6 +61,8 @@ private:
     rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr angles_publisher_;
 
     std::string absenc_path_;
+
+    ros2_fmt_logger::Logger logger;
 };
 
 #endif

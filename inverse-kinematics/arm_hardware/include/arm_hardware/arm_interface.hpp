@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <hardware_interface/system_interface.hpp>
+#include <ros2_fmt_logger/ros2_fmt_logger.hpp>
 
 #include "arm_hardware/absenc.h"
 
@@ -50,5 +51,7 @@ namespace arm_interface {
 
 
         rclcpp::Clock steady_clock_{RCL_STEADY_TIME};
+
+        std::shared_ptr<ros2_fmt_logger::Logger> logger;
     };
 }

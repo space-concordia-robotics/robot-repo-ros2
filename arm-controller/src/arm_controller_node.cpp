@@ -8,17 +8,17 @@
 #include <sensor_msgs/msg/joint_state.hpp>
 
 ArmControllerNode::ArmControllerNode()
-    : Node("arm_controller_node") {
+    : Node("arm_controller_node"), logger(get_logger()) {
     this->declare_parameter("local_mode", false);
     const bool local_mode = this->get_parameter("local_mode").as_bool();
-    RCLCPP_INFO(this->get_logger(), "Initialized node: %s", this->get_name());
+    logger.info("Initialized node: {}", this->get_name());
 
     if (!local_mode) {
         fd = open("/dev/ttyTHS1", O_RDWR);
         if (fd < 0) {
             const auto code = std::make_error_code(static_cast<std::errc>(errno));
 
-            RCLCPP_ERROR(this->get_logger(), "Error opening file: %i. Message: %s", code.value(), code.message().c_str());
+            logger.error("Error opening file: {}. Message: {}", code.value(), code.message());
             errno = 0;
             rclcpp::shutdown();
             return;
@@ -44,7 +44,7 @@ ArmControllerNode::ArmControllerNode()
             armJointCallback(msg);
         });
 
-    RCLCPP_INFO(this->get_logger(), "Subscriptions initialized.");
+    logger.info("Subscriptions initialized.");
 }
 
 ArmControllerNode::~ArmControllerNode() {
@@ -57,11 +57,7 @@ ArmControllerNode::~ArmControllerNode() {
 
 void ArmControllerNode::armJointCallback(const sensor_msgs::msg::JointState::UniquePtr& msg) const {
     if (msg->velocity.size() < 7) {
-        RCLCPP_ERROR(
-            this->get_logger(),
-            "Received JointState message with insufficient velocity data. Joint size is %zu, expected at least 7.",
-            msg->velocity.size()
-        );
+        logger.error("Received JointState message with insufficient velocity data. Joint size is {}, expected at least 7.", msg->velocity.size());
         return;
     }
 
@@ -81,22 +77,14 @@ void ArmControllerNode::armJointCallback(const sensor_msgs::msg::JointState::Uni
     if (!this->get_parameter("local_mode").as_bool()) {
         if (const auto status = write(fd, out_buf.data(), sizeof(out_buf)); status == -1) {
             const auto code = std::make_error_code(static_cast<std::errc>(errno));
-            RCLCPP_ERROR(this->get_logger(), "Error writing to device: %s", code.message().c_str());
+            logger.error("Error writing to device: {}", code.message());
         }
     }
 
     // TODO 2026-06-28 (Will Free): remove this message constantly logging the joint state
-    RCLCPP_INFO(
-        this->get_logger(),
-        "Received JointState velocities: [%.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f]",
-        static_cast<float>(msg->velocity.at(0)),
-        static_cast<float>(msg->velocity.at(1)),
-        static_cast<float>(msg->velocity.at(2)),
-        static_cast<float>(msg->velocity.at(3)),
-        static_cast<float>(msg->velocity.at(4)),
-        static_cast<float>(msg->velocity.at(5)),
-        static_cast<float>(msg->velocity.at(6))
-    );
+    logger.info("Received JointState velocities: [{:.2f}, {:.2f}, {:.2f}, {:.2f}, {:.2f}, {:.2f}, {:.2f}]", static_cast<float>(msg->velocity.at(0)),
+                static_cast<float>(msg->velocity.at(1)), static_cast<float>(msg->velocity.at(2)), static_cast<float>(msg->velocity.at(3)),
+                static_cast<float>(msg->velocity.at(4)), static_cast<float>(msg->velocity.at(5)), static_cast<float>(msg->velocity.at(6)));
 }
 
 int main(const int argc, char* argv[]) {
