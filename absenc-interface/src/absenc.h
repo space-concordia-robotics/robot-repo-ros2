@@ -1,5 +1,4 @@
-#ifndef ABSENC_H
-#define ABSENC_H
+#pragma once
 
 #include <string>
 #include <ros2_fmt_logger/ros2_fmt_logger.hpp>
@@ -64,5 +63,3 @@ private:
 
     ros2_fmt_logger::Logger logger;
 };
-
-#endif

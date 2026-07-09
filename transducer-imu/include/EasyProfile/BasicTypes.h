@@ -31,8 +31,8 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef BASICTYPES_H
-#define BASICTYPES_H
+
+#pragma once
 
 //---------------------------------------------------
 //Select Platform
@@ -142,5 +142,3 @@ typedef float float32;
 #ifndef EP_CHECKSUM_2_BYTES_CRC_
 #define EP_CHECKSUM_2_BYTES_CRC_  ((int8) 4)
 #endif
-
-#endif // BASICTYPES_H

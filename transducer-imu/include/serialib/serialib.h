@@ -15,9 +15,7 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
 This is a licence-free software, it can be used by anyone who try to build a better world.
 */
 
-
-#ifndef SERIALIB_H
-#define SERIALIB_H
+#pragma once
 
 #if defined(__CYGWIN__)
 // This is Cygwin special case
@@ -244,5 +242,3 @@ private:
     timeval previousTime;
 #endif
 };
-
-#endif // serialib_H

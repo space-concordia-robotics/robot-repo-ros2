@@ -33,8 +33,8 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef EASYPROTOCOL_H
-#define EASYPROTOCOL_H
+
+#pragma once
 
 
 #include "EasyProfile/BasicTypes.h"
@@ -146,5 +146,3 @@ private:
     char omitStream;
     int declaredPayloadSize;
 };
-
-#endif // EASYPROTOCOL_H

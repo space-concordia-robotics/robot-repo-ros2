@@ -53,8 +53,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef EASYQUEUE_H
-#define EASYQUEUE_H
+#pragma once
 
 //#define DEBUG_EASY_QUEUE_
 
@@ -176,5 +175,3 @@ private:
     int queueSize;
     int queueStart, queueEnd;
 };
-
-#endif // EASYQUEUE_H
