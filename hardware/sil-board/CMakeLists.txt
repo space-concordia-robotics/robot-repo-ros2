@@ -53,9 +53,7 @@ target_include_directories(compat_board_node PRIVATE
         $<INSTALL_INTERFACE:include>
 )
 
-target_precompile_headers(compat_board_node PRIVATE
-        <rclcpp/rclcpp.hpp>
-)
+target_precompile_headers(compat_board_node REUSE_FROM ${PROJECT_NAME}_node)
 
 ## INSTALL
 
