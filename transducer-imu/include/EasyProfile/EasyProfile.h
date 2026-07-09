@@ -28,8 +28,8 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef EASYPROFILE_H
-#define EASYPROFILE_H
+
+#pragma once
 
 #include "EasyProfile/BasicTypes.h"
 #include "EasyProfile/EasyObjectDictionary.h"
@@ -77,6 +77,3 @@ protected:
     void Sig_RX_Data(const Ep_Gravity& ep_Gravity);
 #endif
 };
-
-
-#endif // EASYPROFILE_H
