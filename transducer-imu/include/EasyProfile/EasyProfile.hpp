@@ -31,9 +31,9 @@
 
 #pragma once
 
-#include "EasyProfile/BasicTypes.h"
-#include "EasyProfile/EasyObjectDictionary.h"
-#include "EasyProfile/EasyProtocol.h"
+#include "EasyProfile/BasicTypes.hpp"
+#include "EasyProfile/EasyObjectDictionary.hpp"
+#include "EasyProfile/EasyProtocol.hpp"
 #ifdef EP_PLATFORM_QT5_
 #include <QtCore>
 #endif

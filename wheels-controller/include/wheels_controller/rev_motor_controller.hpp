@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "can_controller.h"
+#include "can_controller.hpp"
 
 constexpr auto NOMINAL_VOLTAGE = 12;
 

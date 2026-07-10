@@ -37,8 +37,8 @@
 #pragma once
 
 
-#include "EasyProfile/BasicTypes.h"
-#include "EasyProfile/EasyQueue.h"
+#include "EasyProfile/BasicTypes.hpp"
+#include "EasyProfile/EasyQueue.hpp"
 
 
 //------------------------------------------------------------------------------

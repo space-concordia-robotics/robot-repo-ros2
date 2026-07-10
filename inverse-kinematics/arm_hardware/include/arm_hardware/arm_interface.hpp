@@ -5,7 +5,7 @@
 #include <hardware_interface/system_interface.hpp>
 #include <ros2_fmt_logger/ros2_fmt_logger.hpp>
 
-#include "arm_hardware/absenc.h"
+#include "arm_hardware/absenc.hpp"
 
 static constexpr auto SET_MOTOR_SPEED = 0x4E;
 static constexpr auto MAX_MOTOR_SPEED = 1024.f;

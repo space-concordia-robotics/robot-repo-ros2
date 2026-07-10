@@ -5,7 +5,7 @@
 #include <sensor_msgs/msg/joint_state.hpp>
 #include <sensor_msgs/msg/joy.hpp>
 
-#include "absenc.h"
+#include "absenc_interface/absenc.hpp"
 
 
 using namespace std::chrono_literals;

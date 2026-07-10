@@ -2,7 +2,7 @@
 // Created by nik on 08/02/24.
 //
 
-#include "can_controller.h"
+#include "wheels_controller/can_controller.hpp"
 
 #include <cstdint>
 #include <cstring>

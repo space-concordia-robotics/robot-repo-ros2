@@ -7,7 +7,7 @@
 #include <sensor_msgs/msg/imu.hpp>
 #include <sensor_msgs/msg/magnetic_field.hpp>
 
-#include "serialib/serialib.h"
+#include "serialib/serialib.hpp"
 
 // To use the communication library, we need to include the following
 // two header files:

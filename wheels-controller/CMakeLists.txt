@@ -29,6 +29,11 @@ scrb_add_executable(${PROJECT_NAME}_node
         src/wheels_controller_node.h
 )
 
+target_include_directories(${PROJECT_NAME}_node PUBLIC
+        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:include>
+)
+
 target_link_libraries(${PROJECT_NAME}_node PRIVATE ${DEPENDENCY_TARGETS})
 
 target_precompile_headers(${PROJECT_NAME}_node PRIVATE
@@ -37,6 +42,11 @@ target_precompile_headers(${PROJECT_NAME}_node PRIVATE
 )
 
 ## INSTALL
+
+install(
+        DIRECTORY include
+        DESTINATION include/${PROJECT_NAME}
+)
 
 install(
         TARGETS ${PROJECT_NAME}_node

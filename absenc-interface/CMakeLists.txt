@@ -16,11 +16,19 @@ find_dependencies(
 
 ## COMPILE
 
-scrb_add_executable(absenc_node src/absenc_node.cpp src/absenc.cpp)
+scrb_add_executable(${PROJECT_NAME}
+        src/absenc_node.cpp
+        src/absenc.cpp
+)
 
-target_link_libraries(absenc_node PUBLIC ${DEPENDENCY_TARGETS})
+target_include_directories(${PROJECT_NAME} PUBLIC
+        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:include>
+)
 
-target_precompile_headers(absenc_node PRIVATE
+target_link_libraries(${PROJECT_NAME} PUBLIC ${DEPENDENCY_TARGETS})
+
+target_precompile_headers(${PROJECT_NAME} PRIVATE
         <rclcpp/rclcpp.hpp>
         <ros2_fmt_logger/logger.hpp>
 )
@@ -28,7 +36,12 @@ target_precompile_headers(absenc_node PRIVATE
 ## INSTALL
 
 install(
-        TARGETS absenc_node
+        DIRECTORY include
+        DESTINATION include/${PROJECT_NAME}
+)
+
+install(
+        TARGETS ${PROJECT_NAME}
         EXPORT export_${PROJECT_NAME}
         ARCHIVE DESTINATION lib
         LIBRARY DESTINATION lib

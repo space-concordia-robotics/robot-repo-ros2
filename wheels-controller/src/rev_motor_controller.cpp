@@ -2,12 +2,12 @@
 // Created by nik on 06/02/24.
 //
 
-#include "rev_motor_controller.h"
+#include "wheels_controller/rev_motor_controller.hpp"
 
 #include <cstring>
 #include <linux/can/raw.h>
 
-#include "command_prefixes.h"
+#include "wheels_controller/command_prefixes.hpp"
 
 void RevMotorController::setDeviceId(const uint8_t id, const uint8_t newId) {
     can_frame frame{};

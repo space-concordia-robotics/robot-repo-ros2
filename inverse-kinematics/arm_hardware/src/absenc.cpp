@@ -1,4 +1,4 @@
-#include "arm_hardware/absenc.h"
+#include "arm_hardware/absenc.hpp"
 
 #include <cerrno>
 #include <fcntl.h>
