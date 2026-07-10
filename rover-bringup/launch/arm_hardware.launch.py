@@ -1,34 +1,30 @@
-import os
 
-from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
-from launch.actions import RegisterEventHandler
-from launch.actions import TimerAction
+from launch.actions import RegisterEventHandler, TimerAction
 from launch.event_handlers import OnProcessStart
-from launch.substitutions import Command
+from launch.substitutions import Command, PathJoinSubstitution
 from launch_ros.actions import Node
 from launch_ros.parameter_descriptions import ParameterValue
+from launch_ros.substitutions import FindPackageShare
 
 
 def generate_launch_description():
-    urdf_path = os.path.join(get_package_share_directory('rover_arm_description'), 'urdf', 'arm.urdf.xacro')
+    urdf_path = PathJoinSubstitution([FindPackageShare("rover_arm_description"), "urdf", "arm.urdf.xacro"])
 
-    robot_description = ParameterValue(Command(['xacro ', urdf_path]), value_type=str)
+    robot_description = ParameterValue(Command(["xacro ", urdf_path]), value_type=str)
 
-    controller_config = os.path.join(
-        get_package_share_directory('rover_arm_bringup'), 'config', 'ros2_controllers.yaml'
-    )
+    controller_config = PathJoinSubstitution([FindPackageShare("rover_arm_bringup"), "config", "ros2_controllers.yaml"])
 
     rsp_launch = Node(
         package="robot_state_publisher",
         executable="robot_state_publisher",
-        parameters=[{'robot_description': robot_description}]
+        parameters=[{"robot_description": robot_description}],
     )
 
     controller_manager = Node(
         package="controller_manager",
         executable="ros2_control_node",
-        parameters=[controller_config, {'robot_description': robot_description}],
+        parameters=[controller_config, {"robot_description": robot_description}],
         output="screen",
     )
 
@@ -62,7 +58,7 @@ def generate_launch_description():
             target_action=controller_manager,
             # Add both spawners here
             on_start=[jsb_spawner, arm_controller_spawner],
-        )
+        ),
     )
 
     # spawining in moveit servo
