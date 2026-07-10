@@ -24,9 +24,6 @@ scrb_add_executable(${PROJECT_NAME}_node
         src/wheels_controller_node.cpp
         src/rev_motor_controller.cpp
         src/can_controller.cpp
-        src/can_controller.h
-        src/rev_motor_controller.h
-        src/wheels_controller_node.h
 )
 
 target_include_directories(${PROJECT_NAME}_node PUBLIC
