@@ -55,7 +55,7 @@ def perform_typed_dict_substitutions(
         data_type: AllowedTypesType | None,
 ) -> dict[str, StrSomeValueType]:
     return {
-        perform_substitutions(context, key): perform_typed_substitution(context, value, data_type) for key, value in items.items()
+        perform_substitutions(context, list(key)): perform_typed_substitution(context, value, data_type) for key, value in items.items()
     }
 
 

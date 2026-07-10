@@ -1,6 +1,8 @@
 # ruff: noqa: D100, D101, D102, D107
 from __future__ import annotations
 
+import typing
+
 from launch import Action, Condition, SomeSubstitutionsType
 from launch.actions import GroupAction
 from launch_ros.actions import PushRosNamespace
@@ -52,7 +54,7 @@ class Group:
     def is_container(self) -> bool:
         return bool(self.__container)
 
-    def close(self) -> tuple[Group, list[Action]] | list[Action] | Group:
+    def close(self) -> tuple[Group, list[Action | ComposableNode]] | list[Action | ComposableNode] | Group:
         if self.__parent is None:
             # main group
             return self.__actions
@@ -63,14 +65,14 @@ class Group:
 
         # closing a classical group, potentially with event handling
         if self.__actions:
-            group: list[Action] | Action
+            group: list[Action | ComposableNode] | Action
             if any(not isinstance(action, Action) for action in self.__actions):
                 # probably a raw function call due to OnProcessIO
                 # skip GroupAction as it makes it not callable
                 group = self.__actions
             else:
                 ns_tree = list(map(PushRosNamespace, self.__ns))
-                group = GroupAction(ns_tree + self.__actions, condition=self.__condition)
+                group = GroupAction(typing.cast(list[Action], ns_tree + self.__actions), condition=self.__condition)
             if self.__when is not None:
                 self.__root.add_action(self.__when.register(group))
             else:
