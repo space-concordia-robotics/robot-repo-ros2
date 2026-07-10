@@ -1,8 +1,8 @@
 # ruff: noqa: D100, D101, D102
 import typing
-from collections.abc import Callable, Generator, Iterable
+from collections.abc import Callable, Generator, Iterable, Sequence
 from contextlib import contextmanager
-from typing import Annotated, Any, TypeVar, overload, Sequence
+from typing import Annotated, Any, TypeVar, overload
 
 import launch
 from launch import Action, Condition, LaunchContext, LaunchDescription, LaunchDescriptionEntity, SomeSubstitutionsType, Substitution
@@ -361,11 +361,6 @@ class SimpleLauncher:
 
         if executable is None:
             executable = package
-
-        # parameters: Sequence[SomeParameterFile | Parameter | SomeParametersDict] = [parameters] if not isinstance(parameters, Sequence) and parameters is not None else parameters
-
-        # noinspection PyUnnecessaryCast
-        # parameters: Sequence[SomeParameterFile | Parameter | SomeParametersDict] | None = typing.cast(Sequence[SomeParameterFile | Parameter | SomeParametersDict]|None,parameters) if isinstance(parameters, Sequence) or parameters is None else [parameters]
 
         if parameters is not None and isinstance(parameters, Sequence):
             # noinspection PyUnnecessaryCast

@@ -10,12 +10,12 @@ def generate_launch_description():
     return LaunchDescription([
         IncludeLaunchDescription(
             PathJoinSubstitution([
-                FindPackageShare('ouster_ros'),
-                'launch',
-                'sensor.launch.xml'
+                FindPackageShare("ouster_ros"),
+                "launch",
+                "sensor.launch.xml",
             ]),
             launch_arguments={
-                'sensor_hostname': 'os1-992005000098.local',
-            }.items()
-        )
+                "sensor_hostname": "os1-992005000098.local",
+            }.items(),
+        ),
     ])
