@@ -2,7 +2,7 @@
 import typing
 from collections.abc import Callable, Generator, Iterable
 from contextlib import contextmanager
-from typing import Annotated, Any, TypeVar
+from typing import Annotated, Any, TypeVar, overload
 
 import launch
 from launch import Action, Condition, LaunchContext, LaunchDescription, LaunchDescriptionEntity, SomeSubstitutionsType, Substitution
@@ -284,6 +284,49 @@ class SimpleLauncher:
 
     def add_event(self, event_handler: BaseEventHandler) -> RegisterEventHandler:
         return self.add_action(RegisterEventHandler(event_handler=event_handler))
+
+    @overload
+    def node(
+            self,
+            package: SomeSubstitutionsType | None = None,
+            executable: SomeSubstitutionsType | None = None,
+            *,
+            plugin: SomeSubstitutionsType,  # Required or bound to a valid type
+            name: SomeSubstitutionsType | None = None,
+            namespace: SomeSubstitutionsType | None = None,
+            exec_name: SomeSubstitutionsType | None = None,
+            parameters: SomeParameters | SomeParameterFile | Parameter | SomeParametersDict | None = None,
+            remappings: SomeRemapRules | None = None,
+            ros_arguments: Iterable[SomeSubstitutionsType] | None = None,
+            arguments: Iterable[SomeSubstitutionsType] | None = None,
+            extra_arguments: SomeParameters | None = None,
+            condition: Condition | None = None,
+            exclude_default_params: bool = False,
+            add: bool = True,
+            **node_args,
+    ) -> ComposableNode:
+        ...
+
+    @overload
+    def node(
+            self,
+            package: SomeSubstitutionsType | None = None,
+            executable: SomeSubstitutionsType | None = None,
+            plugin: None = None,
+            name: SomeSubstitutionsType | None = None,
+            namespace: SomeSubstitutionsType | None = None,
+            exec_name: SomeSubstitutionsType | None = None,
+            parameters: SomeParameters | SomeParameterFile | Parameter | SomeParametersDict | None = None,
+            remappings: SomeRemapRules | None = None,
+            ros_arguments: Iterable[SomeSubstitutionsType] | None = None,
+            arguments: Iterable[SomeSubstitutionsType] | None = None,
+            extra_arguments: SomeParameters | None = None,
+            condition: Condition | None = None,
+            exclude_default_params: bool = False,
+            add: bool = True,
+            **node_args,
+    ) -> Node:
+        ...
 
     def node(  # noqa: PLR0913
             self,
@@ -579,7 +622,7 @@ class SimpleLauncher:
         for axis in self.gz_axes:
             self.declare_arg(axis, default_value=defaults.get(axis, "0.0"))
 
-    def gazebo_axes_args(self) -> list[SomeSubstitutionsType]:
+    def gazebo_axes_args(self) -> SomeSubstitutionsType:
         """Generate arguments corresponding to Gazebo spawner."""
         axes = {"x": "x", "y": "y", "z": "z", "roll": "R", "pitch": "P", "yaw": "Y"}
         args: list[SomeSubstitutionsType] = []
@@ -587,7 +630,7 @@ class SimpleLauncher:
             # TODO 2026-02-07 (Will Free): should I really default to 0.0 here or just exclude the axis if it"s not in self.gz_axes?
             args.extend([f"-{param}", self.arg(axis) if axis in self.gz_axes else "0.0"])
 
-        return args
+        return flatten_substitutions(args)
 
     @contextmanager
     def gz_bridge(self, name: SomeSubstitutionsType = "gz_bridge") -> Generator[GazeboBridge, None, None]:
