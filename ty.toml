@@ -1,3 +1,4 @@
+[src]
 exclude = [
     "install",
     "log"
