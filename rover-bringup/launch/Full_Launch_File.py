@@ -12,7 +12,6 @@ def generate_launch_description():
         get_package_share_directory('zed_wrapper'),
         'launch',
         'zed_camera.launch.py',
-        {'camera_name': 'zed2'}
     )
 
     return LaunchDescription([
@@ -62,5 +61,6 @@ def generate_launch_description():
 
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(zed_launch_file),
+            launch_arguments={'camera_name': 'zed2'}.items(),
         ),
     ])

@@ -1,4 +1,4 @@
-from launch_util import SimpleLauncher
+from launch_util import SimpleLauncher, SomeSubstitutionsValueTypeDict
 
 
 def generate_launch_description():
@@ -6,7 +6,7 @@ def generate_launch_description():
 
     sl = SimpleLauncher()
 
-    mappings = {
+    mappings: SomeSubstitutionsValueTypeDict = {
         "mode": sl.mode_arg,
         "control": sl.control_arg,
     }
