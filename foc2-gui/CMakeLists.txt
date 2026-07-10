@@ -85,8 +85,10 @@ pkg_check_modules(GstRtsp REQUIRED IMPORTED_TARGET
 list(APPEND DEPENDENCY_TARGETS PkgConfig::Gst PkgConfig::GstApp PkgConfig::GstRtsp)
 
 set(API_TWEAKS_FILE "${CMAKE_CURRENT_BINARY_DIR}/api-tweaks.txt")
-file(WRITE "${API_TWEAKS_FILE}" "
-# these api tweaks can be removed when updating to gstreamer >=1.28.0. (aka updating to ubuntu 26.04 or later)
+set(GSTREAMER_FIRST_FIXED_VERSION "1.26.11")
+if (Gst_VERSION VERSION_LESS GSTREAMER_FIRST_FIXED_VERSION)
+    file(WRITE "${API_TWEAKS_FILE}" "
+# these api tweaks can be removed when updating to gstreamer >=1.26.11. (aka updating to ubuntu 26.04 or later)
 # they're only necessary, because I don't want to force people to compile gstreamer from source.
 type	gst_calculate_linear_regression			xy		gpointer
 type	gst_calculate_linear_regression			temp		gpointer
@@ -100,8 +102,18 @@ type	gst_structure_set_parent_refcount			refcount		gpointer
 # these last two are either due to a bug in peel or in gstreamer's rtsp server. unsure.
 skip	gst_rtsp_stream_transport_set_callbacks
 skip	gst_rtsp_stream_transport_set_list_callbacks
+
+# gstreamer moment. they forgot to add ref and unref to the gir
+ref		GstMessage		gst_message_ref
+unref	GstMessage		gst_message_unref
+
+ref		GstSample		gst_sample_ref
+unref	GstSample		gst_sample_unref
 "
-)
+    )
+else ()
+    file(WRITE "${API_TWEAKS_FILE}" "")
+endif ()
 
 peel_generate(Gst 1.0 RECURSIVE TWEAKS "${API_TWEAKS_FILE}")
 peel_generate(GstNet 1.0 RECURSIVE TWEAKS "${API_TWEAKS_FILE}")
