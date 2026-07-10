@@ -1,4 +1,4 @@
-#include "absenc.h"
+#include "absenc_interface/absenc.hpp"
 
 #include <cerrno>
 #include <fcntl.h>

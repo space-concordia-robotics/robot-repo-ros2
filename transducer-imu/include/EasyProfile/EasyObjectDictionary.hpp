@@ -36,7 +36,7 @@
 
 #pragma once
 
-#include "EasyProfile/BasicTypes.h"
+#include "EasyProfile/BasicTypes.hpp"
 
 
 //--------------------------------------------------------------

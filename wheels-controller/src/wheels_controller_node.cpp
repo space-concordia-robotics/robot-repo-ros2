@@ -1,7 +1,7 @@
-#include "wheels_controller_node.h"
+#include "wheels_controller/wheels_controller_node.hpp"
 
-#include "can_controller.h"
-#include "rev_motor_controller.h"
+#include "wheels_controller/can_controller.hpp"
+#include "wheels_controller/rev_motor_controller.hpp"
 
 using namespace std::literals::chrono_literals;
 
