@@ -2,7 +2,7 @@
 import typing
 from collections.abc import Callable, Generator, Iterable
 from contextlib import contextmanager
-from typing import Annotated, Any, TypeVar, overload
+from typing import Annotated, Any, TypeVar, overload, Sequence
 
 import launch
 from launch import Action, Condition, LaunchContext, LaunchDescription, LaunchDescriptionEntity, SomeSubstitutionsType, Substitution
@@ -231,7 +231,7 @@ class SimpleLauncher:
         try:
             yield self
         finally:
-            self.__cur_group = self.__cur_group.close()
+            self.__cur_group = typing.cast(Group, self.__cur_group.close())
 
     @contextmanager
     def container(
@@ -288,10 +288,10 @@ class SimpleLauncher:
     @overload
     def node(
             self,
-            package: SomeSubstitutionsType | None = None,
+            package: SomeSubstitutionsType,
             executable: SomeSubstitutionsType | None = None,
             *,
-            plugin: SomeSubstitutionsType,  # Required or bound to a valid type
+            plugin: SomeSubstitutionsType,
             name: SomeSubstitutionsType | None = None,
             namespace: SomeSubstitutionsType | None = None,
             exec_name: SomeSubstitutionsType | None = None,
@@ -310,7 +310,7 @@ class SimpleLauncher:
     @overload
     def node(
             self,
-            package: SomeSubstitutionsType | None = None,
+            package: SomeSubstitutionsType,
             executable: SomeSubstitutionsType | None = None,
             plugin: None = None,
             name: SomeSubstitutionsType | None = None,
@@ -330,7 +330,7 @@ class SimpleLauncher:
 
     def node(  # noqa: PLR0913
             self,
-            package: SomeSubstitutionsType | None = None,
+            package: SomeSubstitutionsType,
             executable: SomeSubstitutionsType | None = None,
             plugin: SomeSubstitutionsType | None = None,
             name: SomeSubstitutionsType | None = None,
@@ -362,20 +362,29 @@ class SimpleLauncher:
         if executable is None:
             executable = package
 
+        # parameters: Sequence[SomeParameterFile | Parameter | SomeParametersDict] = [parameters] if not isinstance(parameters, Sequence) and parameters is not None else parameters
+
+        # noinspection PyUnnecessaryCast
+        # parameters: Sequence[SomeParameterFile | Parameter | SomeParametersDict] | None = typing.cast(Sequence[SomeParameterFile | Parameter | SomeParametersDict]|None,parameters) if isinstance(parameters, Sequence) or parameters is None else [parameters]
+
+        if parameters is not None and isinstance(parameters, Sequence):
+            # noinspection PyUnnecessaryCast
+            parameters = typing.cast(Sequence[SomeParameterFile | Parameter | SomeParametersDict], parameters)
+        elif parameters is not None:
+            parameters = [parameters]
+
         if not exclude_default_params:
-            additional_params: dict[str, SomeSubstitutionsType] = {
+            additional_params: SomeParametersDict = {
                 "mode": self.__mode_arg,
                 "control": self.__control_arg,
                 "use_sim_time": self.__sim_time_param,
             }
 
-            if not isinstance(parameters, list) and parameters is not None:
-                parameters: list[SomeSubstitutionsType] = [typing.cast(SomeSubstitutionsType, parameters)]
+            parameters: Sequence[SomeParameterFile | Parameter | SomeParametersDict] = [additional_params] if parameters is None else [*parameters,
+                                                                                                                                       additional_params]
 
-            parameters: list[SomeSubstitutionsType] = [additional_params] if parameters is None else [*parameters, additional_params]
-
-        # TODO 2026-02-06 (Will Free): I don"t think this is right for composable nodes...
-        node: Action | ComposableNode
+        # TODO 2026-02-06 (Will Free): I don't think this is right for composable nodes...
+        node: Node | ComposableNode
         if as_composable:
             # check plugin name - add package if needed
             if isinstance(plugin, str) and "::" not in plugin:
@@ -484,7 +493,11 @@ class SimpleLauncher:
 
         verbosity is none or "req", "res" or "reqres" to get information on service call
         """
-        params = {"simple_launch.node": node_name, "simple_launch.keys": list(parameters.keys()), "simple_launch.verbosity": verbosity}
+        params = {
+            "simple_launch.node": node_name,
+            "simple_launch.keys": [*parameters.keys()] if parameters is not None else [],
+            "simple_launch.verbosity": verbosity,
+        }
         if parameters is not None:
             params.update(parameters)
         return typing.cast(Node, self.node("simple_launch", "set_parameters", parameters=params, **kwargs))
@@ -504,9 +517,10 @@ class SimpleLauncher:
 
     def robot_description(
             self,
-            package: SomeSubstitutionsType | None = None,
+            *,
+            package: SomeSubstitutionsType,
             directory: SomeSubstitutionsType = "urdf",
-            file: SomeSubstitutionsType | None = None,
+            file: SomeSubstitutionsType,
             xacro_args: SomeSubstitutionsValueTypeDict | None = None,
             strip_comments: SomeValueType | None = None,
     ) -> Substitution:
@@ -517,9 +531,10 @@ class SimpleLauncher:
 
     def robot_state_publisher(  # noqa: PLR0913
             self,
-            package: SomeSubstitutionsType | None = None,
+            *,
+            package: SomeSubstitutionsType,
             directory: SomeSubstitutionsType = "urdf",
-            file: SomeSubstitutionsType | None = None,
+            file: SomeSubstitutionsType,
             xacro_args: SomeSubstitutionsValueTypeDict | None = None,
             strip_comments: SomeValueType | None = None,
             publish_frequency: SomeParameterValue | None = None,
@@ -545,7 +560,7 @@ class SimpleLauncher:
         """
         # TODO 2026-02-07 (Will Free): add support for use_robot_description_topic parameter
 
-        description = self.robot_description(package, directory, file, xacro_args, strip_comments)
+        description = self.robot_description(package=package, directory=directory, file=file, xacro_args=xacro_args, strip_comments=strip_comments)
 
         parameters: Annotated[SomeParameters, list] = [] if parameters is None else [*parameters]
 
@@ -737,9 +752,9 @@ class SimpleLauncher:
         temp_world_file = WriteTempFile(suffix="yml", prefix="gz_bridge_", contents=world)
 
         # normalize substitution so it"s always a list
-        server_args: list[SomeSubstitutionsType] = normalize_to_list_of_substitutions(server_args) if server_args is not None else []
-        client_args: list[SomeSubstitutionsType] = normalize_to_list_of_substitutions(client_args) if client_args is not None else []
-        gz_args: list[SomeSubstitutionsType] = normalize_to_list_of_substitutions(gz_args) if gz_args is not None else []
+        server_args: list[SomeSubstitutionsType] = [*normalize_to_list_of_substitutions(server_args)] if server_args is not None else []
+        client_args: list[SomeSubstitutionsType] = [*normalize_to_list_of_substitutions(client_args)] if client_args is not None else []
+        gz_args: list[SomeSubstitutionsType] = [*normalize_to_list_of_substitutions(gz_args)] if gz_args is not None else []
 
         # add separation space (so when it"s flattened, there are always spaces separating flags)
         gz_args.append(" ")
@@ -747,9 +762,9 @@ class SimpleLauncher:
         if debug:
             gz_args.append("-v4 ")
 
-        client_args = gz_args + client_args + [" -g"]
+        client_args = [*gz_args, *client_args, " -g"]
 
-        server_args = gz_args + server_args + [" -r -s ", temp_world_file]
+        server_args = [*gz_args, *server_args, " -r -s ", temp_world_file]
 
         if ros_gz_prefix() == GazeboType.GZ:
             package = "ros_gz_sim"
@@ -764,7 +779,7 @@ class SimpleLauncher:
             package=package,
             launch_file=launch_file,
             launch_arguments={
-                args_name: server_args,
+                args_name: flatten_substitutions(server_args),
                 "on_exit_shutdown": "true",
             }.items(),
             exclude_default_args=True,
@@ -776,7 +791,7 @@ class SimpleLauncher:
             package=package,
             launch_file=launch_file,
             launch_arguments={
-                args_name: client_args,
+                args_name: flatten_substitutions(client_args),
             }.items(),
             exclude_default_args=True,
         )
@@ -812,4 +827,4 @@ class SimpleLauncher:
             spawn_args = flatten_substitutions([spawn_args, "-topic", topic, "-name", name])
 
         pkg = "ros_ign_gazebo" if ros_gz_prefix().value == GazeboType.IGN else "ros_gz_sim"
-        return typing.cast(Node, self.node(package=pkg, executable="create", arguments=spawn_args, add=add))
+        return self.node(package=pkg, executable="create", arguments=spawn_args, add=add)
