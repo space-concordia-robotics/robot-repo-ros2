@@ -20,6 +20,7 @@ FetchContent_Declare(
         peel_src
         GIT_REPOSITORY https://gitlab.gnome.org/bugaevc/peel.git
         GIT_TAG main
+        GIT_PROGRESS TRUE
 )
 
 FetchContent_MakeAvailable(peel_src)
