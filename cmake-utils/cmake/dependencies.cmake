@@ -1,30 +1,38 @@
-# this is a macro so that the caller inherits all the variables
-macro(find_dependencies)
-    set(found_packages "")
+cmake_minimum_required(VERSION 3.25)
 
-    set(dependencies "${ARGN}")
-    foreach (dependency IN LISTS dependencies)
+function(find_dependencies)
+    set(PUBLIC_DEPENDENCIES "")
+    set(PRIVATE_DEPENDENCIES "")
+    set(INTERFACE_DEPENDENCIES "")
+    set(DEPENDENCIES "")
+
+    set(PUBLIC_DEPENDENCY_TARGETS "")
+    set(PRIVATE_DEPENDENCY_TARGETS "")
+    set(INTERFACE_DEPENDENCY_TARGETS "")
+    set(DEPENDENCY_TARGETS "")
+
+    set(current_scope "PUBLIC")
+    foreach (dependency IN LISTS ARGN)
+        if ("${dependency}" STREQUAL "PUBLIC" OR "${dependency}" STREQUAL "PRIVATE" OR "${dependency}" STREQUAL "INTERFACE")
+            set(current_scope "${dependency}")
+            continue()
+        endif ()
+
         separate_arguments(dependency)
 
         list(POP_FRONT dependency name)
         find_package(${name} REQUIRED ${dependency})
-        list(APPEND found_packages "${name}")
-    endforeach ()
 
-    # Return only the package names
-    set(DEPENDENCIES "${found_packages}")
+        set(targets "")
 
-    set(DEPENDENCY_TARGETS "")
-    foreach (dependency IN LISTS DEPENDENCIES)
         # I think this checks out? I yoinked it from ament_target_dependencies()
-
         set(use_modern_cmake FALSE)
         if (NOT "${${dependency}_TARGETS}" STREQUAL "")
             foreach (_target ${${dependency}_TARGETS})
                 # only use actual targets
                 # in case a package uses this variable for other content
                 if (TARGET "${_target}")
-                    list_append_unique(DEPENDENCY_TARGETS ${_target})
+                    list_append_unique(targets ${_target})
                     set(use_modern_cmake TRUE)
                 endif ()
             endforeach ()
@@ -41,16 +49,37 @@ macro(find_dependencies)
                         endif ()
                     endif ()
                 endif ()
-                list(APPEND DEPENDENCY_TARGETS ${library})
+                list(APPEND targets ${library})
             endforeach ()
         endif ()
 
-        list(APPEND DEPENDENCY_TARGETS ${${dependency}_TARGETS})
+        list(APPEND targets ${${dependency}_TARGETS})
+
+        if ("${current_scope}" STREQUAL "PUBLIC")
+            list(APPEND PUBLIC_DEPENDENCIES "${name}")
+            list(APPEND PUBLIC_DEPENDENCY_TARGETS ${targets})
+        elseif ("${current_scope}" STREQUAL "PRIVATE")
+            list(APPEND PRIVATE_DEPENDENCIES "${name}")
+            list(APPEND PRIVATE_DEPENDENCY_TARGETS ${targets})
+        elseif ("${current_scope}" STREQUAL "INTERFACE")
+            list(APPEND INTERFACE_DEPENDENCIES "${name}")
+            list(APPEND INTERFACE_DEPENDENCY_TARGETS ${targets})
+        endif ()
+
+        list(APPEND DEPENDENCIES "${name}")
+        list(APPEND DEPENDENCY_TARGETS ${targets})
     endforeach ()
 
-    # clean up variables
-    unset(dependencies)
-    unset(dependency)
-    unset(found_packages)
-    unset(name)
-endmacro()
+    return(PROPAGATE
+            # dependencies
+            PUBLIC_DEPENDENCIES
+            PRIVATE_DEPENDENCIES
+            INTERFACE_DEPENDENCIES
+            DEPENDENCIES
+            # dependency targets
+            PUBLIC_DEPENDENCY_TARGETS
+            PRIVATE_DEPENDENCY_TARGETS
+            INTERFACE_DEPENDENCY_TARGETS
+            DEPENDENCY_TARGETS
+    )
+endfunction()
