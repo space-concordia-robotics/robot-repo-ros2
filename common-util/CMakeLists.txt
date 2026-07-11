@@ -18,6 +18,9 @@ find_dependencies(
         tf2_geometry_msgs
 
         OpenCV
+
+        PRIVATE
+        fmt
 )
 
 ## COMPILE
@@ -36,7 +39,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
         $<INSTALL_INTERFACE:include/${PROJECT_NAME}>
 )
 
-target_link_libraries(${PROJECT_NAME} PUBLIC ${DEPENDENCY_TARGETS})
+target_link_libraries(${PROJECT_NAME} PUBLIC ${PUBLIC_DEPENDENCY_TARGETS} PRIVATE ${PRIVATE_DEPENDENCY_TARGETS})
 
 target_precompile_headers(${PROJECT_NAME} PRIVATE
         <rclcpp/rclcpp.hpp>
@@ -86,6 +89,6 @@ endif ()
 ament_export_include_directories("include/${PROJECT_NAME}")
 ament_export_libraries(${PROJECT_NAME})
 ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
-ament_export_dependencies(${DEPENDENCIES})
+ament_export_dependencies(${PUBLIC_DEPENDENCIES})
 
 ament_package()
