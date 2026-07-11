@@ -12,9 +12,9 @@ endif ()
 # Geographiclib installs FindGeographicLib.cmake to this non-standard location on Ubuntu
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "/usr/share/cmake/geographiclib/")
 
-cpm()
+CPM()
 
-CPMAddPackage("gh:Neargye/magic_enum#v0.9.7")
+CPMAddMagicEnum()
 
 find_package(ament_cmake REQUIRED)
 

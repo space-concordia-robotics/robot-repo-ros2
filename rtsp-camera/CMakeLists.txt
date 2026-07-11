@@ -5,10 +5,10 @@ find_package(scrb_cmake_utils REQUIRED)
 
 ## DEPENDENCIES
 
-cpm()
+CPM()
 
-CPMAddPackage("gh:fmtlib/fmt#11.2.0")
-CPMAddPackage("gh:Neargye/magic_enum#v0.9.7")
+CPMAddFmt()
+CPMAddMagicEnum()
 
 find_package(ament_cmake REQUIRED)
 

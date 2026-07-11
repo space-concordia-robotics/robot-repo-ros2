@@ -2,7 +2,7 @@
 #
 # SPDX-FileCopyrightText: Copyright (c) 2019-2023 Lars Melchior and contributors
 
-function(cpm)
+function(CPM)
     set(CPM_DOWNLOAD_VERSION 0.42.3)
     set(CPM_HASH_SUM "a609e875fd532b067174250f6abbc3dac22fe2d64869783fb1e80bda1625c844")
 

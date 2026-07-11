@@ -5,9 +5,9 @@ find_package(scrb_cmake_utils REQUIRED)
 
 ## DEPENDENCIES
 
-cpm()
+CPM()
 
-CPMAddPackage("gh:Neargye/magic_enum#v0.9.7")
+CPMAddMagicEnum()
 
 find_package(ament_cmake REQUIRED)
 
