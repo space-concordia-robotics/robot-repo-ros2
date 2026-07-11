@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.25)
 
-function(find_dependencies)
+# this is a macro so that the caller inherits all the variables
+# this is required so that all the variables find_package defines get propagated to the caller
+macro(find_dependencies)
     set(PUBLIC_DEPENDENCIES "")
     set(PRIVATE_DEPENDENCIES "")
     set(INTERFACE_DEPENDENCIES "")
@@ -12,7 +14,8 @@ function(find_dependencies)
     set(DEPENDENCY_TARGETS "")
 
     set(current_scope "PUBLIC")
-    foreach (dependency IN LISTS ARGN)
+    set(dependencies "${ARGN}")
+    foreach (dependency IN LISTS dependencies)
         if ("${dependency}" STREQUAL "PUBLIC" OR "${dependency}" STREQUAL "PRIVATE" OR "${dependency}" STREQUAL "INTERFACE")
             set(current_scope "${dependency}")
             continue()
@@ -27,8 +30,8 @@ function(find_dependencies)
 
         # I think this checks out? I yoinked it from ament_target_dependencies()
         set(use_modern_cmake FALSE)
-        if (NOT "${${dependency}_TARGETS}" STREQUAL "")
-            foreach (_target ${${dependency}_TARGETS})
+        if (NOT "${${name}_TARGETS}" STREQUAL "")
+            foreach (_target ${${name}_TARGETS})
                 # only use actual targets
                 # in case a package uses this variable for other content
                 if (TARGET "${_target}")
@@ -39,11 +42,11 @@ function(find_dependencies)
         endif ()
         if (NOT use_modern_cmake)
             # otherwise use the classic CMake variables
-            foreach (library ${${dependency}_LIBRARIES})
-                if (NOT "${${dependency}_LIBRARY_DIRS}" STREQUAL "")
+            foreach (library ${${name}_LIBRARIES})
+                if (NOT "${${name}_LIBRARY_DIRS}" STREQUAL "")
                     if (NOT IS_ABSOLUTE ${library} OR NOT EXISTS ${library})
                         unset(lib CACHE)
-                        find_library(lib NAMES ${library} PATHS ${${dependency}_LIBRARY_DIRS} NO_DEFAULT_PATH)
+                        find_library(lib NAMES ${library} PATHS ${${name}_LIBRARY_DIRS} NO_DEFAULT_PATH)
                         if (lib)
                             set(library ${lib})
                         endif ()
@@ -53,7 +56,7 @@ function(find_dependencies)
             endforeach ()
         endif ()
 
-        list(APPEND targets ${${dependency}_TARGETS})
+        list(APPEND targets ${${name}_TARGETS})
 
         if ("${current_scope}" STREQUAL "PUBLIC")
             list(APPEND PUBLIC_DEPENDENCIES "${name}")
@@ -70,16 +73,11 @@ function(find_dependencies)
         list(APPEND DEPENDENCY_TARGETS ${targets})
     endforeach ()
 
-    return(PROPAGATE
-            # dependencies
-            PUBLIC_DEPENDENCIES
-            PRIVATE_DEPENDENCIES
-            INTERFACE_DEPENDENCIES
-            DEPENDENCIES
-            # dependency targets
-            PUBLIC_DEPENDENCY_TARGETS
-            PRIVATE_DEPENDENCY_TARGETS
-            INTERFACE_DEPENDENCY_TARGETS
-            DEPENDENCY_TARGETS
-    )
-endfunction()
+    # clean up variables
+    unset(dependencies)
+    unset(dependency)
+    unset(name)
+    unset(targets)
+    unset(use_modern_cmake)
+    unset(library)
+endmacro()
