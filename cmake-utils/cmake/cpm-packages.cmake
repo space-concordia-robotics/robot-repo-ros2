@@ -2,8 +2,8 @@ function(CPMAddFmt)
     CPMAddPackage(
             NAME fmt
             GIT_REPOSITORY "https://github.com/fmtlib/fmt.git"
-            VERSION "11.2.0"
-            GIT_TAG "11.2.0" # fmt does not prefix tags with v
+            VERSION "12.2.0"
+            GIT_TAG "12.2.0" # fmt does not prefix tags with v
             GIT_PROGRESS TRUE
     )
 endfunction()
