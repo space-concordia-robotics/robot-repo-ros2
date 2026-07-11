@@ -1,4 +1,5 @@
 include("${scrb_cmake_utils_DIR}/backward.cmake")
 include("${scrb_cmake_utils_DIR}/compiler-defaults.cmake")
 include("${scrb_cmake_utils_DIR}/cpm.cmake")
+include("${scrb_cmake_utils_DIR}/cpm-packages.cmake")
 include("${scrb_cmake_utils_DIR}/dependencies.cmake")
