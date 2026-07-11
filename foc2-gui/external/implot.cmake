@@ -4,6 +4,7 @@ FetchContent_Declare(
         implot
         GIT_REPOSITORY https://github.com/epezent/implot.git
         GIT_TAG v1.0
+        GIT_PROGRESS TRUE
 )
 
 FetchContent_MakeAvailable(implot)
