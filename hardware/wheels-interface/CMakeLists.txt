@@ -42,19 +42,6 @@ target_include_directories(
 
 target_link_libraries(wheels_interface PUBLIC ${DEPENDENCY_TARGETS})
 
-set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
-try_compile(HAS_JAZZY_HARDWARE_INTERFACE ${CMAKE_BINARY_DIR}/is_jazzy
-        SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/cmake/has_jazzy_hardware_interface.cpp
-        CXX_STANDARD 20 LINK_LIBRARIES hardware_interface::hardware_interface
-        OUTPUT_VARIABLE COMPILE_LOG
-)
-
-if (HAS_JAZZY_HARDWARE_INTERFACE)
-    target_compile_definitions(wheels_interface PUBLIC HARDWARE_INTERFACE_IS_JAZZY=1)
-else ()
-    target_compile_definitions(wheels_interface PUBLIC HARDWARE_INTERFACE_IS_JAZZY=0)
-endif ()
-
 target_precompile_headers(${PROJECT_NAME} PRIVATE
         <rclcpp/rclcpp.hpp>
         <hardware_interface/hardware_component_interface.hpp>
