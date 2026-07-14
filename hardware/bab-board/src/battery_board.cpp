@@ -14,8 +14,10 @@ static constexpr auto TCU_STATUS = 0x0A;
 
 // CAN-ID fields used by BAB firmware for both telemetry TX and command RX
 // (see src/can-integration/docs/BAB-docs copy.md / Firmware/BAB_MX).
-static constexpr uint8_t BAB_FIRMWARE_DEVTYPE = 0x00;
-static constexpr uint8_t BAB_FIRMWARE_MFR = can_util::constants::Manufacturer::TEAM_USE; // 0x08 (CAN_MFR_SCC)
+static constexpr auto BAB_FIRMWARE_DEVTYPE =
+    can_util::constants::DeviceType::BROADCAST_MESSAGE;
+static constexpr auto BAB_FIRMWARE_MFR =
+    can_util::constants::Manufacturer::TEAM_USE; // 0x08 (CAN_MFR_SCC)
 static constexpr uint8_t BAB_FIRMWARE_DEVICE_ID = 0x00;
 
 // Firmware DATA_SELECT_1 / DATA_SELECT_2 (command payload words, not telemetry indices).
@@ -54,7 +56,7 @@ BAB::BAB(rclcpp::Logger logger, can_util::CANController::SharedPtr& can_controll
     );
 }
 
-uint32_t BAB::validateFrameID(const uint8_t sev, const uint8_t cmd) {
+uint32_t BAB::validateFrameID(const can_util::constants::Severity sev, const uint8_t cmd) {
     return can_util::createCANFrameId(
         BAB_FIRMWARE_DEVTYPE,
         BAB_FIRMWARE_MFR,
@@ -67,7 +69,7 @@ uint32_t BAB::validateFrameID(const uint8_t sev, const uint8_t cmd) {
 void BAB::handleFrames(const uint32_t id, const std::vector<uint8_t>& data) {
     // Quick reject: ignore frames whose DeviceType field is not what the BAB
     // firmware emits today (0x00). Saves a few comparisons on a busy bus.
-    if (const uint8_t devtype = id >> 24 & 0x1F; devtype != BAB_FIRMWARE_DEVTYPE) {
+    if (const uint8_t devtype = id >> 24 & 0x1F; devtype != static_cast<uint8_t>(BAB_FIRMWARE_DEVTYPE)) {
         return;
     }
 
@@ -75,7 +77,7 @@ void BAB::handleFrames(const uint32_t id, const std::vector<uint8_t>& data) {
     std::lock_guard lock(mtx);
 
     // -------------- Automatic PDS rail shutdown (SEV_AUTO, DLC 1) ------------
-    if (id == validateFrameID(static_cast<uint8_t>(can_util::constants::Severity::MANUAL_INTERVENTION), AUTOMATIC_RAIL_SHUTDOWN)) {
+    if (id == validateFrameID(can_util::constants::Severity::MANUAL_INTERVENTION, AUTOMATIC_RAIL_SHUTDOWN)) {
         if (data.empty()) {
             return;
         }
@@ -91,7 +93,7 @@ void BAB::handleFrames(const uint32_t id, const std::vector<uint8_t>& data) {
     }
 
     // ---------------------- Battery telemetry (DLC 4) ----------------------
-    if (id == validateFrameID(static_cast<uint8_t>(can_util::constants::Severity::STATUS), BATTERY_TELEM)) {
+    if (id == validateFrameID(can_util::constants::Severity::STATUS, BATTERY_TELEM)) {
         const uint32_t payload = static_cast<uint32_t>(packBigEndian(data, 4));
 
         const size_t bat_idx = payload >> 31 & 0x01;
@@ -112,7 +114,7 @@ void BAB::handleFrames(const uint32_t id, const std::vector<uint8_t>& data) {
     }
 
     // ----------------------- Rail telemetry (DLC 6) ------------------------
-    if (id == validateFrameID(static_cast<uint8_t>(can_util::constants::Severity::STATUS), RAIL_TELEM)) {
+    if (id == validateFrameID(can_util::constants::Severity::STATUS, RAIL_TELEM)) {
         const uint64_t payload = packBigEndian(data, 6);
 
         const size_t rail_idx = payload >> 42 & 0x03;
@@ -135,7 +137,7 @@ void BAB::handleFrames(const uint32_t id, const std::vector<uint8_t>& data) {
     }
 
     // ------------------------ Relay status (DLC 1) -------------------------
-    if (id == validateFrameID(static_cast<uint8_t>(can_util::constants::Severity::STATUS), RELAY_STATUS)) {
+    if (id == validateFrameID(can_util::constants::Severity::STATUS, RELAY_STATUS)) {
         if (data.empty()) {
             return;
         }
@@ -151,7 +153,7 @@ void BAB::handleFrames(const uint32_t id, const std::vector<uint8_t>& data) {
     }
 
     // ----------------------- TCU temperature (DLC 4) -----------------------
-    if (id == validateFrameID(static_cast<uint8_t>(can_util::constants::Severity::STATUS), TCU_TELEM)) {
+    if (id == validateFrameID(can_util::constants::Severity::STATUS, TCU_TELEM)) {
         if (data.size() < sizeof(float)) {
             return;
         }
@@ -162,7 +164,7 @@ void BAB::handleFrames(const uint32_t id, const std::vector<uint8_t>& data) {
     }
 
     // ----------------------- TCU fan status (DLC 1) ------------------------
-    if (id == validateFrameID(static_cast<uint8_t>(can_util::constants::Severity::STATUS), TCU_STATUS)) {
+    if (id == validateFrameID(can_util::constants::Severity::STATUS, TCU_STATUS)) {
         if (data.empty()) {
             return;
         }
@@ -179,7 +181,7 @@ bool BAB::sendBabControlFrame(const uint8_t inst, uint16_t data_word) const {
         );
         return false;
     }
-    const uint32_t can_id = validateFrameID(static_cast<uint8_t>(can_util::constants::Severity::CONTROL), inst);
+    const uint32_t can_id = validateFrameID(can_util::constants::Severity::CONTROL, inst);
     const std::array payload = {
         static_cast<uint8_t>(data_word >> 8 & 0xFF),
         static_cast<uint8_t>(data_word & 0xFF),
@@ -195,7 +197,7 @@ bool BAB::sendBabEmergencyFrame(const uint8_t inst) const {
         );
         return false;
     }
-    const uint32_t can_id = validateFrameID(static_cast<uint8_t>(can_util::constants::Severity::MANUAL_INTERVENTION), inst);
+    const uint32_t can_id = validateFrameID(can_util::constants::Severity::MANUAL_INTERVENTION, inst);
     // DATA_EMERG_*_TOKEN = 0x00000000 (big-endian)
     return can_controller->sendBlockingFrame(can_id, std::array<uint8_t, 4>{0, 0, 0, 0});
 }
@@ -309,6 +311,12 @@ bool BAB::getRelayClosed(const size_t idx) const {
 
 // ------------------------------ Commands ---------------------------------
 
+static constexpr auto CUT_PDS_OUTPUTS = 0x8F;
+static constexpr auto TURN_OFF_FAN = 0x08;
+static constexpr auto TURN_OFF_RELAY = 0x01;
+static constexpr auto COMMAND_ON = 0x06;
+static constexpr auto COMMAND_OFF = 0x04;
+
 bool BAB::sendKYSCommand() {
     return sendBabEmergencyFrame(CUT_PDS_OUTPUTS);
 }
@@ -317,17 +325,13 @@ bool BAB::cutFanPower(uint8_t /*fanID*/) {
     return sendBabControlFrame(TURN_OFF_FAN, 0x0000);
 }
 
-bool BAB::CutRelayCommand(uint8_t relayID) {
-    const uint16_t select = relayID == DeviceId::ID::JMSB ? DATA_SELECT_ARM_RAIL : DATA_SELECT_WHEEL_RAIL;
+bool BAB::CutRelayCommand(bool jmsb) {
+    const uint16_t select = jmsb ? DATA_SELECT_ARM_RAIL : DATA_SELECT_WHEEL_RAIL;
     return sendBabControlFrame(TURN_OFF_RELAY, select);
 }
 
-bool BAB::sendManualPowerCommands(uint8_t selectRailID, bool turnOn) {
-    const Instructions::Inst inst =
-        turnOn ? COMMAND_ON : COMMAND_OFF;
-    const uint16_t select =
-        selectRailID == DeviceId::ID::ARM_EMERGENCY_INTERVENTION
-            ? DATA_SELECT_ARM_RAIL
-            : DATA_SELECT_WHEEL_RAIL;
+bool BAB::sendManualPowerCommands(bool arm_rail, bool turnOn) {
+    const auto inst = turnOn ? COMMAND_ON : COMMAND_OFF;
+    const uint16_t select = arm_rail ? DATA_SELECT_ARM_RAIL : DATA_SELECT_WHEEL_RAIL;
     return sendBabControlFrame(inst, select);
 }

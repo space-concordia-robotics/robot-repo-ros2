@@ -8,6 +8,7 @@
 #include <rclcpp/logger.hpp>
 
 #include "can_util/can_controller.hpp"
+#include "can_util/can_id_util.hpp"
 
 
 static constexpr auto VOLTAGE_MULTIPLIER = 100;
@@ -67,7 +68,7 @@ public:
 
     /// Build the expected 29-bit CAN ID for a BAB frame (telemetry or command).
     /// Uses firmware field values DevType=0x00, Mfr=0x08 (TEAM_USE), DevID=0x00.
-    static uint32_t validateFrameID(uint8_t sev, uint8_t cmd);
+    static uint32_t validateFrameID(can_util::constants::Severity sev, uint8_t cmd);
 
     /// Frame callback invoked by `CANController::registerFrameCallback`.
     /// Decodes battery/rail/TCU/relay frames in-place.
@@ -101,8 +102,8 @@ public:
     // battery_board.cpp is set true after bench validation).
     bool sendKYSCommand();
     bool cutFanPower(uint8_t fanID);
-    bool CutRelayCommand(uint8_t relayID);
-    bool sendManualPowerCommands(uint8_t selectRailID, bool turnOn);
+    bool CutRelayCommand(bool jmsb);
+    bool sendManualPowerCommands(bool arm_rail, bool turnOn);
 
 private:
     bool sendBabControlFrame(uint8_t inst, uint16_t data_word) const;
