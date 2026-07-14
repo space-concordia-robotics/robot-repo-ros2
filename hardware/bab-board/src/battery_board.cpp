@@ -30,8 +30,8 @@ static constexpr uint16_t DATA_SELECT_WHEEL_RAIL = 0x00F0;
 static constexpr bool BAB_COMMAND_TX_ENABLED = false;
 
 // getBMSHealth(): above min but below max → critically low, not a dead sensor.
-static constexpr float BMS_CRITICAL_LOW_VOLTAGE_V = 10.0f;
-static constexpr float BMS_MIN_VALID_VOLTAGE_V = 0.5f;
+static constexpr auto BMS_CRITICAL_LOW_VOLTAGE_V = 10.0f;
+static constexpr auto BMS_MIN_VALID_VOLTAGE_V = 0.5f;
 
 // Pack the first N bytes of a CAN payload into a 64-bit integer in
 // MSB-first (network) order, matching the bit layouts in BAB-docs.md.
@@ -39,7 +39,7 @@ uint64_t packBigEndian(const std::vector<uint8_t>& data, const size_t n) {
     uint64_t out = 0;
     const size_t limit = std::min(n, data.size());
     for (size_t i = 0; i < limit; ++i) {
-        out = out << 8 | data[i];
+        out = out << 8 | data.at(i);
     }
     return out;
 }
@@ -74,35 +74,35 @@ void BAB::handleFrames(const uint32_t id, const std::vector<uint8_t>& data) {
     }
 
     const auto now = std::chrono::steady_clock::now();
-    std::lock_guard lock(mtx);
+    std::scoped_lock lock(mtx);
 
     // -------------- Automatic PDS rail shutdown (SEV_AUTO, DLC 1) ------------
     if (id == validateFrameID(can_util::constants::Severity::MANUAL_INTERVENTION, AUTOMATIC_RAIL_SHUTDOWN)) {
         if (data.empty()) {
             return;
         }
-        const uint8_t reason = data[0] & 0x03;
+        const uint8_t reason = data.at(0) & 0x03;
         // TODO 2026-05-26 (Will Free): this ternary sucks
-        const char* reason_str = reason == 0x01
-                                     ? "arm rail"
-                                     : reason == 0x02
-                                     ? "wheel rail"
-                                     : "all rails";
+        const auto reason_str = reason == 0x01
+            ? "arm rail"
+            : reason == 0x02
+            ? "wheel rail"
+            : "all rails";
         logger.warn("BAB automatic PDS rail shutdown (reason={:#02X}, {})", reason, reason_str);
         return;
     }
 
     // ---------------------- Battery telemetry (DLC 4) ----------------------
     if (id == validateFrameID(can_util::constants::Severity::STATUS, BATTERY_TELEM)) {
-        const uint32_t payload = static_cast<uint32_t>(packBigEndian(data, 4));
+        const auto payload = static_cast<uint32_t>(packBigEndian(data, 4));
 
         const size_t bat_idx = payload >> 31 & 0x01;
-        const float voltage = static_cast<float>(payload >> 20 & 0x7FF) / VOLTAGE_MULTIPLIER;
-        const float current = static_cast<float>(payload >> 6 & 0x3FFF) / CURRENT_MULTIPLIER;
-        const float temp_c = static_cast<float>(payload & 0x3F) + 20.0f;
+        const auto voltage = static_cast<float>(payload >> 20 & 0x7FF) / VOLTAGE_MULTIPLIER;
+        const auto current = static_cast<float>(payload >> 6 & 0x3FFF) / CURRENT_MULTIPLIER;
+        const auto temp_c = static_cast<float>(payload & 0x3F) + 20.0;
 
         if (bat_idx < BATTERIES_COUNT) {
-            auto& bat = battery_telemetry[bat_idx];
+            auto& bat = battery_telemetry.at(bat_idx);
             bat.batteries = static_cast<int>(bat_idx) + 1;
             bat.voltage = voltage;
             bat.current = current;
@@ -119,12 +119,12 @@ void BAB::handleFrames(const uint32_t id, const std::vector<uint8_t>& data) {
 
         const size_t rail_idx = payload >> 42 & 0x03;
         const bool switch_on = (payload >> 41 & 0x01) != 0;
-        const float voltage = static_cast<float>(payload >> 30 & 0x7FF) / VOLTAGE_MULTIPLIER;
-        const float current = static_cast<float>(payload >> 16 & 0x3FFF) / CURRENT_MULTIPLIER;
-        const float power = static_cast<float>(payload & 0xFFFF) / POWER_MULTIPLIER;
+        const auto voltage = static_cast<float>(payload >> 30 & 0x7FF) / VOLTAGE_MULTIPLIER;
+        const auto current = static_cast<float>(payload >> 16 & 0x3FFF) / CURRENT_MULTIPLIER;
+        const auto power = static_cast<float>(payload & 0xFFFF) / POWER_MULTIPLIER;
 
         if (rail_idx < RAILS_COUNT) {
-            auto& rail = rail_telemetry[rail_idx];
+            auto& rail = rail_telemetry.at(rail_idx);
             rail.rail_id = static_cast<int>(rail_idx) + 1;
             rail.active = switch_on;
             rail.voltage = voltage;
@@ -141,13 +141,13 @@ void BAB::handleFrames(const uint32_t id, const std::vector<uint8_t>& data) {
         if (data.empty()) {
             return;
         }
-        const uint8_t b = data[0];
-        const size_t relay_idx = b & 0x01;
-        const bool closed = (b >> 1 & 0x01) != 0;
+        const uint8_t byte = data.at(0);
+        const size_t relay_idx = byte & 0x01;
+        const bool closed = (byte >> 1 & 0x01) != 0;
 
         if (relay_idx < RELAYS_COUNT) {
-            relay_telemetry[relay_idx].relay_id = static_cast<int>(relay_idx) + 1;
-            relay_telemetry[relay_idx].active = closed;
+            relay_telemetry.at(relay_idx).relay_id = static_cast<int>(relay_idx) + 1;
+            relay_telemetry.at(relay_idx).active = closed;
         }
         return;
     }
@@ -157,7 +157,7 @@ void BAB::handleFrames(const uint32_t id, const std::vector<uint8_t>& data) {
         if (data.size() < sizeof(float)) {
             return;
         }
-        float temp;
+        float temp; // NOLINT(*-init-variables): memcopied from data
         std::memcpy(&temp, data.data(), sizeof(float));
         tcu_telemetry.temperature = temp;
         return;
@@ -168,7 +168,7 @@ void BAB::handleFrames(const uint32_t id, const std::vector<uint8_t>& data) {
         if (data.empty()) {
             return;
         }
-        tcu_telemetry.fan_enabled = (data[0] & 0x01) != 0;
+        tcu_telemetry.fan_enabled = (data.at(0) & 0x01) != 0;
         return;
     }
 }
@@ -204,109 +204,108 @@ bool BAB::sendBabEmergencyFrame(const uint8_t inst) const {
 
 // ---------------------------- Battery getters ----------------------------
 
-float BAB::getBatteryVoltageLevel(const size_t idx) const {
-    std::lock_guard lock(mtx);
-    return idx < BATTERIES_COUNT ? battery_telemetry[idx].voltage : 0.f;
+double BAB::getBatteryVoltageLevel(const size_t idx) const {
+    std::scoped_lock lock(mtx);
+    return idx < BATTERIES_COUNT ? battery_telemetry.at(idx).voltage : 0.f;
 }
 
-float BAB::getBatteryCurrentLevel(const size_t idx) const {
-    std::lock_guard lock(mtx);
-    return idx < BATTERIES_COUNT ? battery_telemetry[idx].current : 0.f;
+double BAB::getBatteryCurrentLevel(const size_t idx) const {
+    std::scoped_lock lock(mtx);
+    return idx < BATTERIES_COUNT ? battery_telemetry.at(idx).current : 0.f;
 }
 
-float BAB::getBatteryTemp(const size_t idx) const {
-    std::lock_guard lock(mtx);
-    return idx < BATTERIES_COUNT ? battery_telemetry[idx].temperature : 0.f;
+double BAB::getBatteryTemp(const size_t idx) const {
+    std::scoped_lock lock(mtx);
+    return idx < BATTERIES_COUNT ? battery_telemetry.at(idx).temperature : 0.f;
 }
 
 bool BAB::batteryFresh(const size_t idx, const std::chrono::milliseconds max_age) const {
-    std::lock_guard lock(mtx);
-    if (idx >= BATTERIES_COUNT || !battery_telemetry[idx].has_received) {
+    std::scoped_lock lock(mtx);
+    if (idx >= BATTERIES_COUNT || !battery_telemetry.at(idx).has_received) {
         return false;
     }
-    const auto age = std::chrono::steady_clock::now() - battery_telemetry[idx].timestamp;
+    const auto age = std::chrono::steady_clock::now() - battery_telemetry.at(idx).timestamp;
     return age <= max_age;
 }
 
 bool BAB::batteryEverReceived(const size_t idx) const {
-    std::lock_guard lock(mtx);
-    return idx < BATTERIES_COUNT && battery_telemetry[idx].has_received;
+    std::scoped_lock lock(mtx);
+    return idx < BATTERIES_COUNT && battery_telemetry.at(idx).has_received;
 }
 
 // ------------------------------ Rail getters -----------------------------
 
-float BAB::getRailVoltageLevel(const size_t idx) const {
-    std::lock_guard lock(mtx);
-    return idx < RAILS_COUNT ? rail_telemetry[idx].voltage : 0.f;
+double BAB::getRailVoltageLevel(const size_t idx) const {
+    std::scoped_lock lock(mtx);
+    return idx < RAILS_COUNT ? rail_telemetry.at(idx).voltage : 0.f;
 }
 
-float BAB::getRailCurrent(const size_t idx) const {
-    std::lock_guard lock(mtx);
-    return idx < RAILS_COUNT ? rail_telemetry[idx].current : 0.f;
+double BAB::getRailCurrent(const size_t idx) const {
+    std::scoped_lock lock(mtx);
+    return idx < RAILS_COUNT ? rail_telemetry.at(idx).current : 0.f;
 }
 
-float BAB::getRailPower(const size_t idx) const {
-    std::lock_guard lock(mtx);
-    return idx < RAILS_COUNT ? rail_telemetry[idx].power : 0.f;
+double BAB::getRailPower(const size_t idx) const {
+    std::scoped_lock lock(mtx);
+    return idx < RAILS_COUNT ? rail_telemetry.at(idx).power : 0.f;
 }
 
-float BAB::getRailTemp(const size_t idx) const {
+double BAB::getRailTemp(const size_t idx) const {
     // Firmware does not currently transmit rail temperature; always 0.
-    std::lock_guard lock(mtx);
-    return idx < RAILS_COUNT ? rail_telemetry[idx].temperature : 0.f;
+    std::scoped_lock lock(mtx);
+    return idx < RAILS_COUNT ? rail_telemetry.at(idx).temperature : 0.f;
 }
 
 bool BAB::getRailSwitchOn(const size_t idx) const {
-    std::lock_guard lock(mtx);
-    return idx < RAILS_COUNT && rail_telemetry[idx].active;
+    std::scoped_lock lock(mtx);
+    return idx < RAILS_COUNT && rail_telemetry.at(idx).active;
 }
 
 bool BAB::railFresh(const size_t idx, const std::chrono::milliseconds max_age) const {
-    std::lock_guard lock(mtx);
-    if (idx >= RAILS_COUNT || !rail_telemetry[idx].has_received) {
+    std::scoped_lock lock(mtx);
+    if (idx >= RAILS_COUNT || !rail_telemetry.at(idx).has_received) {
         return false;
     }
-    const auto age = std::chrono::steady_clock::now() - rail_telemetry[idx].timestamp;
+    const auto age = std::chrono::steady_clock::now() - rail_telemetry.at(idx).timestamp;
     return age <= max_age;
 }
 
 bool BAB::railEverReceived(const size_t idx) const {
-    std::lock_guard lock(mtx);
-    return idx < RAILS_COUNT && rail_telemetry[idx].has_received;
+    std::scoped_lock lock(mtx);
+    return idx < RAILS_COUNT && rail_telemetry.at(idx).has_received;
 }
 
 // ------------------------------ TCU / relay ------------------------------
 
-float BAB::getTCUTemp() const {
-    std::lock_guard lock(mtx);
+double BAB::getTCUTemp() const {
+    std::scoped_lock lock(mtx);
     return tcu_telemetry.temperature;
 }
 
 std::string BAB::getTCUStatus() const {
-    std::lock_guard lock(mtx);
+    std::scoped_lock lock(mtx);
     return tcu_telemetry.fan_enabled ? "TCU ON" : "TCU OFF";
 }
 
 std::string BAB::getBMSHealth() const {
-    std::lock_guard lock(mtx);
-    const float v = battery_telemetry[0].voltage;
-    if (v < BMS_CRITICAL_LOW_VOLTAGE_V && v > BMS_MIN_VALID_VOLTAGE_V) {
+    std::scoped_lock lock(mtx);
+    if (const auto voltage = battery_telemetry.at(0).voltage; voltage < BMS_CRITICAL_LOW_VOLTAGE_V && voltage > BMS_MIN_VALID_VOLTAGE_V) {
         return "CRITICAL LOW VOLTAGE";
     }
     return "NORMAL VOLTAGE (HEALTHY)";
 }
 
 std::string BAB::getRelayStatus(const size_t idx) const {
-    std::lock_guard lock(mtx);
+    std::scoped_lock lock(mtx);
     if (idx >= RELAYS_COUNT) {
         return "Relay unknown";
     }
-    return relay_telemetry[idx].active ? "Relay Closed (ON)" : "Relay OPEN (OFF)";
+    return relay_telemetry.at(idx).active ? "Relay Closed (ON)" : "Relay OPEN (OFF)";
 }
 
 bool BAB::getRelayClosed(const size_t idx) const {
-    std::lock_guard lock(mtx);
-    return idx < RELAYS_COUNT && relay_telemetry[idx].active;
+    std::scoped_lock lock(mtx);
+    return idx < RELAYS_COUNT && relay_telemetry.at(idx).active;
 }
 
 // ------------------------------ Commands ---------------------------------
@@ -325,12 +324,12 @@ bool BAB::cutFanPower(uint8_t /*fanID*/) {
     return sendBabControlFrame(TURN_OFF_FAN, 0x0000);
 }
 
-bool BAB::CutRelayCommand(bool jmsb) {
+bool BAB::CutRelayCommand(const bool jmsb) {
     const uint16_t select = jmsb ? DATA_SELECT_ARM_RAIL : DATA_SELECT_WHEEL_RAIL;
     return sendBabControlFrame(TURN_OFF_RELAY, select);
 }
 
-bool BAB::sendManualPowerCommands(bool arm_rail, bool turnOn) {
+bool BAB::sendManualPowerCommands(const bool arm_rail, const bool turnOn) {
     const auto inst = turnOn ? COMMAND_ON : COMMAND_OFF;
     const uint16_t select = arm_rail ? DATA_SELECT_ARM_RAIL : DATA_SELECT_WHEEL_RAIL;
     return sendBabControlFrame(inst, select);
