@@ -8,6 +8,7 @@ endif ()
 set(DEPENDENCIES
         std_msgs
         geometry_msgs
+        action_msgs
 )
 
 # find dependencies
