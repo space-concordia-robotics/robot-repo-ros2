@@ -11,9 +11,11 @@
 
 class ProduceDiagnostics {
 public:
-    ProduceDiagnostics(rclcpp::Node& node,
-                       std::shared_ptr<BAB> bab_ptr,
-                       rclcpp::CallbackGroup::SharedPtr callback_group = nullptr);
+    ProduceDiagnostics(
+        rclcpp::Node& node,
+        std::shared_ptr<BAB> bab_ptr,
+        rclcpp::CallbackGroup::SharedPtr callback_group = nullptr
+    );
 
 private:
     bool ensureDiagnostics(diagnostic_updater::DiagnosticStatusWrapper& stat) const;

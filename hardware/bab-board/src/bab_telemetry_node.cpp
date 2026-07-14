@@ -74,7 +74,7 @@ public:
         : Node("bab_telemetry_node"),
           logger(this->get_logger().get_child("bab_telemetry_node"), *get_clock()) {
         can_interface = declare_parameter<std::string>("can_interface", "can0");
-        const int period_ms = declare_parameter<int>("print_period_ms", 1000);
+        const auto period_ms = declare_parameter<int>("print_period_ms", 1000);
         log_unknown = declare_parameter<bool>("log_unknown_bab_frames", false);
 
         can_controller = std::make_shared<can_util::CANController>(can_interface, this->get_logger());
@@ -112,7 +112,7 @@ public:
             can_interface, period_ms, log_unknown);
     }
 
-    ~BabTelemetryNode() override {}
+    ~BabTelemetryNode() override = default;
 
 private:
     void printTelemetry() const {
@@ -135,10 +135,10 @@ private:
         for (size_t i = 0; i < BAB::RAILS_COUNT; ++i) {
             // TODO 2026-05-26 (Will Free): this ternary sucks
             const char* name = i == 0
-                                   ? "Rail 1 (5V)"
-                                   : i == 1
-                                   ? "Rail 2 (Arm)"
-                                   : "Rail 3 (Whl)";
+                ? "Rail 1 (5V)"
+                : i == 1
+                ? "Rail 2 (Arm)"
+                : "Rail 3 (Whl)";
             std::ostringstream extra;
             extra << "P=" << std::fixed << std::setprecision(1)
                 << bab->getRailPower(i) << "W"
