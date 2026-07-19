@@ -21,13 +21,11 @@
 //                                                    on the bus.
 
 #include <chrono>
-#include <iomanip>
 #include <memory>
-#include <sstream>
 #include <string>
 #include <fmt/ranges.h>
-#include <rclcpp/rclcpp.hpp>
 #include <ros2_fmt_logger/ros2_fmt_logger.hpp>
+#include <rclcpp/rclcpp.hpp>
 
 #include "bab-board/battery_board.hpp"
 #include "can_util/can_util.hpp"
