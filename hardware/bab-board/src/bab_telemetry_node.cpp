@@ -38,36 +38,6 @@ static constexpr auto BAB_DEVICE_TYPE = can_util::constants::DeviceType::BROADCA
 static constexpr auto BAB_MANUFACTURER = can_util::constants::Manufacturer::TEAM_USE; // 0x08
 static constexpr auto BAB_ID = 0x00;
 
-namespace {
-    // TODO 2026-05-26 (Will Free): convert this to using fmt with ros2_fmt_logger
-    std::string formatRow(
-        const char* label,
-        const bool fresh,
-        const bool ever_received,
-        const float v, const float i, const float p_or_t,
-        const char* p_or_t_label,
-        const char* extra = nullptr
-    ) {
-        std::ostringstream ss;
-        ss << "  " << std::left << std::setw(10) << label
-            << " V=" << std::setw(7) << std::fixed << std::setprecision(2) << v
-            << " I=" << std::setw(7) << std::fixed << std::setprecision(2) << i
-            << " " << p_or_t_label << "=" << std::setw(7) << std::fixed << std::setprecision(2) << p_or_t;
-        if (extra) {
-            ss << " " << extra;
-        }
-        if (!ever_received) {
-            ss << "  [NO FRAMES YET]";
-        } else if (!fresh) {
-            ss << "  [STALE]";
-        } else {
-            ss << "  [ok]";
-        }
-        return ss.str();
-    }
-}
-
-
 class BabTelemetryNode : public rclcpp::Node {
 public:
     BabTelemetryNode()
@@ -116,45 +86,47 @@ public:
 
 private:
     void printTelemetry() const {
-        std::ostringstream ss;
-        ss << "\n--- BAB Telemetry (iface=" << can_interface << ") ---";
+        auto buf = fmt::memory_buffer();
+
+        fmt::format_to(std::back_inserter(buf), "--- BAB Telemetry (iface=\"{}\") ---", can_interface);
+
+        static constexpr auto frameState = [](const bool ever_received, const bool fresh) -> const char* {
+            if (!ever_received)
+                return "NO FRAMES YET";
+            else if (!fresh)
+                return "STALE";
+            else
+                return "ok";
+        };
 
         for (size_t i = 0; i < BAB::BATTERIES_COUNT; ++i) {
-            std::string label = "Battery " + std::to_string(i + 1);
-            ss << "\n"
-                << formatRow(label.c_str(),
-                             bab->batteryFresh(i),
-                             bab->batteryEverReceived(i),
-                             bab->getBatteryVoltageLevel(i),
-                             bab->getBatteryCurrentLevel(i),
-                             bab->getBatteryTemp(i),
-                             "T");
+            fmt::format_to(
+                std::back_inserter(buf),
+                "\n  Battery {:<2} V={:>7.2f} I={:>7.2f} T={:>7.2f}  [{}]",
+                i + 1,
+                bab->getBatteryVoltageLevel(i),
+                bab->getBatteryCurrentLevel(i),
+                bab->getBatteryTemp(i),
+                frameState(bab->batteryEverReceived(i), bab->batteryFresh(i))
+            );
         }
 
-        // TODO 2026-05-26 (Will Free): convert this to using fmt
         for (size_t i = 0; i < BAB::RAILS_COUNT; ++i) {
             // TODO 2026-05-26 (Will Free): this ternary sucks
-            const char* name = i == 0
-                ? "Rail 1 (5V)"
-                : i == 1
-                ? "Rail 2 (Arm)"
-                : "Rail 3 (Whl)";
-            std::ostringstream extra;
-            extra << "P=" << std::fixed << std::setprecision(1)
-                << bab->getRailPower(i) << "W"
-                << " sw=" << (bab->getRailSwitchOn(i) ? "ON " : "OFF");
-            ss << "\n"
-                << formatRow(name,
-                             bab->railFresh(i),
-                             bab->railEverReceived(i),
-                             bab->getRailVoltageLevel(i),
-                             bab->getRailCurrent(i),
-                             bab->getRailPower(i),
-                             "P",
-                             extra.str().c_str());
+            const auto name = i == 0 ? "Rail 1 (5V)" : i == 1 ? "Rail 2 (Arm)" : "Rail 3 (Whl)";
+            fmt::format_to(
+                std::back_inserter(buf),
+                "\n  {:<10} V={:>7.2f} I={:>7.2f} P={}W sw={:>3}  [{}]",
+                name,
+                bab->getRailVoltageLevel(i),
+                bab->getRailCurrent(i),
+                bab->getRailPower(i),
+                bab->getRailSwitchOn(i) ? "ON" : "OFF",
+                frameState(bab->batteryEverReceived(i), bab->batteryFresh(i))
+            );
         }
 
-        logger.info("{}", ss.str());
+        logger.info("{}", buf);
     }
 
     void onAnyFrame(const uint32_t id, const std::vector<uint8_t>& data) const {
