@@ -1,5 +1,14 @@
 cmake_minimum_required(VERSION 3.25)
 
+option(ENABLE_TSAN "Enable ThreadSanitizer for debug builds" OFF)
+option(SCRB_PRECOMPILE_HEADERS "Enable precompiled headers" ON) # due to https://youtrack.jetbrains.com/issue/CPP-49453/, you need to disable these for CLion
+
+if (DEFINED ENV{SCRB_PRECOMPILE_HEADERS})
+    if (NOT $ENV{SCRB_PRECOMPILE_HEADERS})
+        set(SCRB_PRECOMPILE_HEADERS OFF CACHE BOOL "Enable precompiled headers" FORCE)
+    endif ()
+endif ()
+
 include(CheckCompilerFlag)
 include(CheckLinkerFlag)
 
@@ -108,8 +117,6 @@ function(append_sanitizer_flags COMPILE_LIST_VAR LINK_LIST_VAR)
     return(PROPAGATE ${COMPILE_LIST_VAR} ${LINK_LIST_VAR})
 endfunction()
 
-option(ENABLE_TSAN "Enable ThreadSanitizer for debug builds" OFF)
-
 function(apply_target_defaults TARGET)
     # enable C++23
     target_compile_features("${TARGET}" PUBLIC cxx_std_23)
@@ -172,4 +179,10 @@ endfunction()
 function(scrb_add_library TARGET)
     add_library("${TARGET}" ${ARGN})
     apply_target_defaults("${TARGET}")
+endfunction()
+
+function(scrb_target_precompile_headers TARGET_NAME)
+    if (SCRB_PRECOMPILE_HEADERS)
+        target_precompile_headers(${TARGET_NAME} ${ARGN})
+    endif ()
 endfunction()

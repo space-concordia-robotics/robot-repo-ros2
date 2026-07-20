@@ -38,7 +38,7 @@ target_include_directories(transducer_m_imu PUBLIC
 
 target_link_libraries(transducer_m_imu PUBLIC ${DEPENDENCY_TARGETS})
 
-target_precompile_headers(transducer_m_imu PRIVATE
+scrb_target_precompile_headers(transducer_m_imu PRIVATE
         <rclcpp/rclcpp.hpp>
         <ros2_fmt_logger/logger.hpp>
 )

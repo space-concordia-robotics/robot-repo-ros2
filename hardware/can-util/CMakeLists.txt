@@ -31,7 +31,7 @@ target_include_directories(
 
 target_link_libraries(${PROJECT_NAME} PUBLIC ${DEPENDENCY_TARGETS})
 
-target_precompile_headers(${PROJECT_NAME} PRIVATE
+scrb_target_precompile_headers(${PROJECT_NAME} PRIVATE
         <rclcpp/logging.hpp>
         <rclcpp/macros.hpp>
         <ros2_fmt_logger/logger.hpp>

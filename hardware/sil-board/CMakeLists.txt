@@ -37,7 +37,7 @@ target_include_directories(${PROJECT_NAME}_node PUBLIC
 rosidl_get_typesupport_target(cpp_typesupport_target ${PROJECT_NAME} rosidl_typesupport_cpp)
 target_link_libraries(${PROJECT_NAME}_node PRIVATE ${cpp_typesupport_target})
 
-target_precompile_headers(${PROJECT_NAME}_node PRIVATE
+scrb_target_precompile_headers(${PROJECT_NAME}_node PRIVATE
         <rclcpp/rclcpp.hpp>
         <ros2_fmt_logger/logger.hpp>
 )
@@ -53,7 +53,7 @@ target_include_directories(compat_board_node PRIVATE
         $<INSTALL_INTERFACE:include>
 )
 
-target_precompile_headers(compat_board_node REUSE_FROM ${PROJECT_NAME}_node)
+scrb_target_precompile_headers(compat_board_node REUSE_FROM ${PROJECT_NAME}_node)
 
 ## INSTALL
 
