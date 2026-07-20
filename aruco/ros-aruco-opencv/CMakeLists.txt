@@ -50,7 +50,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE
 
 target_link_libraries(${PROJECT_NAME} PUBLIC ${DEPENDENCY_TARGETS})
 
-target_precompile_headers(${PROJECT_NAME} PRIVATE
+scrb_target_precompile_headers(${PROJECT_NAME} PRIVATE
         <rclcpp/rclcpp.hpp>
         <opencv2/opencv.hpp>
         <yaml-cpp/yaml.h>

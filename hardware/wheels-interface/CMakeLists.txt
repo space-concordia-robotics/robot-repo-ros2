@@ -42,7 +42,7 @@ target_include_directories(
 
 target_link_libraries(wheels_interface PUBLIC ${DEPENDENCY_TARGETS})
 
-target_precompile_headers(${PROJECT_NAME} PRIVATE
+scrb_target_precompile_headers(${PROJECT_NAME} PRIVATE
         <rclcpp/rclcpp.hpp>
         <hardware_interface/hardware_component_interface.hpp>
         <realtime_tools/realtime_buffer.hpp>

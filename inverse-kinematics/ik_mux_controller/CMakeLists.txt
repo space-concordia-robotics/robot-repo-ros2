@@ -22,7 +22,7 @@ find_dependencies(
 scrb_add_executable(ik_mux src/ik_mux.cpp)
 target_link_libraries(ik_mux PUBLIC ${DEPENDENCY_TARGETS})
 
-target_precompile_headers(ik_mux PRIVATE
+scrb_target_precompile_headers(ik_mux PRIVATE
         <rclcpp/rclcpp.hpp>
         <ros2_fmt_logger/logger.hpp>
 )
@@ -30,7 +30,7 @@ target_precompile_headers(ik_mux PRIVATE
 scrb_add_executable(ik_nxt src/ik_mux_nxt.cpp)
 target_link_libraries(ik_nxt PUBLIC ${DEPENDENCY_TARGETS})
 
-target_precompile_headers(ik_nxt REUSE_FROM ik_mux)
+scrb_target_precompile_headers(ik_nxt REUSE_FROM ik_mux)
 
 ## INSTALL
 

@@ -194,7 +194,7 @@ set(FONT_AWESOME_PATH "share/resources/fonts/fa-solid-900.ttf")
 
 target_compile_definitions(${PROJECT_NAME} INTERFACE FONT_AWESOME_PATH="${FONT_AWESOME_PATH}")
 
-target_precompile_headers(${PROJECT_NAME} PRIVATE
+scrb_target_precompile_headers(${PROJECT_NAME} PRIVATE
         <filesystem>
         <rclcpp/rclcpp.hpp>
         <tf2_ros/buffer.hpp>
