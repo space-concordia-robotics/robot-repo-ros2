@@ -1,5 +1,7 @@
 #include "sil_interface/sil_interface.hpp"
 
+#include "scrb_common_util/string_parsing.hpp"
+
 #include "sil_interface/hardware_interface_util.hpp"
 
 namespace sil_interface {
@@ -47,7 +49,7 @@ namespace sil_interface {
         };
     }
 
-    SILSystemHardware::SILSystemHardware() {}
+    SILSystemHardware::SILSystemHardware() = default;
 
     CallbackReturn SILSystemHardware::on_init(const hardware_interface::HardwareComponentInterfaceParams& params) {
         const auto& info = params.hardware_info;
@@ -84,7 +86,7 @@ namespace sil_interface {
             return CallbackReturn::ERROR;
         }
 
-        const auto& joint = info.joints[0];
+        const auto& joint = info.joints.at(0);
 
         if (joint.name != "sil") {
             logger->fatal("Joint '{}' does not have name 'sil'", joint.name, joint.command_interfaces.size());
@@ -128,7 +130,7 @@ namespace sil_interface {
         // TODO 2026-02-14 (Will Free): properly handle errors here
 
         // TODO 2026-05-13 (Will Free): move away from using the raw canbus id to instead only specifying the device id and constructing it from that.
-        device_id = hardware_interface::stoui32(parameters["device_id"], 16);
+        device_id = scrb::common_util::parse_uint32(parameters["device_id"], 16);
 
         // TODO 2026-05-14 (Will Free): add diagnostics for SIL (does it have a heartbeat it returns to us?)
         // const auto diagnosticCallback = std::bind(&RoverSystemWheelsHardware::produce_diagnostics, std::placeholders::_1, std::placeholders::_2, wheel);
@@ -141,7 +143,7 @@ namespace sil_interface {
 
     CallbackReturn SILSystemHardware::on_configure(const rclcpp_lifecycle::State& previous_state) {
         // reset values always when configuring hardware
-        for (const auto& [name, descr] : joint_command_interfaces_) {
+        for (const auto& name : joint_command_interfaces_ | std::views::keys) {
             set_command(name, 0.0);
         }
 

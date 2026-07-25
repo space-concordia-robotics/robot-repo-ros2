@@ -21,12 +21,21 @@
     <depend>tf2_ros</depend>
     <depend>image_transport</depend>
     <depend>ros2_fmt_logger</depend>
+    <depend>scrb_common_util</depend>
 
-    <depend>gstreamer</depend>
-    <depend>GeographicLib</depend>
-    <depend>OpenCV</depend>
-    <depend>OpenGL</depend>
-    <depend>Freetype</depend>
+    <depend>gstreamer1.0</depend>
+    <depend>gstreamer1.0-rtsp</depend>
+    <depend>geographiclib</depend>
+    <depend>libopencv-dev</depend>
+    <depend>opengl</depend>
+    <depend>freetype</depend>
+    <depend>libx11-dev</depend>
+    <depend>libx11-xcb-dev</depend>
+    <depend>libxtst-dev</depend>
+
+    <build_depend>libgstreamer1.0-dev</build_depend>
+    <build_depend>libgstrtspserver-1.0-dev</build_depend>
+    <build_depend>scrb_cmake_utils</build_depend>
 
     <buildtool_depend>ament_cmake</buildtool_depend>
 

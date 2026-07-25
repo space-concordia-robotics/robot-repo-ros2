@@ -18,7 +18,7 @@ namespace ImOsm {
 
         void stop();
 
-        int tileCounter() const {
+        [[nodiscard]] int tileCounter() const {
             return tile_counter.load();
         }
 

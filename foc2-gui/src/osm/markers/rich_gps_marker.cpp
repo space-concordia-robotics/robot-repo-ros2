@@ -19,7 +19,9 @@ void RichGPSMarker::onInit() {
     );
 }
 
-void RichGPSMarker::onShutdown() const {}
+void RichGPSMarker::onShutdown() {
+    point_subscription.reset();
+}
 
 bool RichGPSMarker::inBounds(const Eigen::AlignedBox2d /*geo_box*/) const {
     // return geo_box.contains(Eigen::Vector2d(robot_transform.translation.x, robot_transform.translation.z));

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <imgui.h>
 #include <rcl_interfaces/msg/log.hpp>
 
 #include "foc2-gui/widget.hpp"
@@ -13,7 +14,8 @@ class RosLogWidget : public UiWidget {
 public:
     RCLCPP_SMART_PTR_ALIASES_ONLY(RosLogWidget)
 
-    explicit RosLogWidget(ImApplication& application) : UiWidget(application), logs(2000) {}
+    explicit RosLogWidget(ImApplication& application)
+        : UiWidget(application), logs(MAX_LOGS) {}
 
     void onInit() override;
 

@@ -1,19 +1,21 @@
 #!/usr/bin/env -S blender --background --python
+# ruff: noqa: D100, D103
+import math
+import sys
+from collections.abc import Sequence
 from pathlib import Path
-from typing import Tuple, Sequence
+from typing import Any
 
 import bmesh
 import bpy
-import math
 import mathutils
-import sys
 
 # BAD. HACK. EVIL. BAD.
 sys.path.append(str(Path(__file__).parent.resolve()))
 
 from aruco_tags import get_aruco_tags
 
-aruco_tags = get_aruco_tags('4x4')
+aruco_tags = get_aruco_tags("4x4")
 
 # I originally determined these values in mm, and blender uses m
 marker_depth = 5 / 1000
@@ -34,10 +36,10 @@ cells = len(aruco_tags[0])
 
 cell_size = marker_size / (cells + 2)
 
-id_range = range(0, 9)  # tags 0-8
+id_range = range(9)  # tags 0-8
 
 
-def make_material(name: str, color: Tuple[float, float, float]) -> bpy.types.Material:
+def make_material(name: str, color: tuple[float, float, float]) -> bpy.types.Material:
     mat: bpy.types.Material = bpy.data.materials.new(name)
     mat.diffuse_color = (color[0], color[1], color[2], 0.0)
     # what does this do? dunno, but it seems to work.
@@ -52,11 +54,11 @@ gray = make_material("Gray", (0.5, 0.5, 0.5))
 darkgray = make_material("Dark Gray", (0.2, 0.2, 0.2))
 
 
-def get_active():
+def get_active() -> Any:
     return bpy.context.active_object
 
 
-def filter_none_args(**kwargs):
+def filter_none_args(**kwargs: object) -> dict[str, Any]:
     return {k: v for k, v in kwargs.items() if v is not None}
 
 
@@ -66,7 +68,7 @@ def add_cube(
         rotation: Sequence[float] | mathutils.Euler = (0.0, 0.0, 0.0),
         scale: Sequence[float] | mathutils.Vector = (0.0, 0.0, 0.0),
         material: bpy.types.Material | None = None,
-):
+) -> Any:
     bpy.ops.mesh.primitive_cube_add(**filter_none_args(size=size, location=location, rotation=rotation, scale=scale))
 
     cube = get_active()
@@ -82,7 +84,7 @@ def add_plane(
         location: Sequence[float] | mathutils.Vector = None,
         rotation: Sequence[float] | mathutils.Euler = None,
         scale: Sequence[float] | mathutils.Vector = None,
-):
+) -> Any:
     bpy.ops.mesh.primitive_plane_add(**filter_none_args(size=size, location=location, rotation=rotation, scale=scale))
 
     return get_active()
@@ -95,7 +97,7 @@ def add_grid(
         location: Sequence[float] | mathutils.Vector = None,
         rotation: Sequence[float] | mathutils.Euler = None,
         scale: Sequence[float] | mathutils.Vector = None,
-):
+) -> Any:
     bpy.ops.mesh.primitive_grid_add(
         **filter_none_args(
             x_subdivisions=x_subdivisions,
@@ -103,8 +105,8 @@ def add_grid(
             size=size,
             location=location,
             rotation=rotation,
-            scale=scale
-        )
+            scale=scale,
+        ),
     )
 
     return get_active()
@@ -118,7 +120,7 @@ def add_cylinder(
         rotation: Sequence[float] | mathutils.Euler = None,
         scale: Sequence[float] | mathutils.Vector = None,
         material: bpy.types.Material | None = None,
-):
+) -> Any:
     bpy.ops.mesh.primitive_cylinder_add(
         **filter_none_args(
             vertices=vertices,
@@ -127,7 +129,7 @@ def add_cylinder(
             location=location,
             rotation=rotation,
             scale=scale,
-        )
+        ),
     )
 
     cylinder = get_active()
@@ -167,7 +169,7 @@ def generate_model(tag_id: int):
     aruco_plane = add_plane(
         size=marker_size,
         location=(0, post_radius + plate_thickness / 2, base_thickness + post_height * plate_position),
-        rotation=(math.pi / 2, math.pi, 0)
+        rotation=(math.pi / 2, math.pi, 0),
     )
 
     aruco_plane.data.materials.append(black)
@@ -180,7 +182,7 @@ def generate_model(tag_id: int):
         plane_mesh,
         edges=list(plane_mesh.edges),
         cuts=(cells + 1),
-        use_grid_fill=True
+        use_grid_fill=True,
     )
 
     bmesh.update_edit_mesh(aruco_plane.data)
@@ -196,7 +198,7 @@ def generate_model(tag_id: int):
     bits = aruco_tags[tag_id]
     for row in range(cells + 2):
         for col in range(cells + 2):
-            face, x, y = faces[row * (cells + 2) + col]
+            face, _x, _y = faces[row * (cells + 2) + col]
 
             if (row == 0 or row == cells + 1) or (col == 0 or col == cells + 1):
                 face.material_index = 0
@@ -214,7 +216,7 @@ def generate_model(tag_id: int):
     bmesh.ops.translate(
         plane_mesh,
         verts=verts,
-        vec=(0, 0, plate_thickness)
+        vec=(0, 0, plate_thickness),
     )
 
     bmesh.update_edit_mesh(aruco_plane.data)
@@ -224,7 +226,7 @@ def generate_model(tag_id: int):
 
     bpy.ops.object.join()
 
-    def optimize_mesh(obj, merge_distance=1e-6):
+    def optimize_mesh(obj: Any, merge_distance: float = 1e-6) -> None:
         bpy.context.view_layer.objects.active = obj
         bpy.ops.object.mode_set(mode="EDIT")
         bpy.ops.mesh.select_all(action="SELECT")
@@ -250,10 +252,10 @@ def generate_model(tag_id: int):
 
     <description>ArUco tag id {tag_id}</description>
 </model>
-        """.strip() + '\n'
+        """.strip() + "\n",
     )
 
-    (base / 'model.sdf').write_text(
+    (base / "model.sdf").write_text(
         f"""
 <?xml version='1.0' ?>
 <sdf version='1.6'>
@@ -278,18 +280,18 @@ def generate_model(tag_id: int):
         </link>
     </model>
 </sdf>
-        """.strip() + "\n"
+        """.strip() + "\n",
     )
 
     # bpy.ops.export_scene.dae(filepath="aruco_post.dae")
     bpy.ops.export_scene.gltf(
-        filepath=str(base / "meshes" / f"post.glb"),
+        filepath=str(base / "meshes" / "post.glb"),
         export_format="GLB",
-        export_materials="EXPORT"
+        export_materials="EXPORT",
     )
 
     bpy.ops.wm.obj_export(
-        filepath=str(base / "meshes" / f"post.obj"),
+        filepath=str(base / "meshes" / "post.obj"),
         export_colors=True,
         export_materials=True,
     )

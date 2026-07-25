@@ -1,26 +1,32 @@
 #!/usr/bin/env python3
-"""Tiled RTSP client for luxonis_encode_gstreamer.py (optional YOLO).
+# ruff: noqa: D101, D102, D103, D107, T201
+"""
+Tiled RTSP client for luxonis_encode_gstreamer.py (optional YOLO).
 
 Start the encoder first. Default --rtsp-backend auto uses FFmpeg if GStreamer
 is unavailable (common with pip opencv-python). Many streams need enough
 network bandwidth from the cameras to the PC — lower encoder --bitrate if video corrupts.
 
 Keys: f fullscreen one camera | Esc or f again back to grid | [ ] Tab arrows switch camera
-      1–9 pick camera | l labels | y YOLO | q quit
+      1-9 pick camera | l labels | y YOLO | q quit
 """
 
 from __future__ import annotations
 
 import argparse
+import contextlib
 import os
 import socket
 import threading
 import time
+import typing
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Literal
 
 import cv2
 import numpy as np
+from cv2 import Mat, VideoCapture
+from numpy import dtype, floating, integer, ndarray
 
 FFC_STREAMS = ["FRONT", "RIGHT", "LEFT", "BACK"]
 OAKD_STREAMS = ["oakd_rgb", "oakd_left", "oakd_right"]
@@ -29,7 +35,7 @@ _rtsp_wait_detail_lock = threading.Lock()
 _rtsp_wait_detail_printed = False
 
 
-def streams_for_sources(sources: str) -> List[str]:
+def streams_for_sources(sources: str) -> list[str]:
     if sources == "ffc":
         return list(FFC_STREAMS)
     if sources == "oakd":
@@ -59,7 +65,8 @@ def gstreamer_pipeline(url: str, latency_ms: int = 200) -> str:
     )
 
 
-def open_rtsp_capture(url: str, backend: str):
+# TODO 2026-06-29 (Will Free): this is an awful type, but it is 5 am and I cba to fix this
+def open_rtsp_capture(url: str, backend: str) -> tuple[VideoCapture, Literal["gstreamer", "ffmpeg"]] | tuple[None, None]:
     """Open RTSP URL; return (cap, backend_name) or (None, None)."""
     if backend in ("auto", "gstreamer"):
         cap = cv2.VideoCapture(gstreamer_pipeline(url), cv2.CAP_GSTREAMER)
@@ -83,23 +90,25 @@ class FrameReader(threading.Thread):
         self.url = url
         self.backend = backend
         self._lock = threading.Lock()
-        self._frame: Optional[np.ndarray] = None
+        self._frame: np.ndarray | None = None
         self._running = True
 
     def stop(self) -> None:
         self._running = False
 
-    def get_frame(self) -> Optional[np.ndarray]:
+    def get_frame(self) -> np.ndarray | None:
         with self._lock:
             if self._frame is None:
                 return None
             return self._frame.copy()
 
     def run(self) -> None:
+        # TODO 2026-06-29 (Will Free): globals are ontologically evil
         global _rtsp_wait_detail_printed
-        cap = None
-        used = None
+        cap: VideoCapture | None = None
+        used: Literal["gstreamer", "ffmpeg"] | None = None
         n_try = 0
+
         while self._running and cap is None:
             cap, used = open_rtsp_capture(self.url, self.backend)
             if cap is None:
@@ -111,27 +120,38 @@ class FrameReader(threading.Thread):
                             print(
                                 f"[{self.name}] waiting for RTSP ({self.url}).\n"
                                 "    Run: python3 luxonis_scripts/luxonis_encode_gstreamer.py\n"
-                                "    If the encoder is already up: try --rtsp-backend ffmpeg"
+                                "    If the encoder is already up: try --rtsp-backend ffmpeg",
                             )
                 elif n_try % 20 == 0:
                     print(f"[{self.name}] still waiting for RTSP …")
                 time.sleep(1.0)
+
         if not self._running:
             if cap is not None:
                 cap.release()
             return
+
+        # cap & used are never None here.
+        # if running is true & cap + used are None -> above loop retries until they are not None
+        # if running is false -> returns before reaching this point
+        assert cap is not None
+        assert used is not None
+
         if self.backend == "auto":
             print(f"[{self.name}] opened via {used}")
         elif self.backend == "ffmpeg":
             print(f"[{self.name}] opened via ffmpeg")
         while self._running:
+            ret: bool
+            frame: Mat | ndarray[Any, dtype[integer[Any] | floating[Any]]]
             ret, frame = cap.read()
             if not ret:
                 time.sleep(0.01)
                 continue
             with self._lock:
                 self._frame = frame
-        cap.release()
+        if cap is not None:
+            cap.release()
 
 
 def resize_cell(frame: np.ndarray, cell_w: int, cell_h: int) -> np.ndarray:
@@ -170,62 +190,41 @@ def draw_label_bar(img: np.ndarray, text: str, show: bool) -> None:
     )
 
 
-def extract_boxes(results, model, min_conf: float):
-    boxes = []
-    for r in results:
-        for box in r.boxes:
-            conf = float(box.conf[0])
-            if conf < min_conf:
-                continue
-            x1, y1, x2, y2 = map(int, box.xyxy[0])
-            cls = int(box.cls[0])
-            label = model.names[cls]
-            boxes.append((x1, y1, x2, y2, label, conf))
-    return boxes
-
-
-def draw_boxes(
-    frame: np.ndarray, boxes: List[Tuple[int, int, int, int, str, float]]
-) -> None:
-    for x1, y1, x2, y2, label, conf in boxes:
-        cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
-        cv2.putText(
-            frame,
-            f"{label} {conf:.2f}",
-            (x1, max(y1 - 8, 0)),
-            cv2.FONT_HERSHEY_SIMPLEX,
-            0.5,
-            (0, 255, 0),
-            1,
-            cv2.LINE_AA,
-        )
-
-
 class YoloRunner:
-    def __init__(
-        self,
-        model_path: str,
-        min_conf: float,
-        stride: int,
-        imgsz: int,
-        half: bool,
-        yolo_rgb_only: bool,
-    ):
-        from ultralytics import YOLO
+    # TODO 2026-06-29 (Will Free): why are we not running the YOLO model on the device? that's literally why we got them...
+    from ultralytics import YOLO  # noqa: PLC0415
+    from ultralytics.engine.results import Results  # noqa: PLC0415
 
+    model: YOLO
+    min_conf: float
+    stride: int
+    imgsz: int
+    half: bool
+    yolo_rgb_only: bool
+    _counts: dict[str, int]
+    _cache: dict[str, list[tuple[int, int, int, int, str, float]]]
+
+    def __init__(
+            self,
+            model_path: str,
+            min_conf: float,
+            stride: int,
+            imgsz: int,
+            half: bool,
+            yolo_rgb_only: bool,
+    ):
+        from ultralytics import YOLO  # noqa: PLC0415
         self.model = YOLO(model_path)
         self.min_conf = min_conf
         self.stride = max(1, stride)
         self.imgsz = imgsz
         self.half = half
         self.yolo_rgb_only = yolo_rgb_only
-        self._counts: Dict[str, int] = {}
-        self._cache: Dict[str, List[Tuple[int, int, int, int, str, float]]] = {}
+        self._counts = {}
+        self._cache = {}
 
     def should_run(self, stream_name: str) -> bool:
-        if self.yolo_rgb_only and stream_name != "oakd_rgb":
-            return False
-        return True
+        return not (self.yolo_rgb_only and stream_name != "oakd_rgb")
 
     def annotate(self, stream_name: str, frame: np.ndarray) -> np.ndarray:
         if not self.should_run(stream_name):
@@ -233,24 +232,64 @@ class YoloRunner:
         c = self._counts.get(stream_name, 0)
         self._counts[stream_name] = c + 1
         if c % self.stride != 0:
-            draw_boxes(frame, self._cache.get(stream_name, []))
+            YoloRunner.draw_boxes(frame, self._cache.get(stream_name, []))
             return frame
-        kwargs = {"verbose": False, "imgsz": self.imgsz}
+        kwargs: dict[str, Any] = {"verbose": False, "imgsz": self.imgsz}
         if self.half:
             kwargs["half"] = True
         results = self.model(frame, **kwargs)
-        boxes = extract_boxes(results, self.model, self.min_conf)
+        boxes = YoloRunner.extract_boxes(results, self.model, self.min_conf)
         self._cache[stream_name] = boxes
-        draw_boxes(frame, boxes)
+        YoloRunner.draw_boxes(frame, boxes)
         return frame
+
+    @staticmethod
+    def extract_boxes(
+            results: list[Results],
+            model: YOLO,
+            min_conf: float,
+    ) -> list[tuple[int, int, int, int, str, float]]:
+        from ultralytics.engine.results import Boxes  # noqa: PLC0415
+
+        boxes: list[tuple[int, int, int, int, str, float]] = []
+        for r in results:
+            box: Boxes
+            for box in typing.cast(Boxes, r.boxes):
+                conf = float(box.conf[0])
+                if conf < min_conf:
+                    continue
+                x1, y1, x2, y2 = map(int, box.xyxy[0])
+                cls_ = box.cls[0]
+                cls = int(cls_)
+                label = model.names[cls]
+                boxes.append((x1, y1, x2, y2, label, conf))
+        return boxes
+
+    @staticmethod
+    def draw_boxes(
+            frame: np.ndarray,
+            boxes: list[tuple[int, int, int, int, str, float]],
+    ) -> None:
+        for x1, y1, x2, y2, label, conf in boxes:
+            cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
+            cv2.putText(
+                frame,
+                f"{label} {conf:.2f}",
+                (x1, max(y1 - 8, 0)),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.5,
+                (0, 255, 0),
+                1,
+                cv2.LINE_AA,
+            )
 
 
 def build_grid(
-    sources: str,
-    frames: Dict[str, np.ndarray],
-    cell_w: int,
-    cell_h: int,
-    show_labels: bool,
+        sources: str,
+        frames: dict[str, np.ndarray],
+        cell_w: int,
+        cell_h: int,
+        show_labels: bool,
 ) -> np.ndarray:
     def prep(name: str) -> np.ndarray:
         f = frames.get(name)
@@ -272,18 +311,18 @@ def build_grid(
     row1 = np.hstack([prep("LEFT"), prep("BACK")])
     ffc_block = np.vstack([row0, row1])
     oakd_row = np.hstack([prep("oakd_rgb"), prep("oakd_left"), prep("oakd_right")])
-    w_top = ffc_block.shape[1]
-    w_bot = oakd_row.shape[1]
+    w_top: int = ffc_block.shape[1]
+    w_bot: int = oakd_row.shape[1]
     target_w = max(w_top, w_bot)
     if w_top < target_w:
         pad = target_w - w_top
         ffc_block = np.hstack(
-            [ffc_block, np.zeros((ffc_block.shape[0], pad, 3), dtype=np.uint8)]
+            [ffc_block, np.zeros((ffc_block.shape[0], pad, 3), dtype=np.uint8)],
         )
     if w_bot < target_w:
         pad = target_w - w_bot
         oakd_row = np.hstack(
-            [oakd_row, np.zeros((oakd_row.shape[0], pad, 3), dtype=np.uint8)]
+            [oakd_row, np.zeros((oakd_row.shape[0], pad, 3), dtype=np.uint8)],
         )
     return np.vstack([ffc_block, oakd_row])
 
@@ -294,7 +333,7 @@ def wait_key_ex(delay_ms: int = 1) -> int:
     return int(cv2.waitKey(delay_ms))
 
 
-def window_inner_size(win: str, fallback: Tuple[int, int] = (1280, 720)) -> Tuple[int, int]:
+def window_inner_size(win: str, fallback: tuple[int, int] = (1280, 720)) -> tuple[int, int]:
     if hasattr(cv2, "getWindowImageRect"):
         r = cv2.getWindowImageRect(win)
         if len(r) >= 4 and r[2] > 32 and r[3] > 32:
@@ -313,7 +352,7 @@ def fit_frame_inside(frame: np.ndarray, target_w: int, target_h: int) -> np.ndar
     out = np.zeros((target_h, target_w, 3), dtype=np.uint8)
     y0 = (target_h - nh) // 2
     x0 = (target_w - nw) // 2
-    out[y0 : y0 + nh, x0 : x0 + nw] = resized
+    out[y0: y0 + nh, x0: x0 + nw] = resized
     return out
 
 
@@ -335,7 +374,7 @@ def draw_bar_bottom(img: np.ndarray, text: str) -> None:
 
 
 def draw_bar_top(img: np.ndarray, text: str) -> None:
-    h, w = img.shape[:2]
+    _h, w = img.shape[:2]
     bar = 36
     cv2.rectangle(img, (0, 0), (w, bar), (0, 0, 0), -1)
     cv2.putText(
@@ -455,15 +494,16 @@ def main():
             flush=True,
         )
 
-    readers: List[FrameReader] = []
+    readers: list[FrameReader] = []
     for n in names:
         url = rtsp_url(args.host, n)
         r = FrameReader(n, url, backend=args.rtsp_backend)
         r.start()
         readers.append(r)
 
-    yolo: Optional[YoloRunner] = None
-    yolo_error: Optional[str] = None
+    yolo: YoloRunner | None = None
+    # TODO 2026-06-29 (Will Free): this is never queried?
+    yolo_error: str | None = None
 
     def ensure_yolo_loaded() -> bool:
         nonlocal yolo, yolo_error
@@ -478,13 +518,14 @@ def main():
                 args.half,
                 args.yolo_rgb_only,
             )
-            print(f"YOLO loaded: {args.model}")
-            yolo_error = None
-            return True
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             yolo_error = str(e)
             print(f"Failed to load YOLO model '{args.model}': {e}")
             return False
+        else:
+            print(f"YOLO loaded: {args.model}")
+            yolo_error = None
+            return True
 
     if args.yolo:
         ensure_yolo_loaded()
@@ -494,13 +535,13 @@ def main():
     focus_mode = False
     focus_idx = 0
 
-    KEY_LEFT = 65361
-    KEY_RIGHT = 65363
-    KEY_UP = 65362
-    KEY_DOWN = 65364
+    KEY_LEFT = 65361  # noqa: N806
+    KEY_RIGHT = 65363  # noqa: N806
+    KEY_UP = 65362  # noqa: N806
+    KEY_DOWN = 65364  # noqa: N806
 
     print(
-        "Keys: f fullscreen | Esc grid | [ ] Tab arrows switch cam | 1-9 pick | l labels | y YOLO | q quit"
+        "Keys: f fullscreen | Esc grid | [ ] Tab arrows switch cam | 1-9 pick | l labels | y YOLO | q quit",
     )
     print(f"Streaming {len(names)} camera(s) from rtsp://{args.host}:8554/ ...")
 
@@ -508,15 +549,13 @@ def main():
     cv2.namedWindow(window, cv2.WINDOW_NORMAL)
 
     def set_fullscreen(on: bool) -> None:
-        try:
+        with contextlib.suppress(Exception):
             prop = cv2.WINDOW_FULLSCREEN if on else cv2.WINDOW_NORMAL
             cv2.setWindowProperty(window, cv2.WND_PROP_FULLSCREEN, prop)
-        except Exception:
-            pass
 
     try:
         while True:
-            frames: Dict[str, np.ndarray] = {}
+            frames: dict[str, np.ndarray] = {}
             for reader in readers:
                 f = reader.get_frame()
                 if f is not None:
@@ -534,10 +573,7 @@ def main():
                 tw, th = window_inner_size(window)
                 name = names[focus_idx]
                 raw = frames.get(name)
-                if raw is None:
-                    view = black_cell(tw, th, f"{name}: no signal")
-                else:
-                    view = fit_frame_inside(raw.copy(), tw, th)
+                view = black_cell(tw, th, f"{name}: no signal") if raw is None else fit_frame_inside(raw.copy(), tw, th)
                 draw_bar_top(
                     view,
                     f"{name}  ({focus_idx + 1}/{len(names)})   "
@@ -560,12 +596,13 @@ def main():
                 break
 
             if focus_mode:
+                # TODO 2026-06-29 (Will Free): what is 27? (from an ascii table, it seems to be the ascii code for escape?)
                 if low == 27 or low == ord("f"):
                     focus_mode = False
                     set_fullscreen(False)
-                elif low == ord("[") or k == KEY_LEFT or k == KEY_UP:
+                elif k in (KEY_LEFT, KEY_UP) or low == ord("["):
                     focus_idx = (focus_idx - 1) % len(names)
-                elif low == ord("]") or k == KEY_RIGHT or k == KEY_DOWN or low == ord("\t"):
+                elif k in (KEY_RIGHT, KEY_DOWN) or low == ord("]") or low == ord("\t"):
                     focus_idx = (focus_idx + 1) % len(names)
                 elif ord("1") <= low <= ord("9"):
                     idx = low - ord("1")
@@ -580,32 +617,29 @@ def main():
                     elif ensure_yolo_loaded():
                         yolo_enabled = True
                         print("YOLO enabled")
-            else:
-                if low == ord("f") and names:
-                    focus_mode = True
-                    set_fullscreen(True)
-                elif low == ord("[") or k == KEY_LEFT or k == KEY_UP:
-                    focus_idx = (focus_idx - 1) % len(names)
-                elif low == ord("]") or k == KEY_RIGHT or k == KEY_DOWN or low == ord("\t"):
-                    focus_idx = (focus_idx + 1) % len(names)
-                elif ord("1") <= low <= ord("9"):
-                    idx = low - ord("1")
-                    if idx < len(names):
-                        focus_idx = idx
-                elif low == ord("l"):
-                    show_labels = not show_labels
-                elif low == ord("y"):
-                    if yolo_enabled:
-                        yolo_enabled = False
-                        print("YOLO disabled")
-                    elif ensure_yolo_loaded():
-                        yolo_enabled = True
-                        print("YOLO enabled")
+            elif low == ord("f") and names:
+                focus_mode = True
+                set_fullscreen(True)
+            elif k in (KEY_LEFT, KEY_UP) or low == ord("["):
+                focus_idx = (focus_idx - 1) % len(names)
+            elif k in (KEY_RIGHT, KEY_DOWN) or low == ord("]") or low == ord("\t"):
+                focus_idx = (focus_idx + 1) % len(names)
+            elif ord("1") <= low <= ord("9"):
+                idx = low - ord("1")
+                if idx < len(names):
+                    focus_idx = idx
+            elif low == ord("l"):
+                show_labels = not show_labels
+            elif low == ord("y"):
+                if yolo_enabled:
+                    yolo_enabled = False
+                    print("YOLO disabled")
+                elif ensure_yolo_loaded():
+                    yolo_enabled = True
+                    print("YOLO enabled")
     finally:
-        try:
+        with contextlib.suppress(Exception):
             set_fullscreen(False)
-        except Exception:
-            pass
         for r in readers:
             r.stop()
         cv2.destroyAllWindows()

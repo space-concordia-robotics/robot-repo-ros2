@@ -33,11 +33,11 @@ namespace ros_aruco_opencv {
           marker_obj_points_(4, 1, CV_32FC3) {}
 
     void ArucoDetector::set_dictionary(const std::string& dictionary_name) {
-#if CV_VERSION_MAJOR > 4 || CV_VERSION_MAJOR == 4 && CV_VERSION_MINOR >= 7
+        #if CV_VERSION_MAJOR > 4 || CV_VERSION_MAJOR == 4 && CV_VERSION_MINOR >= 7
         dictionary_ = cv::makePtr<cv::aruco::Dictionary>(cv::aruco::getPredefinedDictionary(ARUCO_DICT_MAP.at(dictionary_name)));
-#else
+        #else
         dictionary_ = cv::aruco::getPredefinedDictionary(ARUCO_DICT_MAP.at(dictionary_name));
-#endif
+        #endif
     }
 
     void ArucoDetector::set_detector_parameters(const DetectorParams& params) {
@@ -50,7 +50,7 @@ namespace ros_aruco_opencv {
     }
 
     void ArucoDetector::update_marker_object_points(const double marker_size) {
-        std::lock_guard lk(intrinsics_mutex_);
+        std::scoped_lock lock(intrinsics_mutex_);
         marker_obj_points_.ptr<cv::Vec3f>(0)[0] = cv::Vec3f(-marker_size / 2.f, marker_size / 2.f, 0);
         marker_obj_points_.ptr<cv::Vec3f>(0)[1] = cv::Vec3f(marker_size / 2.f, marker_size / 2.f, 0);
         marker_obj_points_.ptr<cv::Vec3f>(0)[2] = cv::Vec3f(marker_size / 2.f, -marker_size / 2.f, 0);
@@ -58,28 +58,28 @@ namespace ros_aruco_opencv {
     }
 
     void ArucoDetector::set_camera_intrinsics(const cv::Mat& camera_matrix, const cv::Mat& dist_coeffs) {
-        std::lock_guard lk(intrinsics_mutex_);
+        std::scoped_lock lock(intrinsics_mutex_);
         camera_matrix.copyTo(camera_matrix_);
         dist_coeffs.copyTo(distortion_coeffs_);
     }
 
     void ArucoDetector::update_camera_info(const sensor_msgs::msg::CameraInfo& cam_info, const bool image_is_rectified) {
-        std::lock_guard lk(intrinsics_mutex_);
+        std::scoped_lock lock(intrinsics_mutex_);
         if (image_is_rectified) {
             for (int i = 0; i < 9; ++i) {
-                camera_matrix_.at<double>(i / 3, i % 3) = cam_info.p[i + i / 3];
+                camera_matrix_.at<double>(i / 3, i % 3) = cam_info.p.at(i + i / 3);
             }
             // For rectified images, distortion is assumed zero or already handled; keep current or zero.
         } else {
             for (int i = 0; i < 9; ++i) {
-                camera_matrix_.at<double>(i / 3, i % 3) = cam_info.k[i];
+                camera_matrix_.at<double>(i / 3, i % 3) = cam_info.k.at(i);
             }
             distortion_coeffs_ = cv::Mat(cam_info.d, true);
         }
     }
 
     void ArucoDetector::get_intrinsics(cv::Mat& camera_matrix, cv::Mat& dist_coeffs) const {
-        std::lock_guard lk(intrinsics_mutex_);
+        std::scoped_lock lock(intrinsics_mutex_);
         camera_matrix_.copyTo(camera_matrix);
         distortion_coeffs_.copyTo(dist_coeffs);
     }
@@ -89,7 +89,7 @@ namespace ros_aruco_opencv {
     }
 
     cv::Ptr<cv::aruco::Dictionary> ArucoDetector::get_dictionary() {
-        std::lock_guard lk(intrinsics_mutex_);
+        std::scoped_lock lock(intrinsics_mutex_);
         return dictionary_;
     }
 
@@ -100,12 +100,12 @@ namespace ros_aruco_opencv {
         std::vector<std::vector<cv::Point2f>>& rejected_corners
     ) const {
         // TODO 2026-04-30 (Will Free): store this as an instance variable
-#if CV_VERSION_MAJOR > 4 || CV_VERSION_MAJOR == 4 && CV_VERSION_MINOR >= 7
+        #if CV_VERSION_MAJOR > 4 || CV_VERSION_MAJOR == 4 && CV_VERSION_MINOR >= 7
         const auto detector = cv::aruco::ArucoDetector(*dictionary_, *aruco_parameters_);
         detector.detectMarkers(image, marker_corners, marker_ids, rejected_corners);
-#else
+        #else
         cv::aruco::detectMarkers(image, dictionary_, marker_corners, marker_ids, aruco_parameters_, rejected_corners);
-#endif
+        #endif
         // TODO 2026-04-30 (Will Free): refine detected markers
     }
 
@@ -128,15 +128,17 @@ namespace ros_aruco_opencv {
                 logger.info("Selecting pose based on reprojection error.");
             }
 
-            double min_reproj_error = reproj_errors[0];
+            double min_reproj_error = reproj_errors.at(0);
             for (size_t i = 0; i < reproj_errors.size(); ++i) {
                 if (selector_config.debug) {
-                    logger.info("Candidate {}: rotation vec = [{}, {}, {}], reproj error = {}", i, rotations[i][0], rotations[i][1], rotations[i][2],
-                                reproj_errors[i]);
+                    logger.info(
+                        "Candidate {}: rotation vec = [{}, {}, {}], reproj error = {}",
+                        i, rotations.at(i)[0], rotations.at(i)[1], rotations.at(i)[2], reproj_errors.at(i)
+                    );
                 }
 
-                if (reproj_errors[i] < min_reproj_error) {
-                    min_reproj_error = reproj_errors[i];
+                if (reproj_errors.at(i) < min_reproj_error) {
+                    min_reproj_error = reproj_errors.at(i);
                     best_index = i;
                 }
             }
@@ -148,12 +150,15 @@ namespace ros_aruco_opencv {
             double min_cosine = 1.0;
             for (size_t i = 0; i < rotations.size(); ++i) {
                 cv::Mat R;
-                cv::Rodrigues(rotations[i], R);
+                cv::Rodrigues(rotations.at(i), R);
                 cv::Vec3d z_axis = R.col(2);
                 const double cosine = z_axis[2];
 
                 if (selector_config.debug) {
-                    logger.info("Candidate {}: rotation vec = [{}, {}, {}], cosine with Z = {}", i, rotations[i][0], rotations[i][1], rotations[i][2], cosine);
+                    logger.info(
+                        "Candidate {}: rotation vec = [{}, {}, {}], cosine with Z = {}",
+                        i, rotations.at(i)[0], rotations.at(i)[1], rotations.at(i)[2], cosine
+                    );
                 }
 
                 if (cosine < min_cosine) {
@@ -181,10 +186,12 @@ namespace ros_aruco_opencv {
         rotations.resize(n_markers);
         translations.resize(n_markers);
 
-        cv::Mat camera_matrix, distortion_coeffs, marker_obj_points;
+        cv::Mat camera_matrix;
+        cv::Mat distortion_coeffs;
+        cv::Mat marker_obj_points;
         PoseSelectorConfig selector_config;
         {
-            std::lock_guard lk(intrinsics_mutex_);
+            std::scoped_lock lock(intrinsics_mutex_);
             camera_matrix_.copyTo(camera_matrix);
             distortion_coeffs_.copyTo(distortion_coeffs);
             marker_obj_points_.copyTo(marker_obj_points);
@@ -196,10 +203,11 @@ namespace ros_aruco_opencv {
             cv::Range(0, static_cast<int>(marker_ids.size())),
             [&](const cv::Range& range) {
                 for (int i = range.start; i < range.end; ++i) {
-                    std::vector<cv::Vec3d> rotations_tmp, translations_tmp;
+                    std::vector<cv::Vec3d> rotations_tmp;
+                    std::vector<cv::Vec3d> translations_tmp;
                     std::vector<double> reproj_errors;
                     cv::solvePnPGeneric(
-                        marker_obj_points, marker_corners[i],
+                        marker_obj_points, marker_corners.at(i),
                         camera_matrix, distortion_coeffs,
                         rotations_tmp, translations_tmp,
                         false, cv::SOLVEPNP_IPPE_SQUARE,
@@ -209,26 +217,25 @@ namespace ros_aruco_opencv {
 
                     // TODO 2026-04-30 (Will Free): compute pose using all markers rather than just from a single marker
 
-                    const auto pose_index = select_pose_from_candidates(rotations_tmp, translations_tmp, reproj_errors, selector_config);
-
-                    if (pose_index == -1) {
+                    if (const auto pose_index = select_pose_from_candidates(rotations_tmp, translations_tmp, reproj_errors, selector_config); pose_index == -
+                        1) {
                         // Failed to select a valid pose; marker will be filtered out in compaction step below
                     } else {
-                        marker_poses[i].id = marker_ids[i];
-                        const auto corners = marker_corners[i];
+                        marker_poses.at(i).id = marker_ids.at(i);
+                        const auto& corners = marker_corners.at(i);
 
                         for (auto j = 0u; j < corners.size(); ++j) {
                             const auto& point = corners.at(i);
-                            auto& corner = marker_poses[i].corners[j];
+                            auto& corner = marker_poses.at(i).corners.at(j);
                             corner.x = point.x;
                             corner.y = point.y;
                             corner.z = 0;
                         }
 
-                        marker_poses[i].pose = convert_to_pose(rotations_tmp[pose_index], translations_tmp[pose_index]);
-                        rotations[i] = rotations_tmp[pose_index];
-                        translations[i] = translations_tmp[pose_index];
-                        valid[i] = true;
+                        marker_poses.at(i).pose = convert_to_pose(rotations_tmp.at(pose_index), translations_tmp.at(pose_index));
+                        rotations.at(i) = rotations_tmp.at(pose_index);
+                        translations.at(i) = translations_tmp.at(pose_index);
+                        valid.at(i) = true;
                     }
                 }
             }
@@ -237,13 +244,13 @@ namespace ros_aruco_opencv {
         // Compact outputs to filter invalid entries
         auto write = 0u;
         for (auto i = 0u; i < marker_ids.size(); ++i) {
-            if (!valid[i]) {
+            if (!valid.at(i)) {
                 continue;
             }
             if (write != i) {
-                marker_poses[write] = marker_poses[i];
-                rotations[write] = rotations[i];
-                translations[write] = translations[i];
+                marker_poses.at(write) = marker_poses.at(i);
+                rotations.at(write) = rotations.at(i);
+                translations.at(write) = translations.at(i);
             }
             ++write;
         }
@@ -259,18 +266,21 @@ namespace ros_aruco_opencv {
         std::vector<cv::Vec3d>& rotations,
         std::vector<cv::Vec3d>& translations
     ) const {
-        cv::Mat camera_matrix, distortion_coeffs;
+        cv::Mat camera_matrix;
+        cv::Mat distortion_coeffs;
         {
-            std::lock_guard lk(intrinsics_mutex_);
+            std::scoped_lock lock(intrinsics_mutex_);
             camera_matrix_.copyTo(camera_matrix);
             distortion_coeffs_.copyTo(distortion_coeffs);
         }
 
         for (const auto& [name, board] : boards_) {
-            cv::Vec3d rotation, translation;
-            cv::Mat objPoints, imgPoints;
+            cv::Vec3d rotation;
+            cv::Vec3d translation;
+            cv::Mat objPoints;
+            cv::Mat imgPoints;
 
-#if CV_VERSION_MAJOR > 4 || CV_VERSION_MAJOR == 4 && CV_VERSION_MINOR >= 7
+            #if CV_VERSION_MAJOR > 4 || CV_VERSION_MAJOR == 4 && CV_VERSION_MINOR >= 7
             board->matchImagePoints(marker_corners, marker_ids, objPoints, imgPoints);
 
             // empty
@@ -279,9 +289,9 @@ namespace ros_aruco_opencv {
 
             cv::solvePnP(objPoints, imgPoints, camera_matrix, distortion_coeffs, rotation, translation);
             const auto valid = objPoints.total();
-#else
+            #else
             const auto valid = cv::aruco::estimatePoseBoard(marker_corners, marker_ids, board, camera_matrix, distortion_coeffs, rotations, translations);
-#endif
+            #endif
 
             if (valid > 0) {
                 ros_aruco_opencv_msgs::msg::BoardPose bpose;
@@ -293,4 +303,4 @@ namespace ros_aruco_opencv {
             }
         }
     }
-} // namespace aruco_opencv
+}

@@ -15,10 +15,11 @@ namespace ImOsm {
             std::shared_ptr<TileSourceFs> file_source,
             std::shared_ptr<TileSaver> tile_saver,
             std::shared_ptr<TileSourceAsync> remote_source
-        ) : TileSourceAsync(request_limit, preload),
-            file_source(std::move(file_source)),
-            tile_saver(std::move(tile_saver)),
-            remote_source(std::move(remote_source)) {}
+        )
+            : TileSourceAsync(request_limit, preload),
+              file_source(std::move(file_source)),
+              tile_saver(std::move(tile_saver)),
+              remote_source(std::move(remote_source)) {}
 
         ~TileSourceCaching() override = default;
 
@@ -26,7 +27,7 @@ namespace ImOsm {
 
     protected:
         // should not be used.
-        bool receiveTile(int z, int x, int y, TileData& data) override {
+        bool receiveTile(int /*z*/, int /*x*/, int /*y*/, TileData& /*data*/) override {
             return true;
         }
 
@@ -47,6 +48,7 @@ namespace ImOsm {
             std::string extension,
             std::shared_ptr<TileSourceAsync> remote_source
         );
+
         ~TileSourceCachingDir() override = default;
     };
 
@@ -60,13 +62,14 @@ namespace ImOsm {
             std::filesystem::path base_path,
             std::optional<std::string> extension,
             std::shared_ptr<TileSourceAsync> remote_source
-        ) : TileSourceCaching(
-            request_limit,
-            preload,
-            std::make_shared<TileSourceFsSubDir>(request_limit, preload, base_path, extension),
-            std::make_shared<TileSaverSubDir>(base_path, extension),
-            std::move(remote_source)
-        ) {}
+        )
+            : TileSourceCaching(
+                request_limit,
+                preload,
+                std::make_shared<TileSourceFsSubDir>(request_limit, preload, base_path, extension),
+                std::make_shared<TileSaverSubDir>(base_path, extension),
+                std::move(remote_source)
+            ) {}
 
         ~TileSourceCachingSubDir() override = default;
     };

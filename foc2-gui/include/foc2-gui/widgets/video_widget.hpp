@@ -1,28 +1,28 @@
 #pragma once
 
+#include <chrono>
 #include <thread>
+#include <SDL3/SDL_opengl.h>
 #include <fmt/compile.h>
-#include <gst/gstpad.h>
-#include <image_transport/camera_subscriber.hpp>
-#include <image_transport/image_transport.hpp>
 #include <opencv2/core/mat.hpp>
 #include <peel/Gst/Bin.h>
 #include <peel/Gst/Pad.h>
-#include <peel/Gst/PadProbeReturn.h>
 #include <peel/GstApp/AppSink.h>
-#include <SDL3/SDL_opengl.h>
+#include <sensor_msgs/msg/camera_info.hpp>
 
 #include "foc2-gui/overlayable.hpp"
+#include "foc2-gui/subscription_group.hpp"
 #include "foc2-gui/widget.hpp"
 #include "foc2-gui/overlays/video_stats_overlay.hpp"
+
+namespace peel::GstApp {
+    class AppSink;
+}
 
 class ArucoVideoOverlay;
 class NavPathVideoOverlay;
 
-struct _GstAppSink;
-typedef _GstAppSink GstAppSink;
-
-enum class VideoFlipMethod {
+enum class VideoFlipMethod : std::uint8_t {
     NONE                 = 0,
     CLOCKWISE            = 1,
     ROTATE_180           = 2,
@@ -140,11 +140,11 @@ private:
 
     void configureJitterbuffer();
 
-    peel::Gst::Pad::ProbeReturn onJitterbufferProbe(peel::Gst::Pad*, const peel::Gst::Pad::ProbeInfo* info);
+    peel::Gst::Pad::ProbeReturn onJitterbufferProbe(peel::Gst::Pad* pad, const peel::Gst::Pad::ProbeInfo* info);
 
     void runPipelineLoop();
 
-    GstFlowReturn onNewSample(GstAppSink* sink);
+    GstFlowReturn onNewSample(peel::GstApp::AppSink* sink);
 
     void updateTexture();
 

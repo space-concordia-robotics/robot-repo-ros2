@@ -18,9 +18,15 @@ namespace autonomy {
             const std::string& id,
             const TargetConfig::GPSConfig& gps_config,
             const GeoPoint& location
-        ) : Target(node, id), gps_config(gps_config), location(location) {}
+        )
+            : Target(node, id), gps_config(gps_config), location(location) {}
 
         ~GPSTarget() override = default;
+
+        GPSTarget(const GPSTarget& other) = delete;
+        GPSTarget(GPSTarget&& other) noexcept = delete;
+        GPSTarget& operator=(const GPSTarget& other) = delete;
+        GPSTarget& operator=(GPSTarget&& other) noexcept = delete;
 
         void setup() override;
         rclcpp_async::Task<> start() override;

@@ -16,14 +16,14 @@ VideoStatsOverlay::VideoStatsOverlay(ImApplication& application)
 }
 
 void VideoStatsOverlay::updateStats(const VideoStats& stats) {
-    std::lock_guard lock(stats_mutex);
+    std::scoped_lock lock(stats_mutex);
     this->stats = stats;
 
     fps_buffer.push_back(stats.fps);
 }
 
 void VideoStatsOverlay::onDraw(ImDrawList* draw_list, const ImRect& bounds) {
-    std::lock_guard lock(stats_mutex);
+    std::scoped_lock lock(stats_mutex);
 
     static constexpr auto BOX_OUTER_PADDING = 8;
     static constexpr auto BOX_INNER_PADDING = 4;

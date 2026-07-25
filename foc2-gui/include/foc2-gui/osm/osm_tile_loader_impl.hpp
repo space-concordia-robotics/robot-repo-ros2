@@ -14,7 +14,8 @@ namespace ImOsm {
 
     class TileLoaderOsmMap : public TileLoader {
     public:
-        explicit TileLoaderOsmMap(const int request_limit = URL_REQUEST_LIMIT) : TileLoader(std::make_shared<TileSourceUrlOsm>(request_limit, MAP_PRELOAD)) {}
+        explicit TileLoaderOsmMap(const int request_limit = URL_REQUEST_LIMIT)
+            : TileLoader(std::make_shared<TileSourceUrlOsm>(request_limit, MAP_PRELOAD)) {}
     };
 
     class TileLoaderArcMap : public TileLoader {
@@ -36,7 +37,8 @@ namespace ImOsm {
             std::filesystem::path base_path,
             std::optional<std::string> extension = std::nullopt,
             const int request_limit = URL_REQUEST_LIMIT
-        ) : TileLoader(std::make_shared<TileSourceFsSubDir>(request_limit, MAP_PRELOAD, std::move(base_path), std::move(extension))) {}
+        )
+            : TileLoader(std::make_shared<TileSourceFsSubDir>(request_limit, MAP_PRELOAD, std::move(base_path), std::move(extension))) {}
     };
 
     class TileLoaderCachingMap : public TileLoader {
@@ -47,14 +49,15 @@ namespace ImOsm {
             std::filesystem::path base_path,
             std::optional<std::string> extension = std::nullopt,
             const int request_limit = URL_REQUEST_LIMIT
-        ) : TileLoader(
-            std::make_shared<TileSourceCachingSubDir>(
-                request_limit,
-                MAP_PRELOAD,
-                std::move(base_path),
-                std::move(extension),
-                std::move(remote_source)
-            )
-        ) {}
+        )
+            : TileLoader(
+                std::make_shared<TileSourceCachingSubDir>(
+                    request_limit,
+                    MAP_PRELOAD,
+                    std::move(base_path),
+                    std::move(extension),
+                    std::move(remote_source)
+                )
+            ) {}
     };
 }

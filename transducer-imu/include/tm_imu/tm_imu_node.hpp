@@ -1,10 +1,13 @@
 #pragma once
+
 #include <memory>
+#include <ros2_fmt_logger/ros2_fmt_logger.hpp>
+#include <tf2_ros/transform_broadcaster.h>
 #include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/msg/imu.hpp>
 #include <sensor_msgs/msg/magnetic_field.hpp>
-#include <tf2_ros/transform_broadcaster.h>
-#include "serialib/serialib.h"
+
+#include "serialib/serialib.hpp"
 
 // To use the communication library, we need to include the following
 // two header files:
@@ -25,12 +28,12 @@ private:
     bool OnSerialRX();
     void FillCovarianceMatrices();
     void PublishTransform();
-#ifdef DEBUG_MODE
+    #ifdef DEBUG_MODE
     rclcpp::TimerBase::SharedPtr timer_10;
     void TimerCallback2();
     int count;
     int count2;
-#endif
+    #endif
 
     serialib* serialib1; // We use linux serialib to interface with serial port.
 
@@ -44,4 +47,6 @@ private:
     rclcpp::Publisher<sensor_msgs::msg::MagneticField>::SharedPtr publisher_IMU_MAG;
 
     std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
+
+    ros2_fmt_logger::Logger logger;
 };

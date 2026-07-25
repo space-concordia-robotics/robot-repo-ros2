@@ -1,14 +1,17 @@
 cmake_minimum_required(VERSION 3.22)
 project(sil_interface)
 
-set(CMAKE_CXX_STANDARD 23)
-
-if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    add_compile_options(-Wall -Wextra -Wpedantic)
+if (POLICY CMP0167)
+    cmake_policy(SET CMP0167 NEW)
 endif ()
 
-# find dependencies
-set(DEPENDENCIES
+find_package(scrb_cmake_utils REQUIRED)
+
+## DEPENDENCIES
+
+find_package(ament_cmake REQUIRED)
+
+find_dependencies(
         rclcpp
         rclcpp_components
         rclcpp_lifecycle
@@ -19,32 +22,32 @@ set(DEPENDENCIES
         diagnostic_msgs
         pluginlib
         ros2_fmt_logger
+        scrb_common_util
         can_util
         rover_msgs
 )
 
-find_package(ament_cmake REQUIRED)
-find_package(backward_ros REQUIRED)
-
-foreach (dependency IN ITEMS ${DEPENDENCIES})
-    find_package(${dependency} REQUIRED)
-endforeach ()
-
 ## COMPILE
 
-add_library(${PROJECT_NAME} SHARED
+scrb_add_library(${PROJECT_NAME} SHARED
         src/sil_interface.cpp
         src/sil_controller.cpp
 )
-
-target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_23)
 
 target_include_directories(${PROJECT_NAME} PUBLIC
         $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include>
 )
 
-ament_target_dependencies(${PROJECT_NAME} PUBLIC ${DEPENDENCIES})
+target_link_libraries(${PROJECT_NAME} PUBLIC ${DEPENDENCY_TARGETS})
+
+scrb_target_precompile_headers(${PROJECT_NAME} PRIVATE
+        <rclcpp/rclcpp.hpp>
+        <controller_interface/controller_interface.hpp>
+        <hardware_interface/hardware_component_interface.hpp>
+        <realtime_tools/realtime_buffer.hpp>
+        <ros2_fmt_logger/logger.hpp>
+)
 
 # Export hardware plugins
 pluginlib_export_plugin_description_file(hardware_interface sil_interface.xml)
@@ -66,6 +69,8 @@ install(
 )
 
 ## EXPORTS
+
 ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
 ament_export_dependencies(${DEPENDENCIES})
+
 ament_package()

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <rclcpp/node.hpp>
+#include <rclcpp_action/rclcpp_action.hpp>
 #include <geographic_msgs/msg/geo_pose.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
@@ -10,8 +12,6 @@
 #include <nav2_msgs/action/follow_waypoints.hpp>
 #include <nav2_msgs/action/navigate_through_poses.hpp>
 #include <nav2_msgs/action/navigate_to_pose.hpp>
-#include <rclcpp/node.hpp>
-#include <rclcpp_action/rclcpp_action.hpp>
 #include <ros_aruco_opencv_msgs/msg/aruco_detections.hpp>
 #include <rover_msgs/msg/image_detection_array.hpp>
 #include <rover_msgs/srv/set_sil_status.hpp>

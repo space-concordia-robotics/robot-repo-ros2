@@ -1,20 +1,20 @@
+# ruff: noqa: D100, D101, D102, D103, D106, D107
 import textwrap
 from enum import Enum
-from typing import Text, Dict, Optional, List
 
 import launch
-from launch import SomeSubstitutionsType, Substitution, LaunchContext
-from launch.utilities import perform_substitutions, normalize_to_list_of_substitutions
+from launch import LaunchContext, SomeSubstitutionsType, Substitution
+from launch.utilities import normalize_to_list_of_substitutions, perform_substitutions
 
-from .substitutions import Templated, OpaqueFunctionSubstitution
-from .util import flatten_substitutions
+from launch_util.substitutions import OpaqueFunctionSubstitution, Templated
+from launch_util.util import flatten_substitutions
 
 __all__ = [
-    "ros_gz_prefix",
-    "GazeboType",
     "BridgeDirection",
-    "ImageBridgeQoS",
     "GazeboBridge",
+    "GazeboType",
+    "ImageBridgeQoS",
+    "ros_gz_prefix",
 ]
 
 logger = launch.logging.get_logger(__name__)
@@ -26,20 +26,21 @@ class GazeboType(Enum):
 
 
 def ros_gz_prefix() -> GazeboType:
-    from os import environ
+    from os import environ  # noqa: PLC0415
 
     for env in ("IGN_VERSION", "GZ_VERSION"):
         if env in environ:
             return GazeboType.IGN if environ[env] == "fortress" else GazeboType.GZ
 
     # guess from installed packages
-    from ament_index_python.packages import get_package_share_directory, PackageNotFoundError
+    from ament_index_python.packages import PackageNotFoundError, get_package_share_directory  # noqa: PLC0415
     for pkg in ("ros_gz", "ros_gz_sim"):
         try:
             get_package_share_directory(pkg)
-            return GazeboType.GZ
-        except PackageNotFoundError:
+        except PackageNotFoundError:  # noqa: PERF203
             continue
+        else:
+            return GazeboType.GZ
     return GazeboType.IGN
 
 
@@ -65,7 +66,7 @@ def ros_gz_prefix() -> GazeboType:
 #     print("\n".join(out)[:-1] + "\n}")
 
 
-ros_msg_map: Dict[Text, Text] = {
+ros_msg_map: dict[str, str] = {
     "actuator_msgs/msg/Actuators": "gz.msgs.Actuators",
     "builtin_interfaces/msg/Time": "gz.msgs.Time",
     "geometry_msgs/msg/Point": "gz.msgs.Vector3d",
@@ -133,7 +134,7 @@ ros_msg_map: Dict[Text, Text] = {
     "vision_msgs/msg/Detection2DArray": "gz.msgs.AnnotatedAxisAligned2DBox_V",
 }
 
-gz_msg_map: Dict[Text, Text] = {
+gz_msg_map: dict[str, str] = {
     value: key for key, value in ros_msg_map.items()
 }
 
@@ -145,9 +146,9 @@ class BridgeDirection(Enum):
 
 
 class ImageBridgeQoS(Enum):
-    DEFAULT = 'default'
-    SENSOR = 'sensor'
-    SYSTEM_DEFAULT = 'system_default'
+    DEFAULT = "default"
+    SENSOR = "sensor"
+    SYSTEM_DEFAULT = "system_default"
 
 
 bridged_topic_template = """
@@ -162,7 +163,7 @@ bridged_topic_template = textwrap.dedent(bridged_topic_template)
 
 
 class GazeboBridge:
-    _world_name: Optional[Text] = None
+    _world_name: str | None = None
     _gz_exec: GazeboType = ros_gz_prefix()
 
     class Topic:
@@ -170,8 +171,8 @@ class GazeboBridge:
         __ros_topic: SomeSubstitutionsType
         __is_image: bool
         __direction: BridgeDirection
-        __gz_msg: Text
-        __ros_msg: Text
+        __gz_msg: str
+        __ros_msg: str
 
         # TODO 2026-03-09 (Will Free): Allow gz_topic & ros_topic to be SomeSubstitutionsType
         def __init__(
@@ -179,31 +180,27 @@ class GazeboBridge:
                 gz_topic: SomeSubstitutionsType,
                 ros_topic: SomeSubstitutionsType,
                 direction: BridgeDirection,
-                ros_msg: Optional[Text] = None,
-                gz_msg: Optional[Text] = None,
+                ros_msg: str | None = None,
+                gz_msg: str | None = None,
         ):
-            """
-            Create a bridge instance to be passed to SimpleLauncher.create_gz_bridge
-            """
-
+            """Create a bridge instance to be passed to SimpleLauncher.create_gz_bridge."""
             if gz_msg is None and ros_msg is None:
-                logger.error(f"Provide either a ros or a gazebo message type for {gz_topic} bridged topic.")
+                logger.error("Provide either a ros or a gazebo message type for %s bridged topic.", gz_topic)
 
             if ros_msg is None:
-                if gz_msg not in gz_msg_map:
-                    logger.error(f"Cannot build a ros <-> gz bridge for message \"{ros_msg}\": unknown type or give explicit gz_msg")
+                if gz_msg not in gz_msg_map or gz_msg is None:
+                    logger.error('Cannot build a ros <-> gz bridge for message "%s": unknown type or give explicit gz_msg', ros_msg)
                     return
                 ros_msg = gz_msg_map[gz_msg]
             elif gz_msg is None:
                 if "/msg/" not in ros_msg:
                     ros_msg = ros_msg.replace("/", "/msg/")
                 if ros_msg not in ros_msg_map:
-                    logger.error(f"Cannot build a ros <-> gz bridge for message \"{ros_msg}\": unknown type or give explicit gz_msg")
+                    logger.error('Cannot build a ros <-> gz bridge for message "%s": unknown type or give explicit gz_msg', ros_msg)
                     return
                 gz_msg = ros_msg_map[ros_msg]
-            else:
-                if "/msg/" not in ros_msg:
-                    ros_msg = ros_msg.replace("/", "/msg/")
+            elif "/msg/" not in ros_msg:
+                ros_msg = ros_msg.replace("/", "/msg/")
 
             self.__gz_msg = gz_msg
             self.__ros_msg = ros_msg
@@ -211,7 +208,7 @@ class GazeboBridge:
             if gz_msg is not None:
                 self.__gz_msg = gz_msg
             elif ros_msg not in ros_msg_map:
-                logger.error(f"Cannot build a ros <-> gz bridge for message \"{ros_msg}\": unknown type or give explicit gz_msg")
+                logger.error('Cannot build a ros <-> gz bridge for message "%s": unknown type or give explicit gz_msg', ros_msg)
                 return
             else:
                 self.__gz_msg = ros_msg_map[ros_msg]
@@ -240,18 +237,19 @@ class GazeboBridge:
             return self.__direction
 
         @property
-        def ros_msg(self) -> Text:
+        def ros_msg(self) -> str:
             return self.__ros_msg
 
         @property
-        def gz_msg(self) -> Text:
+        def gz_msg(self) -> str:
             if GazeboBridge._gz_exec == GazeboType.IGN:
                 self.__gz_msg = self.__gz_msg.replace("gz.", "ignition.")
             return self.__gz_msg
 
         def yaml(self) -> Substitution:
             """
-            use YAML-based config for other bridges
+            Use YAML-based config for other bridges.
+
             - topic_name: "chatter"
               ign_topic_name: "ign_chatter"
               ros_type_name: "std_msgs/msg/String"
@@ -282,36 +280,44 @@ class GazeboBridge:
             )
 
     topics: list[Topic]
-    image_bridge_qos: Optional[ImageBridgeQoS]
-    image_bridge_lazy: Optional[bool]
-    image_bridge_subscription_heartbeat: Optional[int]
+    image_bridge_qos: ImageBridgeQoS | None
+    image_bridge_lazy: bool | None
+    image_bridge_subscription_heartbeat: int | None
 
     def __init__(self):
         self.topics = []
 
-    def image_bridge(self, qos: Optional[ImageBridgeQoS] = None, lazy: Optional[bool] = None, subscription_heartbeat: Optional[int] = None):
+    def image_bridge(self, qos: ImageBridgeQoS | None = None, lazy: bool | None = None, subscription_heartbeat: int | None = None):
         self.image_bridge_qos = qos
         self.image_bridge_lazy = lazy
         self.image_bridge_subscription_heartbeat = subscription_heartbeat
 
-    def add_topic(self, gz_topic, ros_topic, direction: BridgeDirection, ros_msg: Optional[Text] = None, gz_msg: Optional[Text] = None):
+    def add_topic(
+            self,
+            gz_topic: SomeSubstitutionsType,
+            ros_topic: SomeSubstitutionsType,
+            direction: BridgeDirection,
+            ros_msg: str | None = None,
+            gz_msg: str | None = None,
+    ):
         topic = GazeboBridge.Topic(gz_topic, ros_topic, direction, ros_msg=ros_msg, gz_msg=gz_msg)
         self.topics.append(topic)
 
         if topic.is_image:
             # see: https://github.com/ros-perception/image_common/blob/4de91aef2daf41ddfd43f700417b35198b331980/image_transport/src/camera_common.cpp#L56-L70
-            def remap_camera_info_topic(context: LaunchContext, *args, **kwargs) -> Text:
+            # noinspection PyUnusedLocal
+            def remap_camera_info_topic(context: LaunchContext, *args, **kwargs) -> str:  # noqa: ARG001
                 image_topic: SomeSubstitutionsType = kwargs["image_topic"]
 
-                image_topic: List[Substitution] = normalize_to_list_of_substitutions(image_topic)
-                image_topic: Text = perform_substitutions(context, image_topic)
+                image_topic: list[Substitution] = normalize_to_list_of_substitutions(image_topic)
+                image_topic: str = perform_substitutions(context, image_topic)
 
                 paths = image_topic.split("/")[:-1]
 
                 return "/".join(paths) + "/camera_info"
 
-            gz_camera_info = OpaqueFunctionSubstitution(remap_camera_info_topic, kwargs={'image_topic': topic.gz_topic})
-            ros_camera_info = OpaqueFunctionSubstitution(remap_camera_info_topic, kwargs={'image_topic': topic.ros_topic})
+            gz_camera_info = OpaqueFunctionSubstitution(remap_camera_info_topic, kwargs={"image_topic": topic.gz_topic})
+            ros_camera_info = OpaqueFunctionSubstitution(remap_camera_info_topic, kwargs={"image_topic": topic.ros_topic})
 
             cam_info_topic = GazeboBridge.Topic(gz_camera_info, ros_camera_info, BridgeDirection.GZ_TO_ROS, ros_msg="sensor_msgs/CameraInfo")
             self.topics.append(cam_info_topic)
@@ -319,14 +325,14 @@ class GazeboBridge:
     def add_clock(self):
         self.topics.append(GazeboBridge.clock())
 
-    def add_joint_states(self, model: Optional[SomeSubstitutionsType] = None):
+    def add_joint_states(self, model: SomeSubstitutionsType | None = None):
         self.topics.append(GazeboBridge.joint_states_topic(model))
 
     def add_tf(self):
         self.topics.append(GazeboBridge.tf_topic())
 
     @property
-    def yaml(self) -> List[Substitution]:
+    def yaml(self) -> list[Substitution]:
         topics = self.topics
 
         return [topic.yaml() for topic in topics if not topic.is_image]
@@ -338,25 +344,16 @@ class GazeboBridge:
 
     @staticmethod
     def clock() -> Topic:
-        """
-        Classical GZ -> ROS bridge for the clock topic
-        """
+        """Classical GZ -> ROS bridge for the clock topic."""
         return GazeboBridge.Topic("/clock", "/clock", BridgeDirection.GZ_TO_ROS, ros_msg="rosgraph_msgs/Clock")
 
     @staticmethod
-    def joint_states_topic(model: Optional[SomeSubstitutionsType] = None) -> Topic:
-        """
-        Classical GZ -> ROS bridge for the joint states of a given model
-        """
-        if model is None:
-            joint_states_gz_topic = "/joint_states"
-        else:
-            joint_states_gz_topic = GazeboBridge.model_topic(model, "joint_state")
+    def joint_states_topic(model: SomeSubstitutionsType | None = None) -> Topic:
+        """Classical GZ -> ROS bridge for the joint states of a given model."""
+        joint_states_gz_topic = "/joint_states" if model is None else GazeboBridge.model_topic(model, "joint_state")
         return GazeboBridge.Topic(joint_states_gz_topic, "joint_states", BridgeDirection.GZ_TO_ROS, ros_msg="sensor_msgs/JointState")
 
     @staticmethod
     def tf_topic() -> Topic:
-        """
-        Classical GZ -> ROS bridge for the tf topic
-        """
+        """Classical GZ -> ROS bridge for the tf topic."""
         return GazeboBridge.Topic("/tf", "/tf", BridgeDirection.GZ_TO_ROS, ros_msg="tf2_msgs/TFMessage")
