@@ -18,7 +18,7 @@ namespace ImOsm::Old {
         void beginLoad(int z, int xmin, int xmax, int ymin, int ymax) override;
         ImTextureID tileAt(int z, int x, int y) override;
 
-        int getTileCount() const override {
+        [[nodiscard]] int getTileCount() const override {
             return tiles.size();
         }
 
@@ -26,7 +26,7 @@ namespace ImOsm::Old {
             tile_provider = url;
         }
 
-        const std::string& getTileProvider() const {
+        [[nodiscard]] const std::string& getTileProvider() const {
             return tile_provider;
         }
 
@@ -34,7 +34,7 @@ namespace ImOsm::Old {
             tile_extension = ext;
         }
 
-        const std::string& getTileExtension() const {
+        [[nodiscard]] const std::string& getTileExtension() const {
             return tile_extension;
         }
 
@@ -42,7 +42,7 @@ namespace ImOsm::Old {
             client_name = name;
         }
 
-        const std::string& clientName() const {
+        [[nodiscard]] const std::string& clientName() const {
             return client_name;
         }
 

@@ -1,5 +1,6 @@
 """
-Author: Felipe Lazcano
+Author: Felipe Lazcano.
+
 Description: This is a ros2 python launch file.
 A list of USB cameras is extracted using the cv2 library.
 A ros2 usb_cam node is created for each camera.
@@ -14,29 +15,30 @@ from launch_ros.actions import Node
 def generate_launch_description():
     return LaunchDescription([
         Node(
-            package='usb_cam',
-            namespace=f'usb_cam',
-            executable='usb_cam_node_exe',
+            package="usb_cam",
+            namespace="usb_cam",
+            executable="usb_cam_node_exe",
             parameters=[{
-                'video_device': str(cam_id.path),
-                'framerate': 30.0,
-                'io_method': str("mmap"),
-                'frame_id': str("camera"),
-                'pixel_format': str("yuyv2rgb"),
-                'av_device_format': str("YUV422P"),
-                'image_width': 1920,
-                'image_height': 1080,
-                'camera_name': str("test_camera"),
-                'camera_info_url': str("package://usb_cam/config/camera_info.yaml"),
-                'brightness': -1,
-                'contrast': -1,
-                'saturation': -1,
-                'sharpness': -1,
-                'gain': -1,
-                'auto_white_balance': True,
-                'white_balance': 4000,
-                'autoexposure': True,
-                'exposure': 100,
-                'autofocus': False,
-                'focus': -1}
-            ]) for cam_id in list(enumerate_cameras(cv2.CAP_V4L2)) if cam_id.path == "/dev/video4"])
+                "video_device": str(cam_id.path),
+                "framerate": 30.0,
+                "io_method": "mmap",
+                "frame_id": "camera",
+                "pixel_format": "yuyv2rgb",
+                "av_device_format": "YUV422P",
+                "image_width": 1920,
+                "image_height": 1080,
+                "camera_name": "test_camera",
+                "camera_info_url": "package://usb_cam/config/camera_info.yaml",
+                "brightness": -1,
+                "contrast": -1,
+                "saturation": -1,
+                "sharpness": -1,
+                "gain": -1,
+                "auto_white_balance": True,
+                "white_balance": 4000,
+                "autoexposure": True,
+                "exposure": 100,
+                "autofocus": False,
+                "focus": -1}],
+        ) for cam_id in list(enumerate_cameras(cv2.CAP_V4L2)) if cam_id.path == "/dev/video4"
+    ])

@@ -1,30 +1,53 @@
 cmake_minimum_required(VERSION 3.22)
 project(absenc_interface)
 
-if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 17)
-endif()
+find_package(scrb_cmake_utils REQUIRED)
 
-if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  add_compile_options(-Wall -Wextra -Wpedantic)
-endif()
+## DEPENDENCIES
 
 find_package(ament_cmake REQUIRED)
-find_package(rclcpp REQUIRED)
-find_package(std_msgs REQUIRED)
-find_package(sensor_msgs REQUIRED)
 
+find_dependencies(
+        rclcpp
+        std_msgs
+        sensor_msgs
+        ros2_fmt_logger
+)
 
-# find_package(arm_controller REQUIRED)
+## COMPILE
 
+scrb_add_executable(${PROJECT_NAME}
+        src/absenc_node.cpp
+        src/absenc.cpp
+)
 
+target_include_directories(${PROJECT_NAME} PUBLIC
+        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:include>
+)
 
-add_executable(absenc_node src/absenc_node.cpp src/absenc.cpp)
+target_link_libraries(${PROJECT_NAME} PUBLIC ${DEPENDENCY_TARGETS})
 
-ament_target_dependencies(absenc_node rclcpp std_msgs sensor_msgs )
+scrb_target_precompile_headers(${PROJECT_NAME} PRIVATE
+        <rclcpp/rclcpp.hpp>
+        <ros2_fmt_logger/logger.hpp>
+)
 
-install(TARGETS
-  absenc_node
-  DESTINATION lib/${PROJECT_NAME})
+## INSTALL
+
+install(
+        DIRECTORY include
+        DESTINATION include/${PROJECT_NAME}
+)
+
+install(
+        TARGETS ${PROJECT_NAME}
+        EXPORT export_${PROJECT_NAME}
+        ARCHIVE DESTINATION lib
+        LIBRARY DESTINATION lib
+        RUNTIME DESTINATION bin
+)
+
+## EXPORTS
 
 ament_package()

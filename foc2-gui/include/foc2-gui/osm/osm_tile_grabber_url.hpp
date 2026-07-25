@@ -38,8 +38,8 @@ namespace ImOsm::Old {
 
         std::future<GrabData> grab_future;
 
-        GrabData onLaunchGrab(int zmin, int zmax, float xmin, float xmax, float ymin, float ymax);
-        Tile::Remote onHandleRequest(const std::array<int, 3>& zxy) const;
+        [[nodiscard]] GrabData onLaunchGrab(int zmin, int zmax, float xmin, float xmax, float ymin, float ymax);
+        [[nodiscard]] Tile::Remote onHandleRequest(const std::array<int, 3>& zxy) const;
         static size_t onPullResponse(void* data, size_t size, size_t nmemb, void* userp);
 
         void saveFile(Tile& tile) const;

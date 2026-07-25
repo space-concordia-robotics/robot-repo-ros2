@@ -21,6 +21,7 @@
 #include "ros_aruco_opencv/utils.hpp"
 
 #include <magic_enum/magic_enum.hpp>
+#include <opencv2/calib3d.hpp>
 #include <tf2/convert.hpp>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 

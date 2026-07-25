@@ -1,14 +1,12 @@
 #include "foc2-gui/overlays/minimap.hpp"
 
-#include "foc2-gui/util/tf2_util.hpp"
-
 void MiniMapOverlay::onInit() {
     magnetic_field_subscription = application.create_subscription<MagneticField>(
         "/imu/rpy",
         10,
         // ReSharper disable once CppPassValueParameterByConstReference
-        [&](const MagneticField::SharedPtr msg) {
-            std::lock_guard lock(magnetic_field_mutex);
+        [&](const MagneticField::SharedPtr msg) { // NOLINT(*-unnecessary-value-param)
+            std::scoped_lock lock(magnetic_field_mutex);
 
             magnetic_field = msg;
         }
@@ -45,7 +43,7 @@ void MiniMapOverlay::onDraw(ImDrawList* draw_list, const ImRect& bounds) {
     auto active = false;
 
     {
-        std::lock_guard lock(magnetic_field_mutex);
+        std::scoped_lock lock(magnetic_field_mutex);
 
         active = magnetic_field != nullptr;
 
@@ -62,7 +60,7 @@ void MiniMapOverlay::onDraw(ImDrawList* draw_list, const ImRect& bounds) {
 void MiniMapOverlay::drawRobotAtCenter(ImDrawList* draw_list, const double radius, const ImVec2& center, const bool active) {
     [[maybe_unused]] const auto halo = active ? ImGui::ImColor(0, 160, 220, 60) : ImGui::ImColor(80, 80, 80, 40);
     const auto body = active ? ImGui::ImColor(0, 200, 255, 200) : ImGui::ImColor(120, 120, 120, 180);
-    [[maybe_unused]] constexpr auto accent = ImGui::ImColor(255, 255, 255, 255);
+    constexpr auto accent = ImGui::ImColor(255, 255, 255, 255);
 
     // TODO 2026-05-04 (Will Free): unsure which of these I like the most tbh
 
@@ -76,12 +74,12 @@ void MiniMapOverlay::drawRobotAtCenter(ImDrawList* draw_list, const double radiu
     const auto tip = ImVec2(center.x, center.y - length);
     const auto left = ImVec2(center.x + std::sin(angle) * length, center.y - std::cos(angle) * length);
     const auto right = ImVec2(center.x - std::sin(angle) * length, center.y - std::cos(angle) * length);
-    const ImVec2 points[] = {
+    const std::array points = {
         tip, right, center, left, tip
     };
-    draw_list->AddConvexPolyFilled(points, std::size(points), body);
+    draw_list->AddConvexPolyFilled(points.data(), std::size(points), body);
 
-    draw_list->AddPolyline(points, std::size(points), accent, 0, radius / 48);
+    draw_list->AddPolyline(points.data(), std::size(points), accent, 0, radius / 48);
 }
 
 void MiniMapOverlay::drawCompass(ImDrawList* draw_list, const double radius, const ImVec2& center, const double north_bearing) {

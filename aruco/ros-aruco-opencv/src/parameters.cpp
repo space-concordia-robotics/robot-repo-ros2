@@ -23,18 +23,16 @@
 #include <map>
 #include <string>
 #include <vector>
-
 #include <opencv2/aruco.hpp>
 #include <opencv2/calib3d.hpp>
-
-#include "rclcpp/rclcpp.hpp"
-#include "rclcpp_lifecycle/lifecycle_node.hpp"
+#include <rclcpp/rclcpp.hpp>
+#include <rclcpp_lifecycle/lifecycle_node.hpp>
 
 #include "ros_aruco_opencv/utils.hpp"
 
 namespace ros_aruco_opencv {
     template <typename T>
-    void declare_param(rclcpp_lifecycle::LifecycleNode& node, const std::string param_name, T default_value, const bool dynamic = false) {
+    void declare_param(rclcpp_lifecycle::LifecycleNode& node, const std::string& param_name, const T& default_value, const bool dynamic = false) {
         rcl_interfaces::msg::ParameterDescriptor descriptor;
         descriptor.read_only = !dynamic;
 
@@ -42,7 +40,7 @@ namespace ros_aruco_opencv {
     }
 
     template <typename T>
-    void get_param(rclcpp_lifecycle::LifecycleNode& node, std::string param_name, T& out_value, const std::string log_info = "") {
+    void get_param(rclcpp_lifecycle::LifecycleNode& node, const std::string& param_name, T& out_value, const std::string& log_info = "") {
         node.get_parameter(param_name, out_value);
 
         if (!log_info.empty()) {
@@ -108,11 +106,11 @@ namespace ros_aruco_opencv {
     }
 
     void declare_aruco_parameters(rclcpp_lifecycle::LifecycleNode& node) {
-#if CV_VERSION_MAJOR > 4 || CV_VERSION_MAJOR == 4 && CV_VERSION_MINOR >= 7
+        #if CV_VERSION_MAJOR > 4 || CV_VERSION_MAJOR == 4 && CV_VERSION_MINOR >= 7
         const auto default_parameters = cv::makePtr<cv::aruco::DetectorParameters>();
-#else
+        #else
         const auto default_parameters = cv::aruco::DetectorParameters::create();
-#endif
+        #endif
 
         declare_param_int_range(node,
                                 "aruco.adaptiveThreshWinSizeMin", default_parameters->adaptiveThreshWinSizeMin, 3, 100);
@@ -163,7 +161,7 @@ namespace ros_aruco_opencv {
         declare_param(node,
                       "aruco.detectInvertedMarker", default_parameters->detectInvertedMarker, true);
 
-#if CV_VERSION_MAJOR > 4 || CV_VERSION_MAJOR == 4 && CV_VERSION_MINOR >= 6
+        #if CV_VERSION_MAJOR > 4 || CV_VERSION_MAJOR == 4 && CV_VERSION_MINOR >= 6
         declare_param(node,
                       "aruco.useAruco3Detection", default_parameters->useAruco3Detection, true);
         declare_param_int_range(node,
@@ -172,7 +170,7 @@ namespace ros_aruco_opencv {
         declare_param_double_range(node,
                                    "aruco.minMarkerLengthRatioOriginalImg",
                                    default_parameters->minMarkerLengthRatioOriginalImg, 0.0, 1.0);
-#endif
+        #endif
     }
 
     void declare_detector_parameters(rclcpp_lifecycle::LifecycleNode& node) {
@@ -214,24 +212,24 @@ namespace ros_aruco_opencv {
         node.get_parameter("aruco.minOtsuStdDev", detector_parameters->minOtsuStdDev);
         node.get_parameter("aruco.errorCorrectionRate", detector_parameters->errorCorrectionRate);
 
-#if CV_VERSION_MAJOR > 4 || CV_VERSION_MAJOR == 4 && CV_VERSION_MINOR >= 7
+        #if CV_VERSION_MAJOR > 4 || CV_VERSION_MAJOR == 4 && CV_VERSION_MINOR >= 7
         int refine_method = 0;
         node.get_parameter("aruco.cornerRefinementMethod", refine_method);
         detector_parameters->cornerRefinementMethod = static_cast<cv::aruco::CornerRefineMethod>(refine_method);
-#else
+        #else
         node.get_parameter("aruco.cornerRefinementMethod", detector_parameters->cornerRefinementMethod);
-#endif
+        #endif
 
         node.get_parameter("aruco.cornerRefinementWinSize", detector_parameters->cornerRefinementWinSize);
         node.get_parameter("aruco.cornerRefinementMaxIterations", detector_parameters->cornerRefinementMaxIterations);
         node.get_parameter("aruco.cornerRefinementMinAccuracy", detector_parameters->cornerRefinementMinAccuracy);
         node.get_parameter("aruco.detectInvertedMarker", detector_parameters->detectInvertedMarker);
 
-#if CV_VERSION_MAJOR > 4 || CV_VERSION_MAJOR == 4 && CV_VERSION_MINOR >= 6
+        #if CV_VERSION_MAJOR > 4 || CV_VERSION_MAJOR == 4 && CV_VERSION_MINOR >= 6
         node.get_parameter("aruco.useAruco3Detection", detector_parameters->useAruco3Detection);
         node.get_parameter("aruco.minSideLengthCanonicalImg", detector_parameters->minSideLengthCanonicalImg);
         node.get_parameter("aruco.minMarkerLengthRatioOriginalImg", detector_parameters->minMarkerLengthRatioOriginalImg);
-#endif
+        #endif
 
         if (log_values) {
             RCLCPP_INFO_STREAM(
@@ -302,7 +300,7 @@ namespace ros_aruco_opencv {
                 " * detectInvertedMarker: " <<
                 (detector_parameters->detectInvertedMarker ? "TRUE" : "FALSE"));
 
-#if CV_VERSION_MAJOR > 4 || CV_VERSION_MAJOR == 4 && CV_VERSION_MINOR >= 6
+            #if CV_VERSION_MAJOR > 4 || CV_VERSION_MAJOR == 4 && CV_VERSION_MINOR >= 6
             RCLCPP_INFO_STREAM(
                 node.get_logger(),
                 " * useAruco3Detection: " <<
@@ -314,7 +312,7 @@ namespace ros_aruco_opencv {
                 node.get_logger(),
                 " * minMarkerLengthRatioOriginalImg: " <<
                 detector_parameters->minMarkerLengthRatioOriginalImg);
-#endif
+            #endif
         }
     }
 
@@ -352,7 +350,7 @@ namespace ros_aruco_opencv {
                 return result;
             }
             if (param.get_name() == "pose_selector.strategy") {
-                if (std::string strategy = param.as_string(); strategy != "REPROJECTION_ERROR" && strategy != "PLANE_NORMAL_PARALLEL") {
+                if (const auto& strategy = param.as_string(); strategy != "REPROJECTION_ERROR" && strategy != "PLANE_NORMAL_PARALLEL") {
                     result.successful = false;
                     result.reason = "pose_selector.strategy must be one of: REPROJECTION_ERROR, PLANE_NORMAL_PARALLEL";
                     return result;
@@ -369,14 +367,14 @@ namespace ros_aruco_opencv {
         cv::Ptr<cv::aruco::DetectorParameters>& aruco_parameters
     ) {
         bool aruco_param_changed = false;
-        for (auto& param : parameters) {
+        for (auto&& param : parameters) {
             if (param.get_name() == "marker_size") {
                 detector_params.marker_size = param.as_double();
             } else if (param.get_name() == "pose_selector.strategy") {
                 detector_params.pose_selector.strategy = parse_selector_strategy(param.as_string());
             } else if (param.get_name() == "pose_selector.debug") {
                 detector_params.pose_selector.debug = param.as_bool();
-            } else if (param.get_name().rfind("aruco", 0) == 0) {
+            } else if (param.get_name().starts_with("aruco")) {
                 aruco_param_changed = true;
             } else {
                 // Unknown parameter, ignore

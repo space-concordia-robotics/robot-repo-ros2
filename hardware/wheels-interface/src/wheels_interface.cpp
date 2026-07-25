@@ -5,13 +5,14 @@
 #include <memory>
 #include <vector>
 #include <boost/algorithm/string.hpp>
-#include <hardware_interface/lexical_casts.hpp>
 #include <hardware_interface/types/hardware_interface_type_values.hpp>
 #include <rclcpp/rclcpp.hpp>
 
+#include "scrb_common_util/string_parsing.hpp"
+
 namespace wheels_interface {
-    constexpr auto HW_IF_VELOCITY = hardware_interface::HW_IF_VELOCITY;
-    constexpr auto HW_IF_POSITION = hardware_interface::HW_IF_POSITION;
+    using hardware_interface::HW_IF_POSITION;
+    using hardware_interface::HW_IF_VELOCITY;
 
     constexpr auto ENCODER_MULTIPLIER = 64;
 
@@ -20,19 +21,19 @@ namespace wheels_interface {
         result.reserve(input.size());
 
         for (size_t i = 0; i < input.size(); ++i) {
-            const auto c = input[i];
+            const auto c = input.at(i);
 
-            if (i > 0 && isupper(c)) {
-                if (islower(input[i - 1]))
+            if (i > 0 && std::isupper(c, std::locale::classic())) {
+                if (std::islower(input.at(i - 1), std::locale::classic()))
                     result.push_back('_');
 
-                if (const auto isLast = i + 1 == input.size(); !isLast && islower(input[i + 1]))
+                if (const auto isLast = i + 1 == input.size(); !isLast && std::islower(input.at(i + 1), std::locale::classic()))
                     result.push_back('_');
             } else {
                 result.push_back(c);
             }
 
-            result.push_back(tolower(c));
+            result.push_back(std::tolower(c, std::locale::classic()));
         }
 
         return result;
@@ -94,7 +95,7 @@ namespace wheels_interface {
             return CallbackReturn::ERROR;
         }
 
-        multiplier = hardware_interface::stod(info_.hardware_parameters["multiplier"]);
+        multiplier = scrb::common_util::parse_double(info_.hardware_parameters["multiplier"]);
 
         const auto can_path = info_.hardware_parameters["can_path"];
 
@@ -150,11 +151,11 @@ namespace wheels_interface {
 
             // TODO 2026-02-14 (Will Free): properly handle errors here
 
-            const auto canId = stoi(parameters["can_id"]);
+            const auto canId = scrb::common_util::parse_int32(parameters["can_id"]);
 
             const auto controller = SparkMax::make_shared(rcl_logger, *can_controller, canId);
 
-            const auto radius = hardware_interface::stod(parameters["radius"]);
+            const auto radius = scrb::common_util::parse_double(parameters["radius"]);
 
             const auto wheel = WheelDescription::make_shared(controller, joint.name, radius);
 
@@ -177,11 +178,11 @@ namespace wheels_interface {
         // TODO 2026-03-01 (Will Free): handle reading initial position values to always adjust them for the state
 
         // reset values always when configuring hardware
-        for (const auto& [name, descr] : joint_state_interfaces_) {
+        for (const auto& name : joint_state_interfaces_ | std::views::keys) {
             set_state(name, 0.0);
         }
 
-        for (const auto& [name, descr] : joint_command_interfaces_) {
+        for (const auto& name : joint_command_interfaces_ | std::views::keys) {
             set_command(name, 0.0);
         }
 
@@ -197,7 +198,7 @@ namespace wheels_interface {
         }
 
         // command and state should be equal when starting
-        for (const auto& [name, descr] : joint_command_interfaces_) {
+        for (const auto& name : joint_command_interfaces_ | std::views::keys) {
             set_command(name, get_state(name));
         }
 
@@ -312,7 +313,7 @@ namespace wheels_interface {
             heartbeat_timer->reset();
             heartbeat_timer->cancel();
         } catch (const std::runtime_error& e) {
-            logger->error("Failure to deactivate while stopping heartbeat");
+            logger->error("Failure to deactivate while stopping heartbeat: {}", e.what());
             return CallbackReturn::ERROR;
         }
 

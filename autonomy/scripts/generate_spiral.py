@@ -1,7 +1,8 @@
 #!/usr/bin/env python
+# ruff: noqa: D100, D103, T201
+import math
 from pathlib import Path
 
-import math
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
@@ -9,7 +10,7 @@ import numpy as np
 matplotlib.use("Agg")
 
 
-def generate_spiral(radius=10.0, step=0.5, radius_factor=0.5):
+def generate_spiral(radius: float = 10.0, step: float = 0.5, radius_factor: float = 0.5) -> tuple[list[tuple[int, int]], list[float]]:
     """
     Generates a list of points that form a spiral.
 
@@ -67,7 +68,7 @@ def main():
     min_x, max_x = min(x_vals), max(x_vals)
     min_y, max_y = min(y_vals), max(y_vals)
 
-    if max_x - min_x > 50 or max_y - min_y > 50:
+    if max_x - min_x > 50 or max_y - min_y > 50:  # noqa: PLR2004
         print("WARNING: either the x or the y axis exceed 20 units.")
         print("         this will cause a huge image to be generated")
         print("         which will consume a lot of memory.")
@@ -77,7 +78,7 @@ def main():
     width = math.ceil(max_x - min_x) + 1
     height = math.ceil(max_y - min_y) + 1
 
-    fig, ax = plt.subplots(figsize=(width / 2, height / 2))
+    _fig, ax = plt.subplots(figsize=(width / 2, height / 2))
 
     for i in range(0, len(spiral_points) - 1, 1):
         a = spiral_points[i]

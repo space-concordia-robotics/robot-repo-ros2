@@ -54,7 +54,8 @@ namespace {
 
 class CompatBoardNode : public rclcpp::Node {
 public:
-    explicit CompatBoardNode(const rclcpp::NodeOptions& options = rclcpp::NodeOptions()) : Node("compat_board_node", options), logger(this->get_logger()) {
+    explicit CompatBoardNode(const rclcpp::NodeOptions& options = rclcpp::NodeOptions())
+        : Node("compat_board_node", options), logger(this->get_logger()) {
         const auto can_path = this->declare_parameter<std::string>("can_interface", "can0");
         joy_topic = this->declare_parameter<std::string>("joy_topic", "/joy");
         velocity_scale = static_cast<float>(this->declare_parameter<double>("velocity_scale", 1024.0));

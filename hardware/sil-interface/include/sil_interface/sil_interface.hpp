@@ -7,11 +7,11 @@
 #include <hardware_interface/hardware_info.hpp>
 #include <hardware_interface/system_interface.hpp>
 #include <hardware_interface/types/hardware_interface_return_values.hpp>
+#include <ros2_fmt_logger/logger.hpp>
 #include <rclcpp/duration.hpp>
 #include <rclcpp/time.hpp>
 #include <rclcpp_lifecycle/state.hpp>
 #include <rclcpp_lifecycle/node_interfaces/lifecycle_node_interface.hpp>
-#include <ros2_fmt_logger/logger.hpp>
 
 namespace sil_interface {
     using CallbackReturn = hardware_interface::CallbackReturn;

@@ -1,12 +1,12 @@
-from launch_util import SimpleLauncher
+from launch_util import SimpleLauncher, SomeSubstitutionsValueTypeDict
 
 
 def generate_launch_description():
-    """Robot state publisher"""
+    """Robot state publisher."""
 
     sl = SimpleLauncher()
 
-    mappings = {
+    mappings: SomeSubstitutionsValueTypeDict = {
         "mode": sl.mode_arg,
         "control": sl.control_arg,
     }

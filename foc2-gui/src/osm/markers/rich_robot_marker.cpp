@@ -19,7 +19,9 @@ void RichRobotMarker::onInit() {
     );
 }
 
-void RichRobotMarker::onShutdown() const {}
+void RichRobotMarker::onShutdown() {
+    fix_subscription.reset();
+}
 
 bool RichRobotMarker::inBounds(const Eigen::AlignedBox2d /*geo_box*/) const {
     // return geo_box.contains(Eigen::Vector2d(robot_transform.translation.x, robot_transform.translation.z));

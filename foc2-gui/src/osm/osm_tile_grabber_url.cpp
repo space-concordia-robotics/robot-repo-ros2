@@ -43,7 +43,7 @@ namespace ImOsm::Old {
                 for (auto y = start_y; y != end_y + 1; ++y) {
                     data.tiles.push_back(
                         Tile{
-                            .zxy = {z, x, y},
+                            .zxy    = {z, x, y},
                             .future = std::async(std::launch::async, &TileGrabberUrl::onHandleRequest, this, std::array<int, 3>({
                                                      z, x, y
                                                  }))
@@ -66,8 +66,7 @@ namespace ImOsm::Old {
         return data;
     }
 
-    TileGrabberUrl::Tile::Remote
-    TileGrabberUrl::onHandleRequest(const std::array<int, 3>& zxy) const {
+    TileGrabberUrl::Tile::Remote TileGrabberUrl::onHandleRequest(const std::array<int, 3>& zxy) const {
         const auto url = fmt::format("https://{}/{}/{}/{}.{}", tile_provider, zxy[0], zxy[1], zxy[2], tile_extension);
 
         // TODO 2026-05-19 (Will Free): replace curl with something a bit nicer to use

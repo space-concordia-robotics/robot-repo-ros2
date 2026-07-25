@@ -44,7 +44,8 @@ namespace wheels_interface {
                 const SparkMax::SharedPtr& motor,
                 const std::string& name,
                 const double radius
-            ) : motor(motor), name(name), radius(radius) {}
+            )
+                : motor(motor), name(name), radius(radius) {}
 
             double getCircumference() const {
                 return std::numbers::pi * 2 * radius;
