@@ -356,7 +356,7 @@ namespace arm_interface {
         hw_states_position_[0] = angle_4 * deg_to_rad; // joint5 <- encoder 4
         hw_states_velocity_[0] = absenc_meas_4.angspd * deg_to_rad;
 
-        if (absenc_meas_1.status == 0 || absenc_meas_2.status == 0 || absenc_meas_3.status == 0 || absenc_meas_4.status == 0)
+        if (absenc_meas_1.status == 0 && absenc_meas_2.status == 0 && absenc_meas_3.status == 0 && absenc_meas_4.status == 0)
         {
             RCLCPP_INFO_THROTTLE(rclcpp::get_logger("ArmInterface"), steady_clock_, 10,
                                  "Read Pos (rad): [%.3f, %.3f, %.3f, %.3f]",
@@ -374,31 +374,36 @@ namespace arm_interface {
         (void)time;
         (void)period;
 
-        if (info_.joints.size() < 4)
+        constexpr size_t k_velocity_axes = 6;
+        if (hw_commands_velocity_.size() < k_velocity_axes)
         {
-            RCLCPP_ERROR(rclcpp::get_logger("ArmInterface"), "Received JointState message with insufficient data.");
+            RCLCPP_ERROR(
+                rclcpp::get_logger("ArmInterface"),
+                "Motor command buffer too small: need %zu velocity slots, have %zu.",
+                k_velocity_axes, hw_commands_velocity_.size());
             return return_type::ERROR;
         }
- 
+
         // Create a buffer to send motor commands
         uint8_t out_buf[1 + 1 + sizeof(float) * 6 + 1] = {};
         out_buf[0] = SET_MOTOR_SPEED;
         //out_buf[0] = 0x4E;
         out_buf[1] = sizeof(float) * 6; //24 bytes of data
 
-        // Map command velocities to motor speeds
-        for (size_t i = 0; i < 6; i++)
-        {   
-            
-            const double joint_velocities = hw_commands_velocity_[i]; // in rad/s
-            //TODO before scaling, should we clamp  to MAX_JOINT_VELOCITY?
-            float speed = static_cast<float>(joint_velocities) * MAX_MOTOR_SPEED;
-            
-            memcpy(&out_buf[(i * sizeof(float)) + 2], &speed, sizeof(float)); 
+        // Map rad/s -> motor command units; firmware treats ±MAX_MOTOR_SPEED as full scale.
+        for (size_t i = 0; i < k_velocity_axes; i++)
+        {
+            const double vel_rad_s =
+                std::clamp(hw_commands_velocity_[i], -MAX_JOINT_VELOCITY, MAX_JOINT_VELOCITY);
+            const float speed = std::clamp(
+                static_cast<float>(vel_rad_s) * MAX_MOTOR_SPEED,
+                -MAX_MOTOR_SPEED,
+                MAX_MOTOR_SPEED);
+            memcpy(&out_buf[(i * sizeof(float)) + 2], &speed, sizeof(float));
         }
         //TODO fixed end of buffer 
         out_buf[26] = 0x0A; // End of message
-        RCLCPP_INFO_THROTTLE(rclcpp::get_logger("ArmInterfac"), steady_clock_, 10, "Writing joint velocity commands [%.2f, %.2f, %.2f, %.2f]",
+        RCLCPP_INFO_THROTTLE(rclcpp::get_logger("ArmInterface"), steady_clock_, 10, "Writing joint velocity commands [%.2f, %.2f, %.2f, %.2f]",
                              hw_commands_velocity_[0], hw_commands_velocity_[1], hw_commands_velocity_[2], hw_commands_velocity_[3]);
 
         // Send the motor commands via the motor serial port
@@ -447,7 +452,7 @@ namespace arm_interface {
         return command_interfaces;
     }
 
-} // namespace arm_hardware
+}  // namespace arm_interface
 
 #include "pluginlib/class_list_macros.hpp"
 PLUGINLIB_EXPORT_CLASS(arm_interface::ArmInterface, hardware_interface::SystemInterface)

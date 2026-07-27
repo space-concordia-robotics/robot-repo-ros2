@@ -25,6 +25,7 @@ setup(
             'joy_mux_controller = joy_mux_controller_py.joy_mux_controller:main',
             'fk_keyboard_controller = joy_mux_controller_py.fk_keyboard_controller:main',
             'fk_moveit_keyboard_controller = joy_mux_controller_py.fk_moveit_keyboard_controller:main',
+            'arm_pid_calibration_keyboard = joy_mux_controller_py.arm_pid_calibration_keyboard:main',
         ],
     },
 )

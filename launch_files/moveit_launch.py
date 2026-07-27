@@ -86,11 +86,13 @@ def generate_launch_description():
             output="screen",
         )
 
-        return [
-            delayed_controller_manager,
-            delayed_spawners,
-            servo_node_arm,
-        ]
+        launch_servo_str = LaunchConfiguration("launch_servo").perform(context).lower()
+        enable_servo = launch_servo_str in ("true", "1", "yes")
+
+        actions = [delayed_controller_manager, delayed_spawners]
+        if enable_servo:
+            actions.append(servo_node_arm)
+        return actions
 
     return LaunchDescription(
         [
@@ -98,6 +100,11 @@ def generate_launch_description():
                 "use_fake_hardware",
                 default_value="false",
                 description="Use mock ros2_control hardware for simulation/RViz testing",
+            ),
+            DeclareLaunchArgument(
+                "launch_servo",
+                default_value="true",
+                description="If true, start moveit_servo (set false for direct arm_controller tuning).",
             ),
             OpaqueFunction(function=launch_setup),
         ]

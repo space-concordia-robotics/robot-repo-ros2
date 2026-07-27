@@ -2,15 +2,12 @@
 #ifndef ARM_INTERFACE_HPP
 #define ARM_INTERFACE_HPP
 
-#include "arm_hardware/arm_controller_node.h"
 #include "arm_hardware/absenc.h"
 
 #include <string>
-#include <unordered_map>
 #include <vector>
 #include <limits>
 
-#include <termios.h>
 #include "hardware_interface/handle.hpp"
 #include "hardware_interface/hardware_info.hpp"
 #include "hardware_interface/system_interface.hpp"
