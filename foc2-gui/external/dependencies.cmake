@@ -17,3 +17,6 @@ include(${CMAKE_CURRENT_LIST_DIR}/sdl3.cmake)
 
 # stb headers (generic useful things)
 include(${CMAKE_CURRENT_LIST_DIR}/stb.cmake)
+
+# MapLibre
+include(${CMAKE_CURRENT_LIST_DIR}/maplibre.cmake)
