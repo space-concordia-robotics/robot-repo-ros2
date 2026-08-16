@@ -5,12 +5,11 @@
 #include <imgui.h>
 #include <lunasvg.h>
 #include <SDL3/SDL.h>
-#include <ament_index_cpp/get_package_share_directory.hpp>
 #include <rclcpp/executors.hpp>
 #include <rclcpp/utilities.hpp>
 
 #include "foc2-gui/im_application.hpp"
-#include "foc2-gui/resources.hpp"
+#include "foc2-gui/util/resources.hpp"
 #include "foc2-gui/widgets/logs_widget.hpp"
 #include "foc2-gui/widgets/map_widget.hpp"
 #include "foc2-gui/widgets/video_widget.hpp"
@@ -18,9 +17,14 @@
 // include stb image implementation
 #define STB_IMAGE_IMPLEMENTATION
 // ReSharper disable once CppUnusedIncludeDirective
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wcast-align"
 #include <stb_image.h>
+#pragma clang diagnostic pop
 
-std::unique_ptr<lunasvg::Document> loadSvg(const std::filesystem::path& path) {
+#include "foc2-gui/im_application_state.hpp"
+
+static std::unique_ptr<lunasvg::Document> loadSvg(const std::filesystem::path& path) {
     auto svg = lunasvg::Document::loadFromFile(path);
 
     if (!svg)
@@ -29,7 +33,7 @@ std::unique_ptr<lunasvg::Document> loadSvg(const std::filesystem::path& path) {
     return svg;
 }
 
-SDL_Surface* renderSvg(const std::unique_ptr<lunasvg::Document>& svg, const int width = 0, const int height = 0) {
+static SDL_Surface* renderSvg(const std::unique_ptr<lunasvg::Document>& svg, const int width = 0, const int height = 0) {
     auto bitmap = svg->renderToBitmap(width, height);
 
     bitmap.convertToRGBA();
@@ -40,7 +44,7 @@ SDL_Surface* renderSvg(const std::unique_ptr<lunasvg::Document>& svg, const int 
         SDL_PIXELFORMAT_ARGB8888
     );
 
-    if (!surface)
+    if (surface == nullptr)
         return nullptr;
 
     // TODO 2026-05-24 (Will Free): I'm just going to pretend this can never error
@@ -58,14 +62,14 @@ SDL_Surface* renderSvg(const std::unique_ptr<lunasvg::Document>& svg, const int 
     return surface;
 }
 
-const static auto SHARE_DIR = std::filesystem::path(ament_index_cpp::get_package_share_directory(FOC2_PACKAGE_NAME));
+// NOLINTNEXTLINE(*-avoid-non-const-global-variables): I know, I hate it too. but I can't think of a better way to do it
 static SDL_Surface* WINDOW_ICON;
 
-void initializeWindowIcon() {
-    if (WINDOW_ICON)
+static void initializeWindowIcon() {
+    if (WINDOW_ICON != nullptr)
         return;
 
-    const auto svg = loadSvg(SHARE_DIR / "resources" / "icon.svg");
+    const auto svg = loadSvg(RESOURCES_DIR / "icon.svg");
 
     // sufficiently high resolution for task switcher
     const auto icon = renderSvg(svg, 128, 128);
@@ -83,7 +87,7 @@ void initializeWindowIcon() {
     WINDOW_ICON = icon;
 }
 
-void cleanupWindowIcon() {
+static void cleanupWindowIcon() {
     SDL_DestroySurface(WINDOW_ICON);
     WINDOW_ICON = nullptr;
 }
@@ -100,6 +104,10 @@ public:
     FOC2Application()
         : ImApplication("foc2_gui", "SCRB C2 Station") {}
 
+    ~FOC2Application() override {
+        cleanupWindowIcon();
+    }
+
     FOC2Application(const FOC2Application& other) = delete;
     FOC2Application(FOC2Application&& other) noexcept = delete;
     FOC2Application& operator=(const FOC2Application& other) = delete;
@@ -107,19 +115,15 @@ public:
 
 protected:
     void onWindow() override {
-        const auto share_dir = ament_index_cpp::get_package_share_directory(FOC2_PACKAGE_NAME);
-
         initializeWindowIcon();
 
-        if (!SDL_SetWindowIcon(window, WINDOW_ICON)) {
+        if (!SDL_SetWindowIcon(state->window, WINDOW_ICON)) {
             logger.warn("Error: SDL_SetWindowIcon(): {}", SDL_GetError());
         }
     }
 
     void onInit() override {
         ImApplication::onInit();
-
-        const auto share_dir = ament_index_cpp::get_package_share_directory(FOC2_PACKAGE_NAME);
 
         const auto& io = ImGui::GetIO();
 
@@ -147,15 +151,15 @@ protected:
         static constexpr auto ICON_FONT_SIZE = BASE_FONT_SIZE * 2.0f / 3.0f;
         // FontAwesome fonts need to have their sizes reduced by 2.0f/3.0f in order to align correctly
 
-        static constexpr ImWchar FONTAWESOME_ICON_RANGE[] = {ICON_MIN_FA, ICON_MAX_16_FA, 0};
+        static constexpr std::array<ImWchar, 3> FONTAWESOME_ICON_RANGE = {ICON_MIN_FA, ICON_MAX_16_FA, 0};
         auto fontawesome_config = ImFontConfig();
         strcpy(fontawesome_config.Name, "FontAwesome Solid");
         fontawesome_config.MergeMode = true;
         fontawesome_config.PixelSnapH = true;
         fontawesome_config.GlyphMinAdvanceX = ICON_FONT_SIZE;
 
-        const auto filename = std::filesystem::path(share_dir) / "resources" / "fonts" / FONT_ICON_FILE_NAME_FAS;
-        io.Fonts->AddFontFromFileTTF(filename.c_str(), ICON_FONT_SIZE, &fontawesome_config, FONTAWESOME_ICON_RANGE);
+        const auto filename = RESOURCES_DIR / "fonts" / FONT_ICON_FILE_NAME_FAS;
+        io.Fonts->AddFontFromFileTTF(filename.c_str(), ICON_FONT_SIZE, &fontawesome_config, FONTAWESOME_ICON_RANGE.data());
 
         video_top_left = std::make_shared<VideoWidget>(*this, "rtsp://127.0.0.1:8554/test", "/rover/ffc/front/image_raw", true);
         video_top_right = std::make_shared<VideoWidget>(*this, "rtsp://127.0.0.1:8554/test", "/rover/ffc/front/image_raw", true);
@@ -225,8 +229,8 @@ private:
     MapWidget::SharedPtr map_widget;
 
     static void setupInitialLayout(const ImGuiID& dock_main_id) {
-        ImGuiID node_left;
-        ImGuiID node_right;
+        ImGuiID node_left = 0;
+        ImGuiID node_right = 0;
         ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Left, 0.5, &node_left, &node_right);
 
         setupInitialLayoutLeft(node_left);
@@ -237,8 +241,8 @@ private:
     }
 
     static void setupInitialLayoutLeft(const ImGuiID node_left) {
-        ImGuiID node_left_bottom;
-        ImGuiID node_left_top;
+        ImGuiID node_left_bottom = 0;
+        ImGuiID node_left_top = 0;
         ImGui::DockBuilderSplitNode(node_left, ImGuiDir_Up, 0.75, &node_left_top, &node_left_bottom);
 
         ImGui::DockBuilderGetNode(node_left_bottom)->SetLocalFlags(ImGuiDockNodeFlags_AutoHideTabBar);
@@ -249,19 +253,19 @@ private:
     }
 
     static void setupInitialLayoutRight(const ImGuiID node_right) {
-        ImGuiID dock_right_top;
-        ImGuiID dock_right_bottom;
+        ImGuiID dock_right_top = 0;
+        ImGuiID dock_right_bottom = 0;
         ImGui::DockBuilderSplitNode(node_right, ImGuiDir_Up, 0.6, &dock_right_top, &dock_right_bottom);
 
-        ImGuiID dock_right_top_right;
-        ImGuiID dock_right_top_left;
+        ImGuiID dock_right_top_right = 0;
+        ImGuiID dock_right_top_left = 0;
         ImGui::DockBuilderSplitNode(dock_right_top, ImGuiDir_Left, 0.5, &dock_right_top_left, &dock_right_top_right);
         ImGui::DockBuilderGetNode(dock_right_top)->SetLocalFlags(ImGuiDockNodeFlags_AutoHideTabBar);
         ImGui::DockBuilderDockWindow(TOP_LEFT_STREAM_WIDGET_NAME, dock_right_top_left);
         ImGui::DockBuilderDockWindow(TOP_RIGHT_STREAM_WIDGET_NAME, dock_right_top_right);
 
-        ImGuiID dock_right_bottom_right;
-        ImGuiID dock_right_bottom_left;
+        ImGuiID dock_right_bottom_right = 0;
+        ImGuiID dock_right_bottom_left = 0;
         ImGui::DockBuilderSplitNode(dock_right_bottom, ImGuiDir_Left, 0.5, &dock_right_bottom_left, &dock_right_bottom_right);
 
         ImGui::DockBuilderGetNode(dock_right_bottom_left)->SetLocalFlags(ImGuiDockNodeFlags_AutoHideTabBar);
