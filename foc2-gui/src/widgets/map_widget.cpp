@@ -209,6 +209,10 @@ void MapWidget::draw() {
         ImVec2(1, 0)
     );
 
+    // create invisible button to consume any clicks
+    ImGui::SetCursorScreenPos(widget_origin);
+    ImGui::InvisibleButton("##Maplibre Button", widget_size);
+
     handleMouse(tf2::convert<Eigen::Vector2d>(widget_origin), tf2::convert<Eigen::Vector2d>(widget_size));
 }
 
