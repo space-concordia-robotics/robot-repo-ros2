@@ -19,6 +19,8 @@
 #include <mbgl/style/style.hpp>
 #include <mbgl/util/action_journal_options.hpp>
 
+#include "foc2-gui/util/imgui_formatters.hpp"
+#include "foc2-gui/util/mln_tf2_convert.hpp"
 #include "foc2-gui/util/resources.hpp"
 #include "foc2-gui/widgets/map/renderer_backend.hpp"
 #include "foc2-gui/widgets/map/renderer_frontend.hpp"
@@ -196,6 +198,9 @@ void MapWidget::draw() {
     // update time after render
     runLoop.updateTime();
 
+    const auto widget_origin = ImGui::GetCursorScreenPos();
+    const auto widget_size = ImGui::GetContentRegionAvail();
+
     ImGui::Image(
         backend->texture(),
         ImGui::GetContentRegionAvail(),
@@ -204,39 +209,13 @@ void MapWidget::draw() {
         ImVec2(1, 0)
     );
 
-    handleScroll();
-    handleMouse();
-}
-
-void MapWidget::handleScroll() const {
-    const ImGuiIO& io = ImGui::GetIO();
-
-    // if not hovered, don't handle mouse events
-    if (!ImGui::IsItemHovered())
-        return;
-
-    const auto wheel = io.MouseWheel;
-    if (std::abs(wheel) < 1e-2)
-        return;
-
-    const auto delta = wheel * 40.0;
-
-    const auto absDelta = std::abs(delta);
-    auto scale = 2.0 / (1.0 + std::exp(-absDelta / 100.0));
-
-    // Zooming out.
-    if (delta < 0 && scale != 0)
-        scale = 1.0 / scale;
-
-    map->scaleBy(scale, mbgl::ScreenCoordinate(io.MousePos.x, io.MousePos.y));
+    handleMouse(tf2::convert<Eigen::Vector2d>(widget_origin), tf2::convert<Eigen::Vector2d>(widget_size));
 }
 
 void MapWidget::handleResize() {
     const auto available = ImGui::GetContentRegionAvail();
 
-    // auto context = ImGui::GetCurrentContext();
-
-    const auto availableSize = mbgl::Size(static_cast<uint32_t>(available.x), static_cast<uint32_t>(available.y));
+    const auto availableSize = tf2::convert<mbgl::Size>(available);
 
     if (availableSize == size)
         return;
@@ -254,13 +233,49 @@ void MapWidget::handleResize() {
     invalidate();
 }
 
-void MapWidget::handleMouse() {
-    handleMouseClick();
+void MapWidget::handleMouse(const Eigen::Vector2d& widget_origin, const Eigen::Vector2d& widget_size) {
+    const ImGuiIO& io = ImGui::GetIO();
+
+    // TODO 2026-08-16 (Will Free): I'm just using a constant factor of 4 here, but really this should be taken from the imgui style
+    const auto bounds = Eigen::AlignedBox2d(
+        widget_origin + Eigen::Vector2d::Constant(2),
+        widget_origin + widget_size - Eigen::Vector2d::Constant(2)
+    );
+
+    const auto mouse_pos = tf2::convert<Eigen::Vector2d>(io.MousePos);
+    const Eigen::Vector2d local_mouse_pos = mouse_pos - bounds.min();
+
+    const auto in_bounds = bounds.contains(mouse_pos);
+
+    // only zoom if mouse is above map
+    if (in_bounds)
+        handleScroll(local_mouse_pos);
+
+    handleMouseClick(in_bounds);
     handleMouseMove();
 }
 
+void MapWidget::handleScroll(const Eigen::Vector2d& mouse_pos) const {
+    const ImGuiIO& io = ImGui::GetIO();
+
+    const auto wheel = io.MouseWheel;
+    if (std::abs(wheel) < 1e-2)
+        return;
+
+    const auto delta = wheel * 40.0;
+
+    const auto absDelta = std::abs(delta);
+    auto scale = 2.0 / (1.0 + std::exp(-absDelta / 100.0));
+
+    // Zooming out.
+    if (delta < 0 && scale != 0)
+        scale = 1.0 / scale;
+
+    map->scaleBy(scale, tf2::convert<mbgl::ScreenCoordinate>(mouse_pos));
+}
+
 void MapWidget::handleMouseMove() const {
-    ImGuiIO& io = ImGui::GetIO();
+    const ImGuiIO& io = ImGui::GetIO();
 
     const auto delta = io.MouseDelta;
 
@@ -269,15 +284,15 @@ void MapWidget::handleMouseMove() const {
         return;
 
     if (tracking) {
-        map->moveBy({delta.x, delta.y});
+        map->moveBy(tf2::convert<mbgl::ScreenCoordinate>(delta));
     } else if (rotating) {
-        map->rotateBy({io.MousePosPrev.x, io.MousePosPrev.y}, {io.MousePos.x, io.MousePos.y});
+        map->rotateBy(tf2::convert<mbgl::ScreenCoordinate>(io.MousePosPrev), tf2::convert<mbgl::ScreenCoordinate>(io.MousePos));
     } else if (pitching) {
         map->pitchBy(delta.y / 2);
     }
 }
 
-void MapWidget::handleMouseClick() {
+void MapWidget::handleMouseClick(const bool in_bounds) {
     if (ImGui::IsMouseReleased(ImGuiMouseButton_Right) || ImGui::IsMouseReleased(ImGuiMouseButton_Left)) {
         rotating = false;
         pitching = false;
@@ -287,7 +302,7 @@ void MapWidget::handleMouseClick() {
     }
 
     // if not hovered, don't handle mouse events
-    if (!ImGui::IsItemHovered())
+    if (!in_bounds || !ImGui::IsItemHovered())
         return;
 
     if (ImGui::IsMouseClicked(ImGuiMouseButton_Right) || (ImGui::IsMouseClicked(ImGuiMouseButton_Left) && ImGui::IsKeyDown(ImGuiMod_Ctrl))) {

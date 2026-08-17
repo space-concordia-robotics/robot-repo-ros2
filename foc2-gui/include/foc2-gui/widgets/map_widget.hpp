@@ -38,11 +38,11 @@ protected:
     void draw() override;
 
 private:
-    void handleScroll() const;
     void handleResize();
-    void handleMouse();
+    void handleMouse(const Eigen::Vector2d& widget_origin, const Eigen::Vector2d& widget_size);
+    void handleScroll(const Eigen::Vector2d& mouse_pos) const;
     void handleMouseMove() const;
-    void handleMouseClick();
+    void handleMouseClick(bool in_bounds);
 
     std::unique_ptr<mbgl::Map> map;
     std::unique_ptr<SDL3OpenGLRendererFrontend> rendererFrontend;
