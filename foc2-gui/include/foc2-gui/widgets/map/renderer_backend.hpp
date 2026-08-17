@@ -27,7 +27,7 @@ public:
     void resize(mbgl::Size size);
 
     [[nodiscard]] GLuint texture() const {
-        return colorTexture;
+        return color_texture;
     }
 
 protected:
@@ -43,12 +43,12 @@ private:
     SDL_Window* window = nullptr;
     SDL_GLContext opengl_context = nullptr;
 
-    SDL_Window* previousWindow = nullptr;
-    SDL_GLContext previousContext = nullptr;
+    SDL_Window* previous_window = nullptr;
+    SDL_GLContext previous_context = nullptr;
 
     GLuint framebuffer = 0;
-    GLuint colorTexture = 0;
-    GLuint depthStencil = 0;
+    GLuint color_texture = 0;
+    GLuint depth_stencil = 0;
 
     friend class SDL3OpenGLRenderableResource;
 };
