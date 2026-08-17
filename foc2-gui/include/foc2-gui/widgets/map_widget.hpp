@@ -45,7 +45,7 @@ private:
     void handleMouseClick(bool in_bounds);
 
     std::unique_ptr<mbgl::Map> map;
-    std::unique_ptr<SDL3OpenGLRendererFrontend> rendererFrontend;
+    std::unique_ptr<SDL3OpenGLRendererFrontend> renderer_frontend;
     std::unique_ptr<SDL3OpenGLRendererBackend> backend;
 
     bool tracking = false;
@@ -55,7 +55,7 @@ private:
     // the initial size should not be zero
     mbgl::Size size = mbgl::Size(1, 1);
 
-    mbgl::util::RunLoop runLoop;
+    mbgl::util::RunLoop run_loop;
 
     bool dirty = false;
 

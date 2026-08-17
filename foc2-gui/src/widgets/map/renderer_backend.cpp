@@ -30,11 +30,11 @@ SDL3OpenGLRendererBackend::SDL3OpenGLRendererBackend(SDL_Window* window, SDL_GLC
     : RendererBackend(mbgl::gfx::ContextMode::Unique),
       Renderable({0, 0}, std::make_unique<SDL3OpenGLRenderableResource>(*this)),
       window(window),
-      previousWindow(window),
-      previousContext(opengl_context) {
+      previous_window(window),
+      previous_context(opengl_context) {
 
-    assert(previousContext != nullptr);
-    assert(previousWindow != nullptr);
+    assert(previous_context != nullptr);
+    assert(previous_window != nullptr);
 
     if (!SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1))
         throw std::runtime_error(SDL_GetError());
@@ -45,7 +45,7 @@ SDL3OpenGLRendererBackend::SDL3OpenGLRendererBackend(SDL_Window* window, SDL_GLC
         throw std::runtime_error(SDL_GetError());
     }
 
-    if (!SDL_GL_MakeCurrent(previousWindow, previousContext)) {
+    if (!SDL_GL_MakeCurrent(previous_window, previous_context)) {
         SDL_GL_DestroyContext(this->opengl_context);
         this->opengl_context = nullptr;
 
@@ -54,8 +54,8 @@ SDL3OpenGLRendererBackend::SDL3OpenGLRendererBackend(SDL_Window* window, SDL_GLC
 }
 
 SDL3OpenGLRendererBackend::~SDL3OpenGLRendererBackend() {
-    previousWindow = SDL_GL_GetCurrentWindow();
-    previousContext = SDL_GL_GetCurrentContext();
+    previous_window = SDL_GL_GetCurrentWindow();
+    previous_context = SDL_GL_GetCurrentContext();
 
     SDL_GL_MakeCurrent(window, opengl_context);
 
@@ -65,13 +65,13 @@ SDL3OpenGLRendererBackend::~SDL3OpenGLRendererBackend() {
     if (framebuffer != 0)
         glDeleteFramebuffers(1, &framebuffer);
 
-    if (colorTexture != 0)
-        glDeleteTextures(1, &colorTexture);
+    if (color_texture != 0)
+        glDeleteTextures(1, &color_texture);
 
-    if (depthStencil != 0)
-        glDeleteRenderbuffers(1, &depthStencil);
+    if (depth_stencil != 0)
+        glDeleteRenderbuffers(1, &depth_stencil);
 
-    SDL_GL_MakeCurrent(previousWindow, previousContext);
+    SDL_GL_MakeCurrent(previous_window, previous_context);
 
     if (opengl_context != nullptr)
         SDL_GL_DestroyContext(opengl_context);
@@ -84,30 +84,30 @@ void SDL3OpenGLRendererBackend::resize(const mbgl::Size size) {
 
     // magic opengl shit, do not touch unless you understand opengl - Will Free
 
-    if (colorTexture != 0)
-        glDeleteTextures(1, &colorTexture);
+    if (color_texture != 0)
+        glDeleteTextures(1, &color_texture);
 
-    if (depthStencil != 0)
-        glDeleteRenderbuffers(1, &depthStencil);
+    if (depth_stencil != 0)
+        glDeleteRenderbuffers(1, &depth_stencil);
 
     if (framebuffer != 0)
         glDeleteFramebuffers(1, &framebuffer);
 
     glGenFramebuffers(1, &framebuffer);
 
-    glGenTextures(1, &colorTexture);
-    glBindTexture(GL_TEXTURE_2D, colorTexture);
+    glGenTextures(1, &color_texture);
+    glBindTexture(GL_TEXTURE_2D, color_texture);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, size.width, size.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
 
-    glGenRenderbuffers(1, &depthStencil);
-    glBindRenderbuffer(GL_RENDERBUFFER, depthStencil);
+    glGenRenderbuffers(1, &depth_stencil);
+    glBindRenderbuffer(GL_RENDERBUFFER, depth_stencil);
     glRenderbufferStorage(GL_RENDERBUFFER,GL_DEPTH24_STENCIL8, size.width, size.height);
 
     glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
-    glFramebufferTexture2D(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT0,GL_TEXTURE_2D, colorTexture, 0);
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, depthStencil);
+    glFramebufferTexture2D(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT0,GL_TEXTURE_2D, color_texture, 0);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, depth_stencil);
 
     const auto status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
     assert(status == GL_FRAMEBUFFER_COMPLETE);
@@ -121,15 +121,15 @@ void SDL3OpenGLRendererBackend::resize(const mbgl::Size size) {
 }
 
 void SDL3OpenGLRendererBackend::swapContext() {
-    previousWindow = SDL_GL_GetCurrentWindow();
-    previousContext = SDL_GL_GetCurrentContext();
+    previous_window = SDL_GL_GetCurrentWindow();
+    previous_context = SDL_GL_GetCurrentContext();
 
     if (!SDL_GL_MakeCurrent(window, opengl_context))
         throw std::runtime_error(SDL_GetError());
 }
 
 void SDL3OpenGLRendererBackend::restoreContext() const {
-    if (!SDL_GL_MakeCurrent(previousWindow, previousContext))
+    if (!SDL_GL_MakeCurrent(previous_window, previous_context))
         throw std::runtime_error(SDL_GetError());
 }
 

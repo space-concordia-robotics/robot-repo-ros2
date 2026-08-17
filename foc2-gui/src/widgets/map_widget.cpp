@@ -38,7 +38,7 @@ static std::optional<std::filesystem::path> cacheDirectory(const std::string& na
     return std::nullopt;
 }
 
-static std::optional<std::string> getApiKey() {
+static std::optional<std::string> maptilerApiKey() {
     // TODO 2026-08-10 (Will Free): add config
     // TODO 2026-08-10 (Will Free): add other fallbacks
 
@@ -55,14 +55,14 @@ static std::string readFile(const std::string& filename) {
         data << file.rdbuf();
         return data.str();
     } else {
-        throw std::runtime_error(std::string("Cannot read file ") + filename);
+        throw std::runtime_error(fmt::format("Cannot read file {}", filename));
     }
 }
 
 static std::string readStyleJson() {
-    const auto styleJsonPath = RESOURCES_DIR / "style.json";
+    static const auto STYLE_JSON_PATH = RESOURCES_DIR / "style.json";
 
-    return readFile(styleJsonPath);
+    return readFile(STYLE_JSON_PATH);
 }
 
 MapWidget::MapWidget(ImApplication& application)
@@ -72,23 +72,23 @@ MapWidget::~MapWidget() {
     // delete the map, then the frontend, then the backend.
     // they must be deleted in this order to properly clean up their resources.
     map = nullptr;
-    rendererFrontend = nullptr;
+    renderer_frontend = nullptr;
     backend = nullptr;
 }
 
 static constexpr auto MAXIMUM_CACHE_SIZE = 2uL * 1024 * 1024 * 1024;
 
 void MapWidget::onInit() {
-    const auto apiKey = getApiKey();
-    if (!apiKey.has_value())
+    const auto api_key = maptilerApiKey();
+    if (!api_key.has_value())
         throw std::runtime_error("Could not find api key for maptiler");
 
-    const auto mapTilerConfiguration = mbgl::TileServerOptions::MapTilerConfiguration();
-    auto resourceOptions = mbgl::ResourceOptions::Default();
-    resourceOptions
-        .withApiKey(apiKey.value())
+    const auto map_tiler_configuration = mbgl::TileServerOptions::MapTilerConfiguration();
+    auto resource_options = mbgl::ResourceOptions::Default();
+    resource_options
+        .withApiKey(api_key.value())
         .withMaximumCacheSize(MAXIMUM_CACHE_SIZE)
-        .withTileServerOptions(mapTilerConfiguration);
+        .withTileServerOptions(map_tiler_configuration);
 
     if (const auto cache_directory = cacheDirectory(FOC2_PACKAGE_NAME); !cache_directory.has_value()) {
         logger.error("Cannot use offline map cache: Could not find $XDG_CACHE_HOME or $HOME. you may be using an unsupported operating system.");
@@ -98,45 +98,45 @@ void MapWidget::onInit() {
         if (ec) {
             logger.error("Cannot use offline map cache: Could not create directory {} due to OS error: {} ({})", ec.message(), ec.value());
         } else {
-            resourceOptions.withCachePath(cache_directory.value() / "cache.sqlite");
+            resource_options.withCachePath(cache_directory.value() / "cache.sqlite");
         }
     }
 
-    const auto clientOptions = mbgl::ClientOptions();
-    auto orderedStyles = mapTilerConfiguration.defaultStyles();
+    const auto client_options = mbgl::ClientOptions();
+    auto ordered_styles = map_tiler_configuration.defaultStyles();
 
     backend = std::make_unique<SDL3OpenGLRendererBackend>(SDL_GL_GetCurrentWindow(), SDL_GL_GetCurrentContext());
 
     backend->resize(size);
 
-    const auto databaseFileSource = std::static_pointer_cast<mbgl::DatabaseFileSource>(
-        mbgl::FileSourceManager::get()->getFileSource(mbgl::FileSourceType::Database, resourceOptions, clientOptions)
+    const auto database_file_source = std::static_pointer_cast<mbgl::DatabaseFileSource>(
+        mbgl::FileSourceManager::get()->getFileSource(mbgl::FileSourceType::Database, resource_options, client_options)
     );
-    databaseFileSource->setOfflineMapboxTileCountLimit(100'000);
-    databaseFileSource->setMaximumAmbientCacheSize(MAXIMUM_CACHE_SIZE, [](const std::exception_ptr&) {});
+    database_file_source->setOfflineMapboxTileCountLimit(100'000);
+    database_file_source->setMaximumAmbientCacheSize(MAXIMUM_CACHE_SIZE, [](const std::exception_ptr&) {});
 
     // TODO 2026-08-02 (Will Free): offline mode
-    // const auto onlineFileSource = mbgl::FileSourceManager::get()->getFileSource(mbgl::FileSourceType::Network, resourceOptions, clientOptions);
+    // const auto online_file_source = mbgl::FileSourceManager::get()->getFileSource(mbgl::FileSourceType::Network, resource_options, client_options);
     //
     // if constexpr (false) {
-    //     if (onlineFileSource) {
-    //         onlineFileSource->setProperty("online-status", false);
+    //     if (online_file_source) {
+    //         online_file_source->setProperty("online-status", false);
     //         logger.info("Application launched in offline mode");
     //     } else {
     //         logger.warn("Network FileSource is not available, only local requests are supported");
     //     }
     // }
 
-    rendererFrontend = std::make_unique<SDL3OpenGLRendererFrontend>(std::make_unique<mbgl::Renderer>(*backend, 1.0), *this, *backend);
+    renderer_frontend = std::make_unique<SDL3OpenGLRendererFrontend>(std::make_unique<mbgl::Renderer>(*backend, 1.0), *this, *backend);
 
-    auto actionJournalOptions = mbgl::util::ActionJournalOptions();
+    auto action_journal_options = mbgl::util::ActionJournalOptions();
     // TODO 2026-08-10 (Will Free): support for action journal
     // if (false) {
-    //     const std::string actionJournalDir = args::get(actionJournalDirValue);
-    //     actionJournalOptions
+    //     const std::string action_journal_dir = args::get(actionJournalDirValue);
+    //     action_journal_options
     //         .enable(true)
-    //         .withPath(actionJournalDir);
-    //     mbgl::Log::Info(mbgl::Event::General, "Action journal enabled. Logs will be written to: " + actionJournalDir);
+    //         .withPath(action_journal_dir);
+    //     mbgl::Log::Info(mbgl::Event::General, "Action journal enabled. Logs will be written to: " + action_journal_dir);
     // }
 
     auto mapOptions = mbgl::MapOptions();
@@ -149,25 +149,24 @@ void MapWidget::onInit() {
 
 
     map = std::make_unique<mbgl::Map>(
-        *rendererFrontend,
+        *renderer_frontend,
         *this,
         mapOptions,
-        resourceOptions,
-        clientOptions,
-        actionJournalOptions
+        resource_options,
+        client_options,
+        action_journal_options
     );
 
     // TODO 2026-08-10 (Will Free): settings for toggling some of the different map layers
     // TODO 2026-08-11 (Will Free): settings to swap between using maptiler & ArcGIS
     map->getStyle().loadJSON(readStyleJson());
-    // map->getStyle().loadURL("https://tiles.openfreemap.org/styles/liberty");
 }
 
 void MapWidget::onShutdown() {
     // delete the map, then the frontend, then the backend.
     // they must be deleted in this order to properly clean up their resources.
     map = nullptr;
-    rendererFrontend = nullptr;
+    renderer_frontend = nullptr;
     backend = nullptr;
 }
 
@@ -178,25 +177,25 @@ void MapWidget::draw() {
     const auto focused = ImGui::IsWindowFocused();
 
     if (!focused && focused != this->focused) {
-        rendererFrontend->getRenderer().reduceMemoryUse();
+        renderer_frontend->getRenderer().reduceMemoryUse();
     }
     this->focused = focused;
 
-    runLoop.runOnce();
+    run_loop.runOnce();
 
-    if (dirty && rendererFrontend) {
+    if (dirty && renderer_frontend) {
         dirty = false;
 
         auto scope = mbgl::gfx::BackendScope(*backend);
 
-        rendererFrontend->render();
+        renderer_frontend->render();
 
         // TODO 2026-08-10 (Will Free): don't invalidate every frame, only invalidate when we actually need to re-render the map
         invalidate();
     }
 
     // update time after render
-    runLoop.updateTime();
+    run_loop.updateTime();
 
     const auto widget_origin = ImGui::GetCursorScreenPos();
     const auto widget_size = ImGui::GetContentRegionAvail();
@@ -219,12 +218,12 @@ void MapWidget::draw() {
 void MapWidget::handleResize() {
     const auto available = ImGui::GetContentRegionAvail();
 
-    const auto availableSize = tf2::convert<mbgl::Size>(available);
+    const auto available_size = tf2::convert<mbgl::Size>(available);
 
-    if (availableSize == size)
+    if (available_size == size)
         return;
 
-    size = availableSize;
+    size = available_size;
 
     map->setSize(size);
 
