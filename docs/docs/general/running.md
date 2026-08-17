@@ -24,10 +24,10 @@ In order to connect to the robot, you need to do the following:
     Add the following to your `~/.ssh/config` (create the file & directory if it does not exist):
     ``` title="~/.ssh/config"
     Host rover
-    HostName 10.240.0.10
-    Port 22
-    User nvidia
-    Password [password here]
+        HostName 10.240.0.10
+        Port 22
+        User nvidia
+        Password [password here]
     ```
     If you have an ssh key, you can copy it over to the jetson using `ssh-copy-id nvidia@10.240.0.10`,
     and then replace `Password [password here]` with `IdentityFile ~/.ssh/id_ed25519`
