@@ -7,8 +7,6 @@
 #include "foc2-gui/osm/osm_tile_source_caching.hpp"
 
 std::optional<std::filesystem::path> cacheDirectory(const std::string& name) {
-    // return std::nullopt;
-
     // TODO 2026-05-28 (Will Free): support like osx/windows at some point.
     if (const char* xdg = std::getenv("XDG_CACHE_HOME"))
         return std::filesystem::path(xdg) / name;
@@ -18,7 +16,8 @@ std::optional<std::filesystem::path> cacheDirectory(const std::string& name) {
         return std::nullopt;
 }
 
-MapWidget::MapWidget(ImApplication& application) : UiWidget(application) {}
+MapWidget::MapWidget(ImApplication& application)
+    : UiWidget(application) {}
 
 void MapWidget::onInit() {
     std::shared_ptr<ImOsm::ITileLoader> tile_loader;

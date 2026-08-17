@@ -38,23 +38,23 @@
 
 template <typename T>
 class CircularBuffer {
-    typedef T* pointer;
-    typedef const T* const_pointer;
-    typedef T& reference;
-    typedef const T& const_reference;
-    typedef size_t size_type;
-    typedef ptrdiff_t difference_type;
+    using pointer = T*;
+    using const_pointer = T*;
+    using reference = T&;
+    using const_reference = T&;
+    using size_type = size_t;
+    using difference_type = ptrdiff_t;
     template <bool isConst>
     struct BufferIterator;
 
 public:
-    typedef T value_type;
+    using value_type = T;
 
     explicit CircularBuffer(const size_t size)
-        : _buff{std::unique_ptr<T[]>(new value_type[size])}, _max_size{size} {}
+        : _buff{std::unique_ptr<T[]>(new value_type[size])}, _max_size{size} {} // NOLINT(*-avoid-c-arrays)
 
     CircularBuffer(const CircularBuffer& other)
-        : _buff{std::unique_ptr<T[]>(new value_type[other._max_size])},
+        : _buff{std::unique_ptr<T[]>(new value_type[other._max_size])}, // NOLINT(*-avoid-c-arrays)
           _head{other._head},
           _tail{other._tail},
           _size{other._size},
@@ -62,6 +62,7 @@ public:
         std::copy(other.data(), other.data() + _max_size, _buff.get());
     }
 
+    ~CircularBuffer() = default;
 
     CircularBuffer& operator=(const CircularBuffer& other) {
         if (this != &other) {
@@ -134,8 +135,8 @@ public:
     const_reference at(size_type index) const;
     reference at(size_type index);
 
-    typedef BufferIterator<false> iterator;
-    typedef BufferIterator<true> const_iterator;
+    using iterator = BufferIterator<false>;
+    using const_iterator = BufferIterator<true>;
 
     iterator begin();
     const_iterator begin() const;
@@ -152,7 +153,7 @@ private:
     void _increment_bufferstate();
     void _decrement_bufferstate();
     mutable std::mutex _mtx;
-    std::unique_ptr<value_type[]> _buff;
+    std::unique_ptr<value_type[]> _buff; // NOLINT(*-avoid-c-arrays)
     size_type _head = 0;
     size_type _tail = 0;
     size_type _size = 0;
@@ -161,12 +162,12 @@ private:
     template <bool isConst = false>
     struct BufferIterator {
         friend class CircularBuffer;
-        typedef std::random_access_iterator_tag iterator_category;
-        typedef ptrdiff_t difference_type;
-        typedef T value_type;
-        typedef std::conditional_t<isConst, const value_type&, value_type&> reference;
-        typedef std::conditional_t<isConst, const value_type*, value_type*> pointer;
-        typedef std::conditional_t<isConst, const CircularBuffer*, CircularBuffer*> cbuf_pointer;
+        using iterator_category = std::random_access_iterator_tag;
+        using difference_type = ptrdiff_t;
+        using value_type = T;
+        using reference = std::conditional_t<isConst, const value_type&, value_type&>;
+        using pointer = std::conditional_t<isConst, const value_type*, value_type*>;
+        using cbuf_pointer = std::conditional_t<isConst, const CircularBuffer*, CircularBuffer*>;
 
     private:
         cbuf_pointer _ptrToBuffer;
@@ -185,6 +186,7 @@ private:
               _index{0},
               _reverse{false} {}
 
+        // ReSharper disable once CppNonExplicitConvertingConstructor
         BufferIterator(const BufferIterator<>& it)
             : _ptrToBuffer{it._ptrToBuffer},
               _offset{it._offset},
@@ -299,7 +301,7 @@ private:
 
 template <typename T>
 void CircularBuffer<T>::push_back(const T& data) {
-    std::lock_guard _lck(_mtx);
+    std::scoped_lock lock(_mtx);
     // if (full())
     //     _buff[_tail].~T();
     _buff[_head] = data;
@@ -308,14 +310,14 @@ void CircularBuffer<T>::push_back(const T& data) {
 
 template <typename T>
 void CircularBuffer<T>::push_back(T&& data) noexcept {
-    std::lock_guard _lck(_mtx);
+    std::scoped_lock lock(_mtx);
     _buff[_head] = std::move(data);
     _increment_bufferstate();
 }
 
 template <typename T>
 void CircularBuffer<T>::pop_front() {
-    std::lock_guard _lck(_mtx);
+    std::scoped_lock lock(_mtx);
     if (empty())
         throw std::length_error("pop_front called on empty buffer");
     _decrement_bufferstate();
@@ -323,7 +325,7 @@ void CircularBuffer<T>::pop_front() {
 
 template <typename T>
 CircularBuffer<T>::reference CircularBuffer<T>::front() {
-    std::lock_guard _lck(_mtx);
+    std::scoped_lock lock(_mtx);
     if (empty())
         throw std::length_error("front function called on empty buffer");
     return _buff[_tail];
@@ -331,7 +333,7 @@ CircularBuffer<T>::reference CircularBuffer<T>::front() {
 
 template <typename T>
 CircularBuffer<T>::reference CircularBuffer<T>::back() {
-    std::lock_guard _lck(_mtx);
+    std::scoped_lock lock(_mtx);
     if (empty())
         throw std::length_error("back function called on empty buffer");
     return _head == 0 ? _buff[_max_size - 1] : _buff[_head - 1];
@@ -339,7 +341,7 @@ CircularBuffer<T>::reference CircularBuffer<T>::back() {
 
 template <typename T>
 CircularBuffer<T>::const_reference CircularBuffer<T>::front() const {
-    std::lock_guard _lck(_mtx);
+    std::scoped_lock lock(_mtx);
     if (empty())
         throw std::length_error("front function called on empty buffer");
     return _buff[_tail];
@@ -347,7 +349,7 @@ CircularBuffer<T>::const_reference CircularBuffer<T>::front() const {
 
 template <typename T>
 CircularBuffer<T>::const_reference CircularBuffer<T>::back() const {
-    std::lock_guard _lck(_mtx);
+    std::scoped_lock lock(_mtx);
     if (empty())
         throw std::length_error("back function called on empty buffer");
     return _head == 0 ? _buff[_max_size - 1] : _buff[_head - 1];
@@ -355,7 +357,7 @@ CircularBuffer<T>::const_reference CircularBuffer<T>::back() const {
 
 template <typename T>
 void CircularBuffer<T>::clear() {
-    std::lock_guard _lck(_mtx);
+    std::scoped_lock lock(_mtx);
     _head = _tail = _size = 0;
 }
 
@@ -377,16 +379,16 @@ CircularBuffer<T>::size_type CircularBuffer<T>::capacity() const {
 
 template <typename T>
 CircularBuffer<T>::size_type CircularBuffer<T>::size() const {
-    std::lock_guard _lck(_mtx);
+    std::scoped_lock lock(_mtx);
     return _size;
 }
 
 template <typename T>
 bool CircularBuffer<T>::position() const {
-    std::lock_guard _lck(_mtx);
+    std::scoped_lock lock(_mtx);
     if (empty())
         throw std::length_error("front function called on empty buffer");
-    return _tail;
+    return _tail != 0u;
 }
 
 template <typename T>
@@ -396,7 +398,7 @@ CircularBuffer<T>::const_pointer CircularBuffer<T>::first() const {
 
 template <typename T>
 CircularBuffer<T>::const_reference CircularBuffer<T>::operator[](size_t index) const {
-    std::lock_guard _lck(_mtx);
+    std::scoped_lock lock(_mtx);
     if (index < 0 || index >= _size)
         throw std::out_of_range("Index is out of Range of buffer size");
     index += _tail;
@@ -406,7 +408,7 @@ CircularBuffer<T>::const_reference CircularBuffer<T>::operator[](size_t index) c
 
 template <typename T>
 CircularBuffer<T>::reference CircularBuffer<T>::operator[](size_t index) {
-    std::lock_guard _lck(_mtx);
+    std::scoped_lock lock(_mtx);
     if (index < 0 || index >= _size)
         throw std::out_of_range("Index is out of Range of buffer size");
     index += _tail;
@@ -416,7 +418,7 @@ CircularBuffer<T>::reference CircularBuffer<T>::operator[](size_t index) {
 
 template <typename T>
 CircularBuffer<T>::const_reference CircularBuffer<T>::at(size_t index) const {
-    std::lock_guard _lck(_mtx);
+    std::scoped_lock lock(_mtx);
     if (index < 0 || index >= _size)
         throw std::out_of_range("Index is out of Range of buffer size");
     index += _tail;
@@ -426,7 +428,7 @@ CircularBuffer<T>::const_reference CircularBuffer<T>::at(size_t index) const {
 
 template <typename T>
 CircularBuffer<T>::reference CircularBuffer<T>::at(size_t index) {
-    std::lock_guard _lck(_mtx);
+    std::scoped_lock lock(_mtx);
     if (index < 0 || index >= _size)
         throw std::out_of_range("Index is out of Range of buffer size");
     index += _tail;
@@ -436,7 +438,7 @@ CircularBuffer<T>::reference CircularBuffer<T>::at(size_t index) {
 
 template <typename T>
 CircularBuffer<T>::iterator CircularBuffer<T>::begin() {
-    std::lock_guard _lck(_mtx);
+    std::scoped_lock lock(_mtx);
     iterator iter;
     iter._ptrToBuffer = this;
     iter._offset = _tail;
@@ -447,7 +449,7 @@ CircularBuffer<T>::iterator CircularBuffer<T>::begin() {
 
 template <typename T>
 CircularBuffer<T>::const_iterator CircularBuffer<T>::begin() const {
-    std::lock_guard _lck(_mtx);
+    std::scoped_lock lock(_mtx);
     const_iterator iter;
     iter._ptrToBuffer = this;
     iter._offset = _tail;
@@ -458,7 +460,7 @@ CircularBuffer<T>::const_iterator CircularBuffer<T>::begin() const {
 
 template <typename T>
 CircularBuffer<T>::iterator CircularBuffer<T>::end() {
-    std::lock_guard _lck(_mtx);
+    std::scoped_lock lock(_mtx);
     iterator iter;
     iter._ptrToBuffer = this;
     iter._offset = _tail;
@@ -469,7 +471,7 @@ CircularBuffer<T>::iterator CircularBuffer<T>::end() {
 
 template <typename T>
 CircularBuffer<T>::const_iterator CircularBuffer<T>::end() const {
-    std::lock_guard _lck(_mtx);
+    std::scoped_lock lock(_mtx);
     const_iterator iter;
     iter._ptrToBuffer = this;
     iter._offset = _tail;
@@ -480,7 +482,7 @@ CircularBuffer<T>::const_iterator CircularBuffer<T>::end() const {
 
 template <typename T>
 CircularBuffer<T>::const_iterator CircularBuffer<T>::cbegin() const noexcept {
-    std::lock_guard _lck(_mtx);
+    std::scoped_lock lock(_mtx);
     const_iterator iter;
     iter._ptrToBuffer = this;
     iter._offset = _tail;
@@ -491,7 +493,7 @@ CircularBuffer<T>::const_iterator CircularBuffer<T>::cbegin() const noexcept {
 
 template <typename T>
 CircularBuffer<T>::const_iterator CircularBuffer<T>::cend() const noexcept {
-    std::lock_guard _lck(_mtx);
+    std::scoped_lock lock(_mtx);
     const_iterator iter;
     iter._ptrToBuffer = this;
     iter._offset = _tail;
@@ -502,7 +504,7 @@ CircularBuffer<T>::const_iterator CircularBuffer<T>::cend() const noexcept {
 
 template <typename T>
 CircularBuffer<T>::iterator CircularBuffer<T>::rbegin() noexcept {
-    std::lock_guard _lck(_mtx);
+    std::scoped_lock lock(_mtx);
     iterator iter;
     iter._ptrToBuffer = this;
     iter._offset = _tail;
@@ -513,7 +515,7 @@ CircularBuffer<T>::iterator CircularBuffer<T>::rbegin() noexcept {
 
 template <typename T>
 CircularBuffer<T>::const_iterator CircularBuffer<T>::rbegin() const noexcept {
-    std::lock_guard _lck(_mtx);
+    std::scoped_lock lock(_mtx);
     const_iterator iter;
     iter._ptrToBuffer = this;
     iter._offset = _tail;
@@ -524,7 +526,7 @@ CircularBuffer<T>::const_iterator CircularBuffer<T>::rbegin() const noexcept {
 
 template <typename T>
 CircularBuffer<T>::iterator CircularBuffer<T>::rend() noexcept {
-    std::lock_guard _lck(_mtx);
+    std::scoped_lock lock(_mtx);
     iterator iter;
     iter._ptrToBuffer = this;
     iter._offset = _tail;
@@ -535,7 +537,7 @@ CircularBuffer<T>::iterator CircularBuffer<T>::rend() noexcept {
 
 template <typename T>
 CircularBuffer<T>::const_iterator CircularBuffer<T>::rend() const noexcept {
-    std::lock_guard _lck(_mtx);
+    std::scoped_lock lock(_mtx);
     const_iterator iter;
     iter._ptrToBuffer = this;
     iter._offset = _tail;

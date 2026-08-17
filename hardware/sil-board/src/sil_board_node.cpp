@@ -11,7 +11,8 @@ static constexpr uint8_t SIL_DLC = 6;
 
 class SilBoardNode : public rclcpp::Node {
 public:
-    explicit SilBoardNode(const rclcpp::NodeOptions& options = rclcpp::NodeOptions()) : Node("sil_board_node", options), logger(this->get_logger()) {
+    explicit SilBoardNode(const rclcpp::NodeOptions& options = rclcpp::NodeOptions())
+        : Node("sil_board_node", options), logger(this->get_logger()) {
         const auto can_path = this->declare_parameter<std::string>("can_interface", "can0");
         raw_can_id = static_cast<uint32_t>(this->declare_parameter<int>("sil_can_id", SIL_DEFAULT_CAN_ID));
 

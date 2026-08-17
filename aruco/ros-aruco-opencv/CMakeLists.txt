@@ -1,25 +1,24 @@
 cmake_minimum_required(VERSION 3.22)
 project(ros_aruco_opencv)
 
-if (POLICY CMP0167)
-    cmake_policy(SET CMP0167 NEW)
-endif ()
+find_package(scrb_cmake_utils REQUIRED)
 
-if (NOT CMAKE_CXX_STANDARD)
-    set(CMAKE_CXX_STANDARD 20)
-endif ()
+## DEPENDENCIES
 
-if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    add_compile_options(-Wall -Wextra -Wpedantic)
-endif ()
+CPM()
 
-set(DEPENDENCIES
-        rclcpp
+CPMAddMagicEnum()
+
+find_package(ament_cmake REQUIRED)
+
+find_dependencies(
         rclcpp_components
         rclcpp_lifecycle
 
         ros_aruco_opencv_msgs
         tf2_geometry_msgs
+
+        "OpenCV ${OpenCV_VERSION} REQUIRED COMPONENTS aruco"
 
         cv_bridge
         tf2_ros
@@ -29,31 +28,13 @@ set(DEPENDENCIES
         magic_enum
 )
 
-include(../../cmake/CPM.cmake)
-
-# find dependencies
-CPMAddPackage("gh:Neargye/magic_enum#v0.9.7")
-
-find_package(ament_cmake REQUIRED)
-find_package(backward_ros REQUIRED)
-#find_package(magic_enum REQUIRED)
-
-foreach (dependency IN ITEMS ${DEPENDENCIES})
-    find_package(${dependency} REQUIRED)
-endforeach ()
-
-find_package(OpenCV ${OpenCV_VERSION} REQUIRED COMPONENTS aruco)
-
-set(DEPENDENCY_TARGETS "")
-foreach (dependency IN LISTS DEPENDENCIES)
-    list(APPEND DEPENDENCY_TARGETS ${${dependency}_TARGETS})
-endforeach ()
-
 list(APPEND DEPENDENCY_TARGETS ${YAML_CPP_LIBRARIES})
 list(APPEND DEPENDENCY_TARGETS opencv_aruco)
 list(APPEND DEPENDENCY_TARGETS magic_enum::magic_enum)
 
-add_library(${PROJECT_NAME} SHARED
+## COMPILE
+
+scrb_add_library(${PROJECT_NAME} SHARED
         src/aruco_tracker.cpp
         src/detector.cpp
         src/board_loader.cpp
@@ -62,14 +43,18 @@ add_library(${PROJECT_NAME} SHARED
 )
 add_library(${PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
-target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_23)
-
 target_include_directories(${PROJECT_NAME} PRIVATE
         $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include>
 )
 
 target_link_libraries(${PROJECT_NAME} PUBLIC ${DEPENDENCY_TARGETS})
+
+scrb_target_precompile_headers(${PROJECT_NAME} PRIVATE
+        <rclcpp/rclcpp.hpp>
+        <opencv2/opencv.hpp>
+        <yaml-cpp/yaml.h>
+)
 
 rclcpp_components_register_node(${PROJECT_NAME}
         PLUGIN "ros_aruco_opencv::ArucoTracker"
@@ -80,6 +65,8 @@ rclcpp_components_register_node(${PROJECT_NAME}
         EXECUTABLE "aruco_tracker_autostart"
 )
 
+## INSTALL
+
 install(
         TARGETS ${PROJECT_NAME}
         ARCHIVE DESTINATION lib
@@ -88,22 +75,22 @@ install(
 )
 
 install(
-        DIRECTORY
-        config
-        launch
+        DIRECTORY config launch
         DESTINATION share/${PROJECT_NAME}
 )
 
 install(
-        PROGRAMS
-        scripts/create_board
-        scripts/create_marker
+        PROGRAMS scripts/create_board scripts/create_marker
         DESTINATION lib/${PROJECT_NAME}
 )
+
+## TESTING
 
 if (BUILD_TESTING)
     find_package(ament_lint_auto REQUIRED)
     ament_lint_auto_find_test_dependencies()
 endif ()
+
+## EXPORTS
 
 ament_package()

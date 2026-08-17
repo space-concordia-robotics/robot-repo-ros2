@@ -13,12 +13,12 @@ public:
     virtual ~UiOverlayable() = default;
 
     virtual void onInit() const {
-        for (auto& [_, overlay] : overlays)
+        for (auto&& [_, overlay] : overlays)
             overlay->onInit();
     }
 
     virtual void onShutdown() const {
-        for (auto& [_, overlay] : overlays)
+        for (auto&& [_, overlay] : overlays)
             overlay->onShutdown();
     }
 

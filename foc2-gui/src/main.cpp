@@ -1,13 +1,13 @@
 #define IMGUI_USER_CONFIG "foc2-gui/imgui_user.hpp"
 
-#include <filesystem>
 #include <IconsFontAwesome7.h>
+#include <filesystem>
 #include <imgui.h>
 #include <lunasvg.h>
+#include <SDL3/SDL.h>
 #include <ament_index_cpp/get_package_share_directory.hpp>
 #include <rclcpp/executors.hpp>
 #include <rclcpp/utilities.hpp>
-#include <SDL3/SDL.h>
 
 #include "foc2-gui/im_application.hpp"
 #include "foc2-gui/resources.hpp"
@@ -40,7 +40,8 @@ SDL_Surface* renderSvg(const std::unique_ptr<lunasvg::Document>& svg, const int 
         SDL_PIXELFORMAT_ARGB8888
     );
 
-    if (!surface) return nullptr;
+    if (!surface)
+        return nullptr;
 
     // TODO 2026-05-24 (Will Free): I'm just going to pretend this can never error
     SDL_LockSurface(surface);
@@ -96,7 +97,8 @@ static constexpr auto BOTTOM_LEFT_STREAM_WIDGET_NAME = "Bottom Left Stream";
 
 class FOC2Application : public ImApplication {
 public:
-    FOC2Application() : ImApplication("foc2_gui", "SCRB C2 Station") {}
+    FOC2Application()
+        : ImApplication("foc2_gui", "SCRB C2 Station") {}
 
     FOC2Application(const FOC2Application& other) = delete;
     FOC2Application(FOC2Application&& other) noexcept = delete;

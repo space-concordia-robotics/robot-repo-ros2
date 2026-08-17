@@ -1,12 +1,11 @@
-import os
 
-from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
-from launch.actions import RegisterEventHandler
-from launch.actions import TimerAction
+from launch.actions import RegisterEventHandler, TimerAction
 from launch.event_handlers import OnProcessStart
+from launch.substitutions import PathJoinSubstitution
 from launch_param_builder import ParameterBuilder
 from launch_ros.actions import Node
+from launch_ros.substitutions import FindPackageShare
 from moveit_configs_utils import MoveItConfigsBuilder
 
 
@@ -21,14 +20,10 @@ def generate_launch_description():
     servo_params = {
         "moveit_servo": ParameterBuilder("rover_arm_moveit_config")
         .yaml("config/servo_config.yaml")
-        .to_dict()
+        .to_dict(),
     }
 
-    ros2_controllers_path = os.path.join(
-        get_package_share_directory("rover_arm_moveit_config"),
-        "config",
-        "ros2_controllers.yaml",
-    )
+    ros2_controllers_path = PathJoinSubstitution([FindPackageShare("rover_arm_moveit_config"), "config", "ros2_controllers.yaml"])
     ros2_control_node = Node(
         package="controller_manager",
         executable="ros2_control_node",
@@ -63,7 +58,7 @@ def generate_launch_description():
         event_handler=OnProcessStart(
             target_action=ros2_control_node,
             on_start=[jsb_spawner, rover_arm_spawner],
-        )
+        ),
     )
 
     servo_node = Node(
@@ -83,5 +78,5 @@ def generate_launch_description():
             delayed_controller_manager,
             delayed_spawners,
             servo_node,
-        ]
+        ],
     )

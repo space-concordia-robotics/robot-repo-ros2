@@ -43,9 +43,9 @@ namespace ImOsm {
         ImPlot::PushStyleVar(ImPlotStyleVar_PlotBorderSize, 0.0f);
         ImPlot::PushStyleVar(ImPlotStyleVar_PlotPadding, ImVec2(0, 0));
 
-        if (ImPlot::BeginPlot("##ImOsmMapPlot", ImVec2(-1, -1), impl->PLOT_FLAGS)) {
-            ImPlot::SetupAxis(ImAxis_X1, nullptr, impl->X_FLAGS);
-            ImPlot::SetupAxis(ImAxis_Y1, nullptr, impl->Y_FLAGS);
+        if (ImPlot::BeginPlot("##ImOsmMapPlot", ImVec2(-1, -1), Impl::PLOT_FLAGS)) {
+            ImPlot::SetupAxis(ImAxis_X1, nullptr, Impl::X_FLAGS);
+            ImPlot::SetupAxis(ImAxis_Y1, nullptr, Impl::Y_FLAGS);
             ImPlot::SetupAxisLimitsConstraints(ImAxis_Y1, 0.0, 1.0);
 
             if (set_bounds != SetBounds::None) {
@@ -99,7 +99,7 @@ namespace ImOsm {
                 for (auto y = tile_index_box.min().y(); y <= tile_index_box.max().y() + 1; ++y) {
                     bmin.y = y * tile_size;
                     bmax.y = (y + 1) * tile_size;
-                    ImPlot::PlotImage("##", loader->tileAt(zoom_level, x, y), bmin, bmax, impl->UV0, impl->UV1, impl->TINT);
+                    ImPlot::PlotImage("##", loader->tileAt(zoom_level, x, y), bmin, bmax, Impl::UV0, Impl::UV1, Impl::TINT);
                 }
             }
 

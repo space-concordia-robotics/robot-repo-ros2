@@ -1,7 +1,7 @@
 #pragma once
 
-#include <geographic_msgs/msg/geo_point.hpp>
 #include <ros2_fmt_logger/logger.hpp>
+#include <geographic_msgs/msg/geo_point.hpp>
 
 #include "foc2-gui/im_application.hpp"
 #include "foc2-gui/osm/osm_irich_item.hpp"
@@ -18,7 +18,7 @@ public:
 
     void onInit();
 
-    void onShutdown() const;
+    void onShutdown();
 
     bool inBounds(Eigen::AlignedBox2d geo_box) const override;
 

@@ -9,7 +9,8 @@
 #include "foc2-gui/osm/osm_itile.hpp"
 
 namespace ImOsm {
-    TileSaver::TileSaver(std::optional<std::string> extension) : extension(std::move(extension)) {}
+    TileSaver::TileSaver(std::optional<std::string> extension)
+        : extension(std::move(extension)) {}
 
     TileSaver::TileSaver(std::filesystem::path base_path, std::optional<std::string> extension)
         : base_path(std::move(base_path)),
@@ -49,12 +50,14 @@ namespace ImOsm {
 
     // -----------------------------------------------------------------------------
 
-    TileSaverDir::TileSaverDir(std::optional<std::string> extension) : TileSaver(std::move(extension)) {}
+    TileSaverDir::TileSaverDir(std::optional<std::string> extension)
+        : TileSaver(std::move(extension)) {}
 
     TileSaverDir::TileSaverDir(
         std::filesystem::path base_path,
         std::optional<std::string> extension
-    ) : TileSaver(std::move(base_path), std::move(extension)) {}
+    )
+        : TileSaver(std::move(base_path), std::move(extension)) {}
 
     std::filesystem::path TileSaverDir::dirPath(const std::shared_ptr<ITile>& tile) const {
         return TileSourceFsDir::dirPath(basePath(), tile->getZ(), tile->getX(), tile->getY());
@@ -64,12 +67,14 @@ namespace ImOsm {
 
     // -----------------------------------------------------------------------------
 
-    TileSaverSubDir::TileSaverSubDir(std::optional<std::string> extension) : TileSaver(std::move(extension)) {}
+    TileSaverSubDir::TileSaverSubDir(std::optional<std::string> extension)
+        : TileSaver(std::move(extension)) {}
 
     TileSaverSubDir::TileSaverSubDir(
         std::filesystem::path base_path,
         std::optional<std::string> extension
-    ) : TileSaver(std::move(base_path), std::move(extension)) {}
+    )
+        : TileSaver(std::move(base_path), std::move(extension)) {}
 
     TileSaverSubDir::~TileSaverSubDir() = default;
 

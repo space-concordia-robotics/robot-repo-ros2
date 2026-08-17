@@ -4,6 +4,7 @@ FetchContent_Declare(
         imfonts
         GIT_REPOSITORY https://github.com/gorbatschow/ImFonts.git
         GIT_TAG a57d11888d23bcb9ba52a9902b69c386d26c0e8f
+        GIT_PROGRESS TRUE
 )
 
 FetchContent_MakeAvailable(imfonts)

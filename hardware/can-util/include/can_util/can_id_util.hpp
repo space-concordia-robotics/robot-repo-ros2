@@ -1,6 +1,6 @@
 #pragma once
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "constants.hpp"
 
@@ -10,6 +10,7 @@ namespace can_util {
         constexpr T one = 1;
         constexpr std::uint8_t width = std::numeric_limits<T>::digits;
 
+        // NOLINTNEXTLINE(*-avoid-nested-conditional-operator): we are doing some bad stuff here
         return bits == 0 ? 0 : bits >= width ? ~T{0} : (one << bits) - 1;
     }
 

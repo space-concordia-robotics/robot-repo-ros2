@@ -1,21 +1,25 @@
 #!/usr/bin/env python3
+# ruff: noqa: D101, D103, D107
+
 """Joystick-driven LED teleop for SIL board — presets, patterns, rate-limited."""
 
+import contextlib
 import math
 import sys
 import time
 from enum import IntEnum
 from pathlib import Path
 
-_script_dir = str(Path(__file__).resolve().parent)
-if _script_dir not in sys.path:
-    sys.path.insert(0, _script_dir)
-
 import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import Joy
 from sil_board.msg import LedCommand
-from sil_board_presets import PRESETS, PRESET_ORDER
+
+_script_dir = str(Path(__file__).resolve().parent)
+if _script_dir not in sys.path:
+    sys.path.insert(0, _script_dir)
+
+from sil_board_presets import PRESET_ORDER, PRESETS  # noqa: E402
 
 
 # ---------------------------------------------------------------------------
@@ -110,7 +114,7 @@ class SilBoardJoyTeleop(Node):
 
         self.get_logger().info(
             f"Joy teleop ready — topic {joy_topic}, publish to {led_topic}, "
-            f"max {max_publish_hz} Hz, skip_identical={self._skip_identical}"
+            f"max {max_publish_hz} Hz, skip_identical={self._skip_identical}",
         )
 
     # ----- joy callback (runs at /joy rate; only updates state) ------------
@@ -216,28 +220,27 @@ def _hsv_to_rgb(h: float, s: float = 1.0, v: float = 1.0) -> tuple[int, int, int
     q = v * (1.0 - f * s)
     t_ = v * (1.0 - (1.0 - f) * s)
     i %= 6
-    if i == 0:
-        r, g, b = v, t_, p
-    elif i == 1:
-        r, g, b = q, v, p
-    elif i == 2:
-        r, g, b = p, v, t_
-    elif i == 3:
-        r, g, b = p, q, v
-    elif i == 4:
-        r, g, b = t_, p, v
-    else:
-        r, g, b = v, p, q
+    match i:
+        case 0:
+            r, g, b = v, t_, p
+        case 1:
+            r, g, b = q, v, p
+        case 2:
+            r, g, b = p, v, t_
+        case 3:
+            r, g, b = p, q, v
+        case 4:
+            r, g, b = t_, p, v
+        case _:
+            r, g, b = v, p, q
     return int(r * 255), int(g * 255), int(b * 255)
 
 
-def main(args=None):
-    rclpy.init(args=args)
+def main():
+    rclpy.init()
     node = SilBoardJoyTeleop()
-    try:
+    with contextlib.suppress(KeyboardInterrupt):
         rclpy.spin(node)
-    except KeyboardInterrupt:
-        pass
     node.destroy_node()
     rclpy.shutdown()
 

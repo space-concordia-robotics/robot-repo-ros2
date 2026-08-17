@@ -1,11 +1,11 @@
 #pragma once
 
 #include "foc2-gui/overlay.hpp"
-#include "foc2-gui/util/imgui_util.hpp"
 
 class CrosshairOverlay : public UiOverlay {
 public:
-    explicit CrosshairOverlay(ImApplication& application) : UiOverlay(application) {}
+    explicit CrosshairOverlay(ImApplication& application)
+        : UiOverlay(application) {}
 
 protected:
     void onDraw(ImDrawList* draw_list, const ImRect& bounds) override {

@@ -1,17 +1,20 @@
 #!/usr/bin/env python3
+# ruff: noqa: D101, D102, D103, D107, T201
+
 """Teleop for SIL board LEDs — presets and custom R/G/B/brightness input."""
 
 import sys
 from pathlib import Path
 
+import rclpy
+from rclpy.node import Node
+from sil_board.msg import LedCommand
+
 _script_dir = str(Path(__file__).resolve().parent)
 if _script_dir not in sys.path:
     sys.path.insert(0, _script_dir)
 
-import rclpy
-from rclpy.node import Node
-from sil_board.msg import LedCommand
-from sil_board_presets import PRESETS
+from sil_board_presets import PRESETS  # noqa: E402
 
 HELP_TEXT = """
 SIL Board LED Teleop
@@ -40,7 +43,7 @@ class SilBoardTeleop(Node):
         msg.brightness = self._clamp(brightness)
         self.pub.publish(msg)
         self.get_logger().info(
-            f"Published LED: R={msg.r} G={msg.g} B={msg.b} BR={msg.brightness}"
+            f"Published LED: R={msg.r} G={msg.g} B={msg.b} BR={msg.brightness}",
         )
 
     @staticmethod
@@ -48,8 +51,8 @@ class SilBoardTeleop(Node):
         return max(0, min(255, int(v)))
 
 
-def main(args=None):
-    rclpy.init(args=args)
+def main():
+    rclpy.init()
     node = SilBoardTeleop()
     print(HELP_TEXT)
 
@@ -70,7 +73,7 @@ def main(args=None):
                 continue
 
             parts = line.replace(",", " ").split()
-            if len(parts) == 4:
+            if len(parts) == 4:  # noqa: PLR2004
                 try:
                     vals = [int(p) for p in parts]
                     node.send(*vals)

@@ -34,7 +34,8 @@ namespace ImOsm {
 
     // -----------------------------------------------------------------------------
 
-    TileSourceUrlArcImagery::TileSourceUrlArcImagery(const int request_limit, const bool preload) : TileSourceUrl(request_limit, preload) {}
+    TileSourceUrlArcImagery::TileSourceUrlArcImagery(const int request_limit, const bool preload)
+        : TileSourceUrl(request_limit, preload) {}
 
     std::string TileSourceUrlArcImagery::makeUrl(const int z, const int x, const int y) {
         static constexpr auto ARC_URL = "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile";
