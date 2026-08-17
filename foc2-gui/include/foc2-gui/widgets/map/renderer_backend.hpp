@@ -7,7 +7,7 @@
 
 class SDL3OpenGLRenderableResource;
 
-class SDL3OpenGLRendererBackend : public mbgl::gl::RendererBackend, public mbgl::gfx::Renderable {
+class SDL3OpenGLRendererBackend : public mln::gl::RendererBackend, public mln::gfx::Renderable {
 public:
     explicit SDL3OpenGLRendererBackend(SDL_Window* window, SDL_GLContext opengl_context);
     ~SDL3OpenGLRendererBackend() override;
@@ -24,7 +24,7 @@ public:
 
     void updateAssumedState() override;
 
-    void resize(mbgl::Size size);
+    void resize(mln::Size size);
 
     [[nodiscard]] GLuint texture() const {
         return color_texture;
@@ -34,7 +34,7 @@ protected:
     void activate() override;
     void deactivate() override;
 
-    mbgl::gl::ProcAddress getExtensionFunctionPointer(const char* name) override;
+    mln::gl::ProcAddress getExtensionFunctionPointer(const char* name) override;
 
 private:
     void swapContext();

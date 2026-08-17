@@ -10,11 +10,11 @@
 class SDL3OpenGLRendererFrontend;
 class SDL3OpenGLRendererBackend;
 
-namespace mbgl {
+namespace mln {
     class Map;
 }
 
-class MapWidget : public UiWidget, public mbgl::MapObserver {
+class MapWidget : public UiWidget, public mln::MapObserver {
 public:
     RCLCPP_SMART_PTR_ALIASES_ONLY(MapWidget)
 
@@ -31,7 +31,7 @@ public:
 
     void invalidate();
 
-    void onDidFailLoadingMap(mbgl::MapLoadError error, const std::string& reason) override;
+    void onDidFailLoadingMap(mln::MapLoadError error, const std::string& reason) override;
     void onRenderError(std::exception_ptr exception_ptr) override;
 
 protected:
@@ -44,7 +44,7 @@ private:
     void handleMouseMove() const;
     void handleMouseClick(bool in_bounds);
 
-    std::unique_ptr<mbgl::Map> map;
+    std::unique_ptr<mln::Map> map;
     std::unique_ptr<SDL3OpenGLRendererFrontend> renderer_frontend;
     std::unique_ptr<SDL3OpenGLRendererBackend> backend;
 
@@ -53,9 +53,9 @@ private:
     bool pitching = false;
 
     // the initial size should not be zero
-    mbgl::Size size = mbgl::Size(1, 1);
+    mln::Size size = mln::Size(1, 1);
 
-    mbgl::util::RunLoop run_loop;
+    mln::util::RunLoop run_loop;
 
     bool dirty = false;
 

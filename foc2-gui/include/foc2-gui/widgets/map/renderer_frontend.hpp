@@ -5,7 +5,7 @@
 
 class MapWidget;
 
-namespace mbgl {
+namespace mln {
     class Renderer;
     class UpdateParameters;
 
@@ -14,9 +14,9 @@ namespace mbgl {
     }
 }
 
-class SDL3OpenGLRendererFrontend : public mbgl::RendererFrontend {
+class SDL3OpenGLRendererFrontend : public mln::RendererFrontend {
 public:
-    SDL3OpenGLRendererFrontend(std::unique_ptr<mbgl::Renderer> renderer, MapWidget& widget, mbgl::gfx::RendererBackend& backend);
+    SDL3OpenGLRendererFrontend(std::unique_ptr<mln::Renderer> renderer, MapWidget& widget, mln::gfx::RendererBackend& backend);
     ~SDL3OpenGLRendererFrontend() override;
 
     SDL3OpenGLRendererFrontend(const SDL3OpenGLRendererFrontend&) = delete;
@@ -27,19 +27,19 @@ public:
 
     void reset() override;
 
-    void setObserver(mbgl::RendererObserver& observer) override;
+    void setObserver(mln::RendererObserver& observer) override;
 
-    void update(std::shared_ptr<mbgl::UpdateParameters> parameters) override;
+    void update(std::shared_ptr<mln::UpdateParameters> parameters) override;
 
-    [[nodiscard]] const mbgl::TaggedScheduler& getThreadPool() const override;
+    [[nodiscard]] const mln::TaggedScheduler& getThreadPool() const override;
 
     void render() const;
 
-    [[nodiscard]] mbgl::Renderer& getRenderer() const;
+    [[nodiscard]] mln::Renderer& getRenderer() const;
 
 private:
-    std::unique_ptr<mbgl::Renderer> renderer;
+    std::unique_ptr<mln::Renderer> renderer;
     MapWidget& widget;
-    mbgl::gfx::RendererBackend& backend;
-    std::shared_ptr<mbgl::UpdateParameters> update_parameters = nullptr;
+    mln::gfx::RendererBackend& backend;
+    std::shared_ptr<mln::UpdateParameters> update_parameters = nullptr;
 };

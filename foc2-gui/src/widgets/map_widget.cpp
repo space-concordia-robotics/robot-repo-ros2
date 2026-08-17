@@ -83,8 +83,8 @@ void MapWidget::onInit() {
     if (!api_key.has_value())
         throw std::runtime_error("Could not find api key for maptiler");
 
-    const auto map_tiler_configuration = mbgl::TileServerOptions::MapTilerConfiguration();
-    auto resource_options = mbgl::ResourceOptions::Default();
+    const auto map_tiler_configuration = mln::TileServerOptions::MapTilerConfiguration();
+    auto resource_options = mln::ResourceOptions::Default();
     resource_options
         .withApiKey(api_key.value())
         .withMaximumCacheSize(MAXIMUM_CACHE_SIZE)
@@ -102,21 +102,21 @@ void MapWidget::onInit() {
         }
     }
 
-    const auto client_options = mbgl::ClientOptions();
+    const auto client_options = mln::ClientOptions();
     auto ordered_styles = map_tiler_configuration.defaultStyles();
 
     backend = std::make_unique<SDL3OpenGLRendererBackend>(SDL_GL_GetCurrentWindow(), SDL_GL_GetCurrentContext());
 
     backend->resize(size);
 
-    const auto database_file_source = std::static_pointer_cast<mbgl::DatabaseFileSource>(
-        mbgl::FileSourceManager::get()->getFileSource(mbgl::FileSourceType::Database, resource_options, client_options)
+    const auto database_file_source = std::static_pointer_cast<mln::DatabaseFileSource>(
+        mln::FileSourceManager::get()->getFileSource(mln::FileSourceType::Database, resource_options, client_options)
     );
     database_file_source->setOfflineMapboxTileCountLimit(100'000);
     database_file_source->setMaximumAmbientCacheSize(MAXIMUM_CACHE_SIZE, [](const std::exception_ptr&) {});
 
     // TODO 2026-08-02 (Will Free): offline mode
-    // const auto online_file_source = mbgl::FileSourceManager::get()->getFileSource(mbgl::FileSourceType::Network, resource_options, client_options);
+    // const auto online_file_source = mln::FileSourceManager::get()->getFileSource(mln::FileSourceType::Network, resource_options, client_options);
     //
     // if constexpr (false) {
     //     if (online_file_source) {
@@ -127,28 +127,28 @@ void MapWidget::onInit() {
     //     }
     // }
 
-    renderer_frontend = std::make_unique<SDL3OpenGLRendererFrontend>(std::make_unique<mbgl::Renderer>(*backend, 1.0), *this, *backend);
+    renderer_frontend = std::make_unique<SDL3OpenGLRendererFrontend>(std::make_unique<mln::Renderer>(*backend, 1.0), *this, *backend);
 
-    auto action_journal_options = mbgl::util::ActionJournalOptions();
+    auto action_journal_options = mln::util::ActionJournalOptions();
     // TODO 2026-08-10 (Will Free): support for action journal
     // if (false) {
     //     const std::string action_journal_dir = args::get(actionJournalDirValue);
     //     action_journal_options
     //         .enable(true)
     //         .withPath(action_journal_dir);
-    //     mbgl::Log::Info(mbgl::Event::General, "Action journal enabled. Logs will be written to: " + action_journal_dir);
+    //     mln::Log::Info(mln::Event::General, "Action journal enabled. Logs will be written to: " + action_journal_dir);
     // }
 
-    auto mapOptions = mbgl::MapOptions();
+    auto mapOptions = mln::MapOptions();
     mapOptions
-        .withMapMode(mbgl::MapMode::Continuous)
-        .withConstrainMode(mbgl::ConstrainMode::WidthAndHeight)
+        .withMapMode(mln::MapMode::Continuous)
+        .withConstrainMode(mln::ConstrainMode::WidthAndHeight)
         .withFastPFOREnabled(true)
         .withSize(size)
         .withPixelRatio(1.0);
 
 
-    map = std::make_unique<mbgl::Map>(
+    map = std::make_unique<mln::Map>(
         *renderer_frontend,
         *this,
         mapOptions,
@@ -196,7 +196,7 @@ void MapWidget::draw() {
     if (dirty && renderer_frontend) {
         dirty = false;
 
-        auto scope = mbgl::gfx::BackendScope(*backend);
+        auto scope = mln::gfx::BackendScope(*backend);
 
         renderer_frontend->render();
 
@@ -225,7 +225,7 @@ void MapWidget::draw() {
 void MapWidget::handleResize() {
     const auto available = ImGui::GetContentRegionAvail();
 
-    const auto available_size = tf2::convert<mbgl::Size>(available);
+    const auto available_size = tf2::convert<mln::Size>(available);
 
     if (available_size == size)
         return;
@@ -281,7 +281,7 @@ void MapWidget::handleScroll(const Eigen::Vector2d& mouse_pos) const {
     if (delta < 0 && scale != 0)
         scale = 1.0 / scale;
 
-    map->scaleBy(scale, tf2::convert<mbgl::ScreenCoordinate>(mouse_pos));
+    map->scaleBy(scale, tf2::convert<mln::ScreenCoordinate>(mouse_pos));
 }
 
 void MapWidget::handleMouseMove() const {
@@ -294,9 +294,9 @@ void MapWidget::handleMouseMove() const {
         return;
 
     if (tracking) {
-        map->moveBy(tf2::convert<mbgl::ScreenCoordinate>(delta));
+        map->moveBy(tf2::convert<mln::ScreenCoordinate>(delta));
     } else if (rotating) {
-        map->rotateBy(tf2::convert<mbgl::ScreenCoordinate>(io.MousePosPrev), tf2::convert<mbgl::ScreenCoordinate>(io.MousePos));
+        map->rotateBy(tf2::convert<mln::ScreenCoordinate>(io.MousePosPrev), tf2::convert<mln::ScreenCoordinate>(io.MousePos));
     } else if (pitching) {
         map->pitchBy(delta.y / 2);
     }
@@ -346,7 +346,7 @@ void MapWidget::invalidate() {
     dirty = true;
 }
 
-void MapWidget::onDidFailLoadingMap(const mbgl::MapLoadError error, const std::string& reason) {
+void MapWidget::onDidFailLoadingMap(const mln::MapLoadError error, const std::string& reason) {
     logger.info("failed loading map: {} ({})", reason, magic_enum::enum_name(error));
 }
 

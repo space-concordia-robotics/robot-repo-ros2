@@ -5,7 +5,7 @@
 #include <mbgl/gfx/context.hpp>
 #include <mbgl/gl/renderable_resource.hpp>
 
-class SDL3OpenGLRenderableResource final : public mbgl::gl::RenderableResource {
+class SDL3OpenGLRenderableResource final : public mln::gl::RenderableResource {
 public:
     explicit SDL3OpenGLRenderableResource(SDL3OpenGLRendererBackend& backend)
         : backend(backend) {}
@@ -27,7 +27,7 @@ private:
 
 // ReSharper disable once CppParameterMayBeConst
 SDL3OpenGLRendererBackend::SDL3OpenGLRendererBackend(SDL_Window* window, SDL_GLContext opengl_context)
-    : RendererBackend(mbgl::gfx::ContextMode::Unique),
+    : RendererBackend(mln::gfx::ContextMode::Unique),
       Renderable({0, 0}, std::make_unique<SDL3OpenGLRenderableResource>(*this)),
       window(window),
       previous_window(window),
@@ -77,7 +77,7 @@ SDL3OpenGLRendererBackend::~SDL3OpenGLRendererBackend() {
         SDL_GL_DestroyContext(opengl_context);
 }
 
-void SDL3OpenGLRendererBackend::resize(const mbgl::Size size) {
+void SDL3OpenGLRendererBackend::resize(const mln::Size size) {
     swapContext();
 
     this->size = size;
@@ -144,7 +144,7 @@ void SDL3OpenGLRendererBackend::deactivate() {
     restoreContext();
 }
 
-mbgl::gl::ProcAddress SDL3OpenGLRendererBackend::getExtensionFunctionPointer(const char* name) {
+mln::gl::ProcAddress SDL3OpenGLRendererBackend::getExtensionFunctionPointer(const char* name) {
     return SDL_GL_GetProcAddress(name);
 }
 
