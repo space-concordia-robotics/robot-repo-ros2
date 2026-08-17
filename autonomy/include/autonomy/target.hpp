@@ -2,10 +2,9 @@
 
 #include <memory>
 #include <utility>
-#include <geographic_msgs/msg/geo_point.hpp>
-#include <rclcpp/macros.hpp>
-#include <rclcpp/node.hpp>
 #include <ros2_fmt_logger/logger.hpp>
+#include <rclcpp/node.hpp>
+#include <geographic_msgs/msg/geo_point.hpp>
 
 #include "autonomy/autonomy_interface.hpp"
 
@@ -25,9 +24,15 @@ namespace autonomy {
         explicit Target(
             AutonomyMissionManagerInterface& node,
             const std::string& id
-        ) : logger(node.get_logger().get_child(id)), node(node), id(id) {}
+        )
+            : logger(node.get_logger().get_child(id)), node(node), id(id) {}
 
         virtual ~Target() = default;
+
+        Target(const Target& other) = delete;
+        Target(Target&& other) noexcept = delete;
+        Target& operator=(const Target& other) = delete;
+        Target& operator=(Target&& other) noexcept = delete;
 
         virtual void setup() {
             if (this->state != TargetState::INACTIVE)
@@ -45,11 +50,9 @@ namespace autonomy {
             co_return;
         }
 
-        [[nodiscard]]
-        virtual geographic_msgs::msg::GeoPoint findNearestPoint(const geographic_msgs::msg::GeoPoint& current_pose) const = 0;
+        [[nodiscard]] virtual geographic_msgs::msg::GeoPoint findNearestPoint(const geographic_msgs::msg::GeoPoint& current_pose) const = 0;
 
-        [[nodiscard]]
-        TargetState getState() const {
+        [[nodiscard]] TargetState getState() const {
             return this->state;
         }
 

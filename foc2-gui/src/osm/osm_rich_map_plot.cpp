@@ -6,7 +6,9 @@
 
 namespace ImOsm::Rich {
     RichMapPlot::RichMapPlot() {}
-    RichMapPlot::RichMapPlot(const std::shared_ptr<ITileLoader>& loader) : MapPlot(loader) {}
+
+    RichMapPlot::RichMapPlot(const std::shared_ptr<ITileLoader>& loader)
+        : MapPlot(loader) {}
 
     RichMapPlot::~RichMapPlot() = default;
 

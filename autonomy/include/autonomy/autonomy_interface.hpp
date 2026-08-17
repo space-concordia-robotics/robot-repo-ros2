@@ -1,10 +1,10 @@
 #pragma once
 
 #include <rclcpp/node.hpp>
+#include <rclcpp_async/rclcpp_async.hpp>
 
-#include "aliases.hpp"
-#include "target_config.hpp"
-#include "rclcpp_async/rclcpp_async.hpp"
+#include "autonomy/aliases.hpp"
+#include "autonomy/target_config.hpp"
 
 namespace autonomy {
     class AutonomyMissionManagerInterface : public Node, public std::enable_shared_from_this<AutonomyMissionManagerInterface> {

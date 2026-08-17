@@ -96,9 +96,10 @@ namespace wheels_interface {
             period2.timestamp = now;
         } else if (receivedArbId == createArbId(APICommand::Period3)) {
             const uint8_t* intVal = reinterpret_cast<uint8_t*>(&rawValue);
-            const uint16_t voltage = intVal[0] | (intVal[1] & 3) << 8;
+            const auto voltage = static_cast<uint16_t>(intVal[0]) | static_cast<uint16_t>(intVal[1] & 3) << 8;
             period3.analogVoltage = static_cast<float>(voltage) / 256.0f;
-            const uint32_t velocity = (intVal[1] >> 2 & 0x3F) | static_cast<uint32_t>(intVal[2]) << 6 | static_cast<uint32_t>(intVal[3]) << 14;
+            const uint32_t velocity = static_cast<uint32_t>(intVal[1] >> 2 & 0x3F) | static_cast<uint32_t>(intVal[2]) << 6 | static_cast<uint32_t>(intVal[3]) <<
+                14;
             period3.analogVelocity = static_cast<float>(velocity) / 32768.0f;
             const uint32_t position = rawValue >> 32 & 0xFFFFFFFF;
             std::memcpy(&period3.analogPosition, &position, 4);
@@ -159,7 +160,7 @@ namespace wheels_interface {
         );
 
         data[4] = parameterType; // Add parameter type to CAN data
-        sendCanFrame(arbId, data); // Send CAN frame with parameter data
+        [[maybe_unused]] const auto _ = sendCanFrame(arbId, data); // Send CAN frame with parameter data
     }
 
     std::optional<std::variant<float, uint32_t, bool>> SparkBase::readParameter(const Parameter parameterId) const {

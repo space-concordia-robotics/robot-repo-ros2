@@ -1,5 +1,7 @@
 #pragma once
 
+#include <utility>
+
 #include "autonomy/aliases.hpp"
 #include "autonomy/target.hpp"
 
@@ -14,10 +16,16 @@ namespace autonomy {
             const TargetConfig::ObjectConfig& object_config,
             const GeoPoint& center,
             const double radius,
-            const std::string& label
-        ) : Target(node, id), object_config(object_config), center(center), radius(radius), label(label) {}
+            std::string label
+        )
+            : Target(node, id), object_config(object_config), center(center), radius(radius), label(std::move(label)) {}
 
         ~ObjectTarget() override = default;
+
+        ObjectTarget(const ObjectTarget& other) = delete;
+        ObjectTarget(ObjectTarget&& other) noexcept = delete;
+        ObjectTarget& operator=(const ObjectTarget& other) = delete;
+        ObjectTarget& operator=(ObjectTarget&& other) noexcept = delete;
 
         void setup() override;
         rclcpp_async::Task<> start() override;

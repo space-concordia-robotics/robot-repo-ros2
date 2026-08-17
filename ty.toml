@@ -1,0 +1,8 @@
+[src]
+exclude = [
+    "install",
+    "log"
+]
+
+[rules]
+all = "error"

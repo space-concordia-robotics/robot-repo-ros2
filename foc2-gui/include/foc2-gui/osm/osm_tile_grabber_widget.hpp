@@ -8,7 +8,7 @@ namespace ImOsm {
 
     class TileGrabberWidget {
     public:
-        TileGrabberWidget(const std::shared_ptr<MapPlot>& mapPlot);
+        explicit TileGrabberWidget(const std::shared_ptr<MapPlot>& mapPlot);
         ~TileGrabberWidget();
 
         void loadState(/*const mINI::INIStructure& ini*/);

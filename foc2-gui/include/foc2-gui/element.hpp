@@ -1,7 +1,7 @@
 #pragma once
 
-#include <vector>
 #include <memory>
+#include <vector>
 
 #include "im_application.hpp"
 
@@ -9,7 +9,8 @@ class UiElement {
 public:
     RCLCPP_SMART_PTR_ALIASES_ONLY(UiElement)
 
-    explicit UiElement(ImApplication& application) : application(application), logger(application.get_logger()) {}
+    explicit UiElement(ImApplication& application)
+        : application(application), logger(application.get_logger()) {}
 
     virtual ~UiElement() = default;
 

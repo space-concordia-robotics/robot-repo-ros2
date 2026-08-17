@@ -1,23 +1,24 @@
 cmake_minimum_required(VERSION 3.22)
 project(autonomy)
 
-if (POLICY CMP0167)
-    cmake_policy(SET CMP0167 NEW)
-endif ()
-
-if (NOT CMAKE_CXX_STANDARD)
-    set(CMAKE_CXX_STANDARD 20)
-endif ()
-
-if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    add_compile_options(-Wall -Wextra -Wpedantic)
-endif ()
+find_package(scrb_cmake_utils REQUIRED)
 
 if (CMAKE_COMPILER_IS_GNUCXX)
     add_compile_options(-fcoroutines)
 endif ()
 
-set(DEPENDENCIES
+## DEPENDENCIES
+
+# Geographiclib installs FindGeographicLib.cmake to this non-standard location on Ubuntu
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "/usr/share/cmake/geographiclib/")
+
+CPM()
+
+CPMAddMagicEnum()
+
+find_package(ament_cmake REQUIRED)
+
+find_dependencies(
         rclcpp
         rclcpp_components
         rclcpp_action
@@ -29,60 +30,48 @@ set(DEPENDENCIES
         action_msgs
         lifecycle_msgs
         ros_aruco_opencv_msgs
-        rover_msgs
         tf2_geometry_msgs
+        rover_msgs
 
         GeographicLib
+        magic_enum
 
         ros2_fmt_logger
+        scrb_common_util
 )
 
-# Geographiclib installs FindGeographicLib.cmake to this non-standard location on Ubuntu
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "/usr/share/cmake/geographiclib/")
+list(APPEND DEPENDENCY_TARGETS magic_enum::magic_enum)
 
-include(../cmake/CPM.cmake)
+## COMPILE
 
-# find dependencies
-CPMAddPackage("gh:Neargye/magic_enum#v0.9.7")
-
-find_package(ament_cmake REQUIRED)
-find_package(backward_ros REQUIRED)
-find_package(magic_enum REQUIRED)
-
-foreach (dependency IN ITEMS ${DEPENDENCIES})
-    find_package(${dependency} REQUIRED)
-endforeach ()
-
-set(DEPENDENCY_TARGETS "")
-foreach (dependency IN LISTS DEPENDENCIES)
-    list(APPEND DEPENDENCY_TARGETS ${${dependency}_targets})
-endforeach ()
-
-add_executable(autonomy
+scrb_add_executable(${PROJECT_NAME}
         src/autonomy.cpp
         src/targets/ar_target.cpp
         src/targets/gps_target.cpp
         src/targets/object_target.cpp
 )
 
-#add_executable(autonomy::autonomy ALIAS autonomy)
-
-target_compile_features(autonomy PUBLIC cxx_std_23)
-
-target_include_directories(
-        autonomy PUBLIC
+target_include_directories(${PROJECT_NAME} PUBLIC
         $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include>
 )
 
-ament_target_dependencies(
-        autonomy PUBLIC
-        ${DEPENDENCIES}
-)
+target_link_libraries(${PROJECT_NAME} PUBLIC ${DEPENDENCY_TARGETS})
 
-target_link_libraries(
-        autonomy PRIVATE
-        magic_enum::magic_enum
+scrb_target_precompile_headers(${PROJECT_NAME} PRIVATE
+        <rclcpp/rclcpp.hpp>
+        <rclcpp_action/rclcpp_action.hpp>
+        <rclcpp_async/rclcpp_async.hpp>
+        <fmt/format.h>
+        # I (Will) profiled it, and these ones are the messages that contribute most significantly to the compile time
+        <nav2_msgs/action/compute_path_through_poses.hpp>
+        <nav2_msgs/action/follow_gps_waypoints.hpp>
+        <nav2_msgs/action/follow_waypoints.hpp>
+        <nav2_msgs/action/navigate_through_poses.hpp>
+        <nav2_msgs/action/follow_path.hpp>
+        <nav2_msgs/action/navigate_to_pose.hpp>
+        <nav2_msgs/action/compute_path_to_pose.hpp>
+        <ros_aruco_opencv_msgs/msg/aruco_detections.hpp>
 )
 
 ## INSTALL
@@ -98,7 +87,7 @@ install(
 )
 
 install(
-        TARGETS autonomy
+        TARGETS ${PROJECT_NAME}
         EXPORT export_${PROJECT_NAME}
         ARCHIVE DESTINATION lib
         LIBRARY DESTINATION lib
@@ -106,7 +95,5 @@ install(
 )
 
 ## EXPORTS
-#ament_export_include_directories("include/${PROJECT_NAME}")
-#ament_export_libraries(autonomy)
-#ament_export_targets(export_${PROJECT_NAME})
+
 ament_package()

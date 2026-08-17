@@ -1,50 +1,57 @@
 cmake_minimum_required(VERSION 3.22)
 project(wheels_controller)
 
-if(NOT CMAKE_CXX_STANDARD)
-    set(CMAKE_CXX_STANDARD 23)
-endif()
+find_package(scrb_cmake_utils REQUIRED)
 
-if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    add_compile_options(-Wall -Wextra -Wpedantic)
-endif()
+## DEPENDENCIES
 
 find_package(ament_cmake REQUIRED)
-find_package(rclcpp REQUIRED)
-find_package(std_msgs REQUIRED)
-find_package(geometry_msgs REQUIRED)
-find_package(action_msgs REQUIRED)
-find_package(builtin_interfaces REQUIRED)
 
+find_dependencies(
+        rclcpp
+        std_msgs
+        geometry_msgs
+        action_msgs
+        builtin_interfaces
+        ros2_fmt_logger
+)
 
-#rosidl_generate_interfaces(${PROJECT_NAME}
-##        "msg/ArmMotors.msg"
-#        DEPENDENCIES std_msgs
-#)
+## COMPILE
+
 include_directories(include)
 
-add_executable(wheels_controller_node
+scrb_add_executable(${PROJECT_NAME}_node
         src/wheels_controller_node.cpp
         src/rev_motor_controller.cpp
         src/can_controller.cpp
-        src/can_controller.h
-        src/rev_motor_controller.h
-        src/wheels_controller_node.h
 )
 
-#rosidl_target_interfaces(wheels_controller_node
-#        ${PROJECT_NAME} "rosidl_typesupport_cpp")
-
-ament_target_dependencies(
-    wheels_controller_node
-    rclcpp
-    geometry_msgs
-    builtin_interfaces
-    action_msgs
-    std_msgs
+target_include_directories(${PROJECT_NAME}_node PUBLIC
+        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:include>
 )
 
-install(TARGETS
-        wheels_controller_node
-        DESTINATION lib/${PROJECT_NAME})
+target_link_libraries(${PROJECT_NAME}_node PRIVATE ${DEPENDENCY_TARGETS})
+
+scrb_target_precompile_headers(${PROJECT_NAME}_node PRIVATE
+        <rclcpp/rclcpp.hpp>
+        <ros2_fmt_logger/logger.hpp>
+)
+
+## INSTALL
+
+install(
+        DIRECTORY include
+        DESTINATION include/${PROJECT_NAME}
+)
+
+install(
+        TARGETS ${PROJECT_NAME}_node
+        ARCHIVE DESTINATION lib
+        LIBRARY DESTINATION lib
+        RUNTIME DESTINATION bin
+)
+
+## EXPORT
+
 ament_package()

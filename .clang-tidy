@@ -1,0 +1,61 @@
+---
+Checks:
+  - boost-*
+  - bugprone-*
+  - -bugprone-easily-swappable-parameters
+  - -bugprone-narrowing-conversions
+  - -bugprone-throwing-static-initialization # AllowedTypes does not seem to work
+  - -clang-diagnostic-*
+  - -clang-analyzer-*
+  - concurrency-*
+  - cppcoreguidelines-*,
+  - -cppcoreguidelines-avoid-magic-numbers # alias
+  - -cppcoreguidelines-narrowing-conversions # alias
+  - -cppcoreguidelines-pro-bounds-array-to-pointer-decay
+  - -cppcoreguidelines-pro-type-vararg
+  - -cppcoreguidelines-pro-type-reinterpret-cast
+  - modernize-*,
+  - -modernize-use-trailing-return-type
+  - openmp-*
+  - performance-*
+  - portability-*
+  # realistically, I'd prefer if readability-magic-numbers was enabled, however I also don't want to manually specify numbers like 0-128 or whatever
+  - readability-*
+  - -readability-magic-numbers
+  - -readability-braces-around-statements
+  - -readability-math-missing-parentheses
+  - -readability-else-after-return
+  - -readability-qualified-auto
+WarningsAsErrors: ''
+HeaderFileExtensions:
+  - ''
+  - h
+  - hh
+  - hpp
+  - hxx
+ImplementationFileExtensions:
+  - c
+  - cc
+  - cpp
+  - cxx
+HeaderFilterRegex: 'src/|include/'
+ExcludeHeaderFilterRegex: ''
+FormatStyle: file
+CheckOptions:
+  cppcoreguidelines-pro-bounds-avoid-unchecked-container-access.ExcludeClasses: >-
+    ::std::map;::std::unordered_map;::std::flat_map;
+    ::YAML::Node;
+    ::cv::Vec.*;
+    ::tf2::.*
+  cppcoreguidelines-pro-type-member-init.UseAssignment: true
+  cppcoreguidelines-pro-bounds-avoid-unchecked-container-access.FixMode: at
+  readability-function-cognitive-complexity.Threshold: 32
+  readability-function-cognitive-complexity.DescribeBasicIncrements: true
+  readability-function-cognitive-complexity.IgnoreMacros: true
+  readability-uppercase-literal-suffix.NewSuffixes: 'L;uL;u;LL;uLL'
+  readability-identifier-length.MinimumVariableNameLength: 2
+  readability-identifier-length.IgnoredVariableNames: "[xy]"
+  readability-identifier-length.MinimumParameterNameLength: 2
+  readability-identifier-length.MinimumExceptionNameLength: 1
+SystemHeaders: false
+...

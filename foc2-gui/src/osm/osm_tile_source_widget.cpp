@@ -12,7 +12,8 @@ namespace ImOsm {
         int request_limit = 10;
     };
 
-    TileSourceWidget::TileSourceWidget(const std::shared_ptr<MapPlot>& map_plot) : map_plot(map_plot), ui(std::make_unique<Ui>()) {
+    TileSourceWidget::TileSourceWidget(const std::shared_ptr<MapPlot>& map_plot)
+        : map_plot(map_plot), ui(std::make_unique<Ui>()) {
         updateTileLoader();
     }
 

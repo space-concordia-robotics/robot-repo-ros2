@@ -15,9 +15,15 @@ namespace autonomy {
             const GeoPoint& center,
             const double radius,
             const int tag_id
-        ) : Target(node, id), ar_config(ar_config), center(center), radius(radius), tag_id(tag_id) {}
+        )
+            : Target(node, id), ar_config(ar_config), center(center), radius(radius), tag_id(tag_id) {}
 
         ~ARTarget() override = default;
+
+        ARTarget(const ARTarget& other) = delete;
+        ARTarget(ARTarget&& other) noexcept = delete;
+        ARTarget& operator=(const ARTarget& other) = delete;
+        ARTarget& operator=(ARTarget&& other) noexcept = delete;
 
         void setup() override;
         rclcpp_async::Task<> start() override;

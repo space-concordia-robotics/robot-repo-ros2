@@ -112,9 +112,7 @@ namespace autonomy {
         }
 
         // TODO 2026-04-27 (Will Free): retry logic for this
-        const auto result = co_await navigateToObject();
-
-        if (!result) {
+        if (const auto result = co_await navigateToObject(); !result) {
             logger.error("Failed to navigate to object, bailing out.");
             co_return;
         }

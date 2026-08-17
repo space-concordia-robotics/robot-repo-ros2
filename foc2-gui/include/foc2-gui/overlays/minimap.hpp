@@ -10,7 +10,8 @@ class MiniMapOverlay : public UiOverlay {
     using MagneticField = sensor_msgs::msg::MagneticField;
 
 public:
-    explicit MiniMapOverlay(ImApplication& app) : UiOverlay(app) {}
+    explicit MiniMapOverlay(ImApplication& application)
+        : UiOverlay(application) {}
 
     void onInit() override;
 

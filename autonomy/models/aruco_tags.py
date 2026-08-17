@@ -1,5 +1,7 @@
+# ruff: noqa: D100, D103, INP001, S603, S607
 import json
 import subprocess
+from typing import Any
 
 # this is absolutely disgusting.
 # I need it to work around the fact that when
@@ -24,11 +26,11 @@ print(json.dumps(aruco_bits))
 """
 
 
-def get_aruco_tags(dictionary: str):
+def get_aruco_tags(dictionary: str) -> Any:
     result = subprocess.run(
         ["python3", "-c", python_code.format(name=dictionary.upper())],
         capture_output=True,
         text=True,
-        check=True
+        check=True,
     )
     return json.loads(result.stdout)

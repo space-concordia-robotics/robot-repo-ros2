@@ -4,6 +4,7 @@ FetchContent_Declare(
         iconfontcppheaders
         GIT_REPOSITORY https://github.com/juliettef/IconFontCppHeaders.git
         GIT_TAG 3ee7f3d295ae773c0046db8d7b89b886eb2526de # 2026-05-20
+        GIT_PROGRESS TRUE
 )
 
 FetchContent_MakeAvailable(iconfontcppheaders)

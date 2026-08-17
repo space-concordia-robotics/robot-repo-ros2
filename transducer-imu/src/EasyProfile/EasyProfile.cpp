@@ -3,7 +3,7 @@
  * @author COPYRIGHT(c) 2017 SYD Dynamics ApS
  * @see    EasyProfile.h for more descriptions.
  */
-#include "EasyProfile/EasyProfile.h"
+#include "EasyProfile/EasyProfile.hpp"
 
 
 EasyProfile::EasyProfile(EasyObjectDictionary* eOD_i) {

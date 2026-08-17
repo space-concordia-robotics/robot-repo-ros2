@@ -22,19 +22,19 @@
 
 #include <string>
 #include <unordered_map>
-#include <geometry_msgs/msg/pose.hpp>
 #include <opencv2/aruco.hpp>
+#include <geometry_msgs/msg/pose.hpp>
 
 #include "ros_aruco_opencv/parameters.hpp"
 
 namespace ros_aruco_opencv {
     geometry_msgs::msg::Pose convert_to_pose(const cv::Vec3d& rotation, const cv::Vec3d& translation);
 
-#if CV_VERSION_MAJOR > 4 || CV_VERSION_MAJOR == 4 && CV_VERSION_MINOR >= 7
+    #if CV_VERSION_MAJOR > 4 || CV_VERSION_MAJOR == 4 && CV_VERSION_MINOR >= 7
     using ArucoDictType = cv::aruco::PredefinedDictionaryType;
-#else
+    #else
     using ArucoDictType = cv::aruco::PREDEFINED_DICTIONARY_NAME;
-#endif
+    #endif
 
     extern const std::unordered_map<std::string, ArucoDictType> ARUCO_DICT_MAP;
 
