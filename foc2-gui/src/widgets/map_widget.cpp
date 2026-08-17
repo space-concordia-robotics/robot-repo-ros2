@@ -171,6 +171,16 @@ void MapWidget::onShutdown() {
 }
 
 void MapWidget::draw() {
+    if (ImGui::IsWindowCollapsed())
+        return;
+
+    const auto widget_origin = ImGui::GetCursorScreenPos();
+    const auto widget_size = ImGui::GetContentRegionAvail();
+
+    // don't attempt to render widget with non-positive size
+    if (widget_size.x <= 0 || widget_size.y <= 0)
+        return;
+
     handleResize();
 
     // TODO 2026-08-10 (Will Free): check if entire application is focused, not just the window.
@@ -197,12 +207,9 @@ void MapWidget::draw() {
     // update time after render
     run_loop.updateTime();
 
-    const auto widget_origin = ImGui::GetCursorScreenPos();
-    const auto widget_size = ImGui::GetContentRegionAvail();
-
     ImGui::Image(
         backend->texture(),
-        ImGui::GetContentRegionAvail(),
+        widget_size,
         // flip the texture because imgui wants (0,0) as the top left
         ImVec2(0, 1),
         ImVec2(1, 0)
