@@ -401,7 +401,6 @@ dev = [
     { name = "mkdocs-awesome-nav" },
     { name = "mkdocs-material", extra = ["imaging", "recommended"] },
     { name = "mkdocs-material-extensions" },
-    { name = "pngquant" },
     { name = "pygments" },
     { name = "pymdown-extensions" },
     { name = "zensical" },
@@ -417,7 +416,6 @@ dev = [
     { name = "mkdocs-awesome-nav", specifier = ">=3.3.0" },
     { name = "mkdocs-material", extras = ["recommended", "imaging"], specifier = ">=9.7.6" },
     { name = "mkdocs-material-extensions", specifier = ">=1.3.1" },
-    { name = "pngquant", specifier = ">=3.0.3" },
     { name = "pygments", specifier = ">=2.20.0" },
     { name = "pymdown-extensions", specifier = ">=11.0" },
     { name = "zensical", specifier = ">=0.0.46" },
@@ -973,19 +971,6 @@ wheels = [
 ]
 
 [[package]]
-name = "pngquant"
-version = "3.0.3"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "pillow" },
-    { name = "puremagic" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/2b/be/9484b64a5b5276d94012a0bd1bae924e785bd98bf1fd4f2947316a5e1a55/pngquant-3.0.3.tar.gz", hash = "sha256:a46ec30c5b0c589f0ae9d003e1f7f97d35dbdf52ae32573e69cfbcf992f55461", size = 5436, upload-time = "2025-03-25T09:39:30.031Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/ab/da/ccda14f6fe663d8227d7013b9e5fe64cc6a5fc9871e7e3a206794afa2109/pngquant-3.0.3-py2.py3-none-any.whl", hash = "sha256:1b02212272dbc027f9cbd2e977c0f03f834bf4a84ab940882a2e8760516c1759", size = 5864, upload-time = "2025-03-25T09:39:27.978Z" },
-]
-
-[[package]]
 name = "properdocs"
 version = "1.6.7"
 source = { registry = "https://pypi.org/simple" }
@@ -1006,15 +991,6 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/ec/29/f27a4e1eddf72ed3db6e47818fbafe6debbf09fd7051f9c1a007239b46ef/properdocs-1.6.7.tar.gz", hash = "sha256:adc7b16e562890af0e098a7e5b02e3a81c20894a87d6a28d345c9300de73c26e", size = 276141, upload-time = "2026-03-20T20:07:48.167Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/bd/4d/fc923f5c85318ee8cc903566dc4e0ebe41b2dfc1d2ecf5546db232397ed6/properdocs-1.6.7-py3-none-any.whl", hash = "sha256:6fa0cfa2e01bf338f684892c8a506cf70ea88ae7f3479c933b6fa20168101cbd", size = 225406, upload-time = "2026-03-20T20:07:46.875Z" },
-]
-
-[[package]]
-name = "puremagic"
-version = "2.2.0"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/24/74/ce5987ab9b8aec4ced06e2723ebb604205c9eb58abdad91453da93166380/puremagic-2.2.0.tar.gz", hash = "sha256:eb4bddf07c177c4b434554b92165b67449f5a51e152b976202d6254498810eef", size = 1189752, upload-time = "2026-04-08T01:39:55.562Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/95/81/314320aeffd88dadeac553ff9eb10f54507ab41deccd0c69f6221d254a0a/puremagic-2.2.0-py3-none-any.whl", hash = "sha256:c4f7ed7307f056c787199acfda839555921be1df13abba61e8e6db0c787ae1d0", size = 71971, upload-time = "2026-04-08T01:39:54.169Z" },
 ]
 
 [[package]]
