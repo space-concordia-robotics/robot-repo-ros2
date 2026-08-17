@@ -7,8 +7,8 @@ As such, this guideline outlines the set of standards that everyone is expected 
 
 ### Naming
 
-- All packages are named using `kebab-case` for the folder name, however the actual package name itself is named using `snake_case`.
-  For example, a package with the directory `arm-controller` would have the name `arm_controller`.  
+- All packages are named using `kebab-case` for the folder name, however the actual package name itself is named using `snake_case`. For example, a package with
+  the directory `arm-controller` would have the name `arm_controller`.
   Note that sometimes the folder name does not always reflect the exact name of the package (but it should be similar),
   for example the `scrb_common_util` package has the folder name `common-util`,
   this is because the `scrb` part is used to differentiate it from everything else but that is not necessary in the file tree.
@@ -97,9 +97,11 @@ You should try to avoid C-isms, for example:
 
 ### Clang-Tidy & Clang-Format
 
-All files should be reformatted using Clang-Format, using the `.clang-format` config in the root of this repository.
+All files should be reformatted using [Clang-Format](https://clang.llvm.org/docs/ClangFormat.html), using the `.clang-format` config in the root of this
+repository.
 
-Clang-Tidy should be used to lint all files prior to committing or PRing. Please try to fix all the warnings that it shows, it shows them for a reason.  
+[Clang-Tidy](https://clang.llvm.org/extra/clang-tidy/) should be used to lint all files prior to committing or PRing. Please try to fix all the warnings that it
+shows, it shows them for a reason.  
 If you really cannot fix the warning, then you can suppress the warning, however you should provide a reason for the suppression, for example:
 
 ```cpp
@@ -137,6 +139,24 @@ In order to keep everything consistent, we follow the following naming conventio
 
 Type hints should be added to nearly everything.
 If it's too complex to add a type hint, then it's probably because you're doing something too complex with it and it should instead be refactored.
+
+### Ruff & ty
+
+[Ruff](https://docs.astral.sh/ruff/) is used for general linting of python code, and should be run on all files prior to a commit or a PR. Please fix any errors
+or warnings from ruff.  
+If for some reason the warning cannot be fixed or is a false positive, then it can be suppressed like this:
+
+```python
+except Exception as e:  # noqa: BLE001
+self._error = str(e)
+```
+
+[ty](https://docs.astral.sh/ty/) is then used for type checking python code, this should also be used prior to committing or PRing.  
+False positives can also be similarly suppressed:
+
+```python
+sum_three_numbers("one", 5)  # ty: ignore[missing-argument, invalid-argument-type]
+```
 
 ### Launch Files
 
