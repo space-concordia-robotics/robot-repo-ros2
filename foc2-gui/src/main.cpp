@@ -201,10 +201,6 @@ protected:
             layout_initialized = true;
         }
 
-        ImGui::ShowMetricsWindow();
-        ImGui::ShowDemoWindow();
-        ImGui::ShowStyleEditor();
-
         drawUtilWindows();
 
         drawStreamWindows();
