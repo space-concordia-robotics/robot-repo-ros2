@@ -1,1 +1,1 @@
-from .code_prefix import formatter
+from .code_prefix import formatter as formatter
