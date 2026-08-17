@@ -28,4 +28,5 @@ dev = [
     "pymdown-extensions>=11.0",
     "zensical>=0.0.46",
     "beautifulsoup4>=4.15.0",
+    "lxml>=6.1.1",
 ]
