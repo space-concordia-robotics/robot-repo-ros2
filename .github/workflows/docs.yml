@@ -2,11 +2,10 @@ name: Build Docs
 
 on:
   push:
-    # TODO 2026-08-17 (Will Free): uncomment
-    #paths:
-    #  - 'docs/**'
+    paths:
+      - 'docs/**'
     branches:
-      #- main
+      - main
       - feature/docs-site # TODO 2026-08-17 (Will Free): remove
   workflow_dispatch:
 
