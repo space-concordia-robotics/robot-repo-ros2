@@ -6,6 +6,7 @@ on:
       - 'docs/**'
     branches:
       - main
+      - feature/docs-site # TODO 2026-08-17 (Will Free): remove
   workflow_dispatch:
 
 permissions:
