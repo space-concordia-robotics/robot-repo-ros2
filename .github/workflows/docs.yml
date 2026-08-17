@@ -88,4 +88,4 @@ jobs:
       - name: Deploy site
         run: |
           cd "${{ github.workspace }}/pages-target"
-          uv --project "${{ github.workspace }}/robot-repo-ros2/docs" run mkdocs gh-deploy --config-file "${{ github.workspace }}/robot-repo-ros2/docs/mkdocs.yml" --remote-branch master --clean --force
+          uv --project "${{ github.workspace }}/robot-repo-ros2/docs" run mkdocs gh-deploy --config-file "${{ github.workspace }}/robot-repo-ros2/docs/mkdocs.yml" --remote-branch main --clean --force
