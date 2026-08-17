@@ -3,7 +3,7 @@ include(FetchContent)
 FetchContent_Declare(
         maplibre
         GIT_REPOSITORY https://github.com/maplibre/maplibre-gl-native.git
-        GIT_TAG ce3caaf78319cf3a6f244b896f022335b3765ced # 2026-07-18
+        GIT_TAG 550f64be2232e09934ffc660a9acdbacff8b164a # 2026-08-14
         GIT_PROGRESS TRUE
         GIT_CONFIG "submodule.recurse=true" "submodule.fetchJobs=4" "submodule.*.shallow=true"
 )
