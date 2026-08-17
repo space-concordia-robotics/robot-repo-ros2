@@ -2,10 +2,11 @@ name: Build Docs
 
 on:
   push:
-    paths:
-      - 'docs/**'
+    # TODO 2026-08-17 (Will Free): uncomment
+    #paths:
+    #  - 'docs/**'
     branches:
-      - main
+      #- main
       - feature/docs-site # TODO 2026-08-17 (Will Free): remove
   workflow_dispatch:
 
@@ -26,10 +27,10 @@ jobs:
 
       - name: Create Deployment Token
         id: app-token
-        uses: actions/create-github-app-token@v1
+        uses: actions/create-github-app-token@v3
         with:
-          app_id: ${{ secrets.APP_ID }}
-          private_key: ${{ secrets.APP_PRIVATE_KEY }}
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
           permission-contents: write
           repositories: |
             ${{ github.repository }}
@@ -57,12 +58,12 @@ jobs:
 
 
       - name: Setup Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v7
         with:
           python-version-file: "robot-repo-ros2/docs/pyproject.toml"
 
       - name: Install uv
-        uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # 8.2.0
+        uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
         with:
           enable-cache: true
           working-directory: "robot-repo-ros2/docs"
