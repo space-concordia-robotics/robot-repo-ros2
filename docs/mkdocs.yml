@@ -1,8 +1,7 @@
 # yaml-language-server: $schema=https://squidfunk.github.io/mkdocs-material/schema.json
 site_name: SCRB Software Documentation
 site_description: Space Concordia Robotics software documentation website
-# TODO 2026-03-14 (Will Free): put the correct url
-site_url: https://example.com
+site_url: https://space-concordia-robotics.github.io
 
 plugins:
   # TODO 2026-03-14 (Will Free): add glightbox? see mkdocs-material documentation reference for "images"
