@@ -11,8 +11,6 @@ plugins:
   #      plugins:
   - awesome-nav
   - meta
-  - offline:
-      enabled: !ENV [ OFFLINE, false ]
   - privacy:
       cache: true
       assets: true
@@ -48,7 +46,16 @@ plugins:
       optimize_jpg: true
       optimize_jpg_quality: 75
       optimize_jpg_progressive: true
-  - minify
+  - minify:
+      minify_html: !ENV [ CI, MINIFY, false ]
+      minify_js: !ENV [ CI, MINIFY, false ]
+      minify_css: !ENV [ CI, MINIFY, false ]
+      htmlmin_opts:
+        remove_comments: true
+      js_files:
+        - 'assets/js/**/*.js'
+      css_files:
+        - 'assets/css/**/*.css'
   # TODO 2026-03-14 (Will Free): add RSS plugin? maybe look for an Atom plugin?
 
 theme:
