@@ -6,9 +6,9 @@ This is used for things such as [tf2](https://wiki.ros.org/tf2) to let you do th
 "transform this point that is relative to the front camera to a point that is relative to the base link",
 which is something that is extremely useful.
 
-In order to generate the URDF, we use [xacro](https://github.com/ros/xacro), an XML macro language.
-It allows us to split the URDF across multiple files, as well as to use macros to reuse repeated portions.  
-We pass several parameters to xacro, which allows the URDF to be different for different scenarios (e.g. simulation vs production).  
+In order to generate the URDF, we use [xacro](https://github.com/ros/xacro), an XML macro language. It allows us to split the URDF across multiple files, as
+well as to use macros to reuse repeated portions.\
+We pass several parameters to xacro, which allows the URDF to be different for different scenarios (e.g. simulation vs production).\
 Currently, the two arguments are:
 
 <div class="annotate" markdown>
@@ -51,12 +51,12 @@ urdf/
 
 1. This is the main entrypoint for the URDF. It doesn't do anything on its own, it just loads other files based on the parameters passed to xacro.
 2. Miscellaneous utilities are kept here.
-3. The files in this folder model the physical joints & links of the robot, e.g. the wheels, the arm, etc.  
+3. The files in this folder model the physical joints & links of the robot, e.g. the wheels, the arm, etc.\
    The `base.urdf` file is the primary entrypoint and includes all the other files.
-4. The files in this folder defines the sensors present on the robot.  
+4. The files in this folder defines the sensors present on the robot.\
    The `sensors.urdf` file is the primary entrypoint and includes all the other files.
 5. This file is used to define properties for different camera sensors for the ffc module.
-6. The files in this folder define the control system used for the robot.  
+6. The files in this folder define the control system used for the robot.\
    Note that currently, ros control (`ros.urdf`) is the only one ever used, gazebo control is never used.
 
 Everything under `body/` forms all the physical joints & links for our robot, while everything under `sensors/` is all the sensor definitions for our robot.

@@ -46,7 +46,7 @@ following:
 1. Close CLion
 2. Move `build/.idea` to `.idea`, e.g. in the root directory run `#!bash mv build/.idea/ .idea/`.
 3. Modify the `.idea/misc.xml` file in a text editor (e.g. `nano`) with the following changes:
-    - Modify the `CompDBSettings` component, and replace all instances of `$PROJECT_DIR$` with `$PROJECT_DIR$/build`.  
+    - Modify the `CompDBSettings` component, and replace all instances of `$PROJECT_DIR$` with `$PROJECT_DIR$/build`.\
       After modification, it should look like this:
       ```xml title=".idea/misc.xml"
       <component name="CompDBSettings">
@@ -62,15 +62,15 @@ following:
         </option>
       </component>
       ```
-    - Modify the `CompDBWorkspace` component, and remove the `contentRoot` tag.  
+    - Modify the `CompDBWorkspace` component, and remove the `contentRoot` tag.\
       After modification, it should look like this:
       ```xml title=".idea/misc.xml"
       <component name="CompDBWorkspace" PROJECT_DIR="$PROJECT_DIR$" />
       ```
 4. Modify the `.idea/workspace.xml` file in a text editor with the following changes:
     - Modify the `CompDBLocalSettings` component, and replace all instances of `$PROJECT_DIR$` with `$PROJECT_DIR$/build`
-      (also duplicate the `projectSyncType` entry and only update one of them),
-      as well as all instances of `build` with the directory you cloned to (e.g. `build` -> `robot-repo-ros2`).  
+      (also duplicate the `projectSyncType` entry and only update one of them), as well as all instances of `build` with the directory you cloned to (e.g.
+      `build` -> `robot-repo-ros2`).\
       After modification, it should look like this:
       ```xml { title=".idea/workspace.xml" .annotate }
       <component name="CompDBLocalSettings">
@@ -106,8 +106,8 @@ following:
         2. Updated from `build` to `robot-repo-ros2`
         3. Remember to leave this one as `$PROJECT_DIR$`.
         4. Actually, I don't think this one is fully necessary. I *think* it might generate it for you, but I'm not 100% sure.
-    - Modify the `ExternalProjectsData` component, and duplicate the `projectState`,
-      then update one of them and replace `$PROJECT_DIR$` with `$PROJECT_DIR$/build`  
+    - Modify the `ExternalProjectsData` component, and duplicate the `projectState`, then update one of them and replace `$PROJECT_DIR$` with
+      `$PROJECT_DIR$/build`\
       After modification, it should look like this:
       ```xml { title=".idea/workspace.xml" .annotate }
       <component name="ExternalProjectsData">

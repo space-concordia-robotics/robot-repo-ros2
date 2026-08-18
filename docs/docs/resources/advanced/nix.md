@@ -69,47 +69,47 @@ However here is something that looks roughly like the flake that I (Will Free) u
                                 (lib.cmakeBool "WITH_PYTHON" true)
                                 # todo: odometry approaches, camera drivers, reconstruction approaches, solvers, optional dependencies
                             ];
-    
+
                             # a whole bunch of optional deps
                             propagatedBuildInputs = propagatedBuildInputs ++ [
                                 llvm.openmp
-    
+
                                 # optional dependencies
                                 pdal
-    
+
                                 # solvers
                                 gtsam
                                 ceres-solver
                                 libpointmatcher
                                 opengv
-    
+
                                 # reconstruction approaches
                                 #grid-map
                                 #grid-map-core # why can it not find grid map core, and then it also proceeds to fail the compilation in a completely different way???
                                 depthai
-    
+
                                 # python
                                 python3
                                 python3Packages.pybind11
                             ];
-    
+
                             nativeBuildInputs = nativeBuildInputs ++ [ (lib.lowPrio pkgs.gcc) ];
                         });
-    
+
                         fp16-luxonis = with pkgs; stdenv.mkDerivation (finalAttrs: {
                             pname = "fp16-luxonis";
                             version = "0.0.0";
-    
+
                             src = fetchFromGitHub {
                                 owner = "luxonis";
                                 repo = "FP16";
                                 rev = "c911175d2717e562976e606c6e5f799bf40cf94e";
                                 hash = "sha256-4U5WmqqljHYoKdKqtFRBX++vGCv/3weuqPFr4WG7GNM=";
                             };
-    
+
                             nativeBuildInputs = [ cmake ];
                             propagatedBuildInputs = [ /* psimd */ ];
-    
+
                             cmakeFlags =
                             let
                                 psimd = fetchFromGitHub {
@@ -124,10 +124,10 @@ However here is something that looks roughly like the flake that I (Will Free) u
                                 (lib.cmakeBool "FP16_USE_SYSTEM_LIBS" true)
                                 (lib.cmakeFeature "PSIMD_SOURCE_DIR" ''${psimd}'')
                             ];
-    
+
                             doCheck = true;
                         });
-    
+
                         libarchive-luxonis = with pkgs; pkgs.libarchive.overrideAttrs ({
                             src,
                             postPatch ? "",
@@ -135,16 +135,16 @@ However here is something that looks roughly like the flake that I (Will Free) u
                             ...
                         }: {
                             version = "3.5.2";
-    
+
                             src = fetchFromGitHub {
                                 owner = "luxonis";
                                 repo = "libarchive";
                                 rev = "45baa3a3e57104519e1165bcd5ac29c3bd8c9f3a";
                                 hash = "sha256-6KTBpL1ibQAwRdzcan+qPhV5cNPHlxwhPJ+swOwJ92g=";
                             };
-    
+
                             patches = []; # remove all patches
-    
+
                             # get rid of hunter
                             postPatch = postPatch + ''
                                 sed -i -e '5,9d' CMakeLists.txt
@@ -153,38 +153,38 @@ However here is something that looks roughly like the flake that I (Will Free) u
                                 sed -i -e '/am_save_LIBS/d' configure.ac # from the patch
                             '';
                         });
-    
+
                         cpr = with pkgs; clangMoldStdenv.mkDerivation (finalAttrs: {
                             pname = "cpr";
                             version = "1.4.0";
-    
+
                             src = fetchFromGitHub {
                                 owner = "libcpr";
                                 repo = "cpr";
                                 tag = finalAttrs.version;
                                 hash = "sha256-j4AAno3fSBvT5xOx5IsOI9cln2ihp5vpaQvf5uVc6pw=";
                             };
-    
+
                             patches = [
                                 (fetchpatch {
                                     url = "https://github.com/moratom/cpr/commit/50a1321738554e0152b0a6f1b0ca24e4fdecff5c.patch";
                                     hash = "sha256-JinlZ/g2B48E1MujK/22cQNADPX4bFMBnR03+3KPslo=";
                                 })
                             ];
-    
+
                             nativeBuildInputs = [
                                 cmake
                                 pkg-config
                                 gtest
                                 cppcheck
                             ];
-    
+
                             buildInputs = [
                                 openssl
                                 zlib
                                 curl
                             ];
-    
+
                             cmakeFlags = [
                                 # NOTE: Does not build with CPPCHECK or BUILD_CPR_TESTS
                                 # (lib.cmakeBool "CPR_ENABLE_CPPCHECK" true)
@@ -195,25 +195,25 @@ However here is something that looks roughly like the flake that I (Will Free) u
                                 (lib.cmakeBool "USE_SYSTEM_GTEST" true)
                                 (lib.cmakeFeature "CMAKE_BUILD_TYPE" "Release")
                             ];
-    
+
                             # Install headers
                             postInstall = ''
                                 mkdir -p $out/include
                                 cp -r $src/include/* $out/include/
                             '';
                         });
-    
+
                         libnop = with pkgs; stdenv.mkDerivation (finalAttrs: {
                             pname = "libnop";
                             version = "0-unstable-2022-09-04";
-    
+
                             src = fetchFromGitHub {
                                 owner = "luxonis";
                                 repo = "libnop";
                                 rev = "ab842f51dc2eb13916dc98417c2186b78320ed10";
                                 hash = "sha256-d2z/lDI9pe5TR82MxGkR9bBMNXPvzqb9Gsd5jOv6x1A=";
                             };
-    
+
                             patches = [
                                 # System install
                                 # https://github.com/luxonis/libnop/pull/6/commits/ae29a8772f38fdb1efc24af9ec2e3f6814eb2158.patch
@@ -232,38 +232,38 @@ However here is something that looks roughly like the flake that I (Will Free) u
                                     hash = "sha256-5FXhO7oRYA+kRRvK9s+90CBX+JEgL7q18d4PFbsXLgQ=";
                                 })
                             ];
-    
+
                             nativeBuildInputs = [ gtest ];
-    
+
                             # Add optimization flags to address _FORTIFY_SOURCE warning
                             NIX_CFLAGS_COMPILE = [
                                 "-O1"
                                 "-std=c++17"
                             ];
-    
+
                             installPhase = ''
                                 runHook preInstall
                                 make INSTALL_PREFIX=$out install
                                 runHook postInstall
                             '';
                         });
-    
+
                         xlink = with pkgs; clangMoldStdenv.mkDerivation (finalAttrs: {
                             pname = "xlink";
                             version = "0-unstable-2025-14-03";
-    
+
                             src = fetchFromGitHub {
                                 owner = "luxonis";
                                 repo = "XLink";
                                 rev = "fe8b5450f545a2ebf26dbc093e98c0265d7f4029";
                                 hash = "sha256-OTqJfTDudiNrdsDBe1Pg0T1dJcfneGXO/+AIbXpVfxk=";
                             };
-    
+
                             outputs = [
                                 "out"
                                 "share"
                             ];
-    
+
                             # Remove CMake Hunter package manager - needs network connection
                             patches = [
                                 #./001-remove-hunter.patch
@@ -273,18 +273,18 @@ However here is something that looks roughly like the flake that I (Will Free) u
                                     hash = "sha256-1VMCteJf/an20fI3UTT/X9cH96dCxPRQolfN+e+6jnU=";
                                 })
                             ];
-    
+
                             postPatch = ''
                                 sed -i -e '7,12d' CMakeLists.txt # replacement for 001-remove-hunter.patch
                             '';
-    
+
                             nativeBuildInputs = [
                                 cmake
                                 pkg-config
                             ];
-    
+
                             buildInputs = [ libusb1 ];
-    
+
                             cmakeFlags = [
                                 (lib.cmakeBool "XLINK_ENABLE_LIBUSB" true)
                                 (lib.cmakeBool "XLINK_BUILD_EXAMPLES" true)
@@ -292,14 +292,14 @@ However here is something that looks roughly like the flake that I (Will Free) u
                                 (lib.cmakeBool "XLINK_LIBUSB_SYSTEM" true)
                                 (lib.cmakeFeature "CMAKE_BUILD_TYPE" "Release")
                             ];
-    
+
                             postInstall = ''
                                 mkdir -p $out/include
                                 mkdir -p $share/examples
                                 mkdir -p $share/tests
-    
+
                                 cp -r $src/include/* $out/include/
-    
+
                                 examples=(
                                     "boot_firmware"
                                     "list_devices"
@@ -308,12 +308,12 @@ However here is something that looks roughly like the flake that I (Will Free) u
                                     "Makefile"
                                     "device_connect_reset"
                                 )
-    
+
                                 tests=(
                                     "multiple_open_stream"
                                     "multithreading_search_test"
                                 )
-    
+
                                 find $buildDir
                                 for file in "''${examples[@]}"; do
                                     cp examples/$file $share/examples/$file
@@ -323,7 +323,7 @@ However here is something that looks roughly like the flake that I (Will Free) u
                                 done
                             '';
                         });
-    
+
                         depthai = with pkgs; with rosSelf; let
                             depthai-device-fwp = fetchurl {
                                 url = "https://artifacts.luxonis.com/artifactory/luxonis-myriad-snapshot-local/depthai-device-side/a62b2ccb0bc493c2fb41694cb81c08887be24c52/depthai-device-fwp-a62b2ccb0bc493c2fb41694cb81c08887be24c52.tar.xz";
@@ -346,7 +346,7 @@ However here is something that looks roughly like the flake that I (Will Free) u
                             # evil sed commands
                             postPatch = ''
                                 sed -i -e '2a find_package(PkgConfig REQUIRED)' CMakeLists.txt
-    
+
                                 # remove CONFIG from find_package (from hunter)
                                 sed -i -e 's/\(find_package(.*\) CONFIG/\1/g' cmake/depthaiDependencies.cmake
                                 sed -i -e 's/find_package(archive_static/find_package(LibArchive/g' cmake/depthaiDependencies.cmake
@@ -355,15 +355,15 @@ However here is something that looks roughly like the flake that I (Will Free) u
                                 sed -i -e '211a file(MAKE_DIRECTORY "''${folder}")' cmake/DepthaiDownloader.cmake
                                 sed -i -e '212a file(COPY_FILE "''${DEPTHAI_DEVICE_FWP}" "''${folder}/depthai-device-fwp-''${_version_commit_identifier}.tar.xz")' cmake/DepthaiDownloader.cmake
                                 sed -i -e '213a list(APPEND "''${output_list_var}" "''${folder}/depthai-device-fwp-''${_version_commit_identifier}.tar.xz")' cmake/DepthaiDownloader.cmake
-    
+
                                 sed -i -e '189,202d' cmake/DepthaiBootloaderDownloader.cmake
                                 sed -i -e '189a file(MAKE_DIRECTORY "''${folder}")' cmake/DepthaiBootloaderDownloader.cmake
                                 sed -i -e '190a file(COPY_FILE "''${DEPTHAI_BOOTLOADER_FWP}" "''${folder}/depthai-bootloader-fwp-''${_version_commit_identifier}.tar.xz")' cmake/DepthaiBootloaderDownloader.cmake
                                 sed -i -e '191a list(APPEND "''${output_list_var}" "''${folder}/depthai-bootloader-fwp-''${_version_commit_identifier}.tar.xz")' cmake/DepthaiBootloaderDownloader.cmake
-    
+
                                 sed -i -e '752d' CMakeLists.txt # remove file(RELATIVE_PATH command
                                 sed -i -e '/HUNTER_INSTALL_PREFIX/d' CMakeLists.txt
-    
+
                                 sed -i -e 's/CURL::libcurl/curl/g' CMakeLists.txt
                                 sed -i -e 's/cpr::cpr/cpr/g' CMakeLists.txt
                                 sed -i -e 's/lz4::lz4/lz4/g' CMakeLists.txt
@@ -376,7 +376,7 @@ However here is something that looks roughly like the flake that I (Will Free) u
                                 sed -i -e 's/ZLIB::zlib/ZLIB::ZLIB/g' CMakeLists.txt
                                 sed -i -e '/libnop/d' CMakeLists.txt
                             '';
-    
+
                             cmakeFlags = cmakeFlags ++ [
                                 (lib.cmakeBool "HUNTER_ENABLED" false)
                                 (lib.cmakeBool "DEPTHAI_ENABLE_BACKWARD" false) # temporary
@@ -387,35 +387,35 @@ However here is something that looks roughly like the flake that I (Will Free) u
                                 (lib.cmakeBool "BUILD_SHARED_LIBS" (!(stdenv.hostPlatform.isStatic)))
                                 #(lib.cmakeBool "DEPTHAI_PCL_SUPPORT" true) # todo: figure out pcl support
                             ];
-    
+
                             buildInputs = buildInputs ++ [ libnop ];
                             nativeBuildInputs = nativeBuildInputs ++ [ pkg-config ];
                             propagatedBuildInputs = propagatedBuildInputs ++ [ bzip2 fp16-luxonis libarchive-luxonis xz zlib spdlog curl cpr ghc_filesystem backward-cpp nlohmann_json libnop xlink opencv opencv.cxxdev libusb1.dev llvm.openmp ];
                         });
-    
+
                         ros2-fmt-logger = with pkgs; with rosSelf; buildRosPackage {
                             pname = "ros-jazzy-ros2-fmt-logger";
                             version = "1.0.2-beta";
-    
+
                             src = fetchFromGitHub {
                                 owner = "nobleo";
                                 repo = "ros2_fmt_logger";
                                 rev = "751d0bc32ccd358a8886c7c1e8dc8ebf78fccaf9";
                                 hash = "sha256-HQRK/djqdbZuymocIkB1b2ih18HfjRAf4Zj26ACD/0k=";
                             };
-    
+
                             buildType = "ament_cmake";
                             buildInputs = [ ament-cmake-auto ament-cmake-ros ];
                             checkInputs = [ ament-cmake-gtest ];
                             propagatedBuildInputs = [ ament-index-cpp backward-ros fmt rclcpp rcutils ];
                             nativeBuildInputs = [ ament-cmake-auto ament-cmake-ros ];
-    
+
                             meta = {
                                 description = "A modern, ROS 2 logging library that provides fmt-style formatting as a replacement for RCLCPP logging macros";
                                 license = with lib.licenses; [ asl20 ];
                             };
                         };
-    
+
                         depthai-ros = with rosSelf; rosSuper.depthai-ros.overrideAttrs ({
                             propagatedBuildInputs ? [],
                             ...
@@ -423,24 +423,24 @@ However here is something that looks roughly like the flake that I (Will Free) u
                             # remove depthai-examples (why does this not work)
                             propagatedBuildInputs = pkgs.lib.remove depthai-examples propagatedBuildInputs;
                         });
-    
+
                         # For some reason if I don't vendor this, then it thinks that rviz-marker-tools doesn't exist, even though it definitely does.
                         # not sure why, tbh...
                         rviz-marker-tools = with pkgs; with rosSelf; buildRosPackage {
                             pname = "ros-jazzy-rviz-marker-tools";
                             version = "0.1.4-r3";
-    
+
                             src = fetchurl {
                                 url = "https://github.com/ros2-gbp/moveit_task_constructor-release/archive/release/jazzy/rviz_marker_tools/0.1.4-3.tar.gz";
                                 name = "0.1.4-3.tar.gz";
                                 sha256 = "f6f6a470feb75d18d4b951a1d4ac2ff64fe36543e850e30b5b287854c2d61b99";
                             };
-    
+
                             buildType = "ament_cmake";
                             buildInputs = [ ament-cmake urdfdom-headers ];
                             propagatedBuildInputs = [ eigen eigen3-cmake-module geometry-msgs moveit-common rclcpp std-msgs tf2-eigen visualization-msgs ];
                             nativeBuildInputs = [ ament-cmake eigen3-cmake-module ];
-    
+
                             meta = {
                                 description = "Tools for marker creation / handling";
                                 license = with lib.licenses; [ bsdOriginal ];
@@ -455,14 +455,14 @@ However here is something that looks roughly like the flake that I (Will Free) u
                             propagatedBuildInputs = propagatedBuildInputs ++ [ llvm.openmp ];
                         })) {
                             # build all of these larger packages with clang because it's faster than gcc
-    
+
                             rtabmap-sync = rosSuper.rtabmap-sync.overrideAttrs ({
                                 hardeningDisable ? [],
                                 ...
                             } : {
                                 hardeningDisable = hardeningDisable ++ [ "format" ];
                             });
-    
+
                             rtabmap-viz = with pkgs; rosSuper.rtabmap-viz.overrideAttrs ({
                                 nativeBuildInputs ? [],
                                 postFixup ? "",
@@ -470,32 +470,32 @@ However here is something that looks roughly like the flake that I (Will Free) u
                             } : {
                                 nativeBuildInputs = nativeBuildInputs ++ [ qt6.wrapQtAppsHook ];
                                 dontWrapQtApps = false;
-    
+
                                 postFixup = postFixup + ''
                                     wrapQtApp $out/lib/rtabmap_viz/rtabmap_viz
                                 '';
                             });
-    
+
                             grid-map-core = rosSuper.grid-map-core.overrideAttrs ({
                                 NIX_CFLAGS_COMPILE ? "", ...
                             } : {
                                 NIX_CFLAGS_COMPILE = NIX_CFLAGS_COMPILE + " " + "-Wno-deprecated-copy-with-dtor";
                             });
-    
+
                             nav2-costmap-2d = rosSuper.nav2-costmap-2d.overrideAttrs ({
                                 NIX_CFLAGS_COMPILE ? "", ...
                             }: {
                                 NIX_CFLAGS_COMPILE = NIX_CFLAGS_COMPILE + " " + "-Wno-inconsistent-missing-override";
                             });
-    
+
                             nav2-collision-monitor = rosSuper.nav2-collision-monitor.overrideAttrs ({
                                 NIX_CFLAGS_COMPILE ? "", ...
                             }: {
                                 NIX_CFLAGS_COMPILE = NIX_CFLAGS_COMPILE + " " + "-Wno-overloaded-virtual";
                             });
-    
+
                             inherit (rosSuper)
-    
+
                             # rtab map
                             rtabmap-conversions
                             rtabmap-demos
@@ -508,9 +508,9 @@ However here is something that looks roughly like the flake that I (Will Free) u
                             rtabmap-rviz-plugins
                             rtabmap-slam
                             rtabmap-util
-    
+
                             gtsam
-    
+
                             # octomap
                             octomap
                             octomap-mapping
@@ -518,7 +518,7 @@ However here is something that looks roughly like the flake that I (Will Free) u
                             octomap-ros
                             octomap-rviz-plugins
                             octomap-server
-    
+
                             # grid map
                             grid-map
                             grid-map-cmake-helpers
@@ -535,7 +535,7 @@ However here is something that looks roughly like the flake that I (Will Free) u
                             grid-map-rviz-plugin
                             grid-map-sdf
                             grid-map-visualization
-    
+
                             # nav2
                             nav2-amcl
                             nav2-behavior-tree
@@ -566,7 +566,7 @@ However here is something that looks roughly like the flake that I (Will Free) u
                             nav2-2d-msgs
                             nav2-2d-utils
                             navigation2
-    
+
                             depthai-bridge
                             depthai-descriptions
                             depthai-filters
@@ -584,27 +584,27 @@ However here is something that looks roughly like the flake that I (Will Free) u
                             dev-tools = with pkgs; [
                                 colcon
                                 # (colcon.withExtensions [ python3Packages.colcon-alias python3Packages.colcon-rerun ])
-    
+
                                 gnumake
                                 cmake
-    
+
                                 cmake-lint
-    
+
                                 # debugger
                                 llvm.lldb
                                 gdb
-    
+
                                 clang-tools
-    
+
                                 llvm.libstdcxxClang
-    
+
                                 cppcheck
                                 llvm.libllvm
                                 valgrind
-    
+
                                 llvm.libcxx
                             ];
-    
+
                             gstreamer-packages = with pkgs; [
                                 gst_all_1.gstreamer
                                 gst_all_1.gst-plugins-base
@@ -615,7 +615,7 @@ However here is something that looks roughly like the flake that I (Will Free) u
                                 gst_all_1.gst-vaapi
                                 gst_all_1.gst-rtsp-server
                                 gst_all_1.gst-devtools
-    
+
                                 # why does the rtsp server package need these?
                                 libselinux
                                 libsepol
@@ -623,10 +623,10 @@ However here is something that looks roughly like the flake that I (Will Free) u
                                 libunwind
                                 orc
                             ];
-    
+
                             simulation-packages = [
                                 pkgs.gazebo
-    
+
                                 (with jazzy; buildEnv {
                                     paths = [
                                         ros-gz
@@ -636,7 +636,7 @@ However here is something that looks roughly like the flake that I (Will Free) u
                                     ];
                                 })
                             ];
-    
+
                             autonomy-packages = [
                                 (with jazzy; buildEnv {
                                     paths = [
@@ -650,12 +650,12 @@ However here is something that looks roughly like the flake that I (Will Free) u
                                         robot-localization
                                         #rtabmap
                                         rtabmap-ros
-    
+
                                         imu-pipeline
                                     ];
                                 })
                             ];
-    
+
                             visualisation-packages = [
                                 (with jazzy; buildEnv {
                                     paths = [
@@ -671,7 +671,7 @@ However here is something that looks roughly like the flake that I (Will Free) u
                                         rqt-robot-dashboard
                                         rqt-robot-monitor
                                         rqt-robot-steering
-    
+
                                         rviz2
                                         rviz-common
                                         rviz-imu-plugin
@@ -682,14 +682,14 @@ However here is something that looks roughly like the flake that I (Will Free) u
                                         battery-state-rviz-overlay
                                         polygon-rviz-plugins
                                         vision-msgs-rviz-plugins
-    
+
                                         mapviz
                                         mapviz-plugins
                                         tile-map
                                     ];
                                 })
                             ];
-    
+
                             mkdocs-packages = with pkgs; [
                                 python3Packages.mkdocs-material
                                 python3Packages.mkdocs-material-extensions
@@ -707,22 +707,22 @@ However here is something that looks roughly like the flake that I (Will Free) u
                                     xacro
                                     #ffmpeg-image-transport # <--- broken
                                     urdf-launch
-    
+
                                     control-msgs
                                     controller-manager
                                     ros2-control
                                     ros2-controllers
-    
+
                                     camera-info-manager
                                     camera-info-manager-py
-    
+
                                     ros2-fmt-logger
-    
+
                                     twist-mux
                                     twist-stamper
                                     teleop-twist-joy
                                     teleop-twist-keyboard
-    
+
                                     depthai
                                     # for now this is broken because it keeps including depthai-examples
                                     #depthai-ros
@@ -731,7 +731,7 @@ However here is something that looks roughly like the flake that I (Will Free) u
                         ] ++ dev-tools ++ gstreamer-packages ++ simulation-packages ++ autonomy-packages ++ visualisation-packages ++ mkdocs-packages;
                     };
                 });
-    
+
         nixConfig = {
             extra-substituters = [ "https://ros.cachix.org" ];
             extra-trusted-public-keys = [ "ros.cachix.org-1:dSyZxI8geDCJrwgvCOHDoAfOm5sV1wCPjBkKL+38Rvo=" ];
@@ -740,7 +740,7 @@ However here is something that looks roughly like the flake that I (Will Free) u
     ```
 
 I also didn't want to commit this file to the repository, as it's not relevant to others, so I had to do an incredibly nasty workaround because the nix flake
-hates not being added to git:  
+hates not being added to git:\
 I have 2 folders, `~/Programming/C++/robot-repo-ros2/` and `~/Programming/C++/robot-repo-ros2.flake/`. the `robot-repo-ros2.flake` folder is a git repo with the
 `flake.nix` file in it. And then, the `robot-repo-ros2` folder has a symlink to `flake.nix` inside of it. This stops nix from complaining.
 I also have the following `.envrc` file:

@@ -101,7 +101,7 @@ All files should be reformatted using [Clang-Format](https://clang.llvm.org/docs
 repository.
 
 [Clang-Tidy](https://clang.llvm.org/extra/clang-tidy/) should be used to lint all files prior to committing or PRing. Please try to fix all the warnings that it
-shows, it shows them for a reason.  
+shows, it shows them for a reason.\
 If you really cannot fix the warning, then you can suppress the warning, however you should provide a reason for the suppression, for example:
 
 ```cpp
@@ -143,7 +143,7 @@ If it's too complex to add a type hint, then it's probably because you're doing 
 ### Ruff & ty
 
 [Ruff](https://docs.astral.sh/ruff/) is used for general linting of python code, and should be run on all files prior to a commit or a PR. Please fix any errors
-or warnings from ruff.  
+or warnings from ruff.\
 If for some reason the warning cannot be fixed or is a false positive, then it can be suppressed like this:
 
 ```python
@@ -151,7 +151,7 @@ except Exception as e:  # noqa: BLE001
 self._error = str(e)
 ```
 
-[ty](https://docs.astral.sh/ty/) is then used for type checking python code, this should also be used prior to committing or PRing.  
+[ty](https://docs.astral.sh/ty/) is then used for type checking python code, this should also be used prior to committing or PRing.\
 False positives can also be similarly suppressed:
 
 ```python
