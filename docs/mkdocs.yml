@@ -21,6 +21,7 @@ plugins:
   - search:
       lang: en
   - social:
+      enabled: !ENV [ CI, SOCIAL, false ]
       cache: true
       cards: true
       cards_layout_options:
