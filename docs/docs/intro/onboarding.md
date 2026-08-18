@@ -8,15 +8,15 @@ You'll gain hands-on experience with the core tools and concepts that power mode
 
 ## **Tools You'll Be Working With:**
 
-- **Ubuntu 24.04 (Noble Numbat)**  
+- **Ubuntu 24.04 (Noble Numbat)**\
   Our preferred open-source Linux distribution for robotics development.
-- **Virtual Machines (VMs)**  
+- **Virtual Machines (VMs)**\
   If you cannot run Ubuntu directly on your device, we use **Oracle VirtualBox** or **UTM** (for Mac) for our development environments.
-- **ROS 2 (Jazzy)**  
+- **ROS 2 (Jazzy)**\
   The Robot Operating System (ROS) enables communication between various parts of the robot. It's central to everything we build.
-- **C++ and Python**  
+- **C++ and Python**\
   Our primary programming languages for building robot behavior, control algorithms, and infrastructure.
-- **GitHub**  
+- **GitHub**\
   For version control, collaboration, and managing the entire codebase. Every member contributes and pulls from our shared repositories.
 
 ## **Attendance & Participation**

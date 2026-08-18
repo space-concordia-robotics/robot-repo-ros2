@@ -20,7 +20,7 @@ In order to connect to the robot, you need to do the following:
 
 ???+ note
 
-    It is recommended that you add the jetson to your ssh config, to make it easier to ssh into.  
+    It is recommended that you add the jetson to your ssh config, to make it easier to ssh into.\
     Add the following to your `~/.ssh/config` (create the file & directory if it does not exist):
     ``` title="~/.ssh/config"
     Host rover
@@ -32,7 +32,7 @@ In order to connect to the robot, you need to do the following:
     If you have an ssh key, you can copy it over to the jetson using `ssh-copy-id nvidia@10.240.0.10`,
     and then replace `Password [password here]` with `IdentityFile ~/.ssh/id_ed25519`
     (or if you are not using an ed25519 ssh key, you can replace that with your ssh key)
-    
+
     Once you have done this, instead of doing `ssh nvidia@10.240.0.10`, you can do `ssh rover`.
 
 ## Running

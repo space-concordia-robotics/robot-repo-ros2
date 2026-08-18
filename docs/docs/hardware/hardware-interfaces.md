@@ -10,7 +10,7 @@ Hardware interfaces & controllers help abstract over interactions with hardware,
 The general idea behind them is that you want to split the logic and the control of the hardware into two.
 The hardware interface handles communicating with the hardware, and the controller handles the logic.
 
-An example would be a light which is able to take different commands like "blink", "rainbow", etc.  
+An example would be a light which is able to take different commands like "blink", "rainbow", etc.\
 The hardware interface only sends RGB values directly to the light, and then the controller will handle the logic like deciding when to turn on/off, when to
 change colours, etc.
 

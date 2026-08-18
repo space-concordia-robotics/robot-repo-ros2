@@ -4,19 +4,19 @@
 
 To help you get up and running smoothly, here's a list of foundational topics to explore and become comfortable with:
 
-- [ ] **Git & GitHub Basics**  
-  Learn essential Git commands:  
+- [ ] **Git & GitHub Basics**\
+  Learn essential Git commands:\
   `git fetch`, `git pull`, `git commit`, `git push`, `git switch`, `git log`, etc.
-- [ ] **Linux Command Lines**  
+- [ ] **Linux Command Lines**\
   Get familiar with:
     - `cd`, `ls`, `mkdir`, `code .`
     - How to source your ROS workspace in `.bashrc`
     - Creating and managing ROS 2 workspaces and packages
-- [ ] **ROS 2 Fundamentals**  
+- [ ] **ROS 2 Fundamentals**\
   Understand the core structure and purpose of ROS 2\. Learn how it enables distributed robot systems.
-- [ ] **Nodes & Topics**  
+- [ ] **Nodes & Topics**\
   These are the building blocks of ROS-based applications. Get to know how they work and interact.
-- [ ] **The Rover**  
+- [ ] **The Rover**\
   Finally, start learning about the rover itself&mdash;its architecture, components, and how you'll interface with it through code and testing. Hands-on time is
   highly encouraged!
 
@@ -51,9 +51,9 @@ Feel free to use any of the videos/documentation found above!
 
 **Here's what you need to do:**
 
-1. **Create a new GitHub repository**  
+1. **Create a new GitHub repository**\
    This is where you'll upload your code for this task and future personal practice. Make it public or private &mdash; up to you!
-2. **Set up a new ROS2 workspace**  
+2. **Set up a new ROS2 workspace**\
    Use either your virtual machine or your local Linux setup (Ubuntu 24.04). Make sure the workspace builds and sources correctly.
 3. **Inside that workspace, create two packages:**
     - A **Python** package (using `ament_python`)
@@ -61,9 +61,9 @@ Feel free to use any of the videos/documentation found above!
 4. **Implement a simple publisher and subscriber in each package**
     - You could do anything you'd like! For example: have the publisher send a string like `"Hello from ROS2!"` and have the subscriber print it to the
       terminal.
-5. **Build your workspace and test your nodes**  
+5. **Build your workspace and test your nodes**\
    Make sure they work using `ros2 run` or by launching them together.
-6. **Push everything to your GitHub repo**  
+6. **Push everything to your GitHub repo**\
    Be sure to commit your `src/`, `CMakeLists.txt`, `package.xml`, and any launch or config files you make.
 
 If you're ever unsure about anything, don't hesitate to ask questions &mdash; everyone here started somewhere, and we're all learning together.
