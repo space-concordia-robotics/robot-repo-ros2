@@ -1,9 +1,19 @@
 # GStreamer
 
-If you're debugging gstreamer code and stuck, read: https://gstreamer.freedesktop.org/documentation/tutorials/basic/debugging-tools.html
+If you're debugging gstreamer code and stuck,
+read [Basic tutorial 11: Debugging tools](https://gstreamer.freedesktop.org/documentation/tutorials/basic/debugging-tools.html).
 
-With gstreamer, the command line is your friend.
-The following are probably quite useful to you
+!!! question inline end "Getting Help"
+
+    GStreamer is quite complex, so often times searching something up is the best and quickest way to solve a problem.
+    You will spend a lot of time searching things up and referencing documentation with GStreamer.
+    If you do not know how to do something, try to search it, there are many examples online.\
+    If that fails, looking at the [GStreamer source code](https://gitlab.freedesktop.org/gstreamer/gstreamer) for any examples can sometimes help
+    (look in the `gst-examples` subproject and the `tests` directory in any relevant subproject).\
+    If you still cannot figure it out, I recommend that you join the [GStreamer matrix space](https://matrix.to/#/#gstreamer:gstreamer.org).
+    This is where you can ask for help related to GStreamer.
+
+With gstreamer, the command line is your friend. The following are probably quite useful to you:
 
 - `GST_DEBUG` environment variable (see above)
 - `gst-inspect-1.0`
