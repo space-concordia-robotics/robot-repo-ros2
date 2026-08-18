@@ -148,7 +148,7 @@ If for some reason the warning cannot be fixed or is a false positive, then it c
 
 ```python
 except Exception as e:  # noqa: BLE001
-self._error = str(e)
+    self._error = str(e)
 ```
 
 [ty](https://docs.astral.sh/ty/) is then used for type checking python code, this should also be used prior to committing or PRing.\
