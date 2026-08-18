@@ -7,3 +7,69 @@
         width:16rem;
     }
 }
+
+.md-typeset {
+    code.ros-topic,
+    code.ros-topic,
+    code.ros-service,
+    code.ros-action,
+    code.ros-node,
+    code.ros-param,
+    code.ros-package,
+    code.ros-msg,
+    code.ros-srv,
+    code.ros-action-type {
+        border-radius: 0.25em;
+        color: var(--md-primary-fg-color);
+        background-color: color-mix(in srgb, var(--md-accent-fg-color) 15%, transparent);
+
+        .ros-reference-separator {
+            color: var(--md-default-fg-color);
+            opacity: 0.6;
+        }
+
+        .ros-reference-separator:not([data-depth="0"]) {
+            opacity: 0.5;
+        }
+    }
+
+    /*
+    !* Stuff for icons !*
+
+    .ros-reference::before {
+        content: "";
+        display: inline-block;
+        width: 0.9em;
+        height: 0.9em;
+        margin-right: 0.1em;
+        margin-left: 0.05em;
+        vertical-align: -0.1em;
+
+        background-color: currentColor;
+
+        mask-repeat: no-repeat;
+        mask-position: center;
+        mask-size: contain;
+    }
+
+    .ros-topic::before {
+        mask-image: url("/assets/images/icons/inbox.svg");
+        -webkit-mask-image: url("/assets/images/icons/inbox.svg");
+    }
+
+    .ros-node::before {
+        mask-image: url("/assets/images/icons/hexagon.svg");
+        -webkit-mask-image: url("/assets/images/icons/hexagon.svg");
+    }
+
+    .ros-service::before {
+        mask-image: url("/assets/images/icons/server.svg");
+        -webkit-mask-image: url("/assets/images/icons/server.svg");
+    }
+
+    .ros-action::before {
+        mask-image: url("/assets/images/icons/target.svg");
+        -webkit-mask-image: url("/assets/images/icons/target.svg");
+    }
+    */
+}

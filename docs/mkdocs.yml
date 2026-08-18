@@ -115,6 +115,8 @@ theme:
     #- toc.integrate
 
 markdown_extensions:
+  - plugins.ros_markdown:
+      distro: jazzy
   - abbr
   - admonition
   - attr_list
@@ -178,6 +180,9 @@ markdown_extensions:
         kwds:
           case: lower
   - tables
+
+watch:
+  - overrides
 
 extra:
   # TODO 2026-03-14 (Will Free): add social links
