@@ -48,8 +48,9 @@ plugins:
       optimize_jpg_progressive: true
   - minify:
       minify_html: !ENV [ CI, MINIFY, false ]
-      minify_js: !ENV [ CI, MINIFY, false ]
-      minify_css: !ENV [ CI, MINIFY, false ]
+      # note: minifying the js/css breaks extra_javascript & extra_css, sadly.
+      minify_js: false
+      minify_css: false
       htmlmin_opts:
         remove_comments: true
       js_files:
