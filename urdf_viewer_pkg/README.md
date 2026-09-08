@@ -1,4 +1,5 @@
-Summary: This package loads a rover URDF in RVIZ 
+# Summary
+This package loads a rover URDF in RVIZ 
 
 Description: Takes raw Solidworks-URDF exports so that they can simply be dragged and dropped in, applies an un-changing color scheme and fixes references to wrong directories. Then it automatically loads a URDF of your choice and launches RVIZ
 
