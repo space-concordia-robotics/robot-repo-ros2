@@ -20,34 +20,29 @@ pip install requirements.txt
 
 ```
 echo 'SUBSYSTEM=="usb", ATTRS{idVendor}=="03e7", MODE="0666"' | sudo tee /etc/udev/rules.d/80-movidius.rules
-
 sudo udevadm control --reload-rules && sudo udevadm trigger
 ```
 
 ### How to run the program
-
-The most reliable way that I've found to connect to devices from PoE is to c!onnnect directly to their IP.  For the black mydlink router,
-the OAK-D-PRO IP address has been manually set to 10.240.0.67 on the basestation router.  Switching depending on how the devices are connected (just FFC vs FFC+OAKD, just OAKD)
 
 To run the camera:
 ```
 python3 main.py --mode [PipelineType] -d [MXID or IP]
 ```
 
-The available modes are:
-mode       ->   bitrate(b/ps)   -> fps  ->  link    
---------------------------------------
-ffc_all    ->   2000000         -> 30   ->  N/A
-ffc_front  ->   7000000         -> 30   ->  rtsp://localhost:8554/FRONT
-fc_back    ->   7000000         -> 30   ->  rtsp://localhost:8554/BACK
-ffc_right  ->   7000000         -> 30   ->  rtsp://localhost:8554/RIGHT
-ffc_left,  ->   7000000         -> 30   ->  rtsp://localhost:8554/LEFT
-oakd_rgb,  ->   7000000         -> 30   ->  rtsp://localhost:8554/RGB
-oakd_yolo  ->   4000000         -> 15   ->  rtsp://localhost:8554/RGB
+IPs* OAK-D Pro `10.240.0.67`, FFC PoE `10.240.0.69`.
 
-To see the currently live cameras in the pipeline go to http://localhost:8082/
+**Modes**
 
-### While a pipeline is running
+| mode | bitrate | fps | RTSP paths |
+|------|---------|-----|------------|
+| ffc_all | 2 Mbps | 30 | `/FRONT` `/RIGHT` `/LEFT` `/BACK` |
+| ffc_front / ffc_back / ffc_right / ffc_left | 7 Mbps | 30 | one of the above |
+| oakd_rgb | 7 Mbps | 30 | `/RGB` |
+| oakd_yolo | 4 Mbps | 15 | `/RGB` + terminal `detections` |
+| all_cams | FFC 2 Mbps + RGB 7 Mbps | 30 | all five paths |
+
+## REPL commands
 
 To stop a pipeline run `stop` in the same terminal that ran it
 
@@ -58,5 +53,26 @@ To continuously check bandwidth run `watch [interval(s)]`
 
 To check status run `status`
 
-To check for aruco tags run `aruco`
-To check continuously for aruco tags run `watch_aruco`
+
+## main.py examples (To launch all cameras)
+
+  python3 main.py --mode oakd_rgb -d 10.240.0.50
+```
+  > mode ffc front,right                   # OAK keeps running; FFC starts with 2 cams
+  > mode ffc front,right,left              # FFC restarts with 3 cams; OAK untouched
+  > mode ffc front 10.240.0.40             # FFC = front only, on explicit device
+  > mode ffc_all                            # FFC restarts with all 4
+  > stop ffc                               # OAK keeps running
+  > stop                                   # stops both
+```
+  Valid ffc cameras: front, right, left, back (case-insensitive).
+
+## launch_cameras.sh examples
+
+```
+  bash launch_cameras.sh ffc front right       # 2 ffplay windows
+  bash launch_cameras.sh ffc front left back   # 3 windows
+  bash launch_cameras.sh ffc_front             # 1 (alias still works)
+  bash launch_cameras.sh oakd_rgb              # OAK
+  bash launch_cameras.sh all                    # FFC 4-up + OAK RGB
+```
