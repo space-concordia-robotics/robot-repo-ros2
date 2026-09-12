@@ -86,6 +86,9 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 
+# WSL metadata
+*:Zone.Identifier
+
 ### macOS template
 # General
 .DS_Store
