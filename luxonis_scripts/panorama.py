@@ -5,6 +5,7 @@ Stitcher for a seamless result, falls back to horizontal concatenation when
 the scene lacks enough overlap texture, and overlays a cardinal-direction
 strip rotated by the IMU yaw.
 
+Public entry point: build_and_save(snaps, imu_pkt, out_dir, hfov_deg=108.0).
 Two usage modes:
 
 1. Library: ``build_and_save(snaps, imu_pkt, out_dir, hfov_deg=108.0)``
