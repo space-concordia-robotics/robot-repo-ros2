@@ -1,124 +1,120 @@
 //
 // Created by nik on 06/02/24.
 //
-#include "rev_motor_controller.h"
+
+#include "wheels_controller/rev_motor_controller.hpp"
+
+#include <cstring>
 #include <linux/can/raw.h>
-#include <linux/can/bcm.h>
-#include <linux/can/netlink.h>
-#include <linux/can/j1939.h>
 
-void RevMotorController::setDeviceId(uint8_t deviceID, uint8_t newId){
+#include "wheels_controller/command_prefixes.hpp"
 
-    struct can_frame frame{};
+void RevMotorController::setDeviceId(const uint8_t id, const uint8_t newId) {
+    can_frame frame{};
 
-    frame.can_dlc = 5;
-    frame.can_id = (COMMAND_PREFIX_SET_DEVCE_ID << 8) | deviceID;
+    frame.len = 5; // NOLINT(*-pro-type-union-access)
+    frame.can_id = COMMAND_PREFIX_SET_DEVICE_ID << 8 | id;
 
-    uint8_t buf[5] = {newId,0,0,0,1};
-    memcpy(frame.data,buf,sizeof(buf));
+    const uint8_t buf[5] = {newId, 0, 0, 0, 1}; // NOLINT(*-avoid-c-arrays)
+    memcpy(frame.data, buf, sizeof(buf));
 
     CANController::sendFrame(frame);
 }
 
-void RevMotorController::requestStatusFrame(){
-    struct can_frame frame{};
+void RevMotorController::requestStatusFrame() {
+    can_frame frame{};
     /*
      * Periodic status messages will be sent over the CAN bus after sending this command once.
      */
-    
+
     frame.can_id = 0x000502C0;
-    frame.can_dlc = 1;
+    frame.len = 1; // NOLINT(*-pro-type-union-access)
     frame.can_id |= CAN_EFF_FLAG;
     frame.data[0] = 1;
 
     CANController::sendFrame(frame);
-
 }
 
-void RevMotorController::voltagePercentControl(uint8_t deviceId, float percent){
-    struct can_frame frame{};
+void RevMotorController::voltagePercentControl(const uint8_t deviceId, const float percent) {
+    can_frame frame{};
     /*
      *
      */
-    bool isRunning = s_Devices[deviceId].isRunning;
-    if(isRunning){
-        uint64_t buf_data = (1ULL << deviceId);
+    if (s_Devices[deviceId].isRunning) { // NOLINT(*-pro-bounds-constant-array-index)
+        const uint64_t buf_data = 1uLL << deviceId;
 
         frame.can_id = COMMAND_PREFIX_MAINTAIN_SPEED;
         frame.can_id |= CAN_EFF_FLAG;
-        frame.can_dlc = 8;
-        memcpy(frame.data,&buf_data,sizeof(buf_data));
-    }
-    else{
-        s_Devices[deviceId].isRunning = true;
+        frame.len = 8; // NOLINT(*-pro-type-union-access)
+        memcpy(frame.data, &buf_data, sizeof(buf_data));
+    } else {
+        s_Devices[deviceId].isRunning = true; // NOLINT(*-pro-bounds-constant-array-index)
 
         // For a start move command, the id field needs to be added with 0x80. This command is only issued once per move.
-        frame.can_id = (COMMAND_PREFIX_MOVE_MOTORS << 8) | (deviceId + 0x80);
+        frame.can_id = COMMAND_PREFIX_MOVE_MOTORS << 8 | deviceId + 0x80;
         frame.can_id |= CAN_EFF_FLAG;
-        frame.can_dlc = 8;
-        memcpy(frame.data,&percent, sizeof(float));
+        frame.len = 8; // NOLINT(*-pro-type-union-access)
+        memcpy(frame.data, &percent, sizeof(float));
     }
     CANController::sendFrame(frame);
 }
 
-void RevMotorController::stopMotor(uint8_t deviceID){
-
-    struct can_frame frame{};
-    frame.can_id = (COMMAND_PREFIX_MOVE_MOTORS << 8) | (deviceID);
-    frame.can_dlc = 8;
+void RevMotorController::stopMotor(const uint8_t device_id) {
+    can_frame frame{};
+    frame.can_id = COMMAND_PREFIX_MOVE_MOTORS << 8 | device_id; // NOLINT(*-redundant-parentheses)
+    frame.len = 8; // NOLINT(*-pro-type-union-access)
 
     CANController::sendFrame(frame);
 }
 
-void RevMotorController::velocityControl(uint8_t deviceId, float velocity){
-
+void RevMotorController::velocityControl(const uint8_t deviceID, const float velocity) {
     // if(abs(velocity) < 20){
     //     return;
     // }
-    
-    auto frame = can_frame{
-        .can_id = (COMMAND_PREFIX_VELOCITY_CONTROL << 8) | (deviceId+0x80) | CAN_EFF_FLAG,
-        .can_dlc = 8,
-    };
-    
+
+    can_frame frame{};
+    frame.can_id = COMMAND_PREFIX_VELOCITY_CONTROL << 8 | deviceID + 0x80 | CAN_EFF_FLAG;
+    frame.len = 8; // NOLINT(*-pro-type-union-access)
+
     // frame.can_id = (COMMAND_PREFIX_VELOCITY_CONTROL << 8) | (deviceId+0x80);
     // frame.can_id |= CAN_EFF_FLAG;
-    // frame.can_dlc = 8;
+    // frame.len = 8;
     // frame.data = velocity
-    memcpy(frame.data,&velocity,sizeof(float));
-    
+    memcpy(frame.data, &velocity, sizeof(float));
+
     CANController::sendBlockingFrame(frame);
 
     // std::cout << "Running  " << (int)deviceId << " on " << velocity << "\n";
     // uint64_t buf_data = (1ULL << deviceId);
     // frame.can_id = COMMAND_PREFIX_MAINTAIN_VELOCITY;
     // frame.can_id |= CAN_EFF_FLAG;
-    // frame.can_dlc = 8;
+    // frame.len = 8;
     // memcpy(frame.data,&buf_data,sizeof(buf_data));
-    
+
     // CANController::sendBlockingFrame(frame);
-    
+
     // std::cout << "Starting run on " << (int)deviceId << "\n";
     // s_Devices.at(deviceId)->isRunning = true;
     // s_Devices[deviceId].isRunning = true;
-
 }
-void RevMotorController::startMotor(uint64_t mask){
-    struct can_frame frame{};
-    
+
+void RevMotorController::startMotor(const uint64_t mask) {
+    can_frame frame{};
+
     // uint64_t buf_data = (1ULL << deviceId);
     frame.can_id = COMMAND_PREFIX_MAINTAIN_VELOCITY;
     frame.can_id |= CAN_EFF_FLAG;
-    frame.can_dlc = 8;
-    memcpy(frame.data,&mask,sizeof(mask));
-    
+    frame.len = 8; // NOLINT(*-pro-type-union-access)
+    memcpy(frame.data, &mask, sizeof(mask));
+
     CANController::sendBlockingFrame(frame);
 }
 
-void RevMotorController::registerDevice(uint8_t deviceId) {
+void RevMotorController::registerDevice(const uint8_t deviceId) {
     // s_Devices.emplace(deviceId, new Device());
-    s_Devices[deviceId].id = deviceId;
+    s_Devices[deviceId].id = deviceId; // NOLINT(*-pro-bounds-constant-array-index)
 }
+
 //void RevMotorController::printStatus() {
 //
 //    snprintf (s_StatusBuffer, STATUS_BUFFER_SIZE - strlen(s_StatusBuffer),

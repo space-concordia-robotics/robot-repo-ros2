@@ -1,0 +1,74 @@
+<?xml version="1.0"?>
+<robot name="ceres"
+       xmlns="https://www.ros.org"
+       xmlns:xacro="https://ros.org/wiki/xacro"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="https://www.ros.org ../../urdf.xsd https://ros.org/wiki/xacro ../../xacro.xsd">
+    <!-- region Materials -->
+    <material name="plastic-red">
+        <color rgba="1 0 0 1"/>
+    </material>
+
+    <material name="plastic-yellow">
+        <color rgba="1 1 0.25 1"/>
+    </material>
+
+    <material name="plastic-black">
+        <color rgba="0 0 0 1"/>
+    </material>
+
+    <material name="plastic-white">
+        <color rgba="1 1 1 1"/>
+    </material>
+
+    <material name="aluminum">
+        <color rgba="0.8 0.8 0.9 1"/>
+    </material>
+
+    <material name="antenna">
+        <color rgba="0.85 0.85 0.85 1"/>
+    </material>
+
+    <xacro:macro name="gazebo_color" params="reference color">
+        <xacro:if value="${simulation}">
+            <gazebo reference="${reference}">
+                <xacro:if value="${color == 'plastic-red'}">
+                    <material>
+                        <ambient>1 0 0 1</ambient>
+                        <diffuse>1 0 0 1</diffuse>
+                    </material>
+                </xacro:if>
+                <xacro:if value="${color == 'plastic-yellow'}">
+                    <material>
+                        <ambient>1 1 0.25 1</ambient>
+                        <diffuse>1 1 0.25 1</diffuse>
+                    </material>
+                </xacro:if>
+                <xacro:if value="${color == 'plastic-black'}">
+                    <material>
+                        <ambient>0 0 0 1</ambient>
+                        <diffuse>0 0 0 1</diffuse>
+                    </material>
+                </xacro:if>
+                <xacro:if value="${color == 'plastic-white'}">
+                    <material>
+                        <ambient>1 1 1 1</ambient>
+                        <diffuse>1 1 1 1</diffuse>
+                    </material>
+                </xacro:if>
+                <xacro:if value="${color == 'aluminum'}">
+                    <material>
+                        <ambient>0.8 0.8 0.9 1</ambient>
+                        <diffuse>0.8 0.8 0.9 1</diffuse>
+                    </material>
+                </xacro:if>
+                <xacro:if value="${color == 'antenna'}">
+                    <material>
+                        <ambient>0.85 0.85 0.85 1</ambient>
+                        <diffuse>0.85 0.85 0.85 1</diffuse>
+                    </material>
+                </xacro:if>
+            </gazebo>
+        </xacro:if>
+    </xacro:macro>
+</robot>

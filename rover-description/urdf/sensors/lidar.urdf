@@ -1,0 +1,174 @@
+<?xml version="1.0"?>
+<robot name="ceres"
+       xmlns="https://www.ros.org"
+       xmlns:xacro="https://ros.org/wiki/xacro"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="https://www.ros.org ../../urdf.xsd https://ros.org/wiki/xacro ../../xacro.xsd">
+    <!-- TODO 2025-08-30 (Will Free): Position this properly & give it the correct dimensions -->
+
+    <xacro:simulation>
+        <gazebo reference="lidar_link">
+            <sensor name="lidar" type="gpu_lidar">
+                <pose relative_to="lidar_link">0 0 0 0 0 0</pose>
+                <always_on>true</always_on>
+                <visualize>false</visualize>
+                <update_rate>20</update_rate> <!-- 10 or 20 -->
+                <topic>lidar/scan</topic>
+                <gz_frame_id>lidar_link</gz_frame_id>
+
+                <!-- <ray> -->
+                <!--     <scan> -->
+                <!--         <horizontal> -->
+                <!--             <samples>360</samples> -->
+                <!--             <resolution>1.00</resolution> -->
+                <!--             <min_angle>0.00</min_angle> -->
+                <!--             <max_angle>6.28</max_angle> -->
+                <!--         </horizontal> -->
+                <!--     </scan> -->
+
+                <!--     <range> -->
+                <!--         <min>0.12</min> -->
+                <!--         <max>30</max> -->
+                <!--         <resolution>0.015</resolution> -->
+                <!--     </range> -->
+
+                <!--     <noise> -->
+                <!--         <type>gaussian</type> -->
+                <!--         <mean>0.0</mean> -->
+                <!--         <stddev>0.01</stddev> -->
+                <!--     </noise> -->
+                <!-- </ray> -->
+
+                <lidar>
+                    <scan>
+                        <horizontal>
+                            <!-- <samples>256</samples> &lt;!&ndash; 512, 1024, or 2048 &ndash;&gt; -->
+                            <samples>1024</samples> <!-- 512, 1024, or 2048 -->
+                            <min_angle>-3.14</min_angle>
+                            <max_angle>3.14</max_angle>
+                        </horizontal>
+                        <vertical>
+                            <samples>32</samples>
+                            <min_angle>-0.2897</min_angle> <!-- -16.6° is about 0.2897 radians -->
+                            <max_angle>0.2897</max_angle> <!-- +16.6° is about 0.2897 radians -->
+                        </vertical>
+                    </scan>
+
+                    <range>
+                        <min>0.8</min>
+                        <max>128</max>
+                        <resolution>0.1</resolution>
+                    </range>
+
+                    <noise>
+                        <type>gaussian</type>
+                        <mean>0.0</mean>
+                        <stddev>0.02</stddev> <!-- from my reading of the datasheet, I think this should be like 0.02? see: range precision -->
+                    </noise>
+                </lidar>
+                <!-- <plugin filename="RosGzPointCloud" name="ros_gz_point_cloud::PointCloud"> -->
+                <!--     <topic>points</topic> -->
+                <!--     <frame_id>lidar_link</frame_id> -->
+                <!-- </plugin> -->
+            </sensor>
+
+            <!--
+            <sensor name="lidar2d" type="gpu_lidar">
+                <pose relative_to="lidar_link">0 0 0 0 0 0</pose>
+                <always_on>true</always_on>
+                <visualize>false</visualize>
+                <update_rate>10</update_rate> &lt;!&ndash; 10 or 20 &ndash;&gt;
+                <topic>lidar/scan2d</topic>
+                <gz_frame_id>lidar_link</gz_frame_id>
+
+                <ray>
+                    <scan>
+                        <horizontal>
+                            <samples>256</samples>
+                            <resolution>1</resolution>
+                            <min_angle>-3.14</min_angle>
+                            <max_angle>3.14</max_angle>
+                        </horizontal>
+                        <vertical>
+                            <samples>1</samples>
+                            <resolution>0.01</resolution>
+                            <min_angle>0</min_angle>
+                            <max_angle>0</max_angle>
+                        </vertical>
+                    </scan>
+                    <range>
+                        <min>0.08</min>
+                        <max>128.0</max>
+                        <resolution>0.01</resolution>
+                    </range>
+                </ray>
+            </sensor>
+            -->
+
+            <sensor name="lidar_imu" type="imu">
+                <always_on>1</always_on>
+                <update_rate>1000</update_rate>
+                <visualize>true</visualize>
+                <topic>lidar/imu/data</topic>
+                <gz_frame_id>lidar_link</gz_frame_id>
+
+                <!-- TODO 2025-09-19 (Will Free): Get the correct values for this -->
+                <imu>
+                    <angular_velocity>
+                        <x>
+                            <noise type="gaussian">
+                                <mean>0.0</mean>
+                                <stddev>2e-4</stddev>
+                                <bias_mean>0.0000075</bias_mean>
+                                <bias_stddev>0.0000008</bias_stddev>
+                            </noise>
+                        </x>
+                        <y>
+                            <noise type="gaussian">
+                                <mean>0.0</mean>
+                                <stddev>2e-4</stddev>
+                                <bias_mean>0.0000075</bias_mean>
+                                <bias_stddev>0.0000008</bias_stddev>
+                            </noise>
+                        </y>
+                        <z>
+                            <noise type="gaussian">
+                                <mean>0.0</mean>
+                                <stddev>2e-4</stddev>
+                                <bias_mean>0.0000075</bias_mean>
+                                <bias_stddev>0.0000008</bias_stddev>
+                            </noise>
+                        </z>
+                    </angular_velocity>
+
+                    <linear_acceleration>
+                        <x>
+                            <noise type="gaussian">
+                                <mean>0.0</mean>
+                                <stddev>1.7e-2</stddev>
+                                <bias_mean>0.1</bias_mean>
+                                <bias_stddev>0.001</bias_stddev>
+                            </noise>
+                        </x>
+                        <y>
+                            <noise type="gaussian">
+                                <mean>0.0</mean>
+                                <stddev>1.7e-2</stddev>
+                                <bias_mean>0.1</bias_mean>
+                                <bias_stddev>0.001</bias_stddev>
+                            </noise>
+                        </y>
+                        <z>
+                            <noise type="gaussian">
+                                <mean>0.0</mean>
+                                <stddev>1.7e-2</stddev>
+                                <bias_mean>0.1</bias_mean>
+                                <bias_stddev>0.001</bias_stddev>
+                            </noise>
+                        </z>
+                    </linear_acceleration>
+                </imu>
+            </sensor>
+        </gazebo>
+    </xacro:simulation>
+</robot>

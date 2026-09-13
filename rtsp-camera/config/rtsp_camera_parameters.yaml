@@ -1,0 +1,90 @@
+/rtsp_camera_node:
+  ros__parameters:
+    port: 8445
+
+    templates:
+      v4l2: "v4l2src do-timestamp=1"
+      appsink:
+        pipeline: "appsink emit-signals=true"
+        name: "imagesink"
+      appsrc:
+        pipeline: "appsrc name=imagesrc do-timestamp=true min-latency=0 max-latency=0 max-bytes=1000 is-live=true"
+        name: "imagesrc"
+      test: "videotestsrc"
+      encode:
+        encoders:
+          - h264
+          - av1
+        h264:
+          encoder: "x264enc tune=zerolatency"
+          # encoder: "nvvidconv ! video/x-raw(memory:NVMM),format=(string)NV1' ! nvv4l2h264enc preset-level=3"
+          bitrate_param: "bitrate"
+          pipeline: "video/x-h264, profile=baseline"
+          rtph_pay: "rtph264pay name=pay0 pt=96"
+        av1:
+          encoder: "nvvidconv ! video/x-raw(memory:NVMM),format=(string)NV12 ! nvv4l2av1enc preset-level=2"
+          bitrate_param: "bitrate"
+          pipeline: "video/x-av1"
+          rtph_pay: "rtpav1pay name=pay0"
+
+    enabled_streams:
+      - camera0
+      # - camera1
+      # - camera2
+
+    streams:
+      # camera0:
+      #   type: camera
+      #   source: /dev/video0
+      #   mountpoint: /camera0
+      #   encoder: h264 # av1 is currently not supported
+      #   bitrate: 8000000
+      #   fps: 10
+      #   width: 960
+      #   height: 600
+      #   image_topic_enabled: true
+      #   image_topic:
+      #     name: camera0
+      #     uncompressed: true
+      #     compressed: true
+      #     fps: 10
+      #     scale: 0.5
+      camera0:
+        type: camera
+        source: /dev/video0
+        mountpoint: /camera0
+        encoder: h264 # av1 is currently not supported
+        bitrate: 8000
+        fps: 30
+        width: 1920
+        height: 1080
+        image_topic_enabled: true
+        image_topic:
+          name: camera0
+          uncompressed: true
+          compressed: true
+          fps: 10
+          scale: 0.5
+
+      camera1:
+        type: camera
+        source: /dev/video1
+        mountpoint: /camera1
+        encoder: h264 # av1 is currently not supported
+        bitrate: 16000000
+        fps: 60
+        width: 2560
+        height: 720
+
+      camera2:
+        type: test
+        source: ""
+        mountpoint: /camera2
+        encoder: h264 # av1 is currently not supported
+        bitrate: 8000000
+        fps: 30
+        width: 1920
+        height: 1080
+
+# ros2 launch zed_wrapper zed_camera.launch.py camera_model:=zed2
+# ros2 launch zed_wrapper zed_camera.launch.py camera_model:=zed2 publish_urdf:=false publish_tf:=false publish_map_tf:=false enable_gnss:=false use_sim_time:=false

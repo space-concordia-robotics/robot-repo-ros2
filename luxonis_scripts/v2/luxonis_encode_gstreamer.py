@@ -1,53 +1,63 @@
 #!/usr/bin/env python3
-"""DepthAI → H.265 → RTSP (port 8554). FFC 4P and/or OAK-D; USB or Ethernet devices.
+# ruff: noqa: D101, D102, D103, D107, T201
+"""
+DepthAI → H.265 → RTSP (port 8554). FFC 4P and/or OAK-D; USB or Ethernet devices.
 
 Deps: see system_deps_encoder.txt (apt `gi` + pip `depthai`, often venv with system site-packages).
 Viewer: luxonis_viewer.py (start this script first).
 """
-
 import argparse
+import contextlib
 import json
 import os
-import threading
 import queue
+import threading
 import time
+import typing
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any, Literal
 
-try:
-    import gi
-except ModuleNotFoundError as e:
-    raise SystemExit(
-        "Missing Python module `gi` (install with apt, not pip `gi`).\n"
-        "  sudo apt install python3-gi gir1.2-gstreamer-1.0 gir1.2-gst-rtsp-server-1.0\n"
-        "Details: luxonis_scripts/system_deps_encoder.txt"
-    ) from e
+import depthai as dai
+import gi
+from depthai import DeviceInfo
+from depthai.node import XLinkOut
 
 gi.require_version("Gst", "1.0")
 gi.require_version("GstRtspServer", "1.0")
 
-from gi.repository import Gst, GstRtspServer, GLib
+from gi.repository import GLib, Gst, GstRtspServer  # noqa: E402
+from gi.repository.GstApp import AppSrc  # noqa: E402
+from gi.repository.GstRtsp import RTSPUrl  # noqa: E402
+from gi.repository.GstRtspServer import RTSPMedia  # noqa: E402
 
-try:
-    import depthai as dai
-except ModuleNotFoundError as e:
-    raise SystemExit(
-        "Missing `depthai` (pip install depthai in the same Python you use here).\n"
-        "For apt `gi` + pip packages, use a venv with system site-packages — see\n"
-        "luxonis_scripts/system_deps_encoder.txt"
-    ) from e
-
-FFC_STREAMS = ["FRONT", "RIGHT", "LEFT", "BACK"] # CAMC = LEFT, CAMD = BACK, CAMA = FRONT, CAMB = RIGHT
+# TODO 2026-06-30 (Will Free): these should really be enums
+FFC_STREAMS = ["FRONT", "RIGHT", "LEFT", "BACK"]  # CAMC = LEFT, CAMD = BACK, CAMA = FRONT, CAMB = RIGHT
 OAKD_STREAMS = ["oakd_rgb", "oakd_left", "oakd_right"]
 
 DEFAULT_FFC_MXID = "14442C10014791D700"
 DEFAULT_OAKD_MXID = "1944301001EDE12E00"
 
 
-def load_config(path):
-    with open(path, encoding="utf-8") as f:
+@dataclass
+class ParsedArgs:
+    # TODO 2026-06-30 (Will Free): this should really be an enum
+    sources: Literal["ffc", "oakd", "both"]
+    config: Path
+    ffc_mxid: str | None
+    oakd_mxid: str | None
+    fps: int
+    bitrate: int
+    discovery_attempts: int
+    discovery_delay: float
+
+
+def load_config(path: Path) -> dict[str, Any]:
+    with path.open(encoding="utf-8") as f:
         return json.load(f)
 
 
-def resolve_mx_ids(args):
+def resolve_mx_ids(args: ParsedArgs) -> tuple[str, str]:
     ffc = DEFAULT_FFC_MXID
     oakd = DEFAULT_OAKD_MXID
     if args.config:
@@ -63,7 +73,7 @@ def resolve_mx_ids(args):
     return ffc, oakd
 
 
-def expected_device_count(sources):
+def expected_device_count(sources: Literal["ffc", "oakd", "both"]) -> int:
     if sources == "both":
         return 2
     return 1
@@ -75,8 +85,11 @@ class RtspFactory(GstRtspServer.RTSPMediaFactory):
         super().__init__()
 
         self.set_shared(True)
+        # TODO 2026-06-30 (Will Free): why is a queue size of 2 used here?
+        #  why is a queue used at all instead of a property?
         self.queue = queue.Queue(maxsize=2)
 
+        # TODO 2026-06-30 (Will Free): should any of these be configurable?
         self.launch_string = (
             "appsrc name=source is-live=true block=true format=GST_FORMAT_TIME "
             "caps=video/x-h265,stream-format=byte-stream,alignment=au "
@@ -85,30 +98,34 @@ class RtspFactory(GstRtspServer.RTSPMediaFactory):
         )
 
     def push(self, data: bytes):
-        try:
+        with contextlib.suppress(queue.Full):  # drop if client is too slow
             self.queue.put_nowait(data)
-        except queue.Full:
-            pass  # drop if client is too slow
 
-    def do_create_element(self, url):
+    def do_create_element(self, url: RTSPUrl) -> Gst.Element:  # noqa: ARG002
         return Gst.parse_launch(self.launch_string)
 
-    def do_configure(self, rtsp_media):
-        appsrc = rtsp_media.get_element().get_child_by_name("source")
+    def do_configure(self, media: RTSPMedia):
+        element: Gst.Bin = typing.cast(Gst.Bin, media.get_element())
+        appsrc: AppSrc = typing.cast(AppSrc, element.get_child_by_name("source"))
+
+        # TODO 2026-06-30 (Will Free): I don't see anything in the docs that would indicate that setting is-live would solve 503s with many client?
+        #  according to the docs for is-live on appsrc,
+        #  "Instruct the source to behave like a live source. This includes that it will only push out buffers in the PLAYING state."
 
         # RTSP live mode (avoids 503 with many clients)
         appsrc.set_property("is-live", True)
         appsrc.set_property("format", Gst.Format.TIME)
         appsrc.set_property("do-timestamp", True)
 
-        rtsp_media.set_reusable(True)
+        media.set_reusable(True)
 
         appsrc.connect("need-data", self.on_need_data)
 
-    def on_need_data(self, src, length):
+    def on_need_data(self, src: AppSrc, _length: int):
         try:
             data = self.queue.get(timeout=1)
             buf = Gst.Buffer.new_allocate(None, len(data), None)
+            assert buf is not None
             buf.fill(0, data)
             src.emit("push-buffer", buf)
         except queue.Empty:
@@ -117,12 +134,13 @@ class RtspFactory(GstRtspServer.RTSPMediaFactory):
 
 # --- RTSP server ---
 class RtspServer(GstRtspServer.RTSPServer):
-    def __init__(self, stream_names):
+    def __init__(self, stream_names: list[str]):
         super().__init__()
         Gst.init(None)
 
         self.factories = {}
         mounts = self.get_mount_points()
+        assert mounts is not None
 
         for name in stream_names:
             factory = RtspFactory()
@@ -136,7 +154,7 @@ class RtspServer(GstRtspServer.RTSPServer):
 
 
 # --- Per-device capture threads ---
-def run_ffc_device(server, device_info, fps, bitrate):
+def run_ffc_device(server: RtspServer, device_info: dai.DeviceInfo, fps: int, bitrate: int):
     while True:
         try:
             pipeline = dai.Pipeline()
@@ -150,14 +168,16 @@ def run_ffc_device(server, device_info, fps, bitrate):
             stream_names = ["FRONT", "RIGHT", "LEFT", "BACK"]
 
             for i, sock in enumerate(sockets):
-                cam = pipeline.create(dai.node.ColorCamera)
+                # noinspection PyTypeChecker
+                cam: dai.node.ColorCamera = pipeline.create(dai.node.ColorCamera)
                 cam.setBoardSocket(sock)
                 cam.setResolution(dai.ColorCameraProperties.SensorResolution.THE_1080_P)
                 cam.setVideoSize(1920, 1080)
                 cam.setFps(fps)
                 cam.setInterleaved(False)
 
-                enc = pipeline.create(dai.node.VideoEncoder)
+                # noinspection PyTypeChecker
+                enc: dai.node.VideoEncoder = pipeline.create(dai.node.VideoEncoder)
                 enc.setDefaultProfilePreset(fps, dai.VideoEncoderProperties.Profile.H265_MAIN)
                 enc.setRateControlMode(dai.VideoEncoderProperties.RateControlMode.CBR)
                 enc.setBitrate(bitrate)
@@ -165,25 +185,29 @@ def run_ffc_device(server, device_info, fps, bitrate):
 
                 cam.video.link(enc.input)
 
-                xout = pipeline.create(dai.node.XLinkOut)
+                # noinspection PyTypeChecker
+                xout: XLinkOut = pipeline.create(dai.node.XLinkOut)
                 xout.setStreamName(stream_names[i])
                 enc.bitstream.link(xout.input)
 
             with dai.Device(pipeline, device_info) as device:
-                queues = [device.getOutputQueue(n, maxSize=30, blocking=True) for n in stream_names]
+                # noinspection PyArgumentList
+                queues = [device.getOutputQueue(n, maxSize=30, blocking=True) for n in stream_names]  # ty:ignore[unknown-argument]
                 print(f"  FFC 4P ({device_info.getMxId()}) running")
                 time.sleep(2)
                 while True:
-                    for name, q in zip(stream_names, queues):
-                        pkt = q.tryGet()
+                    for name, q in zip(stream_names, queues, strict=True):
+                        # DataOutputQueue.tryGet() should always return Buffer | None here
+                        pkt: dai.Buffer | None = typing.cast(dai.Buffer | None, q.tryGet())
                         if pkt is not None:
                             server.factories[name].push(pkt.getData())
-        except Exception as e:
+        except Exception as e:  # noqa: PERF203, BLE001
             print(f"  FFC 4P error: {e} — reconnecting in 1s...")
             time.sleep(1)
 
 
-def run_oakd_device(server, device_info, fps, bitrate):
+# TODO 2026-06-30 (Will Free): why is this duplicated when it's functionally the same as run_ffc_device()?
+def run_oakd_device(server: RtspServer, device_info: dai.DeviceInfo, fps: int, bitrate: int):
     while True:
         try:
             pipeline = dai.Pipeline()
@@ -195,15 +219,17 @@ def run_oakd_device(server, device_info, fps, bitrate):
             ]
             stream_names = ["oakd_rgb", "oakd_left", "oakd_right"]
 
-            for i, (label, sock, res) in enumerate(configs):
-                cam = pipeline.create(dai.node.ColorCamera)
+            for i, (_label, sock, res) in enumerate(configs):
+                # noinspection PyTypeChecker
+                cam: dai.node.ColorCamera = pipeline.create(dai.node.ColorCamera)
                 cam.setBoardSocket(sock)
                 cam.setResolution(res)
                 cam.setVideoSize(1280, 800)
                 cam.setFps(fps)
                 cam.setInterleaved(False)
 
-                enc = pipeline.create(dai.node.VideoEncoder)
+                # noinspection PyTypeChecker
+                enc: dai.node.VideoEncoder = pipeline.create(dai.node.VideoEncoder)
                 enc.setDefaultProfilePreset(fps, dai.VideoEncoderProperties.Profile.H265_MAIN)
                 enc.setRateControlMode(dai.VideoEncoderProperties.RateControlMode.CBR)
                 enc.setBitrate(bitrate)
@@ -211,27 +237,30 @@ def run_oakd_device(server, device_info, fps, bitrate):
 
                 cam.video.link(enc.input)
 
-                xout = pipeline.create(dai.node.XLinkOut)
+                # noinspection PyTypeChecker
+                xout: XLinkOut = pipeline.create(dai.node.XLinkOut)
                 xout.setStreamName(stream_names[i])
                 enc.bitstream.link(xout.input)
 
             with dai.Device(pipeline, device_info) as device:
-                queues = [device.getOutputQueue(n, maxSize=30, blocking=True) for n in stream_names]
+                # noinspection PyArgumentList
+                queues = [device.getOutputQueue(n, maxSize=30, blocking=True) for n in stream_names]  # ty:ignore[unknown-argument]
                 print(f"  OAK-D Pro W ({device_info.getMxId()}) running")
                 time.sleep(2)
                 while True:
-                    for name, q in zip(stream_names, queues):
-                        pkt = q.tryGet()
+                    for name, q in zip(stream_names, queues, strict=True):
+                        # DataOutputQueue.tryGet() should always return Buffer | None here
+                        pkt: dai.Buffer | None = typing.cast(dai.Buffer | None, q.tryGet())
                         if pkt is not None:
                             server.factories[name].push(pkt.getData())
-        except Exception as e:
+        except Exception as e:  # noqa: PERF203, BLE001
             print(f"  OAK-D Pro W error: {e} — reconnecting in 1s...")
             time.sleep(1)
 
 
 # --- Discovery ---
-def discover_devices(expected=2, max_attempts=10, delay=1):
-    devices = []
+def discover_devices(expected: int = 2, max_attempts: int = 10, delay: float = 1) -> list[dai.DeviceInfo]:
+    devices: list[dai.DeviceInfo] = []
     for attempt in range(1, max_attempts + 1):
         devices = dai.Device.getAllAvailableDevices()
         print(f"  Attempt {attempt}/{max_attempts}: found {len(devices)} device(s)")
@@ -250,7 +279,7 @@ def discover_devices(expected=2, max_attempts=10, delay=1):
     return devices
 
 
-def identify_devices(devices, ffc_mxid, oakd_mxid):
+def identify_devices(devices: list[dai.DeviceInfo], ffc_mxid: str, oakd_mxid: str) -> tuple[DeviceInfo | None, DeviceInfo | None]:
     ffc_info = None
     oakd_info = None
 
@@ -263,7 +292,7 @@ def identify_devices(devices, ffc_mxid, oakd_mxid):
     return ffc_info, oakd_info
 
 
-def parse_args():
+def parse_args() -> ParsedArgs:
     epilog = """
 Start this before luxonis_viewer.py. RTSP: rtsp://HOST:8554/<stream> (default port 8554).
 
@@ -284,6 +313,7 @@ Config: --config JSON with ffc_mxid, oakd_mxid (see luxonis_devices.example.json
     )
     p.add_argument(
         "--config",
+        type=Path,
         metavar="PATH",
         help="JSON file with optional keys ffc_mxid, oakd_mxid.",
     )
@@ -308,7 +338,7 @@ Config: --config JSON with ffc_mxid, oakd_mxid (see luxonis_devices.example.json
         default=1.0,
         help="Seconds between discovery attempts (default: 5).",
     )
-    return p.parse_args()
+    return ParsedArgs(**p.parse_args().__dict__)
 
 
 def main():
@@ -325,10 +355,10 @@ def main():
 
     print("\nSearching for DepthAI devices...")
     print(
-        f"  Mode: --sources {sources} (expecting at least {expected} device(s) on USB/network for full setup)"
+        f"  Mode: --sources {sources} (expecting at least {expected} device(s) on USB/network for full setup)",
     )
     devices = discover_devices(
-        expected=expected, max_attempts=args.discovery_attempts, delay=args.discovery_delay
+        expected=expected, max_attempts=args.discovery_attempts, delay=args.discovery_delay,
     )
 
     ffc_info, oakd_info = identify_devices(devices, ffc_mxid, oakd_mxid)
@@ -347,17 +377,17 @@ def main():
     if sources == "both" and (ffc_info is None or oakd_info is None):
         print(
             "\n  Note: --sources both but one device type was not found; "
-            "RTSP will only expose streams for connected hardware."
+            "RTSP will only expose streams for connected hardware.",
         )
 
-    stream_names = []
+    stream_names: list[str] = []
     if want_ffc and ffc_info:
         stream_names.extend(FFC_STREAMS)
     if want_oakd and oakd_info:
         stream_names.extend(OAKD_STREAMS)
 
     if not stream_names:
-        print("\nNo RTSP streams to expose: no matching devices for --sources %s. Exiting." % sources)
+        print(f"\nNo RTSP streams to expose: no matching devices for --sources {sources}. Exiting.")
         return
 
     server = RtspServer(stream_names)

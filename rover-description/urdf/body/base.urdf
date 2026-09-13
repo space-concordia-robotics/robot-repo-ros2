@@ -1,0 +1,277 @@
+<?xml version="1.0"?>
+<robot name="ceres"
+       xmlns="https://www.ros.org"
+       xmlns:xacro="https://ros.org/wiki/xacro"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="https://www.ros.org ../../urdf.xsd https://ros.org/wiki/xacro ../../xacro.xsd">
+    <!--
+    TODO:
+      - Add inertial properties
+        - mass
+        - angular inertia
+      - Add links for odometry sources
+        - Cameras
+        - GPS
+        - IMU
+        - ZED/ZED replacement
+        - LiDAR
+    -->
+
+    <xacro:property name="mode" value="$(arg mode)"/>
+    <xacro:property name="production" value="${mode == 'production'}"/>
+    <xacro:property name="simulation" value="${mode == 'simulation'}"/>
+
+    <!-- rough estimate of wheel weight: 3kg -->
+
+    <xacro:property name="body_length" value="0.638"/>
+    <xacro:property name="body_width" value="0.3047"/>
+    <xacro:property name="body_height" value="0.175"/>
+    <xacro:property name="wheel_radius" value="0.150"/>
+    <xacro:property name="wheel_inner_radius" value="0.055"/>
+    <xacro:property name="wheel_thickness" value="0.127"/>
+    <xacro:property name="visual_adjustment" value="0.001"/>
+
+    <xacro:include filename="materials.urdf"/>
+
+    <xacro:macro name="default_inertial" params="mass">
+        <inertial>
+            <mass value="${mass}"/>
+            <!-- <inertia ixx="1e-3" ixy="0.0" ixz="0.0" iyy="1e-3" iyz="0.0" izz="1e-3"/> -->
+            <inertia ixx="0.1" ixy="0" ixz="0" iyy="0.1" iyz="0" izz="0.1"/>
+        </inertial>
+    </xacro:macro>
+
+    <link name="base_link">
+        <visual>
+            <origin xyz="${body_length/2} 0 -${body_height/2}"/>
+            <geometry>
+                <box size="${body_length - visual_adjustment} ${body_width - visual_adjustment} ${body_height - visual_adjustment}"/>
+            </geometry>
+            <material name="aluminum"/>
+        </visual>
+        <collision>
+            <origin xyz="${body_length/2} 0 -${body_height/2}"/>
+            <geometry>
+                <box size="${body_length} ${body_width} ${body_height}"/>
+            </geometry>
+        </collision>
+    </link>
+
+    <joint name="base_to_mass" type="fixed">
+        <parent link="base_link"/>
+        <child link="mass"/>
+        <origin xyz="0 0 0"/>
+    </joint>
+
+
+    <link name="mass">
+        <inertial>
+            <origin xyz="${body_length/2} 0 -${body_height/2}"/>
+            <!-- I assume this is like kg or smth? -->
+            <mass value="20"/>
+            <inertia ixx="0.126164" ixy="0.0" ixz="0.0" iyy="0.416519" iyz="0.0" izz="0.481014"/>
+        </inertial>
+    </link>
+
+    <xacro:gazebo_color reference="base_link" color="aluminum"/>
+
+    <!--
+    The footprint of the robot.
+    This is essentially the base_link projected onto the ground.
+    In some scenarios, for example if a robot moves vertically, then this may not be constant. However, in our case it is.
+    -->
+    <!-- <link name="base_footprint"> -->
+    <!-- </link> -->
+
+    <!-- region Red Body Panels (Visual) -->
+    <xacro:macro name="base_link_panel" params="axis">
+        <xacro:property name="panel_length" value="${body_length - (0 if axis == 'x' else 0.02)*2}"/>
+        <xacro:property name="panel_width" value="${body_width - (0 if axis == 'y' else 0.02)*2}"/>
+        <xacro:property name="panel_height" value="${body_height - (0 if axis == 'z' else 0.02)*2}"/>
+
+        <link name="base_red_${axis}_panel">
+            <visual>
+                <geometry>
+                    <box size="${panel_length} ${panel_width} ${panel_height}"/>
+                </geometry>
+                <material name="plastic-white"/>
+            </visual>
+        </link>
+
+        <joint name="base_to_${axis}_panel" type="fixed">
+            <parent link="base_link"/>
+            <child link="base_red_${axis}_panel"/>
+            <origin xyz="${body_length/2} 0 -${body_height/2}"/>
+        </joint>
+
+        <xacro:gazebo_color reference="base_red_${axis}_panel" color="plastic-white"/>
+    </xacro:macro>
+
+
+    <xacro:base_link_panel axis="x"/>
+    <xacro:base_link_panel axis="y"/>
+    <xacro:base_link_panel axis="z"/>
+    <!-- endregion -->
+
+    <xacro:include filename="wheels.urdf"/>
+
+    <!-- TODO 2026-02-26 (Will Free): select the correct one depending on mission type -->
+    <!-- <xacro:include filename="arm.urdf"/> -->
+    <xacro:include filename="autonomy-module.urdf"/>
+
+    <xacro:include filename="ffc-mount.urdf"/>
+
+    <xacro:macro name="battery" params="side">
+        <xacro:property name="reflect" value="${1 if side == 'left' else -1}"/>
+
+        <xacro:property name="battery_size" value="0.1062"/>
+        <xacro:property name="battery_height" value="0.1841"/>
+        <xacro:property name="battery_y_offset" value="0.0092"/>
+        <xacro:property name="battery_z_offset" value="-0.0723"/>
+
+        <joint name="base_to_${side}_battery" type="fixed">
+            <parent link="base_link"/>
+            <child link="${side}_battery"/>
+            <origin xyz="${-battery_size} ${(body_width/2 - battery_size + battery_y_offset) * reflect} ${battery_z_offset}"/>
+        </joint>
+
+        <link name="${side}_battery">
+            <visual>
+                <origin xyz="${battery_size/2} ${battery_size/2*reflect} ${battery_height/2}"/>
+                <geometry>
+                    <box size="${battery_size} ${battery_size} ${battery_height}"/>
+                </geometry>
+                <material name="plastic-red"/>
+            </visual>
+            <collision>
+                <origin xyz="${battery_size/2} ${battery_size/2*reflect} ${battery_height/2}"/>
+                <geometry>
+                    <box size="${battery_size} ${battery_size} ${battery_height}"/>
+                </geometry>
+            </collision>
+        </link>
+
+        <xacro:gazebo_color reference="${side}_battery" color="plastic-red"/>
+    </xacro:macro>
+
+    <xacro:battery side="right"/>
+    <xacro:battery side="left"/>
+
+    <xacro:macro name="pole">
+        <xacro:property name="pole_height" value="0.920"/>
+        <xacro:property name="pole_radius" value="0.0127"/>
+        <xacro:property name="pole_x_offset" value="-0.02698"/>
+        <xacro:property name="pole_y_offset" value="0.020"/>
+
+        <joint name="base_to_pole" type="fixed">
+            <parent link="base_link"/>
+            <child link="pole"/>
+            <origin xyz="${pole_x_offset} 0 ${-body_height + pole_y_offset}"/>
+        </joint>
+
+        <link name="pole">
+            <visual>
+                <origin xyz="0 0 ${pole_height/2}"/>
+                <geometry>
+                    <cylinder radius="${pole_radius}" length="${pole_height}"/>
+                </geometry>
+                <material name="plastic-black"/>
+            </visual>
+            <collision>
+                <origin xyz="0 0 ${pole_height/2}"/>
+                <geometry>
+                    <cylinder radius="${pole_radius}" length="${pole_height}"/>
+                </geometry>
+            </collision>
+        </link>
+
+        <xacro:gazebo_color reference="pole" color="plastic-black"/>
+
+        <xacro:property name="antenna_radius" value="0.010"/>
+        <xacro:property name="antenna_height" value="0.604"/>
+
+        <xacro:property name="antenna_a_x_offset" value="-0.02909"/>
+        <xacro:property name="antenna_a_z_offset" value="-0.12886"/>
+
+        <xacro:property name="antenna_b_x_offset" value="0.0483"/>
+        <xacro:property name="antenna_b_y_offset" value="0.065062"/>
+        <xacro:property name="antenna_b_z_offset" value="-0.0645"/>
+
+        <joint name="pole_to_antenna_a" type="fixed">
+            <parent link="pole"/>
+            <child link="antenna_a"/>
+            <origin xyz="${antenna_a_x_offset} 0 ${pole_height + antenna_a_z_offset}"/>
+        </joint>
+
+        <link name="antenna_a">
+            <visual>
+                <origin xyz="0 0 ${antenna_height/2}"/>
+                <geometry>
+                    <cylinder radius="${antenna_radius}" length="${antenna_height}"/>
+                </geometry>
+                <material name="antenna"/>
+            </visual>
+            <collision>
+                <origin xyz="0 0 ${antenna_height/2}"/>
+                <geometry>
+                    <cylinder radius="${antenna_radius}" length="${antenna_height}"/>
+                </geometry>
+            </collision>
+        </link>
+
+        <xacro:gazebo_color reference="antenna_a" color="antenna"/>
+
+        <joint name="pole_to_antenna_b" type="fixed">
+            <parent link="pole"/>
+            <child link="antenna_b"/>
+            <origin xyz="${antenna_b_x_offset} ${antenna_b_y_offset} ${pole_height + antenna_b_z_offset}" rpy="${pi/2} 0 0"/>
+        </joint>
+
+        <link name="antenna_b">
+            <visual>
+                <origin xyz="0 0 ${antenna_height/2}"/>
+                <geometry>
+                    <cylinder radius="${antenna_radius}" length="${antenna_height}"/>
+                </geometry>
+                <material name="antenna"/>
+            </visual>
+            <collision>
+                <origin xyz="0 0 ${antenna_height/2}"/>
+                <geometry>
+                    <cylinder radius="${antenna_radius}" length="${antenna_height}"/>
+                </geometry>
+            </collision>
+        </link>
+
+        <xacro:gazebo_color reference="antenna_b" color="antenna"/>
+
+        <xacro:property name="antenna_block_size" value="0.090"/>
+        <xacro:property name="antenna_block_depth" value="0.1128"/>
+
+        <joint name="pole_to_antenna_block" type="fixed">
+            <parent link="pole"/>
+            <child link="antenna_block"/>
+            <origin xyz="0 0 ${pole_height + antenna_b_z_offset}"/>
+        </joint>
+
+        <link name="antenna_block">
+            <visual>
+                <origin xyz="${(antenna_a_x_offset + antenna_b_x_offset)/2} 0 0"/>
+                <geometry>
+                    <box size="${antenna_block_depth} ${antenna_block_size} ${antenna_block_size}"/>
+                </geometry>
+                <material name="plastic-yellow"/>
+            </visual>
+            <collision>
+                <origin xyz="${antenna_a_x_offset + antenna_b_x_offset} 0 0"/>
+                <geometry>
+                    <box size="${antenna_block_depth} ${antenna_block_size} ${antenna_block_size}"/>
+                </geometry>
+            </collision>
+        </link>
+
+        <xacro:gazebo_color reference="antenna_block" color="plastic-yellow"/>
+    </xacro:macro>
+
+    <xacro:pole/>
+</robot>

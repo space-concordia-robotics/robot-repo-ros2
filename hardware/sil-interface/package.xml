@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+    <name>sil_interface</name>
+    <version>0.0.0</version>
+    <description>TODO: Package description</description>
+    <maintainer email="will.free@spaceconcordia.ca">Will Free</maintainer>
+    <license>MIT</license>
+
+    <depend>rclcpp</depend>
+    <depend>rclcpp_components</depend>
+    <depend>rclcpp_lifecycle</depend>
+    <depend>hardware_interface</depend>
+    <depend>realtime_tools</depend>
+    <depend>diagnostic_updater</depend>
+    <depend>diagnostic_msgs</depend>
+    <depend>pluginlib</depend>
+    <depend>ros2_fmt_logger</depend>
+    <depend>scrb_common_util</depend>
+    <depend>can_util</depend>
+    <depend>rover_msgs</depend>
+
+    <build_depend>scrb_cmake_utils</build_depend>
+
+    <buildtool_depend>ament_cmake</buildtool_depend>
+
+    <export>
+        <build_type>ament_cmake</build_type>
+    </export>
+</package>

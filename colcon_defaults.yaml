@@ -1,0 +1,12 @@
+build:
+  mixin:
+    - "compile-commands"
+    - "ninja"
+    - "clang"
+    - "ccache"
+    - "rel-with-deb-info"
+  symlink-install: true
+  packages-ignore:
+    - rclcpp_async_example
+  event-handlers:
+    - event_log-

@@ -1,0 +1,23 @@
+<?xml version='1.0' ?>
+<sdf version='1.6'>
+    <model name='ArUco tag id 1'>
+        <static>true</static>
+        <link name='link'>
+            <pose>0 0 0 1.5707963267948966 0 -1.5707963267948966</pose>
+            <collision name='collision'>
+                <geometry>
+                    <mesh>
+                        <uri>model://aruco_post_1/meshes/post.obj</uri>
+                    </mesh>
+                </geometry>
+            </collision>
+            <visual name='visual'>
+                <geometry>
+                    <mesh>
+                        <uri>model://aruco_post_1/meshes/post.obj</uri>
+                    </mesh>
+                </geometry>
+            </visual>
+        </link>
+    </model>
+</sdf>

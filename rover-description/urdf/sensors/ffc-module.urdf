@@ -1,0 +1,58 @@
+<?xml version="1.0"?>
+<robot name="ceres"
+       xmlns="https://www.ros.org"
+       xmlns:xacro="https://ros.org/wiki/xacro"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="https://www.ros.org ../../urdf.xsd https://ros.org/wiki/xacro ../../xacro.xsd">
+    <xacro:property name="cameras" value="${xacro.load_yaml('cameras.yaml')['cameras']}"/>
+
+    <xacro:macro name="ffc_camera" params="side sensor resolution">
+        <xacro:property name="camera_sensor" value="${cameras[sensor]}"/>
+        <xacro:property name="camera_resolution" value="${camera_sensor.resolutions[resolution]}"/>
+
+        <xacro:simulation>
+            <gazebo reference="ffc_${side}_camera">
+                <sensor name="ffc_${side}_camera" type="camera">
+                    <always_on>true</always_on>
+                    <visualize>true</visualize>
+                    <update_rate>${camera_resolution.fps}</update_rate>
+                    <topic>ffc/${side}/image_raw</topic>
+                    <gz_frame_id>ffc_${side}_camera</gz_frame_id>
+                    <camera name="intel_realsense_r200">
+                        <camera_info_topic>ffc/${side}/camera_info</camera_info_topic>
+                        <horizontal_fov>${camera_sensor.hfov * pi / 180}</horizontal_fov>
+                        <image>
+                            <width>${camera_resolution.width}</width>
+                            <height>${camera_resolution.height}</height>
+                            <format>R8G8B8</format>
+                            <!-- turn AA off for performance rather than the default (4) -->
+                            <anti_aliasing>0</anti_aliasing>
+                        </image>
+                        <distortion>
+                            <!-- TODO 2026-04-30 (Will Free): fill out the distortion intrinsics -->
+                        </distortion>
+                        <lense>
+                            <intrinsics>
+                                <!-- TODO 2026-04-30 (Will Free): fill out the camera intrinsics -->
+                            </intrinsics>
+                            <projection>
+                                <!-- TODO 2026-04-30 (Will Free): fill out the camera intrinsics -->
+                            </projection>
+                        </lense>
+                    </camera>
+                </sensor>
+            </gazebo>
+        </xacro:simulation>
+    </xacro:macro>
+
+    <!--
+    Defines the 4 different ffc cameras.
+
+    The available sensors & resolutions can be found in
+    the cameras.yaml file in this directory.
+    -->
+    <xacro:ffc_camera side="front" sensor="imx378w" resolution="1352x1012"/>
+    <xacro:ffc_camera side="left" sensor="imx378w" resolution="1352x1012"/>
+    <xacro:ffc_camera side="rear" sensor="imx378w" resolution="1352x1012"/>
+    <xacro:ffc_camera side="right" sensor="imx378w" resolution="1352x1012"/>
+</robot>

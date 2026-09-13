@@ -1,0 +1,83 @@
+/**/controller_manager:
+  ros__parameters:
+    update_rate: 100
+    use_sim_time: true
+
+    joint_state_broadcaster:
+      type: joint_state_broadcaster/JointStateBroadcaster
+
+    diff_drive_base_controller:
+      type: diff_drive_controller/DiffDriveController
+
+    sil_controller:
+      type: sil_interface/SILController
+
+/**/joint_state_broadcaster:
+  ros__parameters:
+    state_interfaces:
+      - position
+      - velocity
+
+/**/diff_drive_base_controller:
+  ros__parameters:
+    command_interfaces:
+      - velocity
+    state_interfaces:
+      - position
+      - velocity
+
+    left_wheel_names:
+      - "front_left_bogey_forwards_bar_to_wheel"
+      - "front_left_bogey_backwards_bar_to_wheel"
+      - "back_bogey_left_leg_to_wheel"
+    right_wheel_names:
+      - "front_right_bogey_forwards_bar_to_wheel"
+      - "front_right_bogey_backwards_bar_to_wheel"
+      - "back_bogey_right_leg_to_wheel"
+
+    wheel_separation: 1.25
+    wheels_per_side: 3
+    wheel_radius: 0.15
+
+    wheel_separation_multiplier: 1.0
+    left_wheel_radius_multiplier: 1.0
+    right_wheel_radius_multiplier: 1.0
+
+    publish_rate: 100.0
+    odom_frame_id: odom
+    base_frame_id: base_link
+    # odom isn't always *super* accurate due to slip, etc. so I just ballparked these.
+    pose_covariance_diagonal: [ 0.1, 0.1, 0.1, 0.1, 0.1, 0.1 ]
+    twist_covariance_diagonal: [ 0.1, 0.1, 0.1, 0.1, 0.1, 0.1 ]
+
+    open_loop: false # true
+    enable_odom_tf: false
+
+    use_stamped_vel: true
+
+    cmd_vel_timeout: 0.5
+
+    linear:
+      x:
+        has_velocity_limits: true
+        has_acceleration_limits: true
+        max_velocity: 2.0
+        min_velocity: -2.0
+        max_acceleration: 4.0
+        min_acceleration: -4.0
+        max_jerk: .NAN
+        min_jerk: .NAN
+
+    angular:
+      z:
+        has_velocity_limits: true
+        has_acceleration_limits: true
+        max_velocity: 2.0
+        min_velocity: -2.0
+        max_acceleration: 4.0
+        min_acceleration: -4.0
+        max_jerk: .NAN
+        min_jerk: .NAN
+
+/**/sil_controller:
+  ros__parameters: { }

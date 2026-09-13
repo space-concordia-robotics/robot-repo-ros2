@@ -1,0 +1,75 @@
+extend-exclude = [
+    "install",
+    "log"
+]
+
+line-length = 160
+indent-width = 4
+
+[format]
+docstring-code-format = true
+indent-style = "space"
+line-ending = "lf"
+quote-style = "double"
+nested-string-quote-style = "preferred"
+
+[lint]
+select = ["ALL"]
+
+ignore = [
+    "ANN002",
+    "ANN003",
+    "ANN401",
+    "D202",
+    "D203",
+    "D212",
+    "D401",
+    "D413",
+    "EM",
+    "ERA001",
+    "FBT",
+    "FIX002",
+    "PLR1714",
+    "RET508",
+    "S101",
+    "TC001",
+    "TC002",
+    "TC003",
+    "TC006",
+    "TD002", # TD004 is disabled until astral-sh/ruff#26451 is fixed
+    "TD003",
+    "TD004", # TD004 is disabled until astral-sh/ruff#26451 is fixed
+    "TRY003",
+]
+
+future-annotations = true
+
+[lint.per-file-ignores]
+"**/setup.py" = ["INP001", "D1"]
+"**/launch/*.py" = ["INP001", "D1", "ANN201"]
+"**/test/*.py" = ["INP001", "D1", "ANN2"]
+"**/__init__.py" = ["D104"]
+
+[lint.flake8-annotations]
+allow-star-arg-any = true
+suppress-none-returning = true
+
+[lint.flake8-import-conventions.aliases]
+# same as the default, except with the following ones removed:
+# - matplotlib as mp, matplotlib.pyplot as plt
+# - numpy as np, numpy.typing as npt
+# this may be adjusted in the future.
+altair = "alt"
+pandas = "pd"
+seaborn = "sns"
+tensorflow = "tf"
+tkinter = "tk"
+holoviews = "hv"
+panel = "pn"
+"plotly.express" = "px"
+polars = "pl"
+pyarrow = "pa"
+"xml.etree.ElementTree" = "ET"
+
+[lint.pylint]
+max-args = 8

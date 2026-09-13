@@ -1,0 +1,154 @@
+<?xml version="1.0"?>
+<robot name="ceres"
+       xmlns="https://www.ros.org"
+       xmlns:xacro="https://ros.org/wiki/xacro"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="https://www.ros.org ../../urdf.xsd https://ros.org/wiki/xacro ../../xacro.xsd">
+    <!-- FFC camera mount -->
+
+    <xacro:property name="ffc_bar_left_height" value="0.3"/>
+    <xacro:property name="ffc_bar_left_x_offset" value="0.19"/>
+    <xacro:property name="ffc_bar_right_link_offset" value="0.08"/>
+    <xacro:property name="ffc_stem_height" value="0.28"/>
+    <xacro:property name="ffc_enclosure_height" value="0.09"/>
+    <xacro:property name="ffc_enclosure_radius" value="0.10"/>
+    <xacro:property name="aluminum_extrude_width" value="0.02"/>
+
+    <!-- wtf is this value? -->
+    <xacro:property name="oak_face_offset" value="${ffc_enclosure_radius/2 + 0.005}"/>
+
+    <joint name="base_link_to_ffc_bar_left" type="fixed">
+        <parent link="base_link"/>
+        <child link="ffc_mount_bar_left"/>
+        <origin xyz="${ffc_bar_left_x_offset} ${body_width/2 - aluminum_extrude_width/2} 0"/>
+    </joint>
+
+    <link name="ffc_mount_bar_left">
+        <visual>
+            <origin xyz="0 0 ${ffc_bar_left_height/2}"/>
+
+            <geometry>
+                <box size="${aluminum_extrude_width} ${aluminum_extrude_width} ${ffc_bar_left_height}"/>
+            </geometry>
+            <material name="aluminum"/>
+        </visual>
+        <collision>
+            <origin xyz="0 0 ${ffc_bar_left_height/2}"/>
+
+            <geometry>
+                <box size="${aluminum_extrude_width} ${aluminum_extrude_width} ${ffc_bar_left_height}"/>
+            </geometry>
+        </collision>
+    </link>
+
+    <xacro:property name="ffc_bar_right_adj" value="${body_width - aluminum_extrude_width/2 - ffc_bar_right_link_offset}"/>
+    <xacro:property name="ffc_bar_right_opp" value="0.26"/>
+    <xacro:property name="ffc_bar_right_angle" value="${atan(ffc_bar_right_adj/ffc_bar_right_opp)}"/>
+    <xacro:property name="ffc_bar_right_length" value="${ffc_bar_right_adj/sin(ffc_bar_right_angle)}"/>
+
+    <joint name="base_link_to_ffc_bar_right" type="fixed">
+        <parent link="base_link"/>
+        <child link="ffc_mount_bar_right"/>
+        <origin xyz="${ffc_bar_left_x_offset} -${body_width/2 - aluminum_extrude_width/2} 0" rpy="-${ffc_bar_right_angle} 0 0"/>
+    </joint>
+
+    <link name="ffc_mount_bar_right">
+        <visual>
+            <origin xyz="0 0 ${ffc_bar_right_length/2}"/>
+            <geometry>
+                <box size="${aluminum_extrude_width} ${aluminum_extrude_width} ${ffc_bar_right_length}"/>
+            </geometry>
+            <material name="aluminum"/>
+        </visual>
+        <collision>
+            <origin xyz="0 0 ${ffc_bar_right_length/2}"/>
+            <geometry>
+                <box size="${aluminum_extrude_width} ${aluminum_extrude_width} ${ffc_bar_right_length}"/>
+            </geometry>
+        </collision>
+    </link>
+
+    <joint name="ffc_bar_left_to_t_bar" type="fixed">
+        <parent link="ffc_mount_bar_left"/>
+        <child link="ffc_t_bar"/>
+        <origin xyz="0 ${-aluminum_extrude_width/2 - ffc_bar_right_link_offset/2} ${ffc_bar_left_height - 0.02}"/>
+    </joint>
+
+    <link name="ffc_t_bar">
+        <visual>
+            <geometry>
+                <box size="0.05 0.13 0.05"/>
+                <box size="0.03 0.03 0.06"/>
+            </geometry>
+            <material name="plastic-red"/>
+        </visual>
+        <collision>
+            <geometry>
+                <box size="0.05 0.13 0.05"/>
+                <box size="0.03 0.03 0.06"/>
+            </geometry>
+        </collision>
+    </link>
+
+    <joint name="ffc_t_bar_to_stem" type="fixed">
+        <parent link="ffc_t_bar"/>
+        <child link="ffc_stem"/>
+        <origin xyz="0 0 ${ffc_stem_height}"/>
+    </joint>
+
+    <link name="ffc_stem">
+        <visual>
+            <origin xyz="0 0 -${ffc_stem_height/2}"/>
+            <geometry>
+                <box size="${aluminum_extrude_width} ${aluminum_extrude_width} ${ffc_stem_height}"/>
+            </geometry>
+            <material name="aluminum"/>
+        </visual>
+        <collision>
+            <origin xyz="0 0 -${ffc_stem_height/2}"/>
+            <geometry>
+                <box size="${aluminum_extrude_width} ${aluminum_extrude_width} ${ffc_stem_height}"/>
+            </geometry>
+        </collision>
+    </link>
+
+    <joint name="ffc_stem_to_enclosure" type="fixed">
+        <parent link="ffc_stem"/>
+        <child link="ffc_enclosure"/>
+        <origin xyz="0 0 ${ffc_enclosure_height/2}" rpy="0 0 0"/>
+    </joint>
+
+    <link name="ffc_enclosure">
+        <visual>
+            <geometry>
+                <cylinder radius="${ffc_enclosure_radius}" length="${ffc_enclosure_height}"/>
+            </geometry>
+            <material name="plastic-red"/>
+        </visual>
+        <collision>
+            <geometry>
+                <cylinder radius="${ffc_enclosure_radius}" length="${ffc_enclosure_height}"/>
+            </geometry>
+        </collision>
+        <xacro:default_inertial mass="0.05"/>
+    </link>
+    <xacro:gazebo_color reference="oak_ffc_mount" color="plastic-red"/>
+
+    <xacro:macro name="ffc_camera" params="side angle">
+        <xacro:property name="x" value="${oak_face_offset * cos(angle)}"/>
+        <xacro:property name="y" value="${oak_face_offset * sin(angle)}"/>
+
+        <joint name="ffc_enclosure_to_${side}_camera" type="fixed">
+            <parent link="ffc_enclosure"/>
+            <child link="ffc_${side}_camera"/>
+            <origin xyz="${x} ${y} 0" rpy="0 0 ${angle}"/>
+        </joint>
+
+        <link name="ffc_${side}_camera"/>
+    </xacro:macro>
+
+    <xacro:ffc_camera side="front" angle="${0 * pi/2}"/>
+    <xacro:ffc_camera side="left" angle="${1 * pi/2}"/>
+    <xacro:ffc_camera side="rear" angle="${2 * pi/2}"/>
+    <xacro:ffc_camera side="right" angle="${3 * pi/2}"/>
+</robot>
