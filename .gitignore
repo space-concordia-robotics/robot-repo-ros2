@@ -86,6 +86,9 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 
+# WSL metadata
+*:Zone.Identifier
+
 ### macOS template
 # General
 .DS_Store
@@ -380,3 +383,6 @@ cython_debug/
 
 # LiDAR metadata
 os1-992005000098-metadata.json
+
+# Generated FFC panoramas
+luxonis_scripts/panoramas/

@@ -44,7 +44,7 @@ IPs* OAK-D Pro `10.240.0.67`, FFC PoE `10.240.0.69`.
 
 ## REPL commands
 
-To stop a pipeline run `stop` in the same terminal that ran it
+To stop a pipeline run `stop` in the same terminal that ran it.
 
 To start a new pipeline, first run `stop`, then run `mode [mode_name]` to switch to the desired mode.
 
@@ -52,6 +52,28 @@ To check bandwidth run `bw`
 To continuously check bandwidth run `watch [interval(s)]`
 
 To check status run `status`
+
+### Panorama
+
+`panorama [filename]` works by **stopping all running pipelines** and
+spawning `panorama.py` as a separate process. That subprocess opens
+the FFC directly to grab one BGR frame per camera (FRONT/RIGHT/LEFT/BACK)
+and the OAK-D directly for one IMU packet, then stitches everything
+with a cardinal-direction compass overlay.
+
+After the panorama finishes, the streams stay stopped. Resume with
+`mode ffc_all` (or whatever mode you want).
+
+You can also run the panorama capture by itself:
+
+```
+python3 panorama.py                              # uses default MxIds
+python3 panorama.py --ffc 10.240.0.69 \
+                    --oakd 10.240.0.67 \
+                    --filename garden_north
+```
+
+If the OAK-D IMU isn't reachable the panorama still builds with `yaw=0`.
 
 
 ## main.py examples (To launch all cameras)

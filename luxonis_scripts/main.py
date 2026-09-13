@@ -2,6 +2,7 @@ import argparse
 import os
 import subprocess
 import tempfile
+import sys
 import threading
 import time
 
@@ -14,6 +15,7 @@ from rtsp_server import RtspServer
 PANORAMA_DIR = os.path.join(os.path.dirname(__file__), "panoramas")
 RTSP_PORT = 8554
 RTSP_GRAB_TIMEOUT_S = 12.0
+PANORAMA_SCRIPT = os.path.join(os.path.dirname(__file__), "panorama.py")
 
 FFC_MXID = "14442C10014791D700"
 OAKD_MXID = "1944301001EDE12E00"
@@ -316,6 +318,11 @@ def main():
             s.stop()
         subprocess.Popen(["pkill", "-f", "run_cameras.sh"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
+    print("\nShutting down.")
+    session.stop()
+    # TODO 2026-06-29 (Will Free): this is an awful solution
+    subprocess.Popen(["pkill", "-f", "run_cameras.sh"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)  # noqa: S607
+
 
 def resolve_device(mode, override):
     if override:
@@ -337,6 +344,7 @@ def print_help():
     print("  detections               show latest detections (FFC YOLO or OAK-D YOLO modes only)")
     print("  watch_detections [interval]   monitor detections at intervals")
     print("  panorama [filename]      stitch a 360 panorama from FFC + compass overlay (FFC 4-cam modes)")
+    print("  panorama [filename]      stop streams, run panorama.py subprocess (FFC photos + OAK-D IMU)")
     print("  quit / exit / q          shut down")
     print(f"Modes: {', '.join(ALL_MODES)}")
 
@@ -385,9 +393,49 @@ def parse_args():
     parser.add_argument(
         "-d", "--device",
         default=None,
-        help="Default device MxId or IP"
+        help="Default device MxId or IP (applies to whichever kit --mode selects)"
+    )
+    parser.add_argument(
+        "--oakd",
+        default=None,
+        help="OAK-D MxId or IP used by the panorama subprocess for IMU (default: OAKD_MXID)"
     )
     return parser.parse_args()
+
+
+def run_panorama_subprocess(sessions, filename, ffc_device, oakd_device):
+    """Stop the live sessions, then spawn ``panorama.py`` as a separate process.
+
+    panorama.py opens the FFC for one frame per camera and the OAK-D for
+    one IMU packet, stitches, and writes the result. After it returns,
+    the streams stay stopped (resume with ``mode ffc_all``).
+    """
+    if any(s.is_running() for s in sessions.values()):
+        print("Stopping streams for panorama capture...")
+        for s in sessions.values():
+            s.stop()
+
+    cmd = [
+        sys.executable, PANORAMA_SCRIPT,
+        "--ffc", ffc_device,
+        "--oakd", oakd_device,
+        "--out-dir", PANORAMA_DIR,
+    ]
+    if filename:
+        cmd += ["--filename", filename]
+
+    print(f"Running: {' '.join(cmd)}")
+    try:
+        rc = subprocess.call(cmd)
+    except KeyboardInterrupt:
+        print("\nPanorama interrupted.")
+        return
+    except FileNotFoundError as e:
+        print(f"Panorama subprocess failed to launch: {e}")
+        return
+    if rc != 0:
+        print(f"Panorama subprocess exited with code {rc}")
+    print("Streams remain stopped. Resume with: mode ffc_all  (or another mode)")
 
 
 FFC_SOCKETS = {
