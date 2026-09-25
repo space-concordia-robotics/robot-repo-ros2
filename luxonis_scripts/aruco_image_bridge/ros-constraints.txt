@@ -1,0 +1,10 @@
+# Extra pip constraints for a camera venv that is also used with --ros.
+#
+# ROS 2 Jazzy's Python message modules are compiled against Ubuntu 24.04's
+# NumPy 1.26, and NumPy 1.x-built extensions do not load under NumPy 2.
+# The unpinned opencv-contrib-python-headless in requirements.txt now resolves
+# to 5.x, which requires NumPy >= 2, so both are capped here.
+#
+#   pip install -r requirements.txt -c aruco_image_bridge/ros-constraints.txt
+numpy<2
+opencv-contrib-python-headless<4.12
