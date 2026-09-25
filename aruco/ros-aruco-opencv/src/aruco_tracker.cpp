@@ -20,6 +20,7 @@
 
 #include <chrono>
 #include <mutex>
+#include <ranges>
 #include <cv_bridge/cv_bridge.hpp>
 #include <image_transport/camera_common.hpp>
 #include <magic_enum/magic_enum.hpp>
