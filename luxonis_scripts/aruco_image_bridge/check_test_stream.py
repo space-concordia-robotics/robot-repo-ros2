@@ -170,7 +170,7 @@ class StreamCheck(Node):
 def main() -> None:
     """Run the check and exit 0 on PASS, 1 otherwise."""
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--dictionary", choices=DICTIONARIES, default="4X4_100")
+    parser.add_argument("--dictionary", choices=DICTIONARIES, default="4X4_50")
     parser.add_argument("--marker-id", type=int, default=7)
     parser.add_argument("--encoding", choices=OUTPUT_ENCODINGS, default="bgr8")
     args = parser.parse_args()

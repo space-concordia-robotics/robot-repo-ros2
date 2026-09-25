@@ -7,7 +7,7 @@ By default it listens to the front FFC camera published by
 Examples::
 
     ros2 launch rover_bringup aruco_tracker.py
-    ros2 launch rover_bringup aruco_tracker.py marker_dict:=5X5_50
+    ros2 launch rover_bringup aruco_tracker.py marker_dict:=5X5_100
     ros2 launch rover_bringup aruco_tracker.py cam_base_topic:=/test/camera/front/image_raw
 
 Supported marker_dict values include 4X4_50/100/250/1000, 5X5_*, 6X6_*, 7X7_*,
@@ -30,8 +30,9 @@ def generate_launch_description():
         default_value="/ffc/front/image_raw",
         description="Image topic; CameraInfo is read from the sibling camera_info topic",
     )
-    marker_dict = sl.declare_arg("marker_dict", default_value="4X4_100", description="ArUco dictionary, e.g. 4X4_100, 5X5_50, 5X5_100")
-    # TODO: confirm the physical competition marker size with the team (tracker config says 0.0742, mission config 0.15).
+    # Competition markers (mission requirements): 4x4_50 tags on 20 x 20 cm faces with a
+    # 1-cell white border, so 8 cells of 2.5 cm; the black square is 6 cells = 0.15 m.
+    marker_dict = sl.declare_arg("marker_dict", default_value="4X4_50", description="ArUco dictionary, e.g. 4X4_50, 4X4_100, 5X5_50, 5X5_100")
     marker_size = sl.declare_arg("marker_size", default_value="0.15", description="Black-square side length of the marker, in meters")
     image_is_rectified = sl.declare_arg(
         "image_is_rectified",

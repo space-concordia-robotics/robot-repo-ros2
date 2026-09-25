@@ -14,7 +14,7 @@ import numpy.typing as npt
 
 from .calibration import PLUMB_BOB, CameraCalibration
 
-DICTIONARIES = ("4X4_100", "5X5_50", "5X5_100")
+DICTIONARIES = ("4X4_50", "4X4_100", "5X5_50", "5X5_100")
 WIDTH, HEIGHT = 1280, 720
 FRAME_ID = "synthetic_front_camera_optical_frame"
 MARKER_PX = 200

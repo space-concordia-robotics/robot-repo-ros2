@@ -117,17 +117,17 @@ in all three (Jazzy replacement for `ROS_LOCALHOST_ONLY`; never set it on the ro
 
 ```bash
 # Terminal 1 (from luxonis_scripts/): synthetic camera
-python3 -m aruco_image_bridge.publish_test_images --dictionary 4X4_100
+python3 -m aruco_image_bridge.publish_test_images --dictionary 4X4_50
 
 # Terminal 2 (from the repository root): the team tracker on the test topic
 ros2 launch rover-bringup/launch/aruco_tracker.py \
-    cam_base_topic:=/test/camera/front/image_raw marker_dict:=4X4_100 marker_size:=0.15
+    cam_base_topic:=/test/camera/front/image_raw marker_dict:=4X4_50 marker_size:=0.15
 
 # Terminal 3: evidence
 ros2 topic echo /aruco_detections --once
 ros2 topic hz /test/camera/front/camera_info
 ros2 topic info /test/camera/front/image_raw --verbose
-(cd luxonis_scripts && python3 -m aruco_image_bridge.check_test_stream --dictionary 4X4_100)
+(cd luxonis_scripts && python3 -m aruco_image_bridge.check_test_stream --dictionary 4X4_50)
 ```
 
 Expected from `/aruco_detections` (repeat if you catch a blank frame, `markers: []`):
@@ -137,9 +137,10 @@ Expected from `/aruco_detections` (repeat if you catch a blank frame, `markers: 
 To test grayscale output, add `--encoding mono8` to both the publisher and the checker;
 the tracker needs no change.
 
-Repeat with `5X5_50` and `5X5_100` (restart terminals 1 and 2 with the new dictionary;
-the tracker's dictionary cannot change while it runs). A publisher/tracker dictionary
-mismatch must give `markers: []` on every frame.
+Repeat with `4X4_100`, `5X5_50` and `5X5_100` (restart terminals 1 and 2 with the new dictionary;
+the tracker's dictionary cannot change while it runs). For the mismatch test, publish a 5X5
+dictionary while the tracker runs `4X4_50`: it must give `markers: []` on every frame. (A
+`4X4_100` tracker would still detect `4X4_50` markers, since those are its first 50.)
 
 ## Running on the rover
 
@@ -153,7 +154,7 @@ source /opt/ros/jazzy/setup.bash
 Then start the tracker (default topic `/ffc/front/image_raw`):
 
 ```bash
-ros2 launch rover_bringup aruco_tracker.py marker_dict:=4X4_100
+ros2 launch rover_bringup aruco_tracker.py marker_dict:=4X4_50
 ```
 
 At start-up the camera script logs, per camera, the resolution, rate, topics and
@@ -205,6 +206,22 @@ Topic names follow the simulated cameras in `rover-description/urdf/sensors/ffc-
   by the tracker, and `mono8` is a third of the size while ArUco detection works on
   grayscale anyway.
 
+## Competition specs (from Mathieu and the mission requirements)
+
+- **Markers:** `4X4_50` tags on 20 x 20 cm faces with a 1-cell white border, so cells are
+  2.5 cm and the black square (`marker_size`) is 6 cells = **0.15 m**. Three-sided posts,
+  markers 0.5 to 1.5 m off the ground.
+- **Range:** detection from at least 3 m, ideally 5 m or more.
+- **Distance accuracy:** about +/- 30 cm.
+- `4X4_50` markers are the first 50 of `4X4_100`, so a tracker set to `4X4_100` also detects
+  them; a dictionary-mismatch test must therefore use a 5X5 marker.
+- **Resolution vs range (estimate):** with the IMX378W's 95 degree HFOV, fx is about 586 px at
+  1280 px width and 880 px at 1920 px. A 0.15 m marker is then about 29 px at 3 m and 18 px at
+  5 m in 720p, versus 44 px and 26 px in 1080p. In a synthetic OpenCV test, markers of 18 px and
+  above decoded every time and 15 px missed 20% of the time, so 5 m at 720p has little margin,
+  and none when a face is seen at an angle. `--ros-size 1920x1080 --ros-encoding mono8` is still
+  smaller per frame than 720p `bgr8` (2.1 MB vs 2.8 MB); compare both in the lab.
+
 ## Known limitations and open questions
 
 - **Hardware validation pending** (see checklist below).
@@ -212,8 +229,8 @@ Topic names follow the simulated cameras in `rover-description/urdf/sensors/ffc-
   (x forward) but no optical frames (z forward, x right, y down), which camera images
   and tracker poses use. The `*_optical_frame` names above are placeholders; the URDF
   needs a fixed child per camera, rotated `rpy="-pi/2 0 -pi/2"`. To confirm with the team.
-- **Marker size.** The tracker config says 0.0742 m, the mission config 0.15 m.
-  Distances scale directly with this value; the physical competition marker must be measured.
+- **Marker size.** Confirmed as 0.15 m (see above); the tracker package's own config still
+  says 0.0742 m, which the launch file overrides.
 - **Dictionary switching.** `marker_dict` is read-only in the tracker, so switching
   means restarting it (or running one tracker per dictionary). Whether live switching is
   required is an open question for the team.
@@ -227,7 +244,7 @@ Topic names follow the simulated cameras in `rover-description/urdf/sensors/ffc-
       fx/fy/cx/cy and `source=frame transformation`.
 - [ ] `ros2 topic hz /ffc/front/image_raw` ≈ 5 Hz for several minutes; RTSP still smooth.
 - [ ] Image and CameraInfo stamps and frame IDs match (`ros2 topic echo ... --once`).
-- [ ] A printed marker of each dictionary (4X4_100, 5X5_50, 5X5_100) gives the right ID.
+- [ ] A printed marker of each dictionary (4X4_50 for competition; also 4X4_100, 5X5_50, 5X5_100) gives the right ID.
 - [ ] A marker at a measured distance (e.g. 1.00 m and 3.00 m) gives `pose.position.z`
       within a few percent, which validates the calibration and the marker size.
 - [ ] Autonomy receives the detections it expects.
