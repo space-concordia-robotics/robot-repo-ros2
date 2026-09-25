@@ -18,42 +18,42 @@ The tuned detector settings come from ros_aruco_opencv's config/aruco_tracker.ya
 the arguments below override only what differs per camera or mission.
 """
 
-from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument
-from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
-from launch_ros.actions import Node
 from launch_ros.parameter_descriptions import ParameterValue
-from launch_ros.substitutions import FindPackageShare
+from launch_util import SimpleLauncher
 
 
-def generate_launch_description() -> LaunchDescription:
-    """Tracker node with the package defaults plus per-launch overrides."""
-    arguments = [
-        DeclareLaunchArgument(
-            "cam_base_topic",
-            default_value="/ffc/front/image_raw",
-            description="Image topic; CameraInfo is read from the sibling camera_info topic",
-        ),
-        DeclareLaunchArgument("marker_dict", default_value="4X4_100", description="ArUco dictionary, e.g. 4X4_100, 5X5_50, 5X5_100"),
-        # TODO: confirm the physical competition marker size with the team (tracker config says 0.0742, mission config 0.15).
-        DeclareLaunchArgument("marker_size", default_value="0.15", description="Black-square side length of the marker, in meters"),
-        DeclareLaunchArgument("image_is_rectified", default_value="false", description="true only if the images are already undistorted"),
-    ]
+def generate_launch_description():
+    sl = SimpleLauncher()
 
-    tracker = Node(
-        package="ros_aruco_opencv",
-        executable="aruco_tracker_autostart",
+    cam_base_topic = sl.declare_arg(
+        "cam_base_topic",
+        default_value="/ffc/front/image_raw",
+        description="Image topic; CameraInfo is read from the sibling camera_info topic",
+    )
+    marker_dict = sl.declare_arg("marker_dict", default_value="4X4_100", description="ArUco dictionary, e.g. 4X4_100, 5X5_50, 5X5_100")
+    # TODO: confirm the physical competition marker size with the team (tracker config says 0.0742, mission config 0.15).
+    marker_size = sl.declare_arg("marker_size", default_value="0.15", description="Black-square side length of the marker, in meters")
+    image_is_rectified = sl.declare_arg(
+        "image_is_rectified",
+        default_value="false",
+        choices=["true", "false"],
+        description="true only if the images are already undistorted",
+    )
+
+    sl.node(
+        "ros_aruco_opencv",
+        "aruco_tracker_autostart",
         name="aruco_tracker",
         output="screen",
         parameters=[
-            PathJoinSubstitution([FindPackageShare("ros_aruco_opencv"), "config", "aruco_tracker.yaml"]),
+            sl.params(package="ros_aruco_opencv", file="aruco_tracker.yaml"),
             {
-                "cam_base_topic": LaunchConfiguration("cam_base_topic"),
-                "marker_dict": LaunchConfiguration("marker_dict"),
-                "marker_size": ParameterValue(LaunchConfiguration("marker_size"), value_type=float),
-                "image_is_rectified": ParameterValue(LaunchConfiguration("image_is_rectified"), value_type=bool),
+                "cam_base_topic": cam_base_topic,
+                "marker_dict": marker_dict,
+                "marker_size": ParameterValue(marker_size, value_type=float),
+                "image_is_rectified": ParameterValue(image_is_rectified, value_type=bool),
             },
         ],
     )
 
-    return LaunchDescription([*arguments, tracker])
+    return sl.launch_description()
