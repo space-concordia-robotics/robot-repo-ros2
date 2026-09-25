@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import array
 from dataclasses import dataclass
+from typing import Any
 
 import numpy as np
 import numpy.typing as npt
@@ -30,7 +31,7 @@ _CAMERA_INFO_QUEUE = 10
 class PixelLayout:
     """NumPy layout that a ROS image encoding requires."""
 
-    dtype: type[np.unsignedinteger]
+    dtype: type[np.unsignedinteger[Any]]
     channels: int
 
 
@@ -45,7 +46,7 @@ ENCODINGS: dict[str, PixelLayout] = {
 
 # Encoding assumed for each (dtype, channels) when the caller does not name one;
 # 3/4 channels default to OpenCV's BGR order.
-_DEFAULT_ENCODINGS: dict[tuple[type[np.unsignedinteger], int], str] = {
+_DEFAULT_ENCODINGS: dict[tuple[type[np.unsignedinteger[Any]], int], str] = {
     (np.uint8, 1): "mono8",
     (np.uint16, 1): "mono16",
     (np.uint8, 3): "bgr8",

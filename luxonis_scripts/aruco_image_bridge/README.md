@@ -97,10 +97,13 @@ Lint and type-check (see the team's code standards), from the repository root:
 ```bash
 ruff check luxonis_scripts/aruco_image_bridge rover-bringup/launch/aruco_tracker.py
 ruff format --check luxonis_scripts/aruco_image_bridge
-ty check --extra-search-path luxonis_scripts \
+ty check --python luxonis_scripts/.venv-ros --extra-search-path luxonis_scripts \
     --extra-search-path /opt/ros/jazzy/lib/python3.12/site-packages \
     luxonis_scripts/aruco_image_bridge
 ```
+
+`--python` points `ty` at the camera venv: Ubuntu's apt OpenCV is a compiled module
+without type information, so without it `ty` reports `cv2` as unresolved.
 
 Newer ruff versions also report `CPY001` (missing copyright notice) on every file,
 including existing team code; the repository does not use copyright headers.
