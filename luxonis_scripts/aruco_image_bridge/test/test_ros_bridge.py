@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 import numpy as np
 import numpy.typing as npt
 import pytest
@@ -41,7 +43,7 @@ def test_bgr_image_layout_round_trips():
         ("rgba8", np.uint8, (4, 6, 4), 24),
     ],
 )
-def test_every_supported_encoding(encoding: str, dtype: type[np.unsignedinteger], shape: tuple[int, ...], step: int):
+def test_every_supported_encoding(encoding: str, dtype: type[np.unsignedinteger[Any]], shape: tuple[int, ...], step: int):
     frame = np.arange(np.prod(shape), dtype=dtype).reshape(shape)
     msg = image_msg(frame, STAMP, FRAME_ID, encoding)
     assert (msg.encoding, msg.step, msg.is_bigendian) == (encoding, step, 0)

@@ -49,7 +49,7 @@ def require(condition: bool, message: str) -> None:
 
 def timestamp_ns(header: Header) -> int:
     """Header stamp as integer nanoseconds."""
-    return header.stamp.sec * NS_PER_S + header.stamp.nanosec
+    return int(header.stamp.sec) * NS_PER_S + int(header.stamp.nanosec)
 
 
 class StreamCheck(Node):
