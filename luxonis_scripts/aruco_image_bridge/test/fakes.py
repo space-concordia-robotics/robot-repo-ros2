@@ -1,106 +1,80 @@
-"""Fake DepthAI objects and ROS stand-ins shared by the tests (no camera, no ROS)."""
+"""Real DepthAI objects built without a camera, plus small stand-ins shared by the tests."""
 
 from __future__ import annotations
 
 from collections.abc import Sequence
 from datetime import timedelta
 
+import depthai as dai
 import numpy as np
 import numpy.typing as npt
 
 from aruco_image_bridge.calibration import CameraCalibration, Matrix3x3
 
-# Plausible 1280x720 values for a wide IMX378 (not real rover calibration).
-K: Matrix3x3 = [[700.0, 0.0, 641.2], [0.0, 700.5, 358.9], [0.0, 0.0, 1.0]]
-IDENTITY: Matrix3x3 = [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]]
-COEFFS_14 = [-0.1, 0.02, 0.001, -0.002, 0.003, 0.2, -0.01, 0.004, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+SOCKET = dai.CameraBoardSocket.CAM_A
+# Plausible 1280x720 values for a wide IMX378 (not real rover calibration). DepthAI stores
+# float32, so the values are exactly representable in float32 and compare with ==.
+K: Matrix3x3 = ((700.0, 0.0, 640.0), (0.0, 700.5, 359.5), (0.0, 0.0, 1.0))
+K_1080P: Matrix3x3 = ((1050.0, 0.0, 960.0), (0.0, 1050.0, 540.0), (0.0, 0.0, 1.0))
+IDENTITY: Matrix3x3 = ((1.0, 0.0, 0.0), (0.0, 1.0, 0.0), (0.0, 0.0, 1.0))
+COEFFS_14 = [-0.125, 0.03125, 0.001953125, -0.00390625, 0.0078125, 0.25, -0.015625, 0.0078125, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 
 
-class Model:
-    """Stands in for ``dai.CameraModel``."""
-
-    def __init__(self, name: str) -> None:
-        self.name = name
-
-
-# Method names below mirror DepthAI's camelCase API.
-class FakeTransformation:
-    """Stands in for ``dai.ImgTransformation``."""
-
-    def __init__(
-        self,
-        size: tuple[int, int] = (1280, 720),
-        k: Matrix3x3 = K,
-        coeffs: Sequence[float] = COEFFS_14,
-        model: str = "Perspective",
-    ) -> None:
-        self.size, self.k, self.coeffs, self.model = size, k, coeffs, Model(model)
-
-    def getSize(self) -> tuple[int, int]:  # noqa: N802
-        return self.size
-
-    def getIntrinsicMatrix(self) -> Matrix3x3:  # noqa: N802
-        return self.k
-
-    def getDistortionCoefficients(self) -> Sequence[float]:  # noqa: N802
-        return self.coeffs
-
-    def getDistortionModel(self) -> Model:  # noqa: N802
-        return self.model
+def make_transformation(
+    size: tuple[int, int] = (1280, 720),
+    k: Matrix3x3 = K,
+    coeffs: Sequence[float] = COEFFS_14,
+    model: dai.CameraModel = dai.CameraModel.Perspective,
+) -> dai.ImgTransformation:
+    """A calibrated transformation; ``dai.ImgTransformation(w, h)`` alone is an uncalibrated one (identity K)."""
+    transformation = dai.ImgTransformation(*size)
+    transformation.setIntrinsicMatrix([list(row) for row in k])
+    transformation.setDistortionCoefficients(list(coeffs))
+    transformation.setDistortionModel(model)
+    return transformation
 
 
-class FakeFrame:
-    """Stands in for ``dai.ImgFrame`` (calibration only)."""
-
-    def __init__(self, transformation: FakeTransformation) -> None:
-        self.transformation = transformation
-
-    def getTransformation(self) -> FakeTransformation:  # noqa: N802
-        return self.transformation
-
-
-class FakeHandler:
-    """Stands in for ``dai.CalibrationHandler``; records the requests it receives."""
-
-    def __init__(self, k: Matrix3x3 = K, coeffs: Sequence[float] = COEFFS_14, model: str = "Perspective") -> None:
-        self.k, self.coeffs, self.model = k, coeffs, Model(model)
-        self.requests: list[tuple[object, int, int]] = []
-
-    def getCameraIntrinsics(self, socket: object, width: int, height: int, /) -> Matrix3x3:  # noqa: N802
-        self.requests.append((socket, width, height))
-        return self.k
-
-    def getDistortionCoefficients(self, socket: object, /) -> Sequence[float]:  # noqa: N802, ARG002
-        return self.coeffs
-
-    def getDistortionModel(self, socket: object, /) -> Model:  # noqa: N802, ARG002
-        return self.model
+def make_calibration_handler(
+    k: Matrix3x3 = K_1080P,
+    size: tuple[int, int] = (1920, 1080),
+    model: dai.CameraModel = dai.CameraModel.Perspective,
+) -> dai.CalibrationHandler:
+    """A device calibration for ``SOCKET`` at ``size``, like the one stored in a camera's EEPROM."""
+    handler = dai.CalibrationHandler()
+    width, height = size
+    handler.setCameraIntrinsics(SOCKET, [list(row) for row in k], dai.Size2f(width, height))
+    handler.setDistortionCoefficients(SOCKET, list(COEFFS_14))
+    handler.setCameraType(SOCKET, model)
+    return handler
 
 
-class FakeImgFrame:
-    """Stands in for a full ``dai.ImgFrame`` from ``getCvFrame()``."""
-
-    def __init__(self, capture_s: float = 10.0, size: tuple[int, int] = (1280, 720), transformation: FakeTransformation | None = None) -> None:
-        self.capture = timedelta(seconds=capture_s)
-        self.size = size
-        self.transformation = transformation or FakeTransformation(size=size)
-
-    def getCvFrame(self) -> npt.NDArray[np.uint8]:  # noqa: N802
-        width, height = self.size
-        return np.zeros((height, width, 3), dtype=np.uint8)
-
-    def getTimestamp(self) -> timedelta:  # noqa: N802
-        return self.capture
-
-    def getTransformation(self) -> FakeTransformation:  # noqa: N802
-        return self.transformation
+def make_img_frame(
+    capture_s: float = 10.0,
+    size: tuple[int, int] = (1280, 720),
+    transformation: dai.ImgTransformation | None = None,
+    frame_type: dai.ImgFrame.Type = dai.ImgFrame.Type.BGR888i,
+    pixels: npt.NDArray[np.uint8] | None = None,
+) -> dai.ImgFrame:
+    """A frame with a transformation and capture timestamp, like a camera output (zeros unless ``pixels``)."""
+    width, height = size
+    if pixels is None:
+        shape = (height, width) if frame_type == dai.ImgFrame.Type.GRAY8 else (height, width, 3)
+        pixels = np.zeros(shape, dtype=np.uint8)
+    frame = dai.ImgFrame()
+    frame.setFrame(pixels)  # raw data, exactly as a camera would send it
+    frame.setType(frame_type)
+    frame.setWidth(width)
+    frame.setHeight(height)
+    frame.setTransformation(transformation or make_transformation(size))
+    frame.setTimestamp(timedelta(seconds=capture_s))
+    return frame
 
 
 class FakePublisher:
     """Records what the sink publishes; can be told to fail."""
 
     def __init__(self, fail_with: Exception | None = None) -> None:
-        self.calls: list[tuple[tuple[int, ...], CameraCalibration, int | None, str | None]] = []
+        self.calls: list[tuple[npt.NDArray[np.generic], CameraCalibration, int | None, str | None]] = []
         self.fail_with = fail_with
 
     def publish(
@@ -112,7 +86,7 @@ class FakePublisher:
     ) -> None:
         if self.fail_with is not None:
             raise self.fail_with
-        self.calls.append((frame.shape, calibration, stamp_ns, encoding))
+        self.calls.append((frame, calibration, stamp_ns, encoding))
 
 
 class FakeLog:
