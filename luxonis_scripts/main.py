@@ -528,13 +528,14 @@ def add_aruco_output(
     """
     Add the ArUco output (--ros) next to a camera's encoder output.
 
-    Reduced size and rate, raw frames that stay on the Jetson. NV12 halves the PoE
-    link load compared to BGR; getCvFrame() converts on the host. The small
-    non-blocking queue drops frames if ROS falls behind instead of stalling RTSP.
+    Reduced size and rate, raw frames that stay on the Jetson. The frames are requested
+    in the format they are published in (bgr8 by default), so the host does not convert
+    them. The small non-blocking queue drops frames if ROS falls behind instead of
+    stalling RTSP.
     """
     if ros_config is None or name not in ros_config.cameras:
         return
-    aruco_out = cam.requestOutput(ros_config.size, type=dai.ImgFrame.Type.NV12, fps=ros_config.fps)
+    aruco_out = cam.requestOutput(ros_config.size, type=ros_config.frame_type, fps=ros_config.fps)
     extra_queues.setdefault("aruco", {})[name] = (socket, aruco_out.createOutputQueue(maxSize=2, blocking=False))
 
 

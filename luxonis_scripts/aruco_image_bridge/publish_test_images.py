@@ -16,7 +16,7 @@ import argparse
 
 import rclpy
 
-from .luxonis_adapter import OUTPUT_ENCODINGS, convert_bgr_frame
+from .luxonis_adapter import OUTPUT_ENCODINGS
 from .ros_bridge import RosBridge
 from .synthetic_frames import DICTIONARIES, FRAME_ID, make_frame, synthetic_calibration
 
@@ -33,8 +33,8 @@ def main() -> None:
     parser.add_argument("--marker-id", type=int, default=7)
     parser.add_argument("--encoding", choices=OUTPUT_ENCODINGS, default="bgr8")
     args = parser.parse_args()
-    visible = convert_bgr_frame(make_frame(args.dictionary, args.marker_id, visible=True), args.encoding)  # validates dictionary/ID
-    blank = convert_bgr_frame(make_frame(args.dictionary, args.marker_id, visible=False), args.encoding)
+    visible = make_frame(args.dictionary, args.marker_id, visible=True, encoding=args.encoding)  # validates dictionary/ID
+    blank = make_frame(args.dictionary, args.marker_id, visible=False, encoding=args.encoding)
     calibration = synthetic_calibration()
 
     bridge = RosBridge("aruco_test_image_publisher")

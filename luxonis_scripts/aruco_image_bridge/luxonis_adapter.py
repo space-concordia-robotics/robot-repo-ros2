@@ -13,7 +13,6 @@ from dataclasses import dataclass
 from datetime import timedelta
 from typing import TYPE_CHECKING, Protocol
 
-import cv2
 import depthai as dai
 import numpy as np
 import numpy.typing as npt
@@ -36,16 +35,14 @@ CAMERA_DEFAULTS: dict[str, tuple[str, str]] = {
     "RGB": ("/oakd/rgb", "oakd_rgb_camera_optical_frame"),
 }
 
-# Encodings the camera path can publish; all three are accepted by the ArUco tracker.
+# ROS encoding -> the frame type requested from the camera, so frames arrive ready to publish.
 # mono8 is a third of the size of bgr8 and ArUco detection works on grayscale anyway.
-OUTPUT_ENCODINGS = ("bgr8", "rgb8", "mono8")
-
-_CONVERSIONS: dict[tuple[int, str], int] = {
-    (3, "rgb8"): cv2.COLOR_BGR2RGB,
-    (3, "mono8"): cv2.COLOR_BGR2GRAY,
-    (1, "bgr8"): cv2.COLOR_GRAY2BGR,
-    (1, "rgb8"): cv2.COLOR_GRAY2RGB,
+FRAME_TYPES: dict[str, dai.ImgFrame.Type] = {
+    "bgr8": dai.ImgFrame.Type.BGR888i,
+    "rgb8": dai.ImgFrame.Type.RGB888i,
+    "mono8": dai.ImgFrame.Type.GRAY8,
 }
+OUTPUT_ENCODINGS = tuple(FRAME_TYPES)
 
 MAX_FPS = 30.0
 _RATE_TOLERANCE = 0.9  # tolerates normal frame-time jitter in the host-side rate guard
@@ -73,17 +70,6 @@ class Log(Protocol):
     def error(self, message: str) -> None: ...  # noqa: D102
 
 
-def convert_bgr_frame(frame: npt.NDArray[np.uint8], encoding: str) -> npt.NDArray[np.uint8]:
-    """Convert a ``getCvFrame()`` result (BGR, or 2-D grayscale for mono sensors) to ``encoding``."""
-    if encoding not in OUTPUT_ENCODINGS:
-        raise ValueError(f"Unsupported output encoding '{encoding}'; choose from {OUTPUT_ENCODINGS}")
-    channels = 1 if frame.ndim == 2 else frame.shape[2]  # noqa: PLR2004
-    code = _CONVERSIONS.get((channels, encoding))
-    if code is None:
-        return frame
-    return np.asarray(cv2.cvtColor(frame, code), dtype=np.uint8)
-
-
 @dataclass(frozen=True)
 class RosOutputConfig:
     """Validated ``--ros*`` command-line options."""
@@ -98,6 +84,11 @@ class RosOutputConfig:
     def size(self) -> tuple[int, int]:
         """(width, height), as DepthAI's requestOutput expects."""
         return (self.width, self.height)
+
+    @property
+    def frame_type(self) -> dai.ImgFrame.Type:
+        """The frame type to request from the camera for ``encoding``."""
+        return FRAME_TYPES[self.encoding]
 
     @classmethod
     def from_args(cls, cameras_csv: str, size_text: str, fps: float, encoding: str = "bgr8") -> RosOutputConfig:
@@ -192,7 +183,7 @@ class ArucoFrameSink:
             self.skipped += 1
             return False
         try:
-            frame = convert_bgr_frame(img_frame.getCvFrame(), self.encoding)
+            frame = self._pixels(img_frame)
             height, width = frame.shape[:2]
             calibration = self._calibration_for(img_frame, width, height)
             self._publisher.publish(frame, calibration, self._capture_stamp_ns(img_frame), self.encoding)
@@ -203,6 +194,19 @@ class ArucoFrameSink:
         self._last_publish = now
         self.published += 1
         return True
+
+    def _pixels(self, img_frame: dai.ImgFrame) -> npt.NDArray[np.uint8]:
+        """
+        The frame's pixels exactly as the camera sent them.
+
+        ``getCvFrame()`` is not used: it converts RGB frames to BGR for OpenCV, which would
+        publish swapped channels under an ``rgb8`` header.
+        """
+        expected = FRAME_TYPES[self.encoding]
+        received = img_frame.getType()
+        if received != expected:
+            raise ValueError(f"the camera sent {received.name} frames but {self.encoding} needs {expected.name}")
+        return img_frame.getFrame()
 
     def _calibration_for(self, img_frame: dai.ImgFrame, width: int, height: int) -> calib.CameraCalibration:
         cached = self._calibration
