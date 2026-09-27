@@ -149,8 +149,8 @@ class PipelineSession:
             return []
         aruco = extra_queues.get("aruco", {})
         if not aruco:
-            self._ros_output.bridge.warn(
-                f"--ros is set, but mode '{mode}' includes none of {','.join(self._ros_output.config.cameras)}; nothing is published from it",
+            self._ros_output.bridge.logger.warning(
+                f"--ros is set, but mode '{mode}' includes none of {','.join(self._ros_output.config.cameras)}; nothing is published from it",  # noqa: G004
             )
         return [(self._ros_output.sink(name, socket, device.readCalibration), queue) for name, (socket, queue) in aruco.items()]
 

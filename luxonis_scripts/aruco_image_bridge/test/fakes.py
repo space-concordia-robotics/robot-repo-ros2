@@ -89,25 +89,6 @@ class FakePublisher:
         self.calls.append((frame, calibration, stamp_ns, encoding))
 
 
-class FakeLog:
-    """Collects log lines as (level, message)."""
-
-    def __init__(self) -> None:
-        self.lines: list[tuple[str, str]] = []
-
-    def info(self, message: str) -> None:
-        self.lines.append(("info", message))
-
-    def warn(self, message: str) -> None:
-        self.lines.append(("warn", message))
-
-    def error(self, message: str) -> None:
-        self.lines.append(("error", message))
-
-    def count(self, level: str) -> int:
-        return sum(1 for line_level, _ in self.lines if line_level == level)
-
-
 class Clock:
     """A settable clock returning ``value``."""
 

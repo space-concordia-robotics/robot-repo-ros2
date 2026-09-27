@@ -20,6 +20,8 @@ import numpy.typing as npt
 from . import calibration as calib
 
 if TYPE_CHECKING:
+    from rclpy.impl.rcutils_logger import RcutilsLogger
+
     from .ros_bridge import RosBridge
 
 # Topic prefixes and frame names follow rover-description's simulated FFC cameras
@@ -35,6 +37,7 @@ CAMERA_DEFAULTS: dict[str, tuple[str, str]] = {
     "RGB": ("/oakd/rgb", "oakd_rgb_camera_optical_frame"),
 }
 
+# RcutilsLogger takes a plain message (no lazy %-formatting), so its calls use f-strings (ruff G004).
 # ROS encoding -> the frame type requested from the camera, so frames arrive ready to publish.
 # mono8 is a third of the size of bgr8 and ArUco detection works on grayscale anyway.
 FRAME_TYPES: dict[str, dai.ImgFrame.Type] = {
@@ -60,14 +63,6 @@ class FramePublisher(Protocol):
         stamp_ns: int | None = None,
         encoding: str | None = None,
     ) -> None: ...
-
-
-class Log(Protocol):
-    """Logging interface; ``ros_bridge.RosBridge`` in production."""
-
-    def info(self, message: str) -> None: ...  # noqa: D102
-    def warn(self, message: str) -> None: ...  # noqa: D102
-    def error(self, message: str) -> None: ...  # noqa: D102
 
 
 @dataclass(frozen=True)
@@ -134,7 +129,7 @@ class ArucoFrameSink:
     _min_period: float
     _clock_now: Callable[[], timedelta]
     _ros_now_ns: Callable[[], int]
-    _log: Log
+    _log: RcutilsLogger
     _read_calibration: Callable[[], dai.CalibrationHandler] | None
     _socket: dai.CameraBoardSocket | None
     _monotonic: Callable[[], float]
@@ -149,7 +144,7 @@ class ArucoFrameSink:
         fps: float,
         clock_now: Callable[[], timedelta],
         ros_now_ns: Callable[[], int],
-        log: Log,
+        log: RcutilsLogger,
         *,
         encoding: str = "bgr8",
         read_calibration: Callable[[], dai.CalibrationHandler] | None = None,
@@ -214,7 +209,7 @@ class ArucoFrameSink:
             cached = calib.resolve(img_frame, width, height, self._read_calibration, self._socket)
             self._log.info(f"{self.camera} calibration: {cached.summary()}")
             for warning in cached.warnings:
-                self._log.warn(f"{self.camera} calibration: {warning}")
+                self._log.warning(f"{self.camera} calibration: {warning}")
             self._calibration = cached
         return cached
 
@@ -259,8 +254,8 @@ class RosOutput:
         """Create the publisher pair and the sink for one camera."""
         image_topic, info_topic, frame_id = self.config.topics(camera)
         publisher = self.bridge.camera_publisher(image_topic, info_topic, frame_id)
-        self.bridge.info(
-            f"ROS output {camera}: {self.config.width}x{self.config.height} {self.config.encoding} @ {self.config.fps:g} FPS -> "
+        self.bridge.logger.info(
+            f"ROS output {camera}: {self.config.width}x{self.config.height} {self.config.encoding} @ {self.config.fps:g} FPS -> "  # noqa: G004
             f"{image_topic}, {info_topic} (frame_id {frame_id})",
         )
         return ArucoFrameSink(
@@ -269,7 +264,7 @@ class RosOutput:
             self.config.fps,
             clock_now=self._clock_now,
             ros_now_ns=self.bridge.now_ns,
-            log=self.bridge,
+            log=self.bridge.logger,
             encoding=self.config.encoding,
             read_calibration=read_calibration,
             socket=socket,
