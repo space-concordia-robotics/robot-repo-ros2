@@ -14,6 +14,7 @@ from datetime import timedelta
 from typing import TYPE_CHECKING, Protocol
 
 import cv2
+import depthai as dai
 import numpy as np
 import numpy.typing as npt
 
@@ -50,13 +51,6 @@ MAX_FPS = 30.0
 _RATE_TOLERANCE = 0.9  # tolerates normal frame-time jitter in the host-side rate guard
 _MAX_FRAME_AGE_S = 1.0
 _NS_PER_S = 1_000_000_000
-
-
-class DepthAIFrame(calib.TransformedFrame, Protocol):
-    """The parts of ``dai.ImgFrame`` the sink uses."""
-
-    def getCvFrame(self) -> npt.NDArray[np.uint8]: ...  # noqa: N802, D102
-    def getTimestamp(self) -> timedelta: ...  # noqa: N802, D102
 
 
 class FramePublisher(Protocol):
@@ -150,8 +144,8 @@ class ArucoFrameSink:
     _clock_now: Callable[[], timedelta]
     _ros_now_ns: Callable[[], int]
     _log: Log
-    _read_calibration: Callable[[], calib.CalibrationHandlerLike] | None
-    _socket: object
+    _read_calibration: Callable[[], dai.CalibrationHandler] | None
+    _socket: dai.CameraBoardSocket | None
     _monotonic: Callable[[], float]
     _last_publish: float | None
     _calibration: calib.CameraCalibration | None
@@ -167,8 +161,8 @@ class ArucoFrameSink:
         log: Log,
         *,
         encoding: str = "bgr8",
-        read_calibration: Callable[[], calib.CalibrationHandlerLike] | None = None,
-        socket: object = None,
+        read_calibration: Callable[[], dai.CalibrationHandler] | None = None,
+        socket: dai.CameraBoardSocket | None = None,
         monotonic: Callable[[], float] = time.monotonic,
     ) -> None:
         """Store the dependencies; nothing is published until ``handle()``."""
@@ -191,7 +185,7 @@ class ArucoFrameSink:
         self.skipped = 0
         self.failed = 0
 
-    def handle(self, img_frame: DepthAIFrame) -> bool:
+    def handle(self, img_frame: dai.ImgFrame) -> bool:
         """Publish ``img_frame`` unless it arrives too soon. Returns True if published."""
         now = self._monotonic()
         if self._last_publish is not None and now - self._last_publish < self._min_period:
@@ -210,7 +204,7 @@ class ArucoFrameSink:
         self.published += 1
         return True
 
-    def _calibration_for(self, img_frame: DepthAIFrame, width: int, height: int) -> calib.CameraCalibration:
+    def _calibration_for(self, img_frame: dai.ImgFrame, width: int, height: int) -> calib.CameraCalibration:
         cached = self._calibration
         if cached is None or (cached.width, cached.height) != (width, height):
             cached = calib.resolve(img_frame, width, height, self._read_calibration, self._socket)
@@ -220,7 +214,7 @@ class ArucoFrameSink:
             self._calibration = cached
         return cached
 
-    def _capture_stamp_ns(self, img_frame: DepthAIFrame) -> int:
+    def _capture_stamp_ns(self, img_frame: dai.ImgFrame) -> int:
         """
         ROS time at which the frame was captured.
 
@@ -257,7 +251,7 @@ class RosOutput:
         self.config = config
         self._clock_now = clock_now
 
-    def sink(self, camera: str, socket: object, read_calibration: Callable[[], calib.CalibrationHandlerLike]) -> ArucoFrameSink:
+    def sink(self, camera: str, socket: dai.CameraBoardSocket, read_calibration: Callable[[], dai.CalibrationHandler]) -> ArucoFrameSink:
         """Create the publisher pair and the sink for one camera."""
         image_topic, info_topic, frame_id = self.config.topics(camera)
         publisher = self.bridge.camera_publisher(image_topic, info_topic, frame_id)

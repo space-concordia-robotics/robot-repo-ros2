@@ -1,9 +1,6 @@
 """
 Turn DepthAI calibration data into ROS CameraInfo fields.
 
-Nothing here imports ROS or DepthAI; DepthAI objects are described by small
-protocols, so the logic is unit-tested with fake objects.
-
 Two calibration sources are supported, in order of preference:
 
 1. ``ImgFrame.getTransformation()`` (DepthAI v3). Its intrinsic matrix already
@@ -20,7 +17,8 @@ from __future__ import annotations
 import math
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
-from typing import Any, Protocol
+
+import depthai as dai
 
 RATIONAL_POLYNOMIAL = "rational_polynomial"
 PLUMB_BOB = "plumb_bob"
@@ -35,36 +33,8 @@ _MIN_FOCAL_PX = 10.0
 
 IDENTITY_3X3 = (1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0)
 
-type Matrix3x3 = Sequence[Sequence[float]]
-
-
-# The protocols below mirror DepthAI's camelCase method names.
-class ImgTransformationLike(Protocol):
-    """The parts of ``dai.ImgTransformation`` used here."""
-
-    def getSize(self) -> tuple[int, int]: ...  # noqa: N802, D102
-    def getIntrinsicMatrix(self) -> Matrix3x3: ...  # noqa: N802, D102
-    def getDistortionCoefficients(self) -> Sequence[float]: ...  # noqa: N802, D102
-    def getDistortionModel(self) -> object: ...  # noqa: N802, D102
-
-
-class TransformedFrame(Protocol):
-    """The parts of ``dai.ImgFrame`` used for calibration."""
-
-    def getTransformation(self) -> ImgTransformationLike: ...  # noqa: N802, D102
-
-
-class CalibrationHandlerLike(Protocol):
-    """
-    The parts of ``dai.CalibrationHandler`` used here.
-
-    Parameters are positional-only (DepthAI names them ``cameraId``, ``resizeWidth``...),
-    and the socket is ``Any`` because DepthAI only accepts ``dai.CameraBoardSocket``.
-    """
-
-    def getCameraIntrinsics(self, socket: Any, width: int, height: int, /) -> Matrix3x3: ...  # noqa: N802, D102
-    def getDistortionCoefficients(self, socket: Any, /) -> Sequence[float]: ...  # noqa: N802, D102
-    def getDistortionModel(self, socket: Any, /) -> object: ...  # noqa: N802, D102
+type _Matrix3x3Row = tuple[float, float, float]
+type Matrix3x3 = tuple[_Matrix3x3Row, _Matrix3x3Row, _Matrix3x3Row]
 
 
 class CalibrationError(ValueError):
@@ -97,16 +67,13 @@ class CameraCalibration:
         return f"{self.width}x{self.height} fx={fx:.1f} fy={fy:.1f} cx={cx:.1f} cy={cy:.1f} model={self.distortion_model} source={self.source}"
 
 
-def _model_name(model: object) -> str:
-    name = str(getattr(model, "name", "") or model)
-    return name.rsplit(".", maxsplit=1)[-1]
-
-
-def _flatten_3x3(matrix: Matrix3x3) -> list[float]:
-    rows = [list(row) for row in matrix]
-    if len(rows) != 3 or any(len(row) != 3 for row in rows):  # noqa: PLR2004
-        raise CalibrationError("Intrinsic matrix must be 3x3")
-    return [float(value) for row in rows for value in row]
+def to_matrix3x3(rows: Sequence[Sequence[float]]) -> Matrix3x3:
+    """Convert DepthAI's nested lists to a fixed-size matrix, checking the shape."""
+    try:
+        (a, b, c), (d, e, f), (g, h, i) = rows
+    except ValueError as error:
+        raise CalibrationError("Intrinsic matrix must be 3x3") from error
+    return ((float(a), float(b), float(c)), (float(d), float(e), float(f)), (float(g), float(h), float(i)))
 
 
 def _check_intrinsics(k: list[float], width: int, height: int) -> list[str]:
@@ -144,25 +111,20 @@ def _ros_distortion(coefficients: Sequence[float]) -> tuple[str, list[float], li
 def build_calibration(
     intrinsics: Matrix3x3,
     distortion: Sequence[float],
-    model: object,
+    model: dai.CameraModel,
     width: int,
     height: int,
     source: str,
 ) -> CameraCalibration:
-    """
-    Validate DepthAI-style calibration values and convert them to ROS fields.
-
-    ``model`` is a ``dai.CameraModel``, or anything whose name ends in the model name.
-    """
+    """Validate DepthAI-style calibration values and convert them to ROS fields."""
     if width <= 0 or height <= 0:
         raise CalibrationError(f"Invalid image size {width}x{height}")
-    k = _flatten_3x3(intrinsics)
+    k = [value for row in intrinsics for value in row]
     warnings = _check_intrinsics(k, width, height)
 
-    name = _model_name(model)
-    if name != "Perspective":
+    if model != dai.CameraModel.Perspective:
         raise CalibrationError(
-            f"Distortion model '{name}' is not supported: the ArUco tracker passes CameraInfo.d "
+            f"Distortion model '{model.name}' is not supported: the ArUco tracker passes CameraInfo.d "
             "straight to OpenCV solvePnP, which only understands the Perspective (pinhole) model",
         )
     distortion_model, d, distortion_warnings = _ros_distortion(distortion)
@@ -178,14 +140,14 @@ def build_calibration(
     )
 
 
-def from_frame_transformation(img_frame: TransformedFrame, width: int, height: int) -> CameraCalibration:
+def from_frame_transformation(img_frame: dai.ImgFrame, width: int, height: int) -> CameraCalibration:
     """Calibration carried by a DepthAI v3 ImgFrame, matching its crop/scale."""
     transformation = img_frame.getTransformation()
-    size = tuple(transformation.getSize())
+    size = transformation.getSize()
     if size != (width, height):
         raise CalibrationError(f"Frame transformation size {size} does not match image {width}x{height}")
     return build_calibration(
-        transformation.getIntrinsicMatrix(),
+        to_matrix3x3(transformation.getIntrinsicMatrix()),
         transformation.getDistortionCoefficients(),
         transformation.getDistortionModel(),
         width,
@@ -194,7 +156,7 @@ def from_frame_transformation(img_frame: TransformedFrame, width: int, height: i
     )
 
 
-def from_device(calibration_handler: CalibrationHandlerLike, socket: Any, width: int, height: int) -> CameraCalibration:
+def from_device(calibration_handler: dai.CalibrationHandler, socket: dai.CameraBoardSocket, width: int, height: int) -> CameraCalibration:
     """
     Calibration from the device EEPROM, rescaled to width x height.
 
@@ -203,7 +165,7 @@ def from_device(calibration_handler: CalibrationHandlerLike, socket: Any, width:
     is why the frame transformation is preferred.
     """
     return build_calibration(
-        calibration_handler.getCameraIntrinsics(socket, width, height),
+        to_matrix3x3(calibration_handler.getCameraIntrinsics(socket, width, height)),
         calibration_handler.getDistortionCoefficients(socket),
         calibration_handler.getDistortionModel(socket),
         width,
@@ -213,11 +175,11 @@ def from_device(calibration_handler: CalibrationHandlerLike, socket: Any, width:
 
 
 def resolve(
-    img_frame: TransformedFrame,
+    img_frame: dai.ImgFrame,
     width: int,
     height: int,
-    read_calibration: Callable[[], CalibrationHandlerLike] | None = None,
-    socket: Any = None,
+    read_calibration: Callable[[], dai.CalibrationHandler] | None = None,
+    socket: dai.CameraBoardSocket | None = None,
 ) -> CameraCalibration:
     """Return the best available calibration, or raise with every reason it failed."""
     errors = []

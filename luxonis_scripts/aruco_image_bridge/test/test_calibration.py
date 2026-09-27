@@ -1,16 +1,22 @@
-"""Calibration conversion tests with fake DepthAI objects (no camera, no ROS)."""
+"""Calibration conversion tests with real DepthAI objects (no camera, no ROS)."""
 
 from __future__ import annotations
 
-from typing import override
-
+import depthai as dai
 import pytest
 
 from aruco_image_bridge import calibration as calib
 from aruco_image_bridge.calibration import Matrix3x3
-from aruco_image_bridge.test.fakes import COEFFS_14, IDENTITY, FakeFrame, FakeHandler, FakeTransformation, K, Model
+from aruco_image_bridge.test.fakes import (
+    COEFFS_14,
+    IDENTITY,
+    K,
+    make_calibration_handler,
+    make_img_frame,
+    make_transformation,
+)
 
-PERSPECTIVE = Model("Perspective")
+PERSPECTIVE = dai.CameraModel.Perspective
 PLUMB_BOB_COEFFS = 5
 
 
@@ -18,8 +24,8 @@ def test_perspective_14_coefficients_become_rational_polynomial():
     cal = calib.build_calibration(K, COEFFS_14, PERSPECTIVE, 1280, 720, "test")
     assert cal.distortion_model == calib.RATIONAL_POLYNOMIAL
     assert cal.d == COEFFS_14[:8]
-    assert cal.k == [700.0, 0.0, 641.2, 0.0, 700.5, 358.9, 0.0, 0.0, 1.0]
-    assert cal.p == [700.0, 0.0, 641.2, 0.0, 0.0, 700.5, 358.9, 0.0, 0.0, 0.0, 1.0, 0.0]
+    assert cal.k == [700.0, 0.0, 640.0, 0.0, 700.5, 359.5, 0.0, 0.0, 1.0]
+    assert cal.p == [700.0, 0.0, 640.0, 0.0, 0.0, 700.5, 359.5, 0.0, 0.0, 0.0, 1.0, 0.0]
     assert cal.r == [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0]
     assert cal.warnings == []
 
@@ -40,8 +46,8 @@ def test_nonzero_tail_coefficients_warn():
     ("k", "match"),
     [
         (IDENTITY, "focal length"),
-        ([[700.0, 0.0, 1500.0], [0.0, 700.0, 360.0], [0.0, 0.0, 1.0]], "Principal point"),
-        ([[float("nan"), 0.0, 640.0], [0.0, 700.0, 360.0], [0.0, 0.0, 1.0]], "NaN"),
+        (((700.0, 0.0, 1500.0), (0.0, 700.0, 360.0), (0.0, 0.0, 1.0)), "Principal point"),
+        (((float("nan"), 0.0, 640.0), (0.0, 700.0, 360.0), (0.0, 0.0, 1.0)), "NaN"),
     ],
 )
 def test_implausible_intrinsics_are_rejected(k: Matrix3x3, match: str):
@@ -51,7 +57,7 @@ def test_implausible_intrinsics_are_rejected(k: Matrix3x3, match: str):
 
 def test_fisheye_is_rejected():
     with pytest.raises(calib.CalibrationError, match="Fisheye"):
-        calib.build_calibration(K, [0.1, 0.0, 0.0, 0.0], Model("Fisheye"), 1280, 720, "test")
+        calib.build_calibration(K, [0.1, 0.0, 0.0, 0.0], dai.CameraModel.Fisheye, 1280, 720, "test")
 
 
 def test_missing_distortion_is_rejected():
@@ -59,44 +65,41 @@ def test_missing_distortion_is_rejected():
         calib.build_calibration(K, [], PERSPECTIVE, 1280, 720, "test")
 
 
-def test_dai_style_enum_string_is_understood():
-    class DaiLikeEnum:
-        @override
-        def __str__(self) -> str:
-            return "CameraModel.Perspective"
-
-    cal = calib.build_calibration(K, COEFFS_14, DaiLikeEnum(), 1280, 720, "test")
-    assert cal.distortion_model == calib.RATIONAL_POLYNOMIAL
+def test_to_matrix3x3_checks_the_shape():
+    assert calib.to_matrix3x3([[1, 2, 3], [4, 5, 6], [7, 8, 9]]) == ((1.0, 2.0, 3.0), (4.0, 5.0, 6.0), (7.0, 8.0, 9.0))
+    for bad in ([[1, 2, 3], [4, 5, 6]], [[1, 2], [3, 4], [5, 6]], [[1, 2, 3]] * 4):
+        with pytest.raises(calib.CalibrationError, match="3x3"):
+            calib.to_matrix3x3(bad)
 
 
 def test_frame_transformation_is_preferred():
-    handler = FakeHandler()
-    cal = calib.resolve(FakeFrame(FakeTransformation()), 1280, 720, lambda: handler, socket="CAM_A")
+    cal = calib.resolve(make_img_frame(), 1280, 720, make_calibration_handler, socket=dai.CameraBoardSocket.CAM_A)
     assert cal.source == "frame transformation"
-    assert handler.requests == []
+    assert cal.k[0] == K[0][0]
 
 
-def test_uncalibrated_frame_falls_back_to_device():
-    handler = FakeHandler()
-    frame = FakeFrame(FakeTransformation(k=IDENTITY, coeffs=[]))
-    cal = calib.resolve(frame, 1280, 720, lambda: handler, socket="CAM_A")
+def test_uncalibrated_frame_falls_back_to_the_device_and_scales_it():
+    frame = make_img_frame(transformation=dai.ImgTransformation(1280, 720))  # identity K, like an uncalibrated camera
+    cal = calib.resolve(frame, 1280, 720, make_calibration_handler, socket=dai.CameraBoardSocket.CAM_A)
     assert cal.source == "device EEPROM"
-    assert handler.requests == [("CAM_A", 1280, 720)]
+    # 1080p calibration scaled to 720p by DepthAI: 1050 * 720/1080 = 700, principal point (640, 360)
+    assert cal.k[0] == pytest.approx(700.0)
+    assert (cal.k[2], cal.k[5]) == pytest.approx((640.0, 360.0))
 
 
-def test_transformation_size_mismatch_falls_back_to_device():
-    frame = FakeFrame(FakeTransformation(size=(1920, 1080)))
-    cal = calib.resolve(frame, 1280, 720, FakeHandler, socket="CAM_A")
+def test_transformation_size_mismatch_falls_back_to_the_device():
+    frame = make_img_frame(transformation=make_transformation(size=(1920, 1080)))
+    cal = calib.resolve(frame, 1280, 720, make_calibration_handler, socket=dai.CameraBoardSocket.CAM_A)
     assert cal.source == "device EEPROM"
 
 
 def test_no_usable_source_reports_every_reason():
-    frame = FakeFrame(FakeTransformation(k=IDENTITY))
+    frame = make_img_frame(transformation=make_transformation(k=IDENTITY))
 
-    def broken_eeprom() -> FakeHandler:
+    def broken_eeprom() -> dai.CalibrationHandler:
         raise RuntimeError("no calibration on device")
 
     with pytest.raises(calib.CalibrationError) as caught:
-        calib.resolve(frame, 1280, 720, broken_eeprom, socket="CAM_A")
+        calib.resolve(frame, 1280, 720, broken_eeprom, socket=dai.CameraBoardSocket.CAM_A)
     assert "frame transformation" in str(caught.value)
     assert "no calibration on device" in str(caught.value)
