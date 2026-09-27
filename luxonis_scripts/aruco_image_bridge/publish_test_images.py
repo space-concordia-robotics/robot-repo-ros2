@@ -47,12 +47,12 @@ def main() -> None:
         counter["index"] += 1
 
     bridge.node.create_timer(PERIOD_S, tick)
-    bridge.info(
-        f"SYNTHETIC test: {args.dictionary}, marker {args.marker_id}, {args.encoding}, "
+    bridge.logger.info(
+        f"SYNTHETIC test: {args.dictionary}, marker {args.marker_id}, {args.encoding}, "  # noqa: G004
         f"{calibration.width}x{calibration.height} at 5 FPS. Cycles 4 s marker / 2 s blank. "
         "Calibration is artificial.",
     )
-    bridge.info(f"Publishing {publisher.image_topic} and {publisher.info_topic}")
+    bridge.logger.info(f"Publishing {publisher.image_topic} and {publisher.info_topic}")  # noqa: G004
     try:
         rclpy.spin(bridge.node)
     except KeyboardInterrupt:

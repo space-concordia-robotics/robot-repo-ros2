@@ -16,6 +16,7 @@ import numpy as np
 import numpy.typing as npt
 import rclpy
 from builtin_interfaces.msg import Time
+from rclpy.impl.rcutils_logger import RcutilsLogger
 from rclpy.node import Node
 from rclpy.publisher import Publisher
 from rclpy.qos import qos_profile_sensor_data
@@ -175,6 +176,7 @@ class RosBridge:
     """Owns rclpy and a single node. Publishing needs no executor or spin thread."""
 
     node: Node
+    logger: RcutilsLogger
     _owns_context: bool
     _publishers: dict[tuple[str, str, str], CameraPublisher]
 
@@ -185,23 +187,12 @@ class RosBridge:
             # args=[] so rclpy never tries to parse this script's own command line.
             rclpy.init(args=[])
         self.node = rclpy.create_node(node_name)
+        self.logger = self.node.get_logger()
         self._publishers = {}
 
     def now_ns(self) -> int:
         """Current ROS time in nanoseconds."""
         return int(self.node.get_clock().now().nanoseconds)
-
-    def info(self, message: str) -> None:
-        """Log at INFO level through the node's logger."""
-        self.node.get_logger().info(message)
-
-    def warn(self, message: str) -> None:
-        """Log at WARN level through the node's logger."""
-        self.node.get_logger().warning(message)
-
-    def error(self, message: str) -> None:
-        """Log at ERROR level through the node's logger."""
-        self.node.get_logger().error(message)
 
     def camera_publisher(self, image_topic: str, info_topic: str, frame_id: str) -> CameraPublisher:
         """Return the publisher pair for these topics, creating it once."""

@@ -3,13 +3,18 @@
 from __future__ import annotations
 
 from datetime import timedelta
+from unittest.mock import MagicMock
 
 import depthai as dai
 import numpy as np
 import pytest
 
+pytest.importorskip("rclpy.impl.rcutils_logger", reason="ROS 2 not sourced (source /opt/ros/jazzy/setup.bash)")
+
+from rclpy.impl.rcutils_logger import RcutilsLogger
+
 from aruco_image_bridge.luxonis_adapter import FRAME_TYPES, ArucoFrameSink, RosOutputConfig
-from aruco_image_bridge.test.fakes import IDENTITY, Clock, FakeLog, FakePublisher, make_img_frame, make_transformation
+from aruco_image_bridge.test.fakes import IDENTITY, Clock, FakePublisher, make_img_frame, make_transformation
 
 ROS_NOW_NS = 1_000_000_000_000
 RECEIVE_NS = 42
@@ -23,9 +28,9 @@ def make_sink(
     ros_ns: int = ROS_NOW_NS,
     mono: Clock | None = None,
     encoding: str = "bgr8",
-) -> tuple[ArucoFrameSink, FakeLog, Clock]:
+) -> tuple[ArucoFrameSink, MagicMock, Clock]:
     mono = mono or Clock(0.0)
-    log = FakeLog()
+    log = MagicMock(spec=RcutilsLogger)  # only RcutilsLogger's methods exist on it; records the calls
     sink = ArucoFrameSink(
         publisher,
         "FRONT",
@@ -70,7 +75,7 @@ def test_calibration_is_resolved_once_and_logged():
         mono.value = t
         sink.handle(make_img_frame())
     assert len({id(call[1]) for call in publisher.calls}) == 1
-    assert log.count("info") == 1
+    assert log.info.call_count == 1
 
 
 def test_publish_errors_are_contained_and_logged_once():
@@ -79,9 +84,8 @@ def test_publish_errors_are_contained_and_logged_once():
         mono.value = t
         assert not sink.handle(make_img_frame())
     assert sink.failed == ATTEMPTS
-    errors = [message for level, message in log.lines if level == "error"]
-    assert len(errors) == 1
-    assert "RTSP streaming continues" in errors[0]
+    log.error.assert_called_once()
+    assert "RTSP streaming continues" in log.error.call_args.args[0]
 
 
 def test_missing_calibration_is_an_error_not_a_crash():
@@ -89,7 +93,7 @@ def test_missing_calibration_is_an_error_not_a_crash():
     sink, log, _ = make_sink(publisher)
     assert not sink.handle(make_img_frame(transformation=make_transformation(k=IDENTITY)))
     assert publisher.calls == []
-    assert any("calibration" in message.lower() for level, message in log.lines if level == "error")
+    assert any("calibration" in call.args[0].lower() for call in log.error.call_args_list)
 
 
 @pytest.mark.parametrize(
@@ -123,10 +127,9 @@ def test_a_frame_of_the_wrong_type_is_an_error_not_garbage():
     sink, log, _ = make_sink(publisher, encoding="bgr8")
     assert not sink.handle(make_img_frame(frame_type=dai.ImgFrame.Type.GRAY8))
     assert publisher.calls == []
-    errors = [message for level, message in log.lines if level == "error"]
-    assert len(errors) == 1
-    assert "GRAY8" in errors[0]
-    assert "BGR888i" in errors[0]
+    log.error.assert_called_once()
+    assert "GRAY8" in log.error.call_args.args[0]
+    assert "BGR888i" in log.error.call_args.args[0]
 
 
 def test_frame_type_follows_the_encoding():
