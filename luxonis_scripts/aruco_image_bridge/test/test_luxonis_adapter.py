@@ -4,10 +4,11 @@ from __future__ import annotations
 
 from datetime import timedelta
 
+import depthai as dai
 import numpy as np
 import pytest
 
-from aruco_image_bridge.luxonis_adapter import ArucoFrameSink, RosOutputConfig, convert_bgr_frame
+from aruco_image_bridge.luxonis_adapter import FRAME_TYPES, ArucoFrameSink, RosOutputConfig
 from aruco_image_bridge.test.fakes import IDENTITY, Clock, FakeLog, FakePublisher, make_img_frame, make_transformation
 
 ROS_NOW_NS = 1_000_000_000_000
@@ -91,26 +92,46 @@ def test_missing_calibration_is_an_error_not_a_crash():
     assert any("calibration" in message.lower() for level, message in log.lines if level == "error")
 
 
-@pytest.mark.parametrize(("encoding", "shape"), [("bgr8", (720, 1280, 3)), ("rgb8", (720, 1280, 3)), ("mono8", (720, 1280))])
-def test_sink_publishes_the_configured_encoding(encoding: str, shape: tuple[int, ...]):
+@pytest.mark.parametrize(
+    ("encoding", "frame_type", "shape"),
+    [
+        ("bgr8", dai.ImgFrame.Type.BGR888i, (720, 1280, 3)),
+        ("rgb8", dai.ImgFrame.Type.RGB888i, (720, 1280, 3)),
+        ("mono8", dai.ImgFrame.Type.GRAY8, (720, 1280)),
+    ],
+)
+def test_sink_publishes_the_configured_encoding(encoding: str, frame_type: dai.ImgFrame.Type, shape: tuple[int, ...]):
     publisher = FakePublisher()
     sink, _, _ = make_sink(publisher, encoding=encoding)
-    assert sink.handle(make_img_frame())
+    assert sink.handle(make_img_frame(frame_type=frame_type))
     assert publisher.calls[0][0].shape == shape
     assert publisher.calls[0][3] == encoding
 
 
-def test_convert_bgr_frame():
-    bgr = np.zeros((2, 2, 3), dtype=np.uint8)
-    bgr[..., 0] = 255  # pure blue
-    assert convert_bgr_frame(bgr, "bgr8") is bgr
-    assert convert_bgr_frame(bgr, "rgb8")[0, 0].tolist() == [0, 0, 255]
-    assert convert_bgr_frame(bgr, "mono8").shape == (2, 2)
-    gray = np.full((2, 2), 128, dtype=np.uint8)
-    assert convert_bgr_frame(gray, "mono8") is gray
-    assert convert_bgr_frame(gray, "bgr8").shape == (2, 2, 3)
-    with pytest.raises(ValueError, match="encoding"):
-        convert_bgr_frame(bgr, "yuv422")
+def test_rgb_pixels_are_published_as_the_camera_sent_them():
+    # getCvFrame() would return this frame as BGR (channels swapped) under an rgb8 header
+    pixels = np.zeros((720, 1280, 3), dtype=np.uint8)
+    pixels[0, 0] = (1, 2, 3)
+    publisher = FakePublisher()
+    sink, _, _ = make_sink(publisher, encoding="rgb8")
+    assert sink.handle(make_img_frame(frame_type=dai.ImgFrame.Type.RGB888i, pixels=pixels))
+    assert publisher.calls[0][0][0, 0].tolist() == [1, 2, 3]
+
+
+def test_a_frame_of_the_wrong_type_is_an_error_not_garbage():
+    publisher = FakePublisher()
+    sink, log, _ = make_sink(publisher, encoding="bgr8")
+    assert not sink.handle(make_img_frame(frame_type=dai.ImgFrame.Type.GRAY8))
+    assert publisher.calls == []
+    errors = [message for level, message in log.lines if level == "error"]
+    assert len(errors) == 1
+    assert "GRAY8" in errors[0]
+    assert "BGR888i" in errors[0]
+
+
+def test_frame_type_follows_the_encoding():
+    for encoding, frame_type in FRAME_TYPES.items():
+        assert RosOutputConfig.from_args("FRONT", "1280x720", 5, encoding).frame_type == frame_type
 
 
 def test_defaults_follow_rover_description_names():

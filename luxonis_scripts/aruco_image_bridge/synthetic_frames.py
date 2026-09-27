@@ -15,6 +15,8 @@ import numpy.typing as npt
 from .calibration import PLUMB_BOB, CameraCalibration
 
 DICTIONARIES = ("4X4_50", "4X4_100", "5X5_50", "5X5_100")
+ENCODINGS = ("bgr8", "rgb8", "mono8")
+_COLOUR_CONVERSIONS = {"rgb8": cv2.COLOR_BGR2RGB, "mono8": cv2.COLOR_BGR2GRAY}
 WIDTH, HEIGHT = 1280, 720
 FRAME_ID = "synthetic_front_camera_optical_frame"
 MARKER_PX = 200
@@ -41,8 +43,10 @@ def _marker_image(dictionary: cv2.aruco.Dictionary, marker_id: int, size: int) -
     raise RuntimeError("This OpenCV build has no ArUco marker generator")
 
 
-def make_frame(dictionary_name: str, marker_id: int = 7, *, visible: bool = True) -> npt.NDArray[np.uint8]:
-    """White 1280x720 BGR frame, with the marker drawn in the centre when ``visible``."""
+def make_frame(dictionary_name: str, marker_id: int = 7, *, visible: bool = True, encoding: str = "bgr8") -> npt.NDArray[np.uint8]:
+    """White 1280x720 frame in ``encoding``, with the marker drawn in the centre when ``visible``."""
+    if encoding not in ENCODINGS:
+        raise ValueError(f"Choose one of {ENCODINGS}")
     dictionary = get_dictionary(dictionary_name)
     if not 0 <= marker_id < len(dictionary.bytesList):
         raise ValueError("Marker ID is outside the selected dictionary")
@@ -51,6 +55,8 @@ def make_frame(dictionary_name: str, marker_id: int = 7, *, visible: bool = True
         marker = _marker_image(dictionary, marker_id, MARKER_PX)
         x, y = (WIDTH - MARKER_PX) // 2, (HEIGHT - MARKER_PX) // 2
         frame[y : y + MARKER_PX, x : x + MARKER_PX] = cv2.cvtColor(marker, cv2.COLOR_GRAY2BGR)
+    if encoding in _COLOUR_CONVERSIONS:
+        return np.asarray(cv2.cvtColor(frame, _COLOUR_CONVERSIONS[encoding]), dtype=np.uint8)
     return frame
 
 
