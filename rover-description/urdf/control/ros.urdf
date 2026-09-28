@@ -53,6 +53,11 @@
                 <param name="can_path">can0</param>
                 <!-- TODO 2026-02-25 (Will Free): out motor controllers are wired backwards, so we need a multiplier of -1 -->
                 <param name="multiplier">-1</param>
+                <param name="period0_period">250ms</param>
+                <param name="period1_period">10ms</param>
+                <param name="period2_period">10ms</param>
+                <param name="period3_period">500ms</param>
+                <param name="period4_period">500ms</param>
             </xacro:if>
         </hardware>
 
