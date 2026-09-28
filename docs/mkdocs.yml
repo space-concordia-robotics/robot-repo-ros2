@@ -67,8 +67,7 @@ theme:
   custom_dir: overrides
   palette:
     # Palette toggle for automatic mode
-    - media: "(prefers-color-sch
-    eme)"
+    - media: "(prefers-color-scheme)"
       primary: deep purple
       toggle:
         icon: material/brightness-auto
