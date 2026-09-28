@@ -5,6 +5,7 @@
 #include <memory>
 #include <vector>
 #include <boost/algorithm/string.hpp>
+#include <fmt/chrono.h>
 #include <hardware_interface/types/hardware_interface_type_values.hpp>
 #include <rclcpp/rclcpp.hpp>
 
@@ -96,6 +97,32 @@ namespace wheels_interface {
         }
 
         multiplier = scrb::common_util::parse_double(info_.hardware_parameters["multiplier"]);
+
+        using namespace std::chrono_literals;
+
+        const auto parse_rate_parameter = [&](const std::string& name, std::chrono::milliseconds& field) {
+            if (info_.hardware_parameters.contains(name)) {
+                field = std::chrono::duration_cast<std::chrono::milliseconds>(
+                    scrb::common_util::parse_duration(info_.hardware_parameters[name])
+                );
+            }
+        };
+
+
+        // status periods
+        status_periods = StatusPeriods{
+            .period0 = 250ms,
+            .period1 = 10ms,
+            .period2 = 10ms,
+            .period3 = 500ms,
+            .period4 = 500ms,
+        };
+
+        parse_rate_parameter("period0_period", status_periods.period0);
+        parse_rate_parameter("period1_period", status_periods.period1);
+        parse_rate_parameter("period2_period", status_periods.period2);
+        parse_rate_parameter("period3_period", status_periods.period3);
+        parse_rate_parameter("period4_period", status_periods.period4);
 
         const auto can_path = info_.hardware_parameters["can_path"];
 
@@ -200,6 +227,34 @@ namespace wheels_interface {
         // command and state should be equal when starting
         for (const auto& name : joint_command_interfaces_ | std::views::keys) {
             set_command(name, get_state(name));
+        }
+
+        // configure period
+        for (const auto& wheel : wheels) {
+            // sadly, I don't think there's a good way to deduplicate these in a way that cleans it up,
+            // due to there being a conditional return here
+            // - Will Free
+
+            if (!wheel->motor->setPeriodicStatus0Period(status_periods.period0.count())) {
+                logger->fatal("Failed to set period0 rate to {} for wheel {}", status_periods.period0, wheel->name);
+                return CallbackReturn::FAILURE;
+            }
+            if (!wheel->motor->setPeriodicStatus0Period(status_periods.period1.count())) {
+                logger->fatal("Failed to set period1 rate to {} for wheel {}", status_periods.period1, wheel->name);
+                return CallbackReturn::FAILURE;
+            }
+            if (!wheel->motor->setPeriodicStatus0Period(status_periods.period2.count())) {
+                logger->fatal("Failed to set period2 rate to {} for wheel {}", status_periods.period2, wheel->name);
+                return CallbackReturn::FAILURE;
+            }
+            if (!wheel->motor->setPeriodicStatus0Period(status_periods.period3.count())) {
+                logger->fatal("Failed to set period3 rate to {} for wheel {}", status_periods.period3, wheel->name);
+                return CallbackReturn::FAILURE;
+            }
+            if (!wheel->motor->setPeriodicStatus0Period(status_periods.period4.count())) {
+                logger->fatal("Failed to set period4 rate to {} for wheel {}", status_periods.period4, wheel->name);
+                return CallbackReturn::FAILURE;
+            }
         }
 
         using namespace std::chrono_literals;

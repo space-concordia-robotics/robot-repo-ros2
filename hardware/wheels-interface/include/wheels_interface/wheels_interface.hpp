@@ -28,6 +28,14 @@ namespace wheels_interface {
     public:
         RCLCPP_SMART_PTR_DEFINITIONS(RoverSystemWheelsHardware);
 
+        struct StatusPeriods {
+            std::chrono::milliseconds period0;
+            std::chrono::milliseconds period1;
+            std::chrono::milliseconds period2;
+            std::chrono::milliseconds period3;
+            std::chrono::milliseconds period4;
+        };
+
         // TODO 2026-02-26 (Will Free): Finish flushing this out
         struct WheelDescription {
             RCLCPP_SMART_PTR_DEFINITIONS(WheelDescription);
@@ -74,6 +82,7 @@ namespace wheels_interface {
         rclcpp::TimerBase::SharedPtr heartbeat_timer;
         double multiplier;
         std::vector<WheelDescription::SharedPtr> wheels;
+        StatusPeriods status_periods;
 
         void heartbeat() const;
 
