@@ -1,0 +1,7 @@
+nav:
+  - index.md
+  - intro
+  - general
+  - resources
+  - "*"
+  - misc
