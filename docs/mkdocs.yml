@@ -8,6 +8,7 @@ plugins:
   #  - group:
   #      enabled: !ENV [ CI, false ]
   #      plugins:
+  - extend-bash-lexer
   - awesome-nav
   - meta
   - privacy:
