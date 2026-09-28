@@ -30,3 +30,6 @@ dev = [
     "beautifulsoup4>=4.15.0",
     "lxml>=6.1.1",
 ]
+
+[project.entry-points."mkdocs.plugins"]
+extend-bash-lexer = "plugins.extend_bash:ExtendBashPlugin"
