@@ -36,7 +36,7 @@ Type=can
 TransmitQueueLength=512
 ```
 
-```systemd title="/etc/udev/rules.d/80-can.rules"
+```text title="/etc/udev/rules.d/80-can.rules"
 SUBSYSTEM=="net", KERNEL=="can*", ACTION=="add|change", ATTR{tx_queue_len}="512"
 ```
 
