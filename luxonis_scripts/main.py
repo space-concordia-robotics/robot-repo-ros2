@@ -471,8 +471,7 @@ def create_ros_output(args: argparse.Namespace) -> RosOutput:
         config = RosOutputConfig.from_args(args.ros_cameras, args.ros_size, args.ros_fps, args.ros_encoding)
     except ValueError as e:
         sys.exit(f"Invalid ROS option: {e}")
-    # depthai's stub declares Clock.now as an instance method; at runtime it is static (dai.Clock.now()).
-    return RosOutput(RosBridge(), config, dai.Clock.now)  # ty: ignore[invalid-argument-type]
+    return RosOutput(RosBridge(), config)
 
 
 def run_panorama_subprocess(sessions, filename, ffc_device, oakd_device):

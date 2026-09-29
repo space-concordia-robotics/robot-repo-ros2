@@ -1,8 +1,8 @@
 """
 Glue between main.py's DepthAI pipeline and the ROS bridge.
 
-No ROS or DepthAI imports here: DepthAI frames, clocks and calibration are
-passed in, so this logic is unit-tested with fakes (see test/test_luxonis_adapter.py).
+No ROS imports at run time (the bridge and logger are only type-checked here), so this
+logic is unit-tested with real DepthAI frames and a fake publisher and clock.
 """
 
 from __future__ import annotations
@@ -52,6 +52,12 @@ MAX_FPS = 30.0
 _RATE_TOLERANCE = 0.9  # tolerates normal frame-time jitter in the host-side rate guard
 _MAX_FRAME_AGE_S = 1.0
 _NS_PER_S = 1_000_000_000
+
+
+def dai_clock_now() -> timedelta:
+    """DepthAI's host-synchronised clock, the one that stamps camera frames."""
+    # The stub declares Clock.now as an instance method; at runtime it is static.
+    return dai.Clock.now()  # ty: ignore[missing-argument]
 
 
 class FramePublisher(ABC):
@@ -145,10 +151,10 @@ class ArucoFrameSink:
         publisher: FramePublisher,
         camera: str,
         fps: float,
-        clock_now: Callable[[], timedelta],
         ros_now_ns: Callable[[], int],
         log: RcutilsLogger,
         *,
+        clock_now: Callable[[], timedelta] = dai_clock_now,
         encoding: str = "bgr8",
         read_calibration: Callable[[], dai.CalibrationHandler] | None = None,
         socket: dai.CameraBoardSocket | None = None,
@@ -245,13 +251,11 @@ class RosOutput:
 
     bridge: RosBridge
     config: RosOutputConfig
-    _clock_now: Callable[[], timedelta]
 
-    def __init__(self, bridge: RosBridge, config: RosOutputConfig, clock_now: Callable[[], timedelta]) -> None:
-        """``clock_now`` is ``dai.Clock.now`` in production."""
+    def __init__(self, bridge: RosBridge, config: RosOutputConfig) -> None:
+        """Keep the bridge and the validated options."""
         self.bridge = bridge
         self.config = config
-        self._clock_now = clock_now
 
     def sink(self, camera: str, socket: dai.CameraBoardSocket, read_calibration: Callable[[], dai.CalibrationHandler]) -> ArucoFrameSink:
         """Create the publisher pair and the sink for one camera."""
@@ -265,7 +269,6 @@ class RosOutput:
             publisher,
             camera,
             self.config.fps,
-            clock_now=self._clock_now,
             ros_now_ns=self.bridge.now_ns,
             log=self.bridge.logger,
             encoding=self.config.encoding,
