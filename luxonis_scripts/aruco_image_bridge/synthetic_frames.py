@@ -12,7 +12,7 @@ import cv2
 import numpy as np
 import numpy.typing as npt
 
-from .calibration import PLUMB_BOB, CameraCalibration
+from .calibration import CameraCalibration, DistortionModel
 
 DICTIONARIES = ("4X4_50", "4X4_100", "5X5_50", "5X5_100")
 ENCODINGS = ("bgr8", "rgb8", "mono8")
@@ -85,7 +85,7 @@ def synthetic_calibration() -> CameraCalibration:
     return CameraCalibration(
         width=WIDTH,
         height=HEIGHT,
-        distortion_model=PLUMB_BOB,
+        distortion_model=DistortionModel.PLUMB_BOB,
         d=(0.0,) * 5,
         k=(fx, 0.0, cx, 0.0, fy, cy, 0.0, 0.0, 1.0),
         source="synthetic",

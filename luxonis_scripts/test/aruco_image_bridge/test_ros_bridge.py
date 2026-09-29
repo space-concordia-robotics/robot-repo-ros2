@@ -2,14 +2,17 @@
 
 from __future__ import annotations
 
+import depthai as dai
 import numpy as np
 import pytest
 
 pytest.importorskip("cv_bridge", reason="ROS 2 not sourced (source /opt/ros/jazzy/setup.bash)")
 
+from aruco_image_bridge.calibration import build_calibration
 from aruco_image_bridge.ros_bridge import camera_info_msg, image_msg, stamp_from_ns
 from aruco_image_bridge.synthetic_frames import synthetic_calibration
 from cv_bridge import CvBridgeError
+from fakes import COEFFS_14, K
 from std_msgs.msg import Header
 
 STAMP = stamp_from_ns(1_790_321_475_149_884_462)
@@ -44,3 +47,8 @@ def test_camera_info_matches_calibration_and_header():
     assert (info.width, info.height, info.distortion_model) == (1280, 720, "plumb_bob")
     assert tuple(info.k) == cal.k
     assert tuple(info.p) == cal.p
+
+
+def test_camera_info_carries_the_ros_distortion_model_name():
+    cal = build_calibration(K, COEFFS_14, dai.CameraModel.Perspective, 1280, 720, "test")
+    assert camera_info_msg(cal, STAMP, FRAME_ID).distortion_model == "rational_polynomial"
