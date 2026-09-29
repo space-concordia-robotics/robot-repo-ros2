@@ -86,7 +86,7 @@ def synthetic_calibration() -> CameraCalibration:
         width=WIDTH,
         height=HEIGHT,
         distortion_model=PLUMB_BOB,
-        d=[0.0] * 5,
-        k=[fx, 0.0, cx, 0.0, fy, cy, 0.0, 0.0, 1.0],
+        d=(0.0,) * 5,
+        k=(fx, 0.0, cx, 0.0, fy, cy, 0.0, 0.0, 1.0),
         source="synthetic",
     )

@@ -22,10 +22,10 @@ PLUMB_BOB_COEFFS = 5
 def test_perspective_14_coefficients_become_rational_polynomial():
     cal = calib.build_calibration(K, COEFFS_14, PERSPECTIVE, 1280, 720, "test")
     assert cal.distortion_model == calib.RATIONAL_POLYNOMIAL
-    assert cal.d == COEFFS_14[:8]
-    assert cal.k == [700.0, 0.0, 640.0, 0.0, 700.5, 359.5, 0.0, 0.0, 1.0]
-    assert cal.p == [700.0, 0.0, 640.0, 0.0, 0.0, 700.5, 359.5, 0.0, 0.0, 0.0, 1.0, 0.0]
-    assert cal.r == [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0]
+    assert cal.d == tuple(COEFFS_14[:8])
+    assert cal.k == (700.0, 0.0, 640.0, 0.0, 700.5, 359.5, 0.0, 0.0, 1.0)
+    assert cal.p == (700.0, 0.0, 640.0, 0.0, 0.0, 700.5, 359.5, 0.0, 0.0, 0.0, 1.0, 0.0)
+    assert cal.r == (1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0)
     assert cal.warnings == []
 
 

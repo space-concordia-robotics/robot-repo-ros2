@@ -42,5 +42,5 @@ def test_camera_info_matches_calibration_and_header():
     image = image_msg(np.zeros((720, 1280, 3), dtype=np.uint8), HEADER, "bgr8")
     assert info.header == image.header
     assert (info.width, info.height, info.distortion_model) == (1280, 720, "plumb_bob")
-    assert list(info.k) == cal.k
-    assert list(info.p) == cal.p
+    assert tuple(info.k) == cal.k
+    assert tuple(info.p) == cal.p
