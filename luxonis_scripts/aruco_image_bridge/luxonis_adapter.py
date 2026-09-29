@@ -62,8 +62,8 @@ class FramePublisher(ABC):
         self,
         frame: npt.NDArray[np.generic],
         calibration: calib.CameraCalibration,
+        encoding: str,
         stamp_ns: int | None = None,
-        encoding: str | None = None,
     ) -> None:
         """Publish a camera frame."""
 
@@ -184,7 +184,7 @@ class ArucoFrameSink:
             frame = self._pixels(img_frame)
             height, width = frame.shape[:2]
             calibration = self._calibration_for(img_frame, width, height)
-            self._publisher.publish(frame, calibration, self._capture_stamp_ns(img_frame), self.encoding)
+            self._publisher.publish(frame, calibration, self.encoding, self._capture_stamp_ns(img_frame))
         except Exception as error:  # noqa: BLE001 - never let ROS output stop the RTSP loop; reported below
             self.failed += 1
             self._report(error)
