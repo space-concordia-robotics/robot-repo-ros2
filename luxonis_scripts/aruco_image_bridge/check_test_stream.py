@@ -110,7 +110,7 @@ class StreamCheck(Node):
     def validate(self, image: Image, info: CameraInfo, stamp: int) -> None:
         """Check one pair; after enough pairs, check phases and rates."""
         self._check_headers(image, info, stamp)
-        self._check_calibration(info)
+        self.check_calibration(info)
         self._check_content(self._pixels(image))
         self.stamps.append(stamp)
         self.received_at.append(time.monotonic())
@@ -130,9 +130,10 @@ class StreamCheck(Node):
         return np.frombuffer(bytes(image.data), dtype=np.uint8).reshape(HEIGHT, WIDTH, channels)
 
     @staticmethod
-    def _check_calibration(info: CameraInfo) -> None:
+    def check_calibration(info: CameraInfo) -> None:
+        """Check ``info`` against the synthetic publisher's calibration."""
         calibration = synthetic_calibration()
-        require(info.distortion_model == calibration.distortion_model, "Wrong distortion model")
+        require(info.distortion_model == calibration.distortion_model.value, "Wrong distortion model")
         for field in ("d", "k", "r", "p"):
             require(np.allclose(getattr(info, field), getattr(calibration, field)), f"Unexpected synthetic calibration: {field}")
 
