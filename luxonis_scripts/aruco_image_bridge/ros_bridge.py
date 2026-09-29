@@ -46,15 +46,6 @@ ENCODINGS: dict[str, PixelLayout] = {
     "rgba8": PixelLayout(np.uint8, 4),
 }
 
-# Encoding assumed for each (dtype, channels) when the caller does not name one;
-# 3/4 channels default to OpenCV's BGR order.
-_DEFAULT_ENCODINGS: dict[tuple[type[np.unsignedinteger[Any]], int], str] = {
-    (np.uint8, 1): "mono8",
-    (np.uint16, 1): "mono16",
-    (np.uint8, 3): "bgr8",
-    (np.uint8, 4): "bgra8",
-}
-
 
 def stamp_from_ns(nanoseconds: int) -> Time:
     """Convert integer nanoseconds to a builtin_interfaces/Time."""
@@ -71,26 +62,14 @@ def _channels(frame: npt.NDArray[np.generic]) -> int:
     raise ValueError(f"Expected an HxW or HxWxC image, got shape {frame.shape}")
 
 
-def infer_encoding(frame: npt.NDArray[np.generic]) -> str:
-    """Encoding for a frame from its dtype and channel count (BGR order for colour)."""
-    key = (frame.dtype.type, _channels(frame))
-    if key not in _DEFAULT_ENCODINGS:
-        raise ValueError(f"No default ROS encoding for dtype {frame.dtype} with {key[1]} channel(s); pass one of {list(ENCODINGS)}")
-    return _DEFAULT_ENCODINGS[key]
-
-
-def image_msg(frame: npt.NDArray[np.generic], stamp: Time, frame_id: str, encoding: str | None = None) -> Image:
+def image_msg(frame: npt.NDArray[np.generic], stamp: Time, frame_id: str, encoding: str) -> Image:
     """
     Wrap an image array in a sensor_msgs/Image.
 
-    ``encoding`` is one of ``ENCODINGS``; when omitted it is inferred from the
-    array (``mono8``, ``mono16``, ``bgr8`` or ``bgra8``).
+    ``encoding`` is one of ``ENCODINGS`` and must match the array's dtype and channel count.
     """
-    if not isinstance(frame, np.ndarray):
-        raise TypeError(f"Expected a NumPy image array, got {type(frame).__name__}")
     if not frame_id:
         raise ValueError("An optical frame_id is required")
-    encoding = encoding or infer_encoding(frame)
     if encoding not in ENCODINGS:
         raise ValueError(f"Unsupported encoding '{encoding}'; supported: {list(ENCODINGS)}")
     layout = ENCODINGS[encoding]
@@ -161,8 +140,8 @@ class CameraPublisher(FramePublisher):
         self,
         frame: npt.NDArray[np.generic],
         calibration: CameraCalibration,
+        encoding: str,
         stamp_ns: int | None = None,
-        encoding: str | None = None,
     ) -> None:
         """Publish CameraInfo then Image, both stamped ``stamp_ns`` (default: now)."""
         height, width = frame.shape[:2]

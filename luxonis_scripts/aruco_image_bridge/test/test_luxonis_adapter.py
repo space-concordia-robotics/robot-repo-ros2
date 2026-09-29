@@ -49,14 +49,14 @@ def test_stamp_is_capture_time_in_ros_clock():
     sink, _, _ = make_sink(publisher, host_s=10.05)
     assert sink.handle(make_img_frame(capture_s=10.0))
     # the frame is 50 ms old on the DepthAI clock -> 50 ms before ROS "now"
-    assert publisher.calls[0][2] == ROS_NOW_NS - 50_000_000
+    assert publisher.calls[0].stamp_ns == ROS_NOW_NS - 50_000_000
 
 
 def test_implausible_age_falls_back_to_receive_time():
     publisher = FakePublisher()
     sink, _, _ = make_sink(publisher, host_s=5.0, ros_ns=RECEIVE_NS)
     sink.handle(make_img_frame(capture_s=10.0))  # "from the future"
-    assert publisher.calls[0][2] == RECEIVE_NS
+    assert publisher.calls[0].stamp_ns == RECEIVE_NS
 
 
 def test_rate_limit_drops_frames_that_arrive_too_soon():
@@ -74,7 +74,7 @@ def test_calibration_is_resolved_once_and_logged():
     for t in (0.0, 1.0, 2.0):
         mono.value = t
         sink.handle(make_img_frame())
-    assert len({id(call[1]) for call in publisher.calls}) == 1
+    assert len({id(call.calibration) for call in publisher.calls}) == 1
     assert log.info.call_count == 1
 
 
@@ -108,8 +108,8 @@ def test_sink_publishes_the_configured_encoding(encoding: str, frame_type: dai.I
     publisher = FakePublisher()
     sink, _, _ = make_sink(publisher, encoding=encoding)
     assert sink.handle(make_img_frame(frame_type=frame_type))
-    assert publisher.calls[0][0].shape == shape
-    assert publisher.calls[0][3] == encoding
+    assert publisher.calls[0].frame.shape == shape
+    assert publisher.calls[0].encoding == encoding
 
 
 def test_rgb_pixels_are_published_as_the_camera_sent_them():
@@ -119,7 +119,7 @@ def test_rgb_pixels_are_published_as_the_camera_sent_them():
     publisher = FakePublisher()
     sink, _, _ = make_sink(publisher, encoding="rgb8")
     assert sink.handle(make_img_frame(frame_type=dai.ImgFrame.Type.RGB888i, pixels=pixels))
-    assert publisher.calls[0][0][0, 0].tolist() == [1, 2, 3]
+    assert publisher.calls[0].frame[0, 0].tolist() == [1, 2, 3]
 
 
 def test_a_frame_of_the_wrong_type_is_an_error_not_garbage():

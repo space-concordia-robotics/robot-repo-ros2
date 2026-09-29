@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 from datetime import timedelta
-from typing import override
+from typing import NamedTuple, override
 
 import depthai as dai
 import numpy as np
@@ -72,11 +72,20 @@ def make_img_frame(
     return frame
 
 
+class Published(NamedTuple):
+    """One call to ``FakePublisher.publish``."""
+
+    frame: npt.NDArray[np.generic]
+    calibration: CameraCalibration
+    encoding: str
+    stamp_ns: int | None
+
+
 class FakePublisher(FramePublisher):
     """Records what the sink publishes; can be told to fail."""
 
     def __init__(self, fail_with: Exception | None = None) -> None:
-        self.calls: list[tuple[npt.NDArray[np.generic], CameraCalibration, int | None, str | None]] = []
+        self.calls: list[Published] = []
         self.fail_with = fail_with
 
     @override
@@ -84,12 +93,12 @@ class FakePublisher(FramePublisher):
         self,
         frame: npt.NDArray[np.generic],
         calibration: CameraCalibration,
+        encoding: str,
         stamp_ns: int | None = None,
-        encoding: str | None = None,
     ) -> None:
         if self.fail_with is not None:
             raise self.fail_with
-        self.calls.append((frame, calibration, stamp_ns, encoding))
+        self.calls.append(Published(frame, calibration, encoding, stamp_ns))
 
 
 class Clock:
