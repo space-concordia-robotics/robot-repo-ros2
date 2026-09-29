@@ -4,10 +4,9 @@ from __future__ import annotations
 
 import depthai as dai
 import pytest
-
 from aruco_image_bridge import calibration as calib
 from aruco_image_bridge.calibration import Matrix3x3
-from aruco_image_bridge.test.fakes import (
+from fakes import (
     COEFFS_14,
     IDENTITY,
     K,

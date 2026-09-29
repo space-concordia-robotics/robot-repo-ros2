@@ -11,10 +11,9 @@ import pytest
 
 pytest.importorskip("rclpy.impl.rcutils_logger", reason="ROS 2 not sourced (source /opt/ros/jazzy/setup.bash)")
 
-from rclpy.impl.rcutils_logger import RcutilsLogger
-
 from aruco_image_bridge.luxonis_adapter import FRAME_TYPES, ArucoFrameSink, RosOutputConfig
-from aruco_image_bridge.test.fakes import IDENTITY, Clock, FakePublisher, make_img_frame, make_transformation
+from fakes import IDENTITY, Clock, FakePublisher, make_img_frame, make_transformation
+from rclpy.impl.rcutils_logger import RcutilsLogger
 
 ROS_NOW_NS = 1_000_000_000_000
 RECEIVE_NS = 42
