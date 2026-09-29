@@ -9,7 +9,6 @@ from typing import NamedTuple, override
 import depthai as dai
 import numpy as np
 import numpy.typing as npt
-
 from aruco_image_bridge.calibration import CameraCalibration, Matrix3x3
 from aruco_image_bridge.luxonis_adapter import FramePublisher
 

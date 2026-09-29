@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import numpy as np
 import pytest
-
 from aruco_image_bridge.synthetic_frames import DICTIONARIES, ENCODINGS, HEIGHT, WIDTH, detect_ids, make_frame
 
 
