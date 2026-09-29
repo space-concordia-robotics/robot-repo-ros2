@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import array
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, override
 
 import numpy as np
 import numpy.typing as npt
@@ -23,6 +23,7 @@ from rclpy.qos import qos_profile_sensor_data
 from sensor_msgs.msg import CameraInfo, Image
 
 from .calibration import CameraCalibration
+from .luxonis_adapter import FramePublisher
 
 _NS_PER_S = 1_000_000_000
 _CAMERA_INFO_QUEUE = 10
@@ -132,7 +133,7 @@ def camera_info_msg(calibration: CameraCalibration, stamp: Time, frame_id: str) 
     return msg
 
 
-class CameraPublisher:
+class CameraPublisher(FramePublisher):
     """Publishes one camera's Image + CameraInfo pair with identical headers."""
 
     image_topic: str
@@ -155,6 +156,7 @@ class CameraPublisher:
         self._info_pub = bridge.node.create_publisher(CameraInfo, info_topic, _CAMERA_INFO_QUEUE)
         self.published = 0
 
+    @override
     def publish(
         self,
         frame: npt.NDArray[np.generic],
