@@ -1,50 +1,26 @@
-"""
-ROS 2 output side of the bridge: messages, publishers and the rclpy node.
-
-This module does not use cv_bridge. The camera scripts run in a virtualenv with
-pip-installed OpenCV/NumPy while ROS uses the system packages; building the
-Image message straight from the NumPy buffer avoids mixing the two.
-"""
+"""ROS 2 output side of the bridge: messages, publishers and the rclpy node."""
 
 from __future__ import annotations
 
-import array
-from dataclasses import dataclass
-from typing import Any, override
+from typing import cast, override
 
 import numpy as np
 import numpy.typing as npt
 import rclpy
 from builtin_interfaces.msg import Time
+from cv_bridge import CvBridge
 from rclpy.impl.rcutils_logger import RcutilsLogger
 from rclpy.node import Node
 from rclpy.publisher import Publisher
 from rclpy.qos import qos_profile_sensor_data
 from sensor_msgs.msg import CameraInfo, Image
+from std_msgs.msg import Header
 
 from .calibration import CameraCalibration
 from .luxonis_adapter import FramePublisher
 
 _NS_PER_S = 1_000_000_000
 _CAMERA_INFO_QUEUE = 10
-
-
-@dataclass(frozen=True)
-class PixelLayout:
-    """NumPy layout that a ROS image encoding requires."""
-
-    dtype: type[np.unsignedinteger[Any]]
-    channels: int
-
-
-ENCODINGS: dict[str, PixelLayout] = {
-    "mono8": PixelLayout(np.uint8, 1),
-    "mono16": PixelLayout(np.uint16, 1),
-    "bgr8": PixelLayout(np.uint8, 3),
-    "rgb8": PixelLayout(np.uint8, 3),
-    "bgra8": PixelLayout(np.uint8, 4),
-    "rgba8": PixelLayout(np.uint8, 4),
-}
 
 
 def stamp_from_ns(nanoseconds: int) -> Time:
@@ -54,45 +30,19 @@ def stamp_from_ns(nanoseconds: int) -> Time:
     return stamp
 
 
-def _channels(frame: npt.NDArray[np.generic]) -> int:
-    if frame.ndim == 2:  # noqa: PLR2004
-        return 1
-    if frame.ndim == 3:  # noqa: PLR2004
-        return int(frame.shape[2])
-    raise ValueError(f"Expected an HxW or HxWxC image, got shape {frame.shape}")
+_CV_BRIDGE = CvBridge()
 
 
-def image_msg(frame: npt.NDArray[np.generic], stamp: Time, frame_id: str, encoding: str) -> Image:
+def image_msg(frame: npt.NDArray[np.generic], header: Header, encoding: str) -> Image:
     """
-    Wrap an image array in a sensor_msgs/Image.
+    Wrap an image array in a sensor_msgs/Image with ``header``.
 
-    ``encoding`` is one of ``ENCODINGS`` and must match the array's dtype and channel count.
+    cv_bridge checks that ``encoding`` matches the array's dtype and channel count
+    (CvBridgeError otherwise) and copies the pixels as they are, without converting
+    between channel orders.
     """
-    if not frame_id:
-        raise ValueError("An optical frame_id is required")
-    if encoding not in ENCODINGS:
-        raise ValueError(f"Unsupported encoding '{encoding}'; supported: {list(ENCODINGS)}")
-    layout = ENCODINGS[encoding]
-    if frame.dtype.type is not layout.dtype or _channels(frame) != layout.channels:
-        raise ValueError(
-            f"Encoding '{encoding}' needs {layout.channels} channel(s) of {np.dtype(layout.dtype)}, got {_channels(frame)} of {frame.dtype}",
-        )
-
-    # Contiguous, little-endian pixels, so is_bigendian is always 0.
-    pixels = np.ascontiguousarray(frame, dtype=frame.dtype.newbyteorder("<"))
-    height, width = pixels.shape[:2]
-
-    msg = Image()
-    msg.header.stamp = stamp
-    msg.header.frame_id = frame_id
-    msg.height = height
-    msg.width = width
-    msg.encoding = encoding
-    msg.is_bigendian = 0
-    msg.step = width * layout.channels * pixels.itemsize
-    # array('B') is the fast path for uint8[] fields (the same approach cv_bridge uses).
-    msg.data = array.array("B", pixels.tobytes())
-    return msg
+    # cv_bridge is untyped, so its result is Unknown to the type checker.
+    return cast("Image", _CV_BRIDGE.cv2_to_imgmsg(frame, encoding=encoding, header=header))
 
 
 def camera_info_msg(calibration: CameraCalibration, stamp: Time, frame_id: str) -> CameraInfo:
@@ -149,7 +99,7 @@ class CameraPublisher(FramePublisher):
             raise ValueError(f"Image is {width}x{height} but calibration is for {calibration.width}x{calibration.height}")
         stamp = stamp_from_ns(self._bridge.now_ns() if stamp_ns is None else stamp_ns)
         self._info_pub.publish(camera_info_msg(calibration, stamp, self.frame_id))
-        self._image_pub.publish(image_msg(frame, stamp, self.frame_id, encoding))
+        self._image_pub.publish(image_msg(frame, Header(stamp=stamp, frame_id=self.frame_id), encoding))
         self.published += 1
 
 
