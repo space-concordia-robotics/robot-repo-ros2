@@ -22,11 +22,11 @@ from sensor_msgs.msg import CameraInfo, Image
 from std_msgs.msg import Header
 
 from .luxonis_adapter import OUTPUT_ENCODINGS
-from .ros_bridge import ENCODINGS
 from .synthetic_frames import DICTIONARIES, FRAME_ID, HEIGHT, WHITE, WIDTH, detect_ids, synthetic_calibration
 
 TEST_PREFIX = "/test/camera/front"
 REQUIRED_PAIRS = 30
+_CHANNELS = {"bgr8": 3, "rgb8": 3, "mono8": 1}
 MAX_PENDING = 20
 MIN_MARKER_FRAMES = 5
 MIN_BLANK_FRAMES = 3
@@ -125,7 +125,7 @@ class StreamCheck(Node):
 
     def _pixels(self, image: Image) -> npt.NDArray[np.uint8]:
         require(image.encoding == self.encoding, f"Expected {self.encoding} encoding, got {image.encoding}")
-        channels = ENCODINGS[self.encoding].channels
+        channels = _CHANNELS[self.encoding]
         require(image.step == WIDTH * channels and len(image.data) == image.step * HEIGHT, "Wrong buffer size/stride")
         return np.frombuffer(bytes(image.data), dtype=np.uint8).reshape(HEIGHT, WIDTH, channels)
 
