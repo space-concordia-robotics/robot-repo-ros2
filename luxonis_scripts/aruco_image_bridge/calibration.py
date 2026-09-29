@@ -31,10 +31,13 @@ _TAIL_TOLERANCE = 1e-6
 _ZERO_TOLERANCE = 1e-9
 _MIN_FOCAL_PX = 10.0
 
-IDENTITY_3X3 = (1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0)
-
 type _Matrix3x3Row = tuple[float, float, float]
 type Matrix3x3 = tuple[_Matrix3x3Row, _Matrix3x3Row, _Matrix3x3Row]
+# CameraInfo's matrices are flattened row-major: K and R are 3x3, P is 3x4.
+type FlatMatrix3x3 = tuple[float, float, float, float, float, float, float, float, float]
+type FlatMatrix3x4 = tuple[float, float, float, float, float, float, float, float, float, float, float, float]
+
+IDENTITY_3X3: FlatMatrix3x3 = (1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0)
 
 
 class CalibrationError(ValueError):
@@ -48,18 +51,17 @@ class CameraCalibration:
     width: int
     height: int
     distortion_model: str
-    d: list[float]
-    k: list[float]
-    r: list[float] = field(default_factory=lambda: list(IDENTITY_3X3))
-    p: list[float] = field(default_factory=list)
+    d: tuple[float, ...]
+    k: FlatMatrix3x3
+    r: FlatMatrix3x3 = IDENTITY_3X3
     source: str = "unknown"
     warnings: list[str] = field(default_factory=list)
 
-    def __post_init__(self) -> None:
-        """Derive the projection matrix [K | 0] when none is given."""
-        if not self.p:
-            fx, _, cx, _, fy, cy, _, _, _ = self.k
-            self.p = [fx, 0.0, cx, 0.0, 0.0, fy, cy, 0.0, 0.0, 0.0, 1.0, 0.0]
+    @property
+    def p(self) -> FlatMatrix3x4:
+        """Projection matrix [K | 0]: the images are unrectified and come from a single camera."""
+        fx, _, cx, _, fy, cy, _, _, _ = self.k
+        return (fx, 0.0, cx, 0.0, 0.0, fy, cy, 0.0, 0.0, 0.0, 1.0, 0.0)
 
     def summary(self) -> str:
         """One-line description for logs."""
@@ -73,10 +75,10 @@ def to_matrix3x3(rows: Sequence[Sequence[float]]) -> Matrix3x3:
         (a, b, c), (d, e, f), (g, h, i) = rows
     except ValueError as error:
         raise CalibrationError("Intrinsic matrix must be 3x3") from error
-    return ((float(a), float(b), float(c)), (float(d), float(e), float(f)), (float(g), float(h), float(i)))
+    return ((a, b, c), (d, e, f), (g, h, i))
 
 
-def _check_intrinsics(k: list[float], width: int, height: int) -> list[str]:
+def _check_intrinsics(k: FlatMatrix3x3, width: int, height: int) -> list[str]:
     """Raise on implausible intrinsics; return warnings for odd but usable ones."""
     if not all(math.isfinite(value) for value in k):
         raise CalibrationError("Intrinsic matrix contains NaN or infinity")
@@ -92,20 +94,20 @@ def _check_intrinsics(k: list[float], width: int, height: int) -> list[str]:
     return []
 
 
-def _ros_distortion(coefficients: Sequence[float]) -> tuple[str, list[float], list[str]]:
+def _ros_distortion(coefficients: Sequence[float]) -> tuple[str, tuple[float, ...], list[str]]:
     """Map DepthAI Perspective coefficients to a ROS distortion model and D vector."""
-    coeffs = [float(value) for value in coefficients]
+    coeffs = tuple(coefficients)
     if not coeffs:
         raise CalibrationError("No distortion coefficients available")
     if not all(math.isfinite(value) for value in coeffs):
         raise CalibrationError("Distortion coefficients contain NaN or infinity")
     if len(coeffs) <= _PLUMB_BOB_COEFF_COUNT:
-        return PLUMB_BOB, coeffs + [0.0] * (_PLUMB_BOB_COEFF_COUNT - len(coeffs)), []
+        return PLUMB_BOB, coeffs + (0.0,) * (_PLUMB_BOB_COEFF_COUNT - len(coeffs)), []
     tail = coeffs[_ROS_COEFF_COUNT:]
     warnings = []
     if any(abs(value) > _TAIL_TOLERANCE for value in tail):
-        warnings.append(f"Thin-prism/tilt coefficients are non-zero but ROS rational_polynomial only carries 8 values; dropped {tail}")
-    return RATIONAL_POLYNOMIAL, (coeffs + [0.0] * _ROS_COEFF_COUNT)[:_ROS_COEFF_COUNT], warnings
+        warnings.append(f"Thin-prism/tilt coefficients are non-zero but ROS rational_polynomial only carries 8 values; dropped {list(tail)}")
+    return RATIONAL_POLYNOMIAL, (coeffs + (0.0,) * _ROS_COEFF_COUNT)[:_ROS_COEFF_COUNT], warnings
 
 
 def build_calibration(
@@ -119,7 +121,7 @@ def build_calibration(
     """Validate DepthAI-style calibration values and convert them to ROS fields."""
     if width <= 0 or height <= 0:
         raise CalibrationError(f"Invalid image size {width}x{height}")
-    k = [value for row in intrinsics for value in row]
+    k = (*intrinsics[0], *intrinsics[1], *intrinsics[2])
     warnings = _check_intrinsics(k, width, height)
 
     if model != dai.CameraModel.Perspective:

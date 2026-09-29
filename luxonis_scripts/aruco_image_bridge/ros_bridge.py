@@ -55,10 +55,10 @@ def camera_info_msg(calibration: CameraCalibration, stamp: Time, frame_id: str) 
     msg.width = calibration.width
     msg.height = calibration.height
     msg.distortion_model = calibration.distortion_model
-    msg.d = [float(value) for value in calibration.d]
-    msg.k = [float(value) for value in calibration.k]
-    msg.r = [float(value) for value in calibration.r]
-    msg.p = [float(value) for value in calibration.p]
+    msg.d = calibration.d
+    msg.k = calibration.k
+    msg.r = calibration.r
+    msg.p = calibration.p
     return msg
 
 
