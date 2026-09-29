@@ -4,12 +4,14 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 from datetime import timedelta
+from typing import override
 
 import depthai as dai
 import numpy as np
 import numpy.typing as npt
 
 from aruco_image_bridge.calibration import CameraCalibration, Matrix3x3
+from aruco_image_bridge.luxonis_adapter import FramePublisher
 
 SOCKET = dai.CameraBoardSocket.CAM_A
 # Plausible 1280x720 values for a wide IMX378 (not real rover calibration). DepthAI stores
@@ -70,13 +72,14 @@ def make_img_frame(
     return frame
 
 
-class FakePublisher:
+class FakePublisher(FramePublisher):
     """Records what the sink publishes; can be told to fail."""
 
     def __init__(self, fail_with: Exception | None = None) -> None:
         self.calls: list[tuple[npt.NDArray[np.generic], CameraCalibration, int | None, str | None]] = []
         self.fail_with = fail_with
 
+    @override
     def publish(
         self,
         frame: npt.NDArray[np.generic],

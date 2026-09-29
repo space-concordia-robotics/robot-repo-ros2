@@ -8,10 +8,11 @@ passed in, so this logic is unit-tested with fakes (see test/test_luxonis_adapte
 from __future__ import annotations
 
 import time
+from abc import ABC, abstractmethod
 from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import timedelta
-from typing import TYPE_CHECKING, Protocol
+from typing import TYPE_CHECKING
 
 import depthai as dai
 import numpy as np
@@ -53,16 +54,18 @@ _MAX_FRAME_AGE_S = 1.0
 _NS_PER_S = 1_000_000_000
 
 
-class FramePublisher(Protocol):
+class FramePublisher(ABC):
     """Where the sink sends frames; ``ros_bridge.CameraPublisher`` in production."""
 
-    def publish(  # noqa: D102
+    @abstractmethod
+    def publish(
         self,
         frame: npt.NDArray[np.generic],
         calibration: calib.CameraCalibration,
         stamp_ns: int | None = None,
         encoding: str | None = None,
-    ) -> None: ...
+    ) -> None:
+        """Publish a camera frame."""
 
 
 @dataclass(frozen=True)
