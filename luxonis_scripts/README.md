@@ -42,6 +42,30 @@ IPs* OAK-D Pro `10.240.0.67`, FFC PoE `10.240.0.69`.
 | oakd_yolo | 4 Mbps | 15 | `/RGB` + terminal `detections` |
 | all_cams | FFC 2 Mbps + RGB 7 Mbps | 30 | all five paths |
 
+## ROS image output (`--ros`)
+
+`--ros` also publishes a low-rate raw image and `CameraInfo` for the ArUco tracker (see `aruco_image_bridge/`). It is off by default; without it `main.py` does not import ROS.
+
+```
+python3 main.py --mode ffc_front -d [MXID or IP] --ros
+```
+
+| Option | Default | Meaning |
+|---|---|---|
+| `--ros` | off | Enable the ROS image output |
+| `--ros-cameras` | `FRONT` | Any of `FRONT,RIGHT,LEFT,BACK,RGB`; only cameras in the running mode publish |
+| `--ros-fps` | `5` | Output rate |
+| `--ros-size` | `1280x720` | Output resolution |
+| `--ros-encoding` | `bgr8` | `bgr8`, `rgb8` or `mono8` (`mono8` is a third of the size) |
+
+| Camera | Image / CameraInfo topics | `frame_id` |
+|---|---|---|
+| FRONT | `/ffc/front/image_raw`, `/ffc/front/camera_info` | `ffc_front_camera_optical_frame` |
+| RIGHT | `/ffc/right/...` | `ffc_right_camera_optical_frame` |
+| LEFT | `/ffc/left/...` | `ffc_left_camera_optical_frame` |
+| BACK | `/ffc/rear/...` | `ffc_rear_camera_optical_frame` |
+| RGB (`oakd_rgb` mode) | `/oakd/rgb/...` | `oakd_rgb_camera_optical_frame` |
+
 ## REPL commands
 
 To stop a pipeline run `stop` in the same terminal that ran it.

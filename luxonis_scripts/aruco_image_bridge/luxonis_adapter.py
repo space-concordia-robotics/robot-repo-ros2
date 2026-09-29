@@ -28,8 +28,7 @@ if TYPE_CHECKING:
 # Topic prefixes and frame names follow rover-description's simulated FFC cameras
 # (urdf/sensors/ffc-module.urdf: topics ffc/<side>/image_raw and ffc/<side>/camera_info,
 # links ffc_<side>_camera, where the back camera is called "rear").
-# The *_optical_frame names are PLACEHOLDERS until the URDF gains optical frames;
-# see "Open questions" in README.md.
+# The {name}_optical_frame links do not exist in the URDF yet.
 CAMERA_DEFAULTS: dict[str, tuple[str, str]] = {
     "FRONT": ("/ffc/front", "ffc_front_camera_optical_frame"),
     "RIGHT": ("/ffc/right", "ffc_right_camera_optical_frame"),
