@@ -54,7 +54,7 @@ def camera_info_msg(calibration: CameraCalibration, stamp: Time, frame_id: str) 
     msg.header.frame_id = frame_id
     msg.width = calibration.width
     msg.height = calibration.height
-    msg.distortion_model = calibration.distortion_model
+    msg.distortion_model = calibration.distortion_model.value
     msg.d = calibration.d
     msg.k = calibration.k
     msg.r = calibration.r

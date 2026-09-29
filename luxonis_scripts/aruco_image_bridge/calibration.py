@@ -17,11 +17,9 @@ from __future__ import annotations
 import math
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
+from enum import Enum
 
 import depthai as dai
-
-RATIONAL_POLYNOMIAL = "rational_polynomial"
-PLUMB_BOB = "plumb_bob"
 
 # DepthAI "Perspective" coefficients use OpenCV's order:
 # k1 k2 p1 p2 k3 k4 k5 k6 s1 s2 s3 s4 tauX tauY
@@ -44,13 +42,20 @@ class CalibrationError(ValueError):
     """Calibration is missing, implausible or in an unsupported model."""
 
 
+class DistortionModel(Enum):
+    """The ``CameraInfo.distortion_model`` names this bridge can publish."""
+
+    PLUMB_BOB = "plumb_bob"
+    RATIONAL_POLYNOMIAL = "rational_polynomial"
+
+
 @dataclass
 class CameraCalibration:
     """Everything a CameraInfo message needs, for one image size."""
 
     width: int
     height: int
-    distortion_model: str
+    distortion_model: DistortionModel
     d: tuple[float, ...]
     k: FlatMatrix3x3
     r: FlatMatrix3x3 = IDENTITY_3X3
@@ -66,7 +71,7 @@ class CameraCalibration:
     def summary(self) -> str:
         """One-line description for logs."""
         fx, _, cx, _, fy, cy, _, _, _ = self.k
-        return f"{self.width}x{self.height} fx={fx:.1f} fy={fy:.1f} cx={cx:.1f} cy={cy:.1f} model={self.distortion_model} source={self.source}"
+        return f"{self.width}x{self.height} fx={fx:.1f} fy={fy:.1f} cx={cx:.1f} cy={cy:.1f} model={self.distortion_model.value} source={self.source}"
 
 
 def to_matrix3x3(rows: Sequence[Sequence[float]]) -> Matrix3x3:
@@ -94,7 +99,7 @@ def _check_intrinsics(k: FlatMatrix3x3, width: int, height: int) -> list[str]:
     return []
 
 
-def _ros_distortion(coefficients: Sequence[float]) -> tuple[str, tuple[float, ...], list[str]]:
+def _ros_distortion(coefficients: Sequence[float]) -> tuple[DistortionModel, tuple[float, ...], list[str]]:
     """Map DepthAI Perspective coefficients to a ROS distortion model and D vector."""
     coeffs = tuple(coefficients)
     if not coeffs:
@@ -102,12 +107,12 @@ def _ros_distortion(coefficients: Sequence[float]) -> tuple[str, tuple[float, ..
     if not all(math.isfinite(value) for value in coeffs):
         raise CalibrationError("Distortion coefficients contain NaN or infinity")
     if len(coeffs) <= _PLUMB_BOB_COEFF_COUNT:
-        return PLUMB_BOB, coeffs + (0.0,) * (_PLUMB_BOB_COEFF_COUNT - len(coeffs)), []
+        return DistortionModel.PLUMB_BOB, coeffs + (0.0,) * (_PLUMB_BOB_COEFF_COUNT - len(coeffs)), []
     tail = coeffs[_ROS_COEFF_COUNT:]
     warnings = []
     if any(abs(value) > _TAIL_TOLERANCE for value in tail):
         warnings.append(f"Thin-prism/tilt coefficients are non-zero but ROS rational_polynomial only carries 8 values; dropped {list(tail)}")
-    return RATIONAL_POLYNOMIAL, (coeffs + (0.0,) * _ROS_COEFF_COUNT)[:_ROS_COEFF_COUNT], warnings
+    return DistortionModel.RATIONAL_POLYNOMIAL, (coeffs + (0.0,) * _ROS_COEFF_COUNT)[:_ROS_COEFF_COUNT], warnings
 
 
 def build_calibration(
