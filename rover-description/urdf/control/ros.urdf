@@ -58,6 +58,7 @@
                 <param name="period2_period">10ms</param>
                 <param name="period3_period">500ms</param>
                 <param name="period4_period">500ms</param>
+                <param name="heartbeat_period">20ms</param>
             </xacro:if>
         </hardware>
 

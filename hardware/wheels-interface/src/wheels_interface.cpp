@@ -3,6 +3,7 @@
 #include <chrono>
 #include <cmath>
 #include <memory>
+#include <ranges>
 #include <vector>
 #include <boost/algorithm/string.hpp>
 #include <fmt/chrono.h>
@@ -11,66 +12,46 @@
 
 #include "scrb_common_util/string_parsing.hpp"
 
+
 namespace wheels_interface {
     using hardware_interface::HW_IF_POSITION;
     using hardware_interface::HW_IF_VELOCITY;
 
     constexpr auto ENCODER_MULTIPLIER = 64;
 
-    std::string camelCaseToSnakeCase(const std::string_view& input) {
-        std::string result;
-        result.reserve(input.size());
-
-        for (size_t i = 0; i < input.size(); ++i) {
-            const auto c = input.at(i);
-
-            if (i > 0 && std::isupper(c, std::locale::classic())) {
-                if (std::islower(input.at(i - 1), std::locale::classic()))
-                    result.push_back('_');
-
-                if (const auto isLast = i + 1 == input.size(); !isLast && std::islower(input.at(i + 1), std::locale::classic()))
-                    result.push_back('_');
-            } else {
-                result.push_back(c);
-            }
-
-            result.push_back(std::tolower(c, std::locale::classic()));
+    namespace {
+        /**
+         * Converts a value from RPM to m/s.
+         *
+         * @param value RPM
+         * @param radius the relevant radius
+         * @return m/s
+         */
+        inline double rpmToMetersPerSecond(const double value, const double radius) {
+            return value * std::numbers::pi * 2 * radius / 60.0;
         }
 
-        return result;
-    }
+        /**
+         * Converts a value from m/s to RPM.
+         *
+         * @param value m/s
+         * @param radius the relevant radius
+         * @return RPM
+         */
+        inline double metersPerSecondToRPM(const double value, const double radius) {
+            return value * 60 / (std::numbers::pi * 2 * radius);
+        }
 
-    /**
-     * Converts a value from RPM to m/s.
-     *
-     * @param value RPM
-     * @param radius the relevant radius
-     * @return m/s
-     */
-    inline double rpmToMetersPerSecond(const double value, const double radius) {
-        return value * std::numbers::pi * 2 * radius / 60.0;
-    }
-
-    /**
-     * Converts a value from m/s to RPM.
-     *
-     * @param value m/s
-     * @param radius the relevant radius
-     * @return RPM
-     */
-    inline double metersPerSecondToRPM(const double value, const double radius) {
-        return value * 60 / (std::numbers::pi * 2 * radius);
-    }
-
-    /**
-     * Convert a value from rotations to m.
-     *
-     * @param value rotations
-     * @param radius the relevant radius
-     * @return rotations
-     */
-    inline double rotationsToMeters(const double value, const double radius) {
-        return value * std::numbers::pi * 2 * radius;
+        /**
+         * Convert a value from rotations to m.
+         *
+         * @param value rotations
+         * @param radius the relevant radius
+         * @return rotations
+         */
+        inline double rotationsToMeters(const double value, const double radius) {
+            return value * std::numbers::pi * 2 * radius;
+        }
     }
 
     CallbackReturn RoverSystemWheelsHardware::on_init(const hardware_interface::HardwareComponentInterfaceParams& params) {
@@ -82,6 +63,7 @@ namespace wheels_interface {
         auto rcl_logger = get_logger();
 
         diagnostic_updater = std::make_shared<diagnostic_updater::Updater>(get_node());
+        // TODO 2026-09-28 (Will Free): should each wheel have a unique hardware id?
         diagnostic_updater->setHardwareID(get_hardware_info().name);
 
         logger = std::make_shared<ros2_fmt_logger::Logger>(rcl_logger);
@@ -124,12 +106,17 @@ namespace wheels_interface {
         parse_rate_parameter("period3_period", status_periods.period3);
         parse_rate_parameter("period4_period", status_periods.period4);
 
-        const auto can_path = info_.hardware_parameters["can_path"];
+        // heartbeat period
+        // TODO 2026-03-01 (Will Free): is 20ms a correct value for the heartbeat period here?
+        heartbeat_period = 20ms;
+        parse_rate_parameter("heartbeat_period", heartbeat_period);
+
+        const auto& can_path = info_.hardware_parameters["can_path"];
 
         can_controller = can_util::CANController::make_shared(can_path, rcl_logger);
 
         for (auto i = 0u; i < info.joints.size(); i++) {
-            const auto& joint = info.joints[i];
+            const auto& joint = info.joints.at(i);
 
             auto hasInterface = [&](const std::vector<InterfaceInfo>& interfaces, const std::string& name) {
                 return std::ranges::any_of(
@@ -190,13 +177,24 @@ namespace wheels_interface {
 
             diagnostic_updater->add(fmt::format("{} Motor {} Status", info.name, i), [&, i](auto& stat) {
                 // ReSharper disable once CppDeclarationHidesLocal
-                const auto wheel = wheels[i];
+                const auto wheel = wheels.at(i);
                 if (!wheel)
                     return;
 
                 produce_diagnostics(stat, wheel);
             });
         }
+
+        logger->info(
+            "Initialized drivetrain with multiplier: {}, canbus path: {}, and period rates 0, 1, 2, 3, 4: {}, {}, {}, {}, {}",
+            multiplier,
+            can_path,
+            status_periods.period0,
+            status_periods.period1,
+            status_periods.period2,
+            status_periods.period3,
+            status_periods.period4
+        );
 
         return CallbackReturn::SUCCESS;
     }
@@ -259,9 +257,7 @@ namespace wheels_interface {
 
         using namespace std::chrono_literals;
 
-        // TODO 2026-03-01 (Will Free): is 20ms a correct value for the heartbeat period here?
-        constexpr auto HEARTBEAT_PERIOD = 20ms;
-        heartbeat_timer = get_node()->create_wall_timer(HEARTBEAT_PERIOD, [this] {
+        heartbeat_timer = get_node()->create_wall_timer(heartbeat_period, [this] {
             heartbeat();
         });
 
@@ -286,12 +282,14 @@ namespace wheels_interface {
         const auto stickyFaults = motor->getStickyFaults();
 
         if (stickyFaults != 0)
-            stat.summary(DiagnosticStatus::ERROR, "Motor has sticky fault");
+            stat.summary(DiagnosticStatus::ERROR, fmt::format("Motor has {} sticky fault(s)", stickyFaults));
         else if (faults != 0)
-            stat.summary(DiagnosticStatus::WARN, "Motor has non-sticky fault");
+            stat.summary(DiagnosticStatus::WARN, fmt::format("Motor has {} non-sticky fault(s)", faults));
         else
             stat.summary(DiagnosticStatus::OK, "Motor is OK");
 
+        // we are adding 15 different fields here.
+        // if the fields we send is ever modified, please adjust this.
         stat.values.reserve(15);
 
         stat.add("name", wheel->name);
@@ -330,10 +328,6 @@ namespace wheels_interface {
     }
 
     void RoverSystemWheelsHardware::heartbeat() const {
-        constexpr auto HEARTBEAT_PERIOD = std::chrono::milliseconds(20);
-        const auto rate = rclcpp::WallRate::make_shared(HEARTBEAT_PERIOD);
-        rate->reset();
-
         if (wheels.size() < 0)
             return;
 
@@ -341,7 +335,7 @@ namespace wheels_interface {
         // might need to double check that...
 
         // ReSharper disable once CppExpressionWithoutSideEffects
-        wheels[0]->motor->heartbeat();
+        wheels.at(0)->motor->heartbeat();
     }
 
     CallbackReturn RoverSystemWheelsHardware::on_deactivate(const rclcpp_lifecycle::State& /*previous_state*/) {
@@ -365,8 +359,12 @@ namespace wheels_interface {
         std::this_thread::sleep_for(DEACTIVATION_DELAY);
 
         try {
-            heartbeat_timer->reset();
-            heartbeat_timer->cancel();
+            if (heartbeat_timer) {
+                // NOLINTNEXTLINE(*-ambiguous-smartptr-reset-call): we are calling reset on the heartbeat, not the pointer
+                heartbeat_timer->reset();
+                heartbeat_timer->cancel();
+                heartbeat_timer = nullptr;
+            }
         } catch (const std::runtime_error& e) {
             logger->error("Failure to deactivate while stopping heartbeat: {}", e.what());
             return CallbackReturn::ERROR;
