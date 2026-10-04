@@ -1,10 +1,8 @@
 #pragma once
 
 #include <chrono>
-#include <cmath>
 #include <mutex>
 #include <optional>
-#include <thread>
 #include <variant>
 #include <vector>
 #include <rclcpp/logger.hpp>
@@ -31,6 +29,7 @@ namespace wheels_interface {
      * The general structure is formatting as (APIClass << 4) | APIIndex
      */
     enum class APICommand : uint16_t {
+        // NOLINTBEGIN(*-signed-bitwise)
         ClearFaults     = 6 << 4 | 14,
         FactoryDefaults = 7 << 4 | 4,
         FactoryReset    = 7 << 4 | 5,
@@ -52,12 +51,14 @@ namespace wheels_interface {
         Period1 = 6 << 4 | 1,
         Period2 = 6 << 4 | 2,
         Period3 = 6 << 4 | 3,
-        Period4 = 6 << 4 | 4
+        Period4 = 6 << 4 | 4,
+        // NOLINTEND(*-signed-bitwise)
     };
 
     /**
      * @brief Parameters for the SPARK controller
      */
+    // NOLINTNEXTLINE(*-enum-size): this is based off of the FRC spec
     enum class Parameter : uint32_t {
         kInputMode                           = 1,
         kMotorType                           = 2,
@@ -193,7 +194,7 @@ namespace wheels_interface {
         kPositionPIDMinInput                 = 150,
         kPositionPIDMaxInput                 = 151,
         kDutyCyclePrescalar                  = 153,
-        kDutyCycleZeroOffset                 = 154
+        kDutyCycleZeroOffset                 = 154,
     };
 
     /**
@@ -201,7 +202,7 @@ namespace wheels_interface {
      */
     enum class MotorType : uint8_t {
         kBrushed   = 0,
-        kBrushless = 1
+        kBrushless = 1,
     };
 
     /**
@@ -210,7 +211,7 @@ namespace wheels_interface {
     enum class SensorType : uint8_t {
         kNoSensor   = 0,
         kHallSensor = 1,
-        kEncoder    = 2
+        kEncoder    = 2,
     };
 
     /**
@@ -220,7 +221,7 @@ namespace wheels_interface {
         kDutyCycle = 0,
         kVelocity  = 1,
         kVoltage   = 2,
-        kPosition  = 3
+        kPosition  = 3,
     };
 
     /**
@@ -228,12 +229,13 @@ namespace wheels_interface {
      */
     enum class IdleMode : uint8_t {
         kCoast = 0,
-        kBrake = 1
+        kBrake = 1,
     };
 
     /**
      * @brief Periodic status 0 structure
      */
+    // NOLINTNEXTLINE(*-pro-type-member-init)
     struct Period0Status {
         float dutyCycle;
         uint16_t faults;
@@ -247,6 +249,7 @@ namespace wheels_interface {
     /**
      * @brief Periodic status 1 structure
      */
+    // NOLINTNEXTLINE(*-pro-type-member-init)
     struct Period1Status {
         float velocity;
         float temperature;
@@ -258,6 +261,7 @@ namespace wheels_interface {
     /**
      * @brief Periodic status 2 structure
      */
+    // NOLINTNEXTLINE(*-pro-type-member-init)
     struct Period2Status {
         float position;
         float iAccum;
@@ -267,6 +271,7 @@ namespace wheels_interface {
     /**
      * @brief Periodic status 3 structure
      */
+    // NOLINTNEXTLINE(*-pro-type-member-init)
     struct Period3Status {
         float analogVoltage;
         float analogVelocity;
@@ -277,6 +282,7 @@ namespace wheels_interface {
     /**
      * @brief Periodic status 4 structure
      */
+    // NOLINTNEXTLINE(*-pro-type-mem-init)
     struct Period4Status {
         float altEncoderVelocity;
         float altEncoderPosition;
@@ -297,9 +303,10 @@ namespace wheels_interface {
         /**
          * @brief Initializes SparkBase with the specified CAN interface and ID
          *
-         * @param interfaceName The name of the CAN interface (e.g., "can0")
-         * @param deviceId The CAN ID of the SPARK controller (0-62)
-         * @throws std::out_of_range if deviceId_ is greater than 62
+         * @param logger A logger to be used by the motor controller
+         * @param can_controller The CAN controller for interfacing with CANBUS
+         * @param device_id The CAN ID of the SPARK controller (0-62)
+         * @throws std::out_of_range if deviceId is greater than 62
          * @throws std::system_error if socket creation fails, with detailed error information
          * @throws std::runtime_error if IOCTL fails or binding to the interface fails, with detailed error information
          *
@@ -314,9 +321,14 @@ namespace wheels_interface {
          * - CAN bus not initialized
          * - Interface already bound to another program
          */
-        SparkBase(rclcpp::Logger& logger, can_util::CANController& can_controller, uint8_t deviceId);
+        SparkBase(rclcpp::Logger& logger, can_util::CANController& can_controller, uint8_t device_id);
 
         virtual ~SparkBase() = default;
+
+        SparkBase(const SparkBase& other) = delete;
+        SparkBase(SparkBase&& other) noexcept = delete;
+        SparkBase& operator=(const SparkBase& other) = delete;
+        SparkBase& operator=(SparkBase&& other) noexcept = delete;
 
     private:
         ros2_fmt_logger::Logger logger;
@@ -796,13 +808,13 @@ namespace wheels_interface {
          * @brief Sets the motor resistance
          * @param r The resistance value
          */
-        void setMotorR(uint16_t r);
+        void setMotorR(uint16_t r); // NOLINT(*-identifier-length)
 
         /**
          * @brief Sets the motor inductance
          * @param l The inductance value
          */
-        void setMotorL(uint16_t l);
+        void setMotorL(uint16_t l); // NOLINT(*-identifier-length)
 
         // Closed Loop //
 
@@ -898,7 +910,7 @@ namespace wheels_interface {
          * @param slot The PID slot (0-3)
          * @param p The proportional gain value
          */
-        void setP(uint8_t slot, float p);
+        void setP(uint8_t slot, float p); // NOLINT(*-identifier-length)
 
         /**
          * @brief Sets the integral gain for the specified PID slot
@@ -906,7 +918,7 @@ namespace wheels_interface {
          * @param i The integral gain value
          * @throws std::out_of_range if slot is greater than 3
          */
-        void setI(uint8_t slot, float i);
+        void setI(uint8_t slot, float i); // NOLINT(*-identifier-length)
 
         /**
          * @brief Sets the derivative gain for the specified PID slot
@@ -914,7 +926,7 @@ namespace wheels_interface {
          * @param d The derivative gain value
          * @throws std::out_of_range if slot is greater than 3
          */
-        void setD(uint8_t slot, float d);
+        void setD(uint8_t slot, float d); // NOLINT(*-identifier-length)
 
         /**
          * @brief Sets the feedforward gain for the specified PID slot
@@ -922,7 +934,7 @@ namespace wheels_interface {
          * @param f The feedforward gain value
          * @throws std::out_of_range if slot is greater than 3
          */
-        void setF(uint8_t slot, float f);
+        void setF(uint8_t slot, float f); // NOLINT(*-identifier-length)
 
         /**
          * @brief Sets the integral zone for the specified PID slot

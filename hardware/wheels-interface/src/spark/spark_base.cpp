@@ -2,20 +2,18 @@
 
 #include <array>
 #include <cstring>
-#include <fcntl.h>
-#include <map>
 #include <stdexcept>
 
 
 namespace wheels_interface {
-    SparkBase::SparkBase(rclcpp::Logger& logger, can_util::CANController& can_controller, const uint8_t deviceId)
-        : logger(logger.get_child("spark_max")), can_controller(can_controller), device_id(deviceId) {
+    SparkBase::SparkBase(rclcpp::Logger& logger, can_util::CANController& can_controller, const uint8_t device_id)
+        : logger(logger.get_child("spark_max")), can_controller(can_controller), device_id(device_id) {
         frame_callback = can_controller.registerFrameCallback([this](const auto id, const auto& data) {
             handleFrame(id, data);
         });
 
         // Ensure deviceId_ is within valid range
-        if (deviceId > 62)
+        if (device_id > 62)
             throw std::out_of_range("Invalid CAN bus ID. Must be between 0 and 62.");
     }
 
@@ -68,19 +66,19 @@ namespace wheels_interface {
         const uint32_t receivedArbId = id;
         uint64_t rawValue = 0;
         for (auto i = 0u; i < data.size(); ++i) {
-            rawValue |= static_cast<uint64_t>(data[i]) << (8 * i);
+            rawValue |= static_cast<uint64_t>(data.at(i)) << (8 * i);
         }
         const auto now = std::chrono::steady_clock::now();
 
-        std::lock_guard lock(mtx);
+        std::scoped_lock lock(mtx);
 
         if (receivedArbId == createArbId(APICommand::Period0)) {
             period0.dutyCycle = static_cast<float>(static_cast<int16_t>(rawValue & 0xFFFF)) / 32768.0f;
             period0.faults = rawValue >> 16 & 0xFFFF;
             period0.stickyFaults = rawValue >> 32 & 0xFFFF;
-            period0.isInverted = rawValue >> 49 & 1;
-            period0.idleMode = rawValue >> 57 & 1;
-            period0.isFollower = rawValue >> 58 & 1;
+            period0.isInverted = (rawValue >> 49 & 1) != 0u;
+            period0.idleMode = (rawValue >> 57 & 1) != 0u;
+            period0.isFollower = (rawValue >> 58 & 1) != 0u;
             period0.timestamp = now;
         } else if (receivedArbId == createArbId(APICommand::Period1)) {
             const uint32_t velocity = rawValue & 0xFFFFFFFF;
@@ -95,6 +93,8 @@ namespace wheels_interface {
             period2.iAccum = static_cast<float>(rawValue >> 32 & 0xFFFFFFFF) / 1000.0f;
             period2.timestamp = now;
         } else if (receivedArbId == createArbId(APICommand::Period3)) {
+            // NOLINTBEGIN(*-pro-bounds-pointer-arithmetic, *-signed-bitwise): this is fine
+            // TODO 2026-10-03 (Will Free): clean this up and get rid of the above suppressions
             const uint8_t* intVal = reinterpret_cast<uint8_t*>(&rawValue);
             const auto voltage = static_cast<uint16_t>(intVal[0]) | static_cast<uint16_t>(intVal[1] & 3) << 8;
             period3.analogVoltage = static_cast<float>(voltage) / 256.0f;
@@ -104,6 +104,7 @@ namespace wheels_interface {
             const uint32_t position = rawValue >> 32 & 0xFFFFFFFF;
             std::memcpy(&period3.analogPosition, &position, 4);
             period3.timestamp = now;
+            // NOLINTEND(*-pro-bounds-pointer-arithmetic, *-signed-bitwise)
         } else if (receivedArbId == createArbId(APICommand::Period4)) {
             const uint32_t velocity = rawValue & 0xFFFFFFFF;
             const uint32_t position = rawValue >> 32 & 0xFFFFFFFF;
@@ -137,21 +138,22 @@ namespace wheels_interface {
 
         // Process the value based on its type and fill CAN data
         std::visit(
-            [&](auto&& v) {
-                using T = std::decay_t<decltype(v)>;
+            // ReSharper disable once CppDeclarationHidesLocal
+            [&](auto&& value) {
+                using T = std::decay_t<decltype(value)>;
                 if constexpr (std::is_same_v<T, float>) {
-                    if (!std::isfinite(v)) {
+                    if (!std::isfinite(value)) {
                         // Ensure float is valid
-                        throw std::invalid_argument(fmt::format("Parameter '{}' must be a finite number, but was {}.", parameterName, v));
+                        throw std::invalid_argument(fmt::format("Parameter '{}' must be a finite number, but was {}.", parameterName, value));
                     }
-                    if (minValue && maxValue && (v < minValue.value() || v > maxValue.value())) {
+                    if (minValue && maxValue && (value < minValue.value() || value > maxValue.value())) {
                         throwRangeError(minValue.value(), maxValue.value());
                     }
-                    std::memcpy(data.data(), &v, sizeof(v)); // Copy float to CAN data
+                    std::memcpy(data.data(), &value, sizeof(value)); // Copy float to CAN data
                 } else if constexpr (std::is_integral_v<T>) {
-                    std::memcpy(data.data(), &v, sizeof(v)); // Copy integer to CAN data
+                    std::memcpy(data.data(), &value, sizeof(value)); // Copy integer to CAN data
                 } else if constexpr (std::is_same_v<T, bool>) {
-                    data[0] = v ? 1 : 0; // Handle boolean type
+                    data.at(0) = value ? 1 : 0; // Handle boolean type
                 } else {
                     throw std::invalid_argument("Unsupported value type.");
                 }
@@ -159,8 +161,8 @@ namespace wheels_interface {
             value
         );
 
-        data[4] = parameterType; // Add parameter type to CAN data
-        [[maybe_unused]] const auto _ = sendCanFrame(arbId, data); // Send CAN frame with parameter data
+        data.at(4) = parameterType; // Add parameter type to CAN data
+        [[maybe_unused]] const auto ignored = sendCanFrame(arbId, data); // Send CAN frame with parameter data
     }
 
     std::optional<std::variant<float, uint32_t, bool>> SparkBase::readParameter(const Parameter parameterId) const {
@@ -177,12 +179,13 @@ namespace wheels_interface {
                 case 0x01: {
                     uint32_t val = 0;
                     for (int i = 0; i < 4; ++i) {
+                        // NOLINTNEXTLINE(*-signed-bitwise, *-pro-bounds-constant-array-index): this is safe
                         val |= static_cast<uint32_t>(response.data[i]) << (8 * i);
                     }
                     return val;
                 }
                 case 0x02: {
-                    float val;
+                    float val; // NOLINT(*-init-variables): we mem copy it in
                     std::memcpy(&val, response.data, sizeof(float));
                     return val;
                 }
@@ -201,7 +204,7 @@ namespace wheels_interface {
     }
 
     template <typename T>
-    T defaultValue() {
+    static T defaultValue() {
         static_assert(std::is_same_v<T, bool> || std::is_integral_v<T> || std::is_floating_point_v<T>, "Unsupported type");
 
         if constexpr (std::is_same_v<T, bool>) {
@@ -232,16 +235,20 @@ namespace wheels_interface {
             }
         }
 
-        return std::visit([&](auto&& r) -> T {
-            using R = std::decay_t<decltype(r)>;
+        return std::visit(
+            // ReSharper disable once CppDeclarationHidesLocal
+            [&](auto&& result) -> T {
+                using R = std::decay_t<decltype(result)>;
 
-            if constexpr (std::is_convertible_v<R, T>) {
-                return static_cast<T>(std::forward<decltype(r)>(r));
-            } else {
-                logger.error("Wrong type for parameter '{}', expected {} got {}. Using default value.", name, typeid(T).name(), typeid(R).name());
-                return defaultValue<T>();
-            }
-        }, *result);
+                if constexpr (std::is_convertible_v<R, T>) {
+                    return static_cast<T>(std::forward<decltype(result)>(result));
+                } else {
+                    logger.error("Wrong type for parameter '{}', expected {} got {}. Using default value.", name, typeid(T).name(), typeid(R).name());
+                    return defaultValue<T>();
+                }
+            },
+            *result
+        );
     }
 
     template <typename T>
@@ -348,7 +355,7 @@ namespace wheels_interface {
     bool SparkBase::setPeriodicStatus0Period(const uint16_t period) const {
         const auto data = std::to_array({
             static_cast<uint8_t>(period & 0xFF),
-            static_cast<uint8_t>(period >> 8 & 0xFF)
+            static_cast<uint8_t>(period >> 8u & 0xFFu), // NOLINT(*-signed-bitwise)
         });
         return sendCanFrame(APICommand::Period0, data);
     }
@@ -356,7 +363,7 @@ namespace wheels_interface {
     bool SparkBase::setPeriodicStatus1Period(const uint16_t period) const {
         const auto data = std::to_array({
             static_cast<uint8_t>(period & 0xFF),
-            static_cast<uint8_t>(period >> 8 & 0xFF)
+            static_cast<uint8_t>(period >> 8 & 0xFF), // NOLINT(*-signed-bitwise)
         });
         return sendCanFrame(APICommand::Period1, data);
     }
@@ -364,7 +371,7 @@ namespace wheels_interface {
     bool SparkBase::setPeriodicStatus2Period(const uint16_t period) const {
         const auto data = std::to_array({
             static_cast<uint8_t>(period & 0xFF),
-            static_cast<uint8_t>(period >> 8 & 0xFF)
+            static_cast<uint8_t>(period >> 8 & 0xFF), // NOLINT(*-signed-bitwise)
         });
         return sendCanFrame(APICommand::Period2, data);
     }
@@ -372,7 +379,7 @@ namespace wheels_interface {
     bool SparkBase::setPeriodicStatus3Period(const uint16_t period) const {
         const auto data = std::to_array({
             static_cast<uint8_t>(period & 0xFF),
-            static_cast<uint8_t>(period >> 8 & 0xFF)
+            static_cast<uint8_t>(period >> 8 & 0xFF), // NOLINT(*-signed-bitwise)
         });
         return sendCanFrame(APICommand::Period3, data);
     }
@@ -380,98 +387,98 @@ namespace wheels_interface {
     bool SparkBase::setPeriodicStatus4Period(const uint16_t period) const {
         const auto data = std::to_array({
             static_cast<uint8_t>(period & 0xFF),
-            static_cast<uint8_t>(period >> 8 & 0xFF)
+            static_cast<uint8_t>(period >> 8 & 0xFF), // NOLINT(*-signed-bitwise)
         });
         return sendCanFrame(APICommand::Period4, data);
     }
 
     // Period 0
     float SparkBase::getDutyCycle() const {
-        std::lock_guard lock(mtx);
+        std::scoped_lock lock(mtx);
         return period0.dutyCycle;
     }
 
     uint16_t SparkBase::getFaults() const {
-        std::lock_guard lock(mtx);
+        std::scoped_lock lock(mtx);
         return period0.faults;
     }
 
     uint16_t SparkBase::getStickyFaults() const {
-        std::lock_guard lock(mtx);
+        std::scoped_lock lock(mtx);
         return period0.stickyFaults;
     }
 
     bool SparkBase::isInverted() const {
-        std::lock_guard lock(mtx);
+        std::scoped_lock lock(mtx);
         return period0.isInverted;
     }
 
     bool SparkBase::getIdleMode() const {
-        std::lock_guard lock(mtx);
+        std::scoped_lock lock(mtx);
         return period0.idleMode;
     }
 
     bool SparkBase::isFollower() const {
-        std::lock_guard lock(mtx);
+        std::scoped_lock lock(mtx);
         return period0.isFollower;
     }
 
     // Period 1
     float SparkBase::getVelocity() const {
-        std::lock_guard lock(mtx);
+        std::scoped_lock lock(mtx);
         return period1.velocity;
     }
 
     float SparkBase::getTemperature() const {
-        std::lock_guard lock(mtx);
+        std::scoped_lock lock(mtx);
         return period1.temperature;
     }
 
     float SparkBase::getVoltage() const {
-        std::lock_guard lock(mtx);
+        std::scoped_lock lock(mtx);
         return period1.voltage;
     }
 
     float SparkBase::getCurrent() const {
-        std::lock_guard lock(mtx);
+        std::scoped_lock lock(mtx);
         return period1.current;
     }
 
     // Period 2
     float SparkBase::getPosition() const {
-        std::lock_guard lock(mtx);
+        std::scoped_lock lock(mtx);
         return period2.position;
     }
 
     float SparkBase::getIAccum() const {
-        std::lock_guard lock(mtx);
+        std::scoped_lock lock(mtx);
         return period2.iAccum;
     }
 
     // Period 3
     float SparkBase::getAnalogVoltage() const {
-        std::lock_guard lock(mtx);
+        std::scoped_lock lock(mtx);
         return period3.analogVoltage;
     }
 
     float SparkBase::getAnalogVelocity() const {
-        std::lock_guard lock(mtx);
+        std::scoped_lock lock(mtx);
         return period3.analogVelocity;
     }
 
     float SparkBase::getAnalogPosition() const {
-        std::lock_guard lock(mtx);
+        std::scoped_lock lock(mtx);
         return period3.analogPosition;
     }
 
     // Period 4
     float SparkBase::getAltEncoderVelocity() const {
-        std::lock_guard lock(mtx);
+        std::scoped_lock lock(mtx);
         return period4.altEncoderVelocity;
     }
 
     float SparkBase::getAltEncoderPosition() const {
-        std::lock_guard lock(mtx);
+        std::scoped_lock lock(mtx);
         return period4.altEncoderPosition;
     }
 
@@ -518,11 +525,11 @@ namespace wheels_interface {
         setParameter(Parameter::kMotorKv, PARAM_TYPE_UINT, "Motor Kv", kv);
     }
 
-    void SparkBase::setMotorR(uint16_t r) {
+    void SparkBase::setMotorR(uint16_t r) { // NOLINT(*-identifier-length)
         setParameter(Parameter::kMotorR, PARAM_TYPE_UINT, "Motor Resistance", r);
     }
 
-    void SparkBase::setMotorL(uint16_t l) {
+    void SparkBase::setMotorL(uint16_t l) { // NOLINT(*-identifier-length)
         setParameter(Parameter::kMotorL, PARAM_TYPE_UINT, "Motor Inductance", l);
     }
 
@@ -592,100 +599,100 @@ namespace wheels_interface {
 
     // PIDF //
 
-    void SparkBase::setP(const uint8_t slot, float p) {
+    void SparkBase::setP(const uint8_t slot, float p) { // NOLINT(*-identifier-length)
         static constexpr std::array params = {
             Parameter::kP_0, Parameter::kP_1,
-            Parameter::kP_2, Parameter::kP_3
+            Parameter::kP_2, Parameter::kP_3,
         };
 
         if (slot >= params.size())
             throw std::out_of_range(fmt::format("Invalid slot number. Max value is 3, got {}.", slot));
 
-        setParameter(params[slot], PARAM_TYPE_FLOAT, "P", p);
+        setParameter(params.at(slot), PARAM_TYPE_FLOAT, "P", p);
     }
 
-    void SparkBase::setI(const uint8_t slot, float i) {
+    void SparkBase::setI(const uint8_t slot, float i) { // NOLINT(*-identifier-length)
         static constexpr std::array params = {
             Parameter::kI_0, Parameter::kI_1,
-            Parameter::kI_2, Parameter::kI_3
+            Parameter::kI_2, Parameter::kI_3,
         };
 
         if (slot >= params.size())
             throw std::out_of_range(fmt::format("Invalid slot number. Max value is 3, got {}.", slot));
 
-        setParameter(params[slot], PARAM_TYPE_FLOAT, "I", i);
+        setParameter(params.at(slot), PARAM_TYPE_FLOAT, "I", i);
     }
 
-    void SparkBase::setD(const uint8_t slot, float d) {
+    void SparkBase::setD(const uint8_t slot, float d) { // NOLINT(*-identifier-length)
         static constexpr std::array params = {
             Parameter::kD_0, Parameter::kD_1,
-            Parameter::kD_2, Parameter::kD_3
+            Parameter::kD_2, Parameter::kD_3,
         };
 
         if (slot >= params.size())
             throw std::out_of_range(fmt::format("Invalid slot number. Max value is 3, got {}.", slot));
 
-        setParameter(params[slot], PARAM_TYPE_FLOAT, "D", d);
+        setParameter(params.at(slot), PARAM_TYPE_FLOAT, "D", d);
     }
 
-    void SparkBase::setF(const uint8_t slot, float f) {
+    void SparkBase::setF(const uint8_t slot, float f) { // NOLINT(*-identifier-length)
         static constexpr std::array params = {
             Parameter::kF_0, Parameter::kF_1,
-            Parameter::kF_2, Parameter::kF_3
+            Parameter::kF_2, Parameter::kF_3,
         };
 
         if (slot >= params.size())
             throw std::out_of_range(fmt::format("Invalid slot number. Max value is 3, got {}.", slot));
 
-        setParameter(params[slot], PARAM_TYPE_FLOAT, "F", f);
+        setParameter(params.at(slot), PARAM_TYPE_FLOAT, "F", f);
     }
 
     void SparkBase::setIZone(const uint8_t slot, float iZone) {
         static constexpr std::array params = {
             Parameter::kIZone_0, Parameter::kIZone_1,
-            Parameter::kIZone_2, Parameter::kIZone_3
+            Parameter::kIZone_2, Parameter::kIZone_3,
         };
 
         if (slot >= params.size())
             throw std::out_of_range(fmt::format("Invalid slot number. Max value is 3, got {}.", slot));
 
-        setParameter(params[slot], PARAM_TYPE_FLOAT, "IZone", iZone);
+        setParameter(params.at(slot), PARAM_TYPE_FLOAT, "IZone", iZone);
     }
 
     void SparkBase::setDFilter(const uint8_t slot, float dFilter) {
         static constexpr std::array params = {
             Parameter::kDFilter_0, Parameter::kDFilter_1,
-            Parameter::kDFilter_2, Parameter::kDFilter_3
+            Parameter::kDFilter_2, Parameter::kDFilter_3,
         };
 
         if (slot >= params.size())
             throw std::out_of_range(fmt::format("Invalid slot number. Max value is 3, got {}.", slot));
 
-        setParameter(params[slot], PARAM_TYPE_FLOAT, "DFilter", dFilter);
+        setParameter(params.at(slot), PARAM_TYPE_FLOAT, "DFilter", dFilter);
     }
 
     void SparkBase::setOutputMin(const uint8_t slot, float min) {
         static constexpr std::array params = {
             Parameter::kOutputMin_0, Parameter::kOutputMin_1,
-            Parameter::kOutputMin_2, Parameter::kOutputMin_3
+            Parameter::kOutputMin_2, Parameter::kOutputMin_3,
         };
 
         if (slot >= params.size())
             throw std::out_of_range(fmt::format("Invalid slot number. Max value is 3, got {}.", slot));
 
-        setParameter(params[slot], PARAM_TYPE_FLOAT, "Output Min", min);
+        setParameter(params.at(slot), PARAM_TYPE_FLOAT, "Output Min", min);
     }
 
     void SparkBase::setOutputMax(const uint8_t slot, float max) {
         static constexpr std::array params = {
             Parameter::kOutputMax_0, Parameter::kOutputMax_1,
-            Parameter::kOutputMax_2, Parameter::kOutputMax_3
+            Parameter::kOutputMax_2, Parameter::kOutputMax_3,
         };
 
         if (slot >= params.size())
             throw std::out_of_range(fmt::format("Invalid slot number. Max value is 3, got {}.", slot));
 
-        setParameter(params[slot], PARAM_TYPE_FLOAT, "Output Max", max);
+        setParameter(params.at(slot), PARAM_TYPE_FLOAT, "Output Max", max);
     }
 
     // Limits //
@@ -775,109 +782,109 @@ namespace wheels_interface {
     void SparkBase::setSmartMotionMaxVelocity(const uint8_t slot, float maxVel) {
         static constexpr std::array params = {
             Parameter::kSmartMotionMaxVelocity_0, Parameter::kSmartMotionMaxVelocity_1,
-            Parameter::kSmartMotionMaxVelocity_2, Parameter::kSmartMotionMaxVelocity_3
+            Parameter::kSmartMotionMaxVelocity_2, Parameter::kSmartMotionMaxVelocity_3,
         };
 
         if (slot >= params.size())
             throw std::out_of_range(fmt::format("Invalid slot number. Max value is 3, got {}.", slot));
 
-        setParameter(params[slot], PARAM_TYPE_FLOAT, "Smart Motion Max Velocity", maxVel);
+        setParameter(params.at(slot), PARAM_TYPE_FLOAT, "Smart Motion Max Velocity", maxVel);
     }
 
     void SparkBase::setSmartMotionMaxAccel(const uint8_t slot, float maxAccel) {
         static constexpr std::array params = {
             Parameter::kSmartMotionMaxAccel_0, Parameter::kSmartMotionMaxAccel_1,
-            Parameter::kSmartMotionMaxAccel_2, Parameter::kSmartMotionMaxAccel_3
+            Parameter::kSmartMotionMaxAccel_2, Parameter::kSmartMotionMaxAccel_3,
         };
 
         if (slot >= params.size())
             throw std::out_of_range(fmt::format("Invalid slot number. Max value is 3, got {}.", slot));
 
-        setParameter(params[slot], PARAM_TYPE_FLOAT, "Smart Motion Max Accel", maxAccel);
+        setParameter(params.at(slot), PARAM_TYPE_FLOAT, "Smart Motion Max Accel", maxAccel);
     }
 
     void SparkBase::setSmartMotionMinVelOutput(const uint8_t slot, float minVel) {
         static constexpr std::array params = {
             Parameter::kSmartMotionMinVelOutput_0, Parameter::kSmartMotionMinVelOutput_1,
-            Parameter::kSmartMotionMinVelOutput_2, Parameter::kSmartMotionMinVelOutput_3
+            Parameter::kSmartMotionMinVelOutput_2, Parameter::kSmartMotionMinVelOutput_3,
         };
 
         if (slot >= params.size())
             throw std::out_of_range(fmt::format("Invalid slot number. Max value is 3, got {}.", slot));
 
-        setParameter(params[slot], PARAM_TYPE_FLOAT, "Smart Motion Min Vel Output", minVel);
+        setParameter(params.at(slot), PARAM_TYPE_FLOAT, "Smart Motion Min Vel Output", minVel);
     }
 
     void SparkBase::setSmartMotionAllowedClosedLoopError(const uint8_t slot, float error) {
         static constexpr std::array params = {
             Parameter::kSmartMotionAllowedClosedLoopError_0, Parameter::kSmartMotionAllowedClosedLoopError_1,
-            Parameter::kSmartMotionAllowedClosedLoopError_2, Parameter::kSmartMotionAllowedClosedLoopError_3
+            Parameter::kSmartMotionAllowedClosedLoopError_2, Parameter::kSmartMotionAllowedClosedLoopError_3,
         };
 
         if (slot >= params.size())
             throw std::out_of_range(fmt::format("Invalid slot number. Max value is 3, got {}.", slot));
 
-        setParameter(params[slot], PARAM_TYPE_FLOAT, "Smart Motion Allowed Close Loop Error", error);
+        setParameter(params.at(slot), PARAM_TYPE_FLOAT, "Smart Motion Allowed Close Loop Error", error);
     }
 
     void SparkBase::setSmartMotionAccelStrategy(const uint8_t slot, float strategy) {
         static constexpr std::array params = {
             Parameter::kSmartMotionAccelStrategy_0, Parameter::kSmartMotionAccelStrategy_1,
-            Parameter::kSmartMotionAccelStrategy_2, Parameter::kSmartMotionAccelStrategy_3
+            Parameter::kSmartMotionAccelStrategy_2, Parameter::kSmartMotionAccelStrategy_3,
         };
 
         if (slot >= params.size())
             throw std::out_of_range(fmt::format("Invalid slot number. Max value is 3, got {}.", slot));
 
-        setParameter(params[slot], PARAM_TYPE_FLOAT, "Smart Motion Accel Strategy", strategy);
+        setParameter(params.at(slot), PARAM_TYPE_FLOAT, "Smart Motion Accel Strategy", strategy);
     }
 
     void SparkBase::setIMaxAccum(const uint8_t slot, float maxAccum) {
         static constexpr std::array params = {
             Parameter::kIMaxAccum_0, Parameter::kIMaxAccum_1,
-            Parameter::kIMaxAccum_2, Parameter::kIMaxAccum_3
+            Parameter::kIMaxAccum_2, Parameter::kIMaxAccum_3,
         };
 
         if (slot >= params.size())
             throw std::out_of_range(fmt::format("Invalid slot number. Max value is 3, got {}.", slot));
 
-        setParameter(params[slot], PARAM_TYPE_FLOAT, "IMaxAccum", maxAccum);
+        setParameter(params.at(slot), PARAM_TYPE_FLOAT, "IMaxAccum", maxAccum);
     }
 
     void SparkBase::setSlot3Placeholder1(const uint8_t slot, float value) {
         static constexpr std::array params = {
             Parameter::kSlot3Placeholder1_0, Parameter::kSlot3Placeholder1_1,
-            Parameter::kSlot3Placeholder1_2, Parameter::kSlot3Placeholder1_3
+            Parameter::kSlot3Placeholder1_2, Parameter::kSlot3Placeholder1_3,
         };
 
         if (slot >= params.size())
             throw std::out_of_range(fmt::format("Invalid slot number. Max value is 3, got {}.", slot));
 
-        setParameter(params[slot], PARAM_TYPE_FLOAT, "Slot 3 Placeholder 1", value);
+        setParameter(params.at(slot), PARAM_TYPE_FLOAT, "Slot 3 Placeholder 1", value);
     }
 
     void SparkBase::setSlot3Placeholder2(const uint8_t slot, float value) {
         static constexpr std::array params = {
             Parameter::kSlot3Placeholder2_0, Parameter::kSlot3Placeholder2_1,
-            Parameter::kSlot3Placeholder2_2, Parameter::kSlot3Placeholder2_3
+            Parameter::kSlot3Placeholder2_2, Parameter::kSlot3Placeholder2_3,
         };
 
         if (slot >= params.size())
             throw std::out_of_range(fmt::format("Invalid slot number. Max value is 3, got {}.", slot));
 
-        setParameter(params[slot], PARAM_TYPE_FLOAT, "Slot 3 Placeholder 2", value);
+        setParameter(params.at(slot), PARAM_TYPE_FLOAT, "Slot 3 Placeholder 2", value);
     }
 
     void SparkBase::setSlot3Placeholder3(const uint8_t slot, float value) {
         static constexpr std::array params = {
             Parameter::kSlot3Placeholder3_0, Parameter::kSlot3Placeholder3_1,
-            Parameter::kSlot3Placeholder3_2, Parameter::kSlot3Placeholder3_3
+            Parameter::kSlot3Placeholder3_2, Parameter::kSlot3Placeholder3_3,
         };
 
         if (slot >= params.size())
             throw std::out_of_range(fmt::format("Invalid slot number. Max value is 3, got {}.", slot));
 
-        setParameter(params[slot], PARAM_TYPE_FLOAT, "Slot 3 Placeholder 3", value);
+        setParameter(params.at(slot), PARAM_TYPE_FLOAT, "Slot 3 Placeholder 3", value);
     }
 
     // Analog Sensor //
