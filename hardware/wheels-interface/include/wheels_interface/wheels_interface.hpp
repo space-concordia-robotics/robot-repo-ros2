@@ -2,27 +2,27 @@
 
 #include <memory>
 #include <vector>
+#include <can_util/can_controller.hpp>
 #include <diagnostic_updater/diagnostic_updater.hpp>
 #include <hardware_interface/handle.hpp>
 #include <hardware_interface/hardware_info.hpp>
 #include <hardware_interface/system_interface.hpp>
 #include <hardware_interface/types/hardware_interface_return_values.hpp>
+#include <ros2_fmt_logger/logger.hpp>
 #include <rclcpp/duration.hpp>
 #include <rclcpp/time.hpp>
 #include <rclcpp_lifecycle/state.hpp>
 #include <rclcpp_lifecycle/node_interfaces/lifecycle_node_interface.hpp>
-#include <ros2_fmt_logger/logger.hpp>
-#include <can_util/can_controller.hpp>
 
 #include "spark/spark_max.hpp"
 
 namespace wheels_interface {
-    using CallbackReturn = hardware_interface::CallbackReturn;
-    using HardwareInfo = hardware_interface::HardwareInfo;
-    using InterfaceInfo = hardware_interface::InterfaceInfo;
-    using StateInterface = hardware_interface::StateInterface;
-    using CommandInterface = hardware_interface::CommandInterface;
-    using return_type = hardware_interface::return_type;
+    using hardware_interface::CallbackReturn;
+    using hardware_interface::HardwareInfo;
+    using hardware_interface::InterfaceInfo;
+    using hardware_interface::StateInterface;
+    using hardware_interface::CommandInterface;
+    using hardware_interface::return_type;
 
     class RoverSystemWheelsHardware : public hardware_interface::SystemInterface {
     public:
@@ -49,13 +49,13 @@ namespace wheels_interface {
             std::string velocity_interface_name = fmt::format("{}/{}", name, hardware_interface::HW_IF_VELOCITY);
 
             explicit WheelDescription(
-                const SparkMax::SharedPtr& motor,
-                const std::string& name,
+                SparkMax::SharedPtr motor,
+                std::string name,
                 const double radius
             )
-                : motor(motor), name(name), radius(radius) {}
+                : motor(std::move(motor)), name(std::move(name)), radius(radius) {}
 
-            double getCircumference() const {
+            [[nodiscard]] double getCircumference() const {
                 return std::numbers::pi * 2 * radius;
             }
         };
@@ -80,9 +80,10 @@ namespace wheels_interface {
         can_util::CANController::SharedPtr can_controller;
         std::shared_ptr<diagnostic_updater::Updater> diagnostic_updater;
         rclcpp::TimerBase::SharedPtr heartbeat_timer;
-        double multiplier;
+        double multiplier = 0.0;
         std::vector<WheelDescription::SharedPtr> wheels;
-        StatusPeriods status_periods;
+        StatusPeriods status_periods = {};
+        std::chrono::milliseconds heartbeat_period = {};
 
         void heartbeat() const;
 
@@ -92,28 +93,28 @@ namespace wheels_interface {
 
 namespace diagnostic_updater {
     template <>
-    inline void DiagnosticStatusWrapper::add<float>(const std::string& key, const float& f) {
+    inline void DiagnosticStatusWrapper::add<float>(const std::string& key, const float& val) {
         diagnostic_msgs::msg::KeyValue ds;
         ds.key = key;
-        ds.value = fmt::format("{:f}", f);
+        ds.value = fmt::format("{:f}", val);
 
         values.push_back(ds);
     }
 
     template <>
-    inline void DiagnosticStatusWrapper::add<double>(const std::string& key, const double& d) {
+    inline void DiagnosticStatusWrapper::add<double>(const std::string& key, const double& val) {
         diagnostic_msgs::msg::KeyValue ds;
         ds.key = key;
-        ds.value = fmt::format("{:f}", d);
+        ds.value = fmt::format("{:f}", val);
 
         values.push_back(ds);
     }
 
     template <>
-    inline void DiagnosticStatusWrapper::add<uint16_t>(const std::string& key, const uint16_t& d) {
+    inline void DiagnosticStatusWrapper::add<uint16_t>(const std::string& key, const uint16_t& val) {
         diagnostic_msgs::msg::KeyValue ds;
         ds.key = key;
-        ds.value = fmt::format("{:d}", d);
+        ds.value = fmt::format("{:d}", val);
 
         values.push_back(ds);
     }
