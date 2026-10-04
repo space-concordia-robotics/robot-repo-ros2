@@ -1,0 +1,172 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="https://ros.org/wiki/xacro"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       name="swervebot"
+       xmlns="https://www.ros.org"
+       xsi:schemaLocation="https://www.ros.org ../../../../urdf.xsd https://ros.org/wiki/xacro ../../../../xacro.xsd">
+    <xacro:property name="wheelbase" value="1.6"/>
+    <xacro:property name="track_width" value="1.2"/>
+
+    <xacro:property name="chassis_length" value="2.2"/>
+    <xacro:property name="chassis_width" value="1.4"/>
+    <xacro:property name="chassis_height" value="0.30"/>
+
+    <xacro:property name="wheel_radius" value="0.25"/>
+    <xacro:property name="wheel_width" value="0.16"/>
+
+    <xacro:property name="steering_height" value="0.25"/>
+
+    <xacro:property name="chassis_mass" value="20.0"/>
+    <xacro:property name="steering_mass" value="1.0"/>
+    <xacro:property name="wheel_mass" value="2.0"/>
+
+    <material name="blue">
+        <color rgba="0.1 0.3 0.8 1.0"/>
+    </material>
+
+    <material name="gray">
+        <color rgba="0.5 0.5 0.5 1.0"/>
+    </material>
+
+    <material name="black">
+        <color rgba="0.05 0.05 0.05 1.0"/>
+    </material>
+
+    <link name="base_link">
+        <inertial>
+            <mass value="${chassis_mass}"/>
+            <inertia ixx="5.0" ixy="0" ixz="0"
+                     iyy="8.0" iyz="0" izz="10.0"/>
+        </inertial>
+
+        <visual>
+            <geometry>
+                <box size="${chassis_length} ${chassis_width} ${chassis_height}"/>
+            </geometry>
+            <material name="blue"/>
+        </visual>
+
+        <collision>
+            <geometry>
+                <box size="${chassis_length} ${chassis_width} ${chassis_height}"/>
+            </geometry>
+        </collision>
+    </link>
+
+    <xacro:macro name="wheel_module" params="prefix x y">
+        <link name="${prefix}_steering_link">
+            <inertial>
+                <mass value="${steering_mass}"/>
+                <inertia ixx="0.01" ixy="0" ixz="0"
+                         iyy="0.01" iyz="0" izz="0.01"/>
+            </inertial>
+
+            <visual>
+                <geometry>
+                    <cylinder radius="0.10" length="${steering_height}"/>
+                </geometry>
+                <material name="gray"/>
+            </visual>
+
+            <collision>
+                <geometry>
+                    <cylinder radius="0.10" length="${steering_height}"/>
+                </geometry>
+            </collision>
+        </link>
+
+        <joint name="${prefix}_steering_joint" type="revolute">
+            <parent link="base_link"/>
+            <child link="${prefix}_steering_link"/>
+            <origin xyz="${x} ${y} ${-chassis_height/2}"/>
+            <axis xyz="0 0 1"/>
+            <limit lower="${-pi}" upper="${pi}" effort="100" velocity="10"/>
+            <dynamics damping="1.0" friction="0.1"/>
+        </joint>
+
+        <link name="${prefix}_wheel_link">
+            <inertial>
+                <mass value="${wheel_mass}"/>
+                <inertia ixx="0.02" ixy="0" ixz="0"
+                         iyy="0.02" iyz="0" izz="0.02"/>
+            </inertial>
+
+            <visual>
+                <origin rpy="${pi/2} 0 0"/>
+                <geometry>
+                    <cylinder radius="${wheel_radius}" length="${wheel_width}"/>
+                </geometry>
+                <material name="black"/>
+            </visual>
+
+            <collision>
+                <origin rpy="${pi/2} 0 0"/>
+                <geometry>
+                    <cylinder radius="${wheel_radius}" length="${wheel_width}"/>
+                </geometry>
+            </collision>
+        </link>
+
+        <joint name="${prefix}_wheel_joint" type="continuous">
+            <parent link="${prefix}_steering_link"/>
+            <child link="${prefix}_wheel_link"/>
+            <origin xyz="0 0 -${steering_height/2}"/>
+            <axis xyz="0 1 0"/>
+            <limit effort="100" velocity="100"/>
+            <dynamics damping="0.05" friction="0.01"/>
+        </joint>
+
+        <gazebo reference="${prefix}_wheel_link">
+            <!-- friction coefficients -->
+            <mu1>1.0</mu1>
+            <mu2>1.0</mu2>
+        </gazebo>
+    </xacro:macro>
+
+    <xacro:wheel_module prefix="front_left" x="${wheelbase/2}" y="${track_width/2}"/>
+    <xacro:wheel_module prefix="front_right" x="${wheelbase/2}" y="${-track_width/2}"/>
+    <xacro:wheel_module prefix="rear_left" x="${-wheelbase/2}" y="${track_width/2}"/>
+    <xacro:wheel_module prefix="rear_right" x="${-wheelbase/2}" y="${-track_width/2}"/>
+
+    <xacro:macro name="steering_ros2_control_joint" params="prefix">
+        <joint name="${prefix}_steering_joint" type="continuous">
+            <command_interface name="position">
+                <!-- for now, we have no limits -->
+                <!-- <param name="min">${-pi}</param> -->
+                <!-- <param name="max">${pi}</param> -->
+            </command_interface>
+            <state_interface name="position"/>
+            <state_interface name="velocity"/>
+        </joint>
+    </xacro:macro>
+
+    <xacro:macro name="wheel_ros2_control_joint" params="prefix">
+        <joint name="${prefix}_wheel_joint" type="continuous">
+            <command_interface name="velocity"/>
+            <state_interface name="position"/>
+            <state_interface name="velocity"/>
+        </joint>
+    </xacro:macro>
+
+    <ros2_control name="SwerveDrive" type="system">
+        <hardware>
+            <plugin>gz_ros2_control/GazeboSimSystem</plugin>
+        </hardware>
+
+        <xacro:steering_ros2_control_joint prefix="front_left"/>
+        <xacro:steering_ros2_control_joint prefix="front_right"/>
+        <xacro:steering_ros2_control_joint prefix="rear_left"/>
+        <xacro:steering_ros2_control_joint prefix="rear_right"/>
+
+        <xacro:wheel_ros2_control_joint prefix="front_left"/>
+        <xacro:wheel_ros2_control_joint prefix="front_right"/>
+        <xacro:wheel_ros2_control_joint prefix="rear_left"/>
+        <xacro:wheel_ros2_control_joint prefix="rear_right"/>
+    </ros2_control>
+
+    <gazebo>
+        <plugin name="gz_ros2_control::GazeboSimROS2ControlPlugin" filename="libgz_ros2_control-system.so">
+            <parameters>$(find swerve_simulation)/config/controllers.yaml</parameters>
+        </plugin>
+    </gazebo>
+</robot>

@@ -1,0 +1,61 @@
+<?xml version="1.0" ?>
+<sdf xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.9"
+     xmlns="https://sdformat.org/"
+     xsi:schemaLocation="https://sdformat.org/ http://sdformat.org/schemas/root.xsd">
+    <world name="flat">
+        <plugin filename="gz-sim-physics-system" name="gz::sim::systems::Physics"/>
+        <plugin filename="gz-sim-user-commands-system" name="gz::sim::systems::UserCommands"/>
+        <plugin filename="gz-sim-scene-broadcaster-system" name="gz::sim::systems::SceneBroadcaster"/>
+
+        <gui>
+            <camera name="user_camera">
+                <pose>-10 -5 5 0 0 0</pose>
+            </camera>
+        </gui>
+
+        <scene>
+            <ambient>0.2 0.2 0.2 1.0</ambient>
+            <grid>false</grid>
+            <shadows>false</shadows>
+        </scene>
+
+        <physics type="ode">
+            <real_time_update_rate>200.0</real_time_update_rate>
+            <max_step_size>0.005</max_step_size>
+            <real_time_factor>1.0</real_time_factor>
+        </physics>
+
+        <include>
+            <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Sun</uri>
+            <pose>0 0 100 0 0 0</pose>
+        </include>
+
+        <model name="ground plane">
+            <static>true</static>
+            <link name="link">
+                <collision name="collision">
+                    <geometry>
+                        <plane>
+                            <normal>0 0 1</normal>
+                            <size>1000 1000</size>
+                        </plane>
+                    </geometry>
+                </collision>
+                <visual name="visual">
+                    <geometry>
+                        <plane>
+                            <normal>0 0 1</normal>
+                            <size>1000 1000</size>
+                        </plane>
+                    </geometry>
+                    <material>
+                        <ambient>0.8 0.8 0.8 1</ambient>
+                        <diffuse>0.8 0.8 0.8 1</diffuse>
+                        <specular>0.8 0.8 0.8 1</specular>
+                    </material>
+                </visual>
+            </link>
+        </model>
+    </world>
+</sdf>
+
