@@ -57,5 +57,6 @@ CheckOptions:
   readability-identifier-length.IgnoredVariableNames: "[xy]"
   readability-identifier-length.MinimumParameterNameLength: 2
   readability-identifier-length.MinimumExceptionNameLength: 1
+  bugprone-signed-bitwise.IgnorePositiveIntegerLiterals: true
 SystemHeaders: false
 ...
