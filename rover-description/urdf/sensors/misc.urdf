@@ -3,7 +3,7 @@
        xmlns="https://www.ros.org"
        xmlns:xacro="https://ros.org/wiki/xacro"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xsi:schemaLocation="https://www.ros.org ../../urdf.xsd https://ros.org/wiki/xacro ../../xacro.xsd">
+       xsi:schemaLocation="https://www.ros.org ../../../urdf.xsd https://ros.org/wiki/xacro ../../../xacro.xsd">
     <!-- region GPS -->
     <joint name="base_to_gps" type="fixed">
         <parent link="base_link"/>

@@ -3,7 +3,7 @@
        xmlns="https://www.ros.org"
        xmlns:xacro="https://ros.org/wiki/xacro"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xsi:schemaLocation="https://www.ros.org ../../urdf.xsd https://ros.org/wiki/xacro ../../xacro.xsd">
+       xsi:schemaLocation="https://www.ros.org ../../../urdf.xsd https://ros.org/wiki/xacro ../../../xacro.xsd">
     <xacro:macro name="arm_attachment">
         <xacro:property name="arm_base_offset_z" value="-0.02"/>
         <xacro:property name="arm_base_length" value="0.126671"/>

@@ -637,8 +637,8 @@ class SimpleLauncher:
         axes = {"x": "x", "y": "y", "z": "z", "roll": "R", "pitch": "P", "yaw": "Y"}
         args: list[SomeSubstitutionsType] = []
         for axis, param in axes.items():
-            # TODO 2026-02-07 (Will Free): should I really default to 0.0 here or just exclude the axis if it"s not in self.gz_axes?
-            args.extend([f"-{param}", self.arg(axis) if axis in self.gz_axes else "0.0"])
+            # TODO 2026-02-07 (Will Free): should I really default to 0.0 here or just exclude the axis if it's not in self.gz_axes?
+            args.extend([f"-{param}", self.arg(axis, default="0.0") if axis in self.gz_axes else "0.0"])
 
         return flatten_substitutions(args)
 
