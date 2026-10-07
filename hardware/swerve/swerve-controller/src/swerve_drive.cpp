@@ -1,6 +1,7 @@
 #include "swerve_controller/swerve_drive.hpp"
 
 #include <expected>
+#include <ranges>
 #include <hardware_interface/types/hardware_interface_type_values.hpp>
 
 namespace swerve_controller {
@@ -31,15 +32,15 @@ namespace swerve_controller {
             .type  = controller_interface::interface_configuration_type::INDIVIDUAL,
             .names = {
                 // steering joints
-                fl_steering_joint + "/position",
-                fr_steering_joint + "/position",
-                rl_steering_joint + "/position",
-                rr_steering_joint + "/position",
+                fmt::format("{}/position", fl_steering_joint),
+                fmt::format("{}/position", fr_steering_joint),
+                fmt::format("{}/position", rl_steering_joint),
+                fmt::format("{}/position", rr_steering_joint),
                 // wheel joints
-                fl_wheel_joint + "/velocity",
-                fr_wheel_joint + "/velocity",
-                rl_wheel_joint + "/velocity",
-                rr_wheel_joint + "/velocity",
+                fmt::format("{}/velocity", fl_wheel_joint),
+                fmt::format("{}/velocity", fr_wheel_joint),
+                fmt::format("{}/velocity", rl_wheel_joint),
+                fmt::format("{}/velocity", rr_wheel_joint),
             },
         };
     }
@@ -48,10 +49,10 @@ namespace swerve_controller {
         return {
             .type  = controller_interface::interface_configuration_type::INDIVIDUAL,
             .names = {
-                fl_steering_joint + "/position",
-                fr_steering_joint + "/position",
-                rl_steering_joint + "/position",
-                rr_steering_joint + "/position",
+                fmt::format("{}/position", fl_steering_joint),
+                fmt::format("{}/position", fr_steering_joint),
+                fmt::format("{}/position", rl_steering_joint),
+                fmt::format("{}/position", rr_steering_joint),
             },
         };
     }
@@ -254,9 +255,8 @@ namespace swerve_controller {
         // TODO 2026-10-07 (Will Free): odometry
 
         Eigen::Vector4d angles = Eigen::Vector4d::Zero();
-        for (auto i = 0u; i < modules.size(); i++) {
-            // NOLINTNEXTLINE(*-pro-bounds-avoid-unchecked-container-access): we're using the size to iterate over it, so this is safe
-            auto position_feedback_optional = modules[i].steering_feedback.get().get_optional();
+        for (const auto& [i, module] : std::views::enumerate(modules)) {
+            auto position_feedback_optional = module.steering_feedback.get().get_optional();
             if (!position_feedback_optional.has_value()) {
                 logger->debug("Unable to retrieve the position feedback data from swerve module {}", i);
                 return controller_interface::return_type::OK;
@@ -279,13 +279,12 @@ namespace swerve_controller {
 
         auto success = true;
 
-        for (auto i = 0u; i < modules.size(); i++) {
-            // NOLINTNEXTLINE(*-pro-bounds-avoid-unchecked-container-access): we're using the size to iterate over it, so this is safe
-            const auto& module = modules[i];
-            // NOLINTNEXTLINE(*-pro-bounds-avoid-unchecked-container-access, *-pro-bounds-constant-array-index): modules and states are always the same size
-            const auto& [speed, angle] = states[i];
-            success &= module.steering_position.get().set_value(angle);
-            success &= module.wheel_velocity.get().set_value(states.at(0).speed / wheel_radius);
+        // pretty sure the compiler will optimize away std::views::zip, but not 100% sure
+        // though from looking at godbolt a bit, it seems that it does.
+        // - Will Free
+        for (const auto& [module, state] : std::views::zip(modules, states)) {
+            success &= module.steering_position.get().set_value(state.speed);
+            success &= module.wheel_velocity.get().set_value(state.angle / wheel_radius);
         }
 
         if (!success)
