@@ -125,7 +125,8 @@ result-*
 # Flake & direnv
 flake.nix
 .envrc
-nix
+ ./nix/
+.direnv/
 
 ### Pixi template
 .pixi/
