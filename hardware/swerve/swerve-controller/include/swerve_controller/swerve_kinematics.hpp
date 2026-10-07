@@ -16,23 +16,17 @@ namespace swerve_controller {
 
     class SwerveKinematics {
     public:
-        static constexpr auto module_count = 4;
+        explicit SwerveKinematics(const Eigen::Matrix<double, 4, 2>& module_positions);
 
-        using ModulePositions = Eigen::Matrix<double, module_count, 2>;
-        using ModuleAngles = Eigen::Vector<double, module_count>;
-        using ModuleStates = std::array<ModuleState, module_count>;
-
-        explicit SwerveKinematics(const ModulePositions& module_positions);
-
-        [[nodiscard]] ModuleStates inverse(
+        [[nodiscard]] std::array<ModuleState, 4> inverse(
             const Eigen::Vector2d& linear_velocity,
             double angular_velocity,
-            const ModuleAngles& current_angles
+            const Eigen::Vector4d& current_angles
         ) const;
 
     private:
-        ModulePositions module_positions;
-        Eigen::Matrix<double, 2, module_count> module_tangents;
+        Eigen::Matrix<double, 4, 2> module_positions;
+        Eigen::Matrix<double, 2, 4> module_tangents;
 
         static void optimize(ModuleState& state, double current_angle);
     };

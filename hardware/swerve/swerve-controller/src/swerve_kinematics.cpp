@@ -1,11 +1,11 @@
 #include "swerve_controller/swerve_kinematics.hpp"
 
 #include <cmath>
-#include <utility>
+#include <ranges>
 #include <angles/angles.h>
 
 namespace swerve_controller {
-    SwerveKinematics::SwerveKinematics(const ModulePositions& module_positions)
+    SwerveKinematics::SwerveKinematics(const Eigen::Matrix<double, 4, 2>& module_positions)
         : module_positions(module_positions) {
         static const auto rotation_matrix = Eigen::Matrix2d({
             {0.0, 1.0},
@@ -16,22 +16,20 @@ namespace swerve_controller {
         module_tangents = transformed.transpose();
     }
 
-    SwerveKinematics::ModuleStates SwerveKinematics::inverse(
+    std::array<ModuleState, 4> SwerveKinematics::inverse(
         const Eigen::Vector2d& linear_velocity,
         const double angular_velocity,
-        const ModuleAngles& current_angles
+        const Eigen::Vector4d& current_angles
     ) const {
-        ModuleStates states = {};
+        std::array<ModuleState, 4> states = {};
 
         const auto wheel_velocities = module_tangents * angular_velocity;
 
-        for (auto i = 0u; i < module_count; ++i) {
+        for (auto&& [i, state] : std::views::enumerate(states)) {
             const auto wheel_velocity = wheel_velocities.col(i) + linear_velocity;
 
-            ModuleState state = {
-                .speed = wheel_velocity.norm(),
-                .angle = std::atan2(wheel_velocity.y(), wheel_velocity.x()),
-            };
+            state.speed = wheel_velocity.norm();
+            state.angle = std::atan2(wheel_velocity.y(), wheel_velocity.x());
 
             if (state.speed <= 1e-9) {
                 state.speed = 0.0;
@@ -39,8 +37,6 @@ namespace swerve_controller {
             } else {
                 optimize(state, current_angles[i]);
             }
-
-            states.at(i) = state;
         }
 
         return states;
