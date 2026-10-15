@@ -280,8 +280,8 @@ namespace swerve_controller {
         // though from looking at godbolt a bit, it seems that it does.
         // - Will Free
         for (const auto& [module, state] : std::views::zip(modules, states)) {
-            success &= module.steering_position.get().set_value(state.speed);
-            success &= module.wheel_velocity.get().set_value(state.angle / wheel_radius);
+            success &= module.steering_position.get().set_value(state.angle);
+            success &= module.wheel_velocity.get().set_value(state.speed / wheel_radius);
         }
 
         if (!success)
