@@ -28,3 +28,11 @@
       rear_right:
         steering_joint: rear_right_steering_joint
         wheel_joint: rear_right_wheel_joint
+
+    #linear:
+    #  x:
+    #    max_velocity: 0.5
+    #    max_acceleration: 0.25
+    #  y:
+    #    max_velocity: 0.5
+    #    max_acceleration: 0.25

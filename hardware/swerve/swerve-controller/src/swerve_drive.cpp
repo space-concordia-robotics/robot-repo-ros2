@@ -5,7 +5,7 @@
 #include <hardware_interface/types/hardware_interface_type_values.hpp>
 
 namespace swerve_controller {
-    SwerveController::SwerveController() {}
+    SwerveController::SwerveController() = default;
 
     SwerveController::~SwerveController() = default;
 
@@ -111,6 +111,28 @@ namespace swerve_controller {
                 }*/
             }
         );
+
+        try {
+            limiter_linear_x = control_toolbox::RateLimiter(
+                params.linear.x.min_velocity, params.linear.x.max_velocity,
+                params.linear.x.max_acceleration_reverse, params.linear.x.max_acceleration,
+                params.linear.x.max_deceleration, params.linear.x.max_deceleration_reverse,
+                params.linear.x.min_jerk, params.linear.x.max_jerk
+            );
+            limiter_linear_y = control_toolbox::RateLimiter(
+                params.linear.x.min_velocity, params.linear.x.max_velocity,
+                params.linear.x.max_acceleration_reverse, params.linear.x.max_acceleration,
+                params.linear.x.max_deceleration, params.linear.x.max_deceleration_reverse,
+                params.linear.x.min_jerk, params.linear.x.max_jerk
+            );
+        } catch (const std::invalid_argument& e) {
+            logger->error("Failed to configure command speed limiters: {}", e.what());
+            return controller_interface::CallbackReturn::ERROR;
+        }
+        try {} catch (const std::invalid_argument& e) {
+            logger->error("Failed to configure linear speed limiter: {}", e.what());
+            return controller_interface::CallbackReturn::ERROR;
+        }
 
         return ControllerInterface::on_configure(previous_state);
     }
@@ -232,7 +254,7 @@ namespace swerve_controller {
         return ControllerInterface::on_deactivate(previous_state);
     }
 
-    controller_interface::return_type SwerveController::update(const rclcpp::Time& /*time*/, const rclcpp::Duration& /*period*/) {
+    controller_interface::return_type SwerveController::update(const rclcpp::Time& /*time*/, const rclcpp::Duration& period) {
         /*
          INVARIANT:
          we assume that if this method is called then modules contains 4 (and exactly 4) entries.
@@ -245,13 +267,23 @@ namespace swerve_controller {
 
         const auto cmd = *cmd_ptr;
 
-        const double vx = cmd.twist.linear.x;
-        const double vy = cmd.twist.linear.y;
-        const double wz = cmd.twist.angular.z;
+        auto angular_command = cmd.twist.angular.z;
+        auto linear_command = Eigen::Vector2d({cmd.twist.linear.x, cmd.twist.linear.y});
+
+        auto& [last_linear, last_angular] = previous_two_commands.at(1);
+        auto& [second_to_last_linear, second_to_last_angular] = previous_two_commands.at(0);
+
+        // limit command velocities
+        limiter_linear_x.limit(linear_command.x(), last_linear.x(), second_to_last_linear.x(), period.seconds());
+        limiter_linear_y.limit(linear_command.y(), last_linear.y(), second_to_last_linear.y(), period.seconds());
+        limiter_angular.limit(angular_command, last_angular, second_to_last_angular, period.seconds());
+
+        previous_two_commands.at(0) = previous_two_commands.at(1);
+        previous_two_commands.at(1) = {linear_command, angular_command};
 
         // TODO 2026-10-07 (Will Free): odometry
 
-        Eigen::Vector4d angles = Eigen::Vector4d::Zero();
+        Eigen::Vector4d module_angles = Eigen::Vector4d::Zero();
         for (const auto& [i, module] : std::views::enumerate(modules)) {
             auto position_feedback_optional = module.steering_feedback.get().get_optional();
             if (!position_feedback_optional.has_value()) {
@@ -267,10 +299,10 @@ namespace swerve_controller {
                 return controller_interface::return_type::ERROR;
             }
 
-            angles[i] = position_feedback;
+            module_angles[i] = position_feedback;
         }
 
-        const auto states = kinematics->inverse({vx, vy}, wz, angles);
+        const auto states = kinematics->inverse(linear_command, angular_command, module_angles);
 
         assert(states.size() == modules.size());
 
