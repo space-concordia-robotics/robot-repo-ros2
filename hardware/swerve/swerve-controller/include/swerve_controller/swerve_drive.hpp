@@ -7,6 +7,7 @@
 #include <geometry_msgs/msg/twist_stamped.hpp>
 
 #include "swerve_kinematics.hpp"
+#include "swerve_controller/swerve_controller_parameters.hpp"
 
 namespace swerve_controller {
     class SwerveController : public controller_interface::ControllerInterface {
@@ -34,18 +35,11 @@ namespace swerve_controller {
     private:
         std::shared_ptr<ros2_fmt_logger::Logger> logger;
 
+        std::shared_ptr<ParamListener> param_listener;
+        Params params;
+
         // TODO 2026-10-07 (Will Free): can I avoid the pointer here?
         std::unique_ptr<SwerveKinematics> kinematics = nullptr;
-
-        std::string fl_steering_joint;
-        std::string fr_steering_joint;
-        std::string rl_steering_joint;
-        std::string rr_steering_joint;
-
-        std::string fl_wheel_joint;
-        std::string fr_wheel_joint;
-        std::string rl_wheel_joint;
-        std::string rr_wheel_joint;
 
         double wheelbase = 1.0;
         double track_width = 1.0;
@@ -58,6 +52,13 @@ namespace swerve_controller {
         // TODO 2026-10-07 (Will Free): replace with RealtimeThreadSafeBox
         realtime_tools::RealtimeBuffer<TwistStamped> velocity_message;
 
+        struct SwerveModuleJoints {
+            std::string steering_joint;
+            std::string wheel_joint;
+        };
+
+        std::array<SwerveModuleJoints, 4> joints;
+
         struct SwerveModuleHandle {
             std::reference_wrapper<const hardware_interface::LoanedStateInterface> steering_feedback;
             std::reference_wrapper<hardware_interface::LoanedCommandInterface> steering_position;
@@ -67,5 +68,4 @@ namespace swerve_controller {
         // I want to use an std::array<SwerveModuleHandle, 4> here, but can't because it requires all the structs be initialized in the constructor
         std::vector<SwerveModuleHandle> modules;
     };
-
 }

@@ -33,7 +33,15 @@ find_dependencies(
         tf2_geometry_msgs
 )
 
+find_package(generate_parameter_library REQUIRED)
+
 ## COMPILE
+
+get_target_property(TB_INCLUDE_DIRS control_toolbox::rate_limiter_parameters INTERFACE_INCLUDE_DIRECTORIES)
+generate_parameter_library(${PROJECT_NAME}_parameters
+        src/${PROJECT_NAME}_parameters.yaml
+        ${TB_INCLUDE_DIRS}/control_toolbox/custom_validators.hpp
+)
 
 scrb_add_library(${PROJECT_NAME} SHARED
         src/swerve_drive.cpp
@@ -45,7 +53,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
         $<INSTALL_INTERFACE:include>
 )
 
-target_link_libraries(${PROJECT_NAME} PUBLIC ${DEPENDENCY_TARGETS})
+target_link_libraries(${PROJECT_NAME} PUBLIC ${DEPENDENCY_TARGETS} ${PROJECT_NAME}_parameters)
 
 scrb_target_precompile_headers(${PROJECT_NAME} PRIVATE
         <rclcpp/rclcpp.hpp>
@@ -65,7 +73,7 @@ install(
 )
 
 install(
-        TARGETS ${PROJECT_NAME}
+        TARGETS ${PROJECT_NAME} ${PROJECT_NAME}_parameters
         EXPORT export_${PROJECT_NAME}
         ARCHIVE DESTINATION lib
         LIBRARY DESTINATION lib
