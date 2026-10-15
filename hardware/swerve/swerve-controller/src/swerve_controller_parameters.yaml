@@ -1,0 +1,181 @@
+swerve_controller:
+  modules:
+    front_left: &joints
+      wheel_joint:
+        type: string
+        default_value: ""
+        description: "foo"
+        read_only: true
+        validation:
+          not_empty<>: [ ]
+      steering_joint:
+        type: string
+        default_value: ""
+        description: ""
+        read_only: true
+        validation:
+          not_empty<>: [ ]
+    front_right: *joints
+    rear_left: *joints
+    rear_right: *joints
+
+  wheel_radius:
+    type: double
+    default_value: 0.0
+    description: "Radius of a wheel, i.e., wheels size, used for transformation of linear velocity into wheel rotations. If this parameter is wrong the robot will move faster or slower than expected."
+    read_only: true
+    validation:
+      gt<>:
+        - 0.0
+
+  wheelbase:
+    type: double
+    default_value: 0.0
+    description: "The distance between the front and rear wheels, used for determining module position."
+    read_only: true
+    validation:
+      gt<>:
+        - 0.0
+
+  track_width:
+    type: double
+    default_value: 0.0
+    description: "The distance between the right and left wheels, used for determining module position."
+    read_only: true
+    validation:
+      gt<>:
+        - 0.0
+
+  # TODO 2026-10-14 (Will Free): odometry
+  tf_frame_prefix:
+    type: string
+    default_value: ""
+    description: "(optional) Prefix to be appended to the tf frames, will be added to odom_id and base_frame_id before publishing. If the parameter is empty, controller's namespace will be used."
+    read_only: true
+
+  odom_frame_id:
+    type: string
+    default_value: "odom"
+    description: "Name of the frame for odometry. This frame is parent of ``base_frame_id`` when controller publishes odometry."
+    read_only: true
+
+  base_frame_id:
+    type: string
+    default_value: "base_link"
+    description: "Name of the robot's base frame that is child of the odometry frame."
+    read_only: true
+
+  # TODO 2026-10-07 (Will Free): use the covariances here (are only these two needed, or are more needed?)
+  pose_covariance_diagonal:
+    type: double_array
+    default_value:
+      - 0.0
+      - 0.0
+      - 0.0
+      - 0.0
+      - 0.0
+      - 0.0
+    description: "Odometry covariance for the encoder output of the robot for the pose. These values should be tuned to your robot's sample odometry data, but these values are a good place to start: ``[0.001, 0.001, 0.001, 0.001, 0.001, 0.01]``."
+    read_only: true
+  # TODO 2026-10-14 (Will Free): use this
+  twist_covariance_diagonal:
+    type: double_array
+    default_value:
+      - 0.0
+      - 0.0
+      - 0.0
+      - 0.0
+      - 0.0
+      - 0.0
+    description: "Odometry covariance for the encoder output of the robot for the speed. These values should be tuned to your robot's sample odometry data, but these values are a good place to start: ``[0.001, 0.001, 0.001, 0.001, 0.001, 0.01]``."
+    read_only: true
+
+  # TODO 2026-10-07 (Will Free): support velocity feedback & commands for the steering motors??
+  position_feedback:
+    type: bool
+    default_value: true
+    description: "Is there position feedback from hardware."
+    read_only: true
+
+  # TODO 2026-10-14 (Will Free): use this
+  enable_odom_tf:
+    type: bool
+    default_value: true
+    description: "Publish transformation between ``odom_frame_id`` and ``base_frame_id``."
+  # TODO 2026-10-14 (Will Free): use this
+  cmd_vel_timeout:
+    type: double
+    default_value: 0.5
+    description: "Timeout in seconds after which a command received on the ``cmd_vel`` topic is considered stale. A value of 0.0 disables the timeout."
+
+  # TODO 2026-10-07 (Will Free): use this
+  publish_limited_velocity:
+    type: bool
+    default_value: false
+    description: "Publish limited velocity value."
+
+  # TODO 2026-10-07 (Will Free): use this
+  velocity_rolling_window_size:
+    type: int
+    default_value: 10
+    description: "Size of the rolling window for calculation of mean velocity use in odometry."
+    read_only: true
+
+  # TODO 2026-10-14 (Will Free): use this
+  linear:
+    x: &control_limits
+      max_velocity:
+        type: double
+        default_value: .NAN
+        validation:
+          "control_filters::gt_eq_or_nan<>":
+            - 0.0
+      min_velocity:
+        type: double
+        default_value: .NAN
+        validation:
+          "control_filters::lt_eq_or_nan<>":
+            - 0.0
+      max_acceleration:
+        type: double
+        default_value: .NAN
+        description: "Maximum acceleration in positive direction."
+        validation:
+          "control_filters::gt_eq_or_nan<>":
+            - 0.0
+      max_deceleration:
+        type: double
+        default_value: .NAN
+        description: "Maximum deceleration in positive direction."
+        validation:
+          "control_filters::lt_eq_or_nan<>":
+            - 0.0
+      max_acceleration_reverse:
+        type: double
+        default_value: .NAN
+        description: "Maximum acceleration in positive direction. If not set, -max_acceleration will be used."
+        validation:
+          "control_filters::lt_eq_or_nan<>":
+            - 0.0
+      max_deceleration_reverse:
+        type: double
+        default_value: .NAN
+        description: "Maximum deceleration in positive direction. If not set, -max_deceleration will be used."
+        validation:
+          "control_filters::gt_eq_or_nan<>":
+            - 0.0
+      max_jerk:
+        type: double
+        default_value: .NAN
+        validation:
+          "control_filters::gt_eq_or_nan<>":
+            - 0.0
+      min_jerk:
+        type: double
+        default_value: .NAN
+        validation:
+          "control_filters::lt_eq_or_nan<>":
+            - 0.0
+    y: *control_limits
+  angular:
+    z: *control_limits

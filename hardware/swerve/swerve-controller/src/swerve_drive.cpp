@@ -10,19 +10,16 @@ namespace swerve_controller {
     SwerveController::~SwerveController() = default;
 
     controller_interface::CallbackReturn SwerveController::on_init() {
-        auto_declare<std::string>("fl_steering_joint", "fl_steering_joint");
-        auto_declare<std::string>("fr_steering_joint", "fr_steering_joint");
-        auto_declare<std::string>("rl_steering_joint", "rl_steering_joint");
-        auto_declare<std::string>("rr_steering_joint", "rr_steering_joint");
+        logger = std::make_shared<ros2_fmt_logger::Logger>(get_node()->get_logger());
 
-        auto_declare<std::string>("fl_wheel_joint", "fl_wheel_joint");
-        auto_declare<std::string>("fr_wheel_joint", "fr_wheel_joint");
-        auto_declare<std::string>("rl_wheel_joint", "rl_wheel_joint");
-        auto_declare<std::string>("rr_wheel_joint", "rr_wheel_joint");
-
-        auto_declare<double>("wheelbase", 1.0);
-        auto_declare<double>("track_width", 1.0);
-        auto_declare<double>("wheel_radius", 0.1);
+        try {
+            // Create the parameter listener and get the parameters
+            param_listener = std::make_shared<ParamListener>(get_node());
+            params = param_listener->get_params();
+        } catch (const std::exception& e) {
+            logger->error("Exception thrown during swerve controller initialization: {}", e.what());
+            return controller_interface::CallbackReturn::ERROR;
+        }
 
         return controller_interface::CallbackReturn::SUCCESS;
     }
@@ -32,15 +29,15 @@ namespace swerve_controller {
             .type  = controller_interface::interface_configuration_type::INDIVIDUAL,
             .names = {
                 // steering joints
-                fmt::format("{}/position", fl_steering_joint),
-                fmt::format("{}/position", fr_steering_joint),
-                fmt::format("{}/position", rl_steering_joint),
-                fmt::format("{}/position", rr_steering_joint),
+                fmt::format("{}/position", params.modules.front_left.steering_joint),
+                fmt::format("{}/position", params.modules.front_right.steering_joint),
+                fmt::format("{}/position", params.modules.rear_left.steering_joint),
+                fmt::format("{}/position", params.modules.rear_right.steering_joint),
                 // wheel joints
-                fmt::format("{}/velocity", fl_wheel_joint),
-                fmt::format("{}/velocity", fr_wheel_joint),
-                fmt::format("{}/velocity", rl_wheel_joint),
-                fmt::format("{}/velocity", rr_wheel_joint),
+                fmt::format("{}/velocity", params.modules.front_left.wheel_joint),
+                fmt::format("{}/velocity", params.modules.front_right.wheel_joint),
+                fmt::format("{}/velocity", params.modules.rear_left.wheel_joint),
+                fmt::format("{}/velocity", params.modules.rear_right.wheel_joint),
             },
         };
     }
@@ -49,31 +46,20 @@ namespace swerve_controller {
         return {
             .type  = controller_interface::interface_configuration_type::INDIVIDUAL,
             .names = {
-                fmt::format("{}/position", fl_steering_joint),
-                fmt::format("{}/position", fr_steering_joint),
-                fmt::format("{}/position", rl_steering_joint),
-                fmt::format("{}/position", rr_steering_joint),
+                fmt::format("{}/position", params.modules.front_left.steering_joint),
+                fmt::format("{}/position", params.modules.front_right.steering_joint),
+                fmt::format("{}/position", params.modules.rear_left.steering_joint),
+                fmt::format("{}/position", params.modules.rear_right.steering_joint),
             },
         };
     }
 
     controller_interface::CallbackReturn SwerveController::on_configure(const rclcpp_lifecycle::State& previous_state) {
-        fl_steering_joint = get_node()->get_parameter("fl_steering_joint").as_string();
-        fr_steering_joint = get_node()->get_parameter("fr_steering_joint").as_string();
-        rl_steering_joint = get_node()->get_parameter("rl_steering_joint").as_string();
-        rr_steering_joint = get_node()->get_parameter("rr_steering_joint").as_string();
-
-
-        fl_wheel_joint = get_node()->get_parameter("fl_wheel_joint").as_string();
-        fr_wheel_joint = get_node()->get_parameter("fr_wheel_joint").as_string();
-        rl_wheel_joint = get_node()->get_parameter("rl_wheel_joint").as_string();
-        rr_wheel_joint = get_node()->get_parameter("rr_wheel_joint").as_string();
-
         // TODO 2026-10-07 (Will Free): can /tf be used for this?
 
-        wheelbase = get_node()->get_parameter("wheelbase").as_double();
-        track_width = get_node()->get_parameter("track_width").as_double();
-        wheel_radius = get_node()->get_parameter("wheel_radius").as_double();
+        wheelbase = params.wheelbase;
+        track_width = params.track_width;
+        wheel_radius = params.wheel_radius;
 
         const double x_front = wheelbase / 2.0;
         const double x_rear = -wheelbase / 2.0;
@@ -196,19 +182,30 @@ namespace swerve_controller {
             };
         };
 
-        const auto front_left_module = find_module_handles(fl_steering_joint, fl_wheel_joint, command_interfaces_, state_interfaces_);
+        const auto front_left_module = find_module_handles(
+            params.modules.front_left.steering_joint, params.modules.front_left.wheel_joint,
+            command_interfaces_, state_interfaces_);
         if (!front_left_module.has_value())
             return front_left_module.error();
 
-        const auto front_right_module = find_module_handles(fr_steering_joint, fr_wheel_joint, command_interfaces_, state_interfaces_);
+        const auto front_right_module = find_module_handles(
+            params.modules.front_right.steering_joint, params.modules.front_right.wheel_joint,
+            command_interfaces_, state_interfaces_
+        );
         if (!front_right_module.has_value())
             return front_right_module.error();
 
-        const auto rear_left_module = find_module_handles(rl_steering_joint, fl_wheel_joint, command_interfaces_, state_interfaces_);
+        const auto rear_left_module = find_module_handles(
+            params.modules.rear_left.steering_joint, params.modules.rear_left.wheel_joint,
+            command_interfaces_, state_interfaces_
+        );
         if (!rear_left_module.has_value())
             return rear_left_module.error();
 
-        const auto rear_right_module = find_module_handles(rr_steering_joint, fr_wheel_joint, command_interfaces_, state_interfaces_);
+        const auto rear_right_module = find_module_handles(
+            params.modules.rear_right.steering_joint, params.modules.rear_right.wheel_joint,
+            command_interfaces_, state_interfaces_
+        );
         if (!rear_right_module.has_value())
             return rear_right_module.error();
 
