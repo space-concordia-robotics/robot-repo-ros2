@@ -12,6 +12,23 @@ namespace swerve_controller {
             {-1.0, 0.0},
         });
 
+        /*
+        flips the first & second columns, multiplying the second one by -1, then transpose it.
+
+        e.g. given a wheel base of 4 and a track width of 3, you would get
+        [  2   1.5 ]             [ -1.5   2 ]
+        [  2  -1.5 ]           = [  1.5   2 ]
+        [ -2   1.5 ] [  0  1 ]   [ -1.5  -2 ]
+        [ -2  -1.5 ] [ -1  0 ]   [  1.5  -2 ]
+
+        [ -1.5   2 ]^T
+        [  1.5   2 ]
+        [ -1.5  -2 ]   = [ -1.5  1.5  -1.5  1.5 ]
+        [  1.5  -2 ]     [  2    2    -2    -2  ]
+
+        this is precomputed to improve the performance of the IK
+        */
+
         const auto transformed = module_positions * rotation_matrix;
         module_tangents = transformed.transpose();
     }
@@ -43,6 +60,8 @@ namespace swerve_controller {
     }
 
     void SwerveKinematics::optimize(ModuleState& state, const double current_angle) {
+        // TODO 2026-10-14 (Will Free): there is something wrong here causing it to sometimes flip when it's not supposed to. idk what.
+
         if (const double angle_diff = angles::shortest_angular_distance(current_angle, state.angle); std::abs(angle_diff) > std::numbers::pi / 2) {
             state.speed = -state.speed;
             state.angle = angles::normalize_angle(state.angle + std::numbers::pi);
