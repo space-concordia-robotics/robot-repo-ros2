@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <control_toolbox/rate_limiter.hpp>
 #include <controller_interface/controller_interface.hpp>
 #include <realtime_tools/realtime_buffer.hpp>
 #include <ros2_fmt_logger/logger.hpp>
@@ -67,5 +68,11 @@ namespace swerve_controller {
 
         // I want to use an std::array<SwerveModuleHandle, 4> here, but can't because it requires all the structs be initialized in the constructor
         std::vector<SwerveModuleHandle> modules;
+
+        std::array<std::tuple<Eigen::Vector2d, double>, 2> previous_two_commands;
+
+        control_toolbox::RateLimiter<double> limiter_linear_x;
+        control_toolbox::RateLimiter<double> limiter_linear_y;
+        control_toolbox::RateLimiter<double> limiter_angular;
     };
 }
