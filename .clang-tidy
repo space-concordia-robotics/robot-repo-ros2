@@ -46,7 +46,8 @@ CheckOptions:
     ::std::map;::std::unordered_map;::std::flat_map;
     ::YAML::Node;
     ::cv::Vec.*;
-    ::tf2::.*
+    ::tf2::.*;
+    ::Eigen::.*;
   cppcoreguidelines-pro-type-member-init.UseAssignment: true
   cppcoreguidelines-pro-bounds-avoid-unchecked-container-access.FixMode: at
   readability-function-cognitive-complexity.Threshold: 32
@@ -54,8 +55,11 @@ CheckOptions:
   readability-function-cognitive-complexity.IgnoreMacros: true
   readability-uppercase-literal-suffix.NewSuffixes: 'L;uL;u;LL;uLL'
   readability-identifier-length.MinimumVariableNameLength: 2
-  readability-identifier-length.IgnoredVariableNames: "[xy]"
+  readability-identifier-length.IgnoredVariableNames: "[xyi]"
   readability-identifier-length.MinimumParameterNameLength: 2
+  readability-identifier-length.IgnoredParameterNames: ""
+  readability-identifier-length.MinimumBindingNameLength: 2
+  readability-identifier-length.IgnoredBindingNames: "^[_i]$"
   readability-identifier-length.MinimumExceptionNameLength: 1
 SystemHeaders: false
 ...
