@@ -1,4 +1,5 @@
 from launch.event_handlers import OnProcessExit
+
 from launch_util import SimpleLauncher, SomeSubstitutionsValueTypeDict
 
 
@@ -21,19 +22,11 @@ def generate_launch_description():
     controllers = sl.params(package="swerve_simulation", file="controllers.yaml")
 
     # steering & wheel spawners are temporary
-    steering_spawner = sl.node(
+    swerve_spawner = sl.node(
         "controller_manager",
         "spawner",
-        exec_name="steering_spawner",
-        arguments=["steering_controller", "--param-file", controllers],
-        add=False,
-    )
-
-    wheel_spawner = sl.node(
-        "controller_manager",
-        "spawner",
-        exec_name="wheel_spawner",
-        arguments=["wheel_controller", "--param-file", controllers],
+        exec_name="swerve_spawner",
+        arguments=["swerve_controller", "--param-file", controllers],
         add=False,
     )
 
@@ -55,14 +48,7 @@ def generate_launch_description():
     sl.add_event(
         OnProcessExit(
             target_action=joint_state_broadcaster_spawner,
-            on_exit=[steering_spawner],
-        ),
-    )
-
-    sl.add_event(
-        OnProcessExit(
-            target_action=steering_spawner,
-            on_exit=[wheel_spawner],
+            on_exit=[swerve_spawner],
         ),
     )
 
@@ -70,6 +56,5 @@ def generate_launch_description():
         bridge.add_clock()
         bridge.add_joint_states()
         bridge.add_tf()
-        # bridge.add_topic("/odom", "/diff_drive_base_controller/odom", BridgeDirection.GZ_TO_ROS, ros_msg="nav_msgs/Odometry")
 
     return sl.launch_description()
