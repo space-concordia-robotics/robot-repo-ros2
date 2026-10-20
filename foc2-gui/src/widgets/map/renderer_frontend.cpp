@@ -1,9 +1,9 @@
 #include "foc2-gui/widgets/map/renderer_frontend.hpp"
 
-#include <mbgl/gfx/backend_scope.hpp>
-#include <mbgl/gfx/renderer_backend.hpp>
-#include <mbgl/renderer/renderer.hpp>
-#include <mbgl/util/instrumentation.hpp>
+#include <mln/gfx/backend_scope.hpp>
+#include <mln/gfx/renderer_backend.hpp>
+#include <mln/renderer/renderer.hpp>
+#include <mln/util/instrumentation.hpp>
 
 #include "foc2-gui/widgets/map_widget.hpp"
 

@@ -2,8 +2,8 @@
 
 #include <SDL3/SDL_opengl.h>
 #include <SDL3/SDL_video.h>
-#include <mbgl/gfx/renderable.hpp>
-#include <mbgl/gl/renderer_backend.hpp>
+#include <mln/gfx/renderable.hpp>
+#include <mln/gl/renderer_backend.hpp>
 
 class SDL3OpenGLRenderableResource;
 
