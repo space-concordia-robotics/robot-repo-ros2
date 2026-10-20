@@ -1,6 +1,7 @@
 #pragma once
 
 #include <imgui.h>
+#include <imgui_internal.h>
 
 #include "foc2-gui/util/imgui_tf2_convert.hpp"
 #include "scrb_common_util/fmt/eigen_formatters.hpp"
