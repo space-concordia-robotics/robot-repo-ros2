@@ -125,7 +125,7 @@ void RosLogWidget::drawFilters() {
     const auto current_level_name = magic_enum::enum_name(level_filter);
 
     // NOLINTNEXTLINE(*-suspicious-stringview-data-usage): current_level_name is null terminated
-    if (ImGui::BeginCombo("", current_level_name.data(), ImGuiComboFlags_WidthFitPreview)) {
+    if (ImGui::BeginCombo("Filter Level", current_level_name.data(), ImGuiComboFlags_WidthFitPreview)) {
         constexpr auto level_entries = magic_enum::enum_entries<LogLevel>();
         const auto level_index = magic_enum::enum_index(level_filter);
 
