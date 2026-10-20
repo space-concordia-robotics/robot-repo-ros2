@@ -1,8 +1,9 @@
 #pragma once
 
-#include <mbgl/map/map_observer.hpp>
-#include <mbgl/util/run_loop.hpp>
-#include <mbgl/util/size.hpp>
+#include <Eigen/Core>
+#include <mln/map/map_observer.hpp>
+#include <mln/util/run_loop.hpp>
+#include <mln/util/size.hpp>
 
 #include "foc2-gui/im_application.hpp"
 #include "foc2-gui/widget.hpp"

@@ -2,8 +2,8 @@
 
 #include <SDL3/SDL_opengl.h>
 #include <SDL3/SDL_opengles2.h>
-#include <mbgl/gfx/context.hpp>
-#include <mbgl/gl/renderable_resource.hpp>
+#include <mln/gfx/context.hpp>
+#include <mln/gl/renderable_resource.hpp>
 
 class SDL3OpenGLRenderableResource final : public mln::gl::RenderableResource {
 public:
@@ -12,7 +12,7 @@ public:
 
     void bind() override {
         backend.setFramebufferBinding(backend.framebuffer);
-        backend.setViewport(0, 0, backend.size);
+        backend.setViewport(0, 0, backend.getSize());
 
         glDisable(GL_SCISSOR_TEST);
 
@@ -80,7 +80,7 @@ SDL3OpenGLRendererBackend::~SDL3OpenGLRendererBackend() {
 void SDL3OpenGLRendererBackend::resize(const mln::Size size) {
     swapContext();
 
-    this->size = size;
+    this->setRenderableSize(size);
 
     // magic opengl shit, do not touch unless you understand opengl - Will Free
 
@@ -136,6 +136,8 @@ void SDL3OpenGLRendererBackend::restoreContext() const {
 void SDL3OpenGLRendererBackend::activate() {
     swapContext();
 
+    const auto& size = getSize();
+
     glViewport(0, 0, size.width, size.height);
     glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
 }
@@ -150,5 +152,5 @@ mln::gl::ProcAddress SDL3OpenGLRendererBackend::getExtensionFunctionPointer(cons
 
 void SDL3OpenGLRendererBackend::updateAssumedState() {
     assumeFramebufferBinding(framebuffer);
-    assumeViewport(0, 0, size);
+    assumeViewport(0, 0, this->getSize());
 }

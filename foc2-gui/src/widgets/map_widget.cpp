@@ -1,23 +1,20 @@
 #include "foc2-gui/widgets/map_widget.hpp"
 
-/// hack to allow database_file_source.hpp to be included, until https://github.com/maplibre/maplibre-native/issues/4472 is fixed
-#define nsel_CONFIG_SELECT_EXPECTED nsel_EXPECTED_NONSTD
-
 #include <fstream>
 #include <imgui.h>
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_video.h>
 #include <magic_enum/magic_enum.hpp>
-#include <mbgl/gfx/backend_scope.hpp>
-#include <mbgl/gl/renderable_resource.hpp>
-#include <mbgl/map/map.hpp>
-#include <mbgl/map/map_options.hpp>
-#include <mbgl/renderer/renderer.hpp>
-#include <mbgl/storage/database_file_source.hpp>
-#include <mbgl/storage/file_source.hpp>
-#include <mbgl/storage/file_source_manager.hpp>
-#include <mbgl/style/style.hpp>
-#include <mbgl/util/action_journal_options.hpp>
+#include <mln/gfx/backend_scope.hpp>
+#include <mln/gl/renderable_resource.hpp>
+#include <mln/map/map.hpp>
+#include <mln/map/map_options.hpp>
+#include <mln/renderer/renderer.hpp>
+#include <mln/storage/database_file_source.hpp>
+#include <mln/storage/file_source.hpp>
+#include <mln/storage/file_source_manager.hpp>
+#include <mln/style/style.hpp>
+#include <mln/util/action_journal_options.hpp>
 
 #include "foc2-gui/util/imgui_formatters.hpp"
 #include "foc2-gui/util/mln_tf2_convert.hpp"

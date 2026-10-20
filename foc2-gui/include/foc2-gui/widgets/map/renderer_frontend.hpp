@@ -1,7 +1,7 @@
 #pragma once
 
 #include <memory>
-#include <mbgl/renderer/renderer_frontend.hpp>
+#include <mln/renderer/renderer_frontend.hpp>
 
 class MapWidget;
 
