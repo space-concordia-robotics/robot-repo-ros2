@@ -27,6 +27,7 @@ public:
     }
 
 protected:
+    // NOLINTNEXTLINE(*-avoid-const-or-ref-data-members): TODO 2026-10-28 (Will Free): use an std::shared_ptr<ImApplication> here instead of ImApplication&
     ImApplication& application;
     ros2_fmt_logger::Logger logger;
     std::vector<std::shared_ptr<UiElement>> children;

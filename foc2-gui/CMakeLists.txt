@@ -50,6 +50,7 @@ find_dependencies(
         lifecycle_msgs
         ros_aruco_opencv_msgs
         rover_msgs
+        robot_localization
 
         scrb_common_util
 )
@@ -149,6 +150,8 @@ scrb_add_executable(${PROJECT_NAME}
         # maplibre renderer
         src/widgets/map/renderer_frontend.cpp
         src/widgets/map/renderer_backend.cpp
+        # maplibre layers
+        src/widgets/map/layers/aruco_detections_layer.cpp
 )
 
 target_link_libraries(${PROJECT_NAME} PUBLIC ${DEPENDENCY_TARGETS})

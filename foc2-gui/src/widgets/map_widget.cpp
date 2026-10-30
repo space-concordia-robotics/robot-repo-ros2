@@ -2,7 +2,6 @@
 
 #include <fstream>
 #include <imgui.h>
-#include <SDL3/SDL.h>
 #include <SDL3/SDL_video.h>
 #include <magic_enum/magic_enum.hpp>
 #include <mln/gfx/backend_scope.hpp>
@@ -15,12 +14,15 @@
 #include <mln/storage/file_source_manager.hpp>
 #include <mln/style/style.hpp>
 #include <mln/util/action_journal_options.hpp>
+#include <geographic_msgs/msg/geo_point.hpp>
 
 #include "foc2-gui/util/imgui_formatters.hpp"
 #include "foc2-gui/util/mln_tf2_convert.hpp"
 #include "foc2-gui/util/resources.hpp"
 #include "foc2-gui/widgets/map/renderer_backend.hpp"
 #include "foc2-gui/widgets/map/renderer_frontend.hpp"
+#include "foc2-gui/widgets/map/layers/aruco_detections_layer.hpp"
+#include "foc2-gui/widgets/map/layers/layer_manager.hpp"
 
 static std::optional<std::filesystem::path> cacheDirectory(const std::string& name) {
     // TODO 2026-05-28 (Will Free): support like osx/windows at some point.
@@ -76,6 +78,8 @@ MapWidget::~MapWidget() {
 static constexpr auto MAXIMUM_CACHE_SIZE = 2uL * 1024 * 1024 * 1024;
 
 void MapWidget::onInit() {
+    to_ll_client = application.create_client<robot_localization::srv::ToLL>("/toLL");
+
     const auto api_key = maptilerApiKey();
     if (!api_key.has_value())
         throw std::runtime_error("Could not find api key for maptiler");
@@ -100,7 +104,6 @@ void MapWidget::onInit() {
     }
 
     const auto client_options = mln::ClientOptions();
-    auto ordered_styles = map_tiler_configuration.defaultStyles();
 
     backend = std::make_unique<SDL3OpenGLRendererBackend>(SDL_GL_GetCurrentWindow(), SDL_GL_GetCurrentContext());
 
@@ -154,9 +157,7 @@ void MapWidget::onInit() {
         action_journal_options
     );
 
-    // TODO 2026-08-10 (Will Free): settings for toggling some of the different map layers
-    // TODO 2026-08-11 (Will Free): settings to swap between using maptiler & ArcGIS
-    map->getStyle().loadJSON(readStyleJson());
+    this->configureStyle();
 }
 
 void MapWidget::onShutdown() {
@@ -190,6 +191,13 @@ void MapWidget::draw() {
 
     run_loop.runOnce();
 
+    // TODO 2026-10-29 (Will Free): setting dirty to true is a hack to always force re-rendering. get rid of this later.
+    dirty = true;
+
+    for (auto&& layer_manager : this->layer_managers) {
+        layer_manager->update();
+    }
+
     if (dirty && renderer_frontend) {
         dirty = false;
 
@@ -217,6 +225,24 @@ void MapWidget::draw() {
     ImGui::InvisibleButton("##Maplibre Button", widget_size);
 
     handleMouse(tf2::convert<Eigen::Vector2d>(widget_origin), tf2::convert<Eigen::Vector2d>(widget_size));
+}
+
+void MapWidget::configureStyle() {
+    // TODO 2026-08-10 (Will Free): settings for toggling some of the different map layers
+    // TODO 2026-08-11 (Will Free): settings to swap between using maptiler & ArcGIS
+    map->getStyle().loadJSON(readStyleJson());
+
+    auto& style = map->getStyle();
+
+    this->layer_managers.push_back(std::make_unique<ArucoMarkerLayerManager>(application, *this));
+
+    for (auto&& layer_manager : this->layer_managers) {
+        layer_manager->install(style);
+        layer_manager->enable();
+    }
+
+    // TODO 2026-10-20 (Will Free): custom rendering stats view, because the default one kinda looks bad ngl
+    // map->enableRenderingStatsView(true);
 }
 
 void MapWidget::handleResize() {
@@ -357,4 +383,41 @@ void MapWidget::onRenderError(const std::exception_ptr exception_ptr) {
     } catch (...) {
         logger.error("MapLibre render exception: unknown");
     }
+}
+
+// NOLINTNEXTLINE(*-unnecessary-value-param): callback is intentionally copied, otherwise it can go out of scope.
+void MapWidget::toLatLong(const geometry_msgs::msg::PoseStamped& pose, std::function<void(const geographic_msgs::msg::GeoPoint&)> callback) const {
+    // TODO 2026-10-29 (Will Free): consider using something like icey
+
+    geometry_msgs::msg::PoseStamped map_pose;
+
+    try {
+        // Transform at the detection timestamp.
+        map_pose = application.tfBuffer().transform(
+            pose,
+            // TODO 2026-10-29 (Will Free): don't hardcode target frame
+            "map",
+            tf2::durationFromSec(0.1)
+        );
+    } catch (const tf2::TransformException& e) {
+        // TODO 2026-10-28 (Will Free): handle
+        return;
+    }
+
+    const auto request = std::make_shared<robot_localization::srv::ToLL::Request>();
+    request->map_point = map_pose.pose.position;
+
+    // TODO 2026-10-29 (Will Free): handle case where client is not ready
+
+    // TODO 2026-10-29 (Will Free): handle case where future never completes (prune_pending_requests())
+
+    to_ll_client->async_send_request(
+        request,
+        // ReSharper disable once CppPassValueParameterByConstReference
+        [callback](rclcpp::Client<robot_localization::srv::ToLL>::SharedFuture future) { // NOLINT(*-unnecessary-value-param)
+            // TODO 2026-10-28 (Will Free): handle exception
+
+            callback(future.get()->ll_point);
+        }
+    );
 }
