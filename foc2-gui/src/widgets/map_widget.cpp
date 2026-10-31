@@ -168,6 +168,63 @@ void MapWidget::onShutdown() {
     backend = nullptr;
 }
 
+void MapWidget::invalidate() {
+    dirty = true;
+}
+
+void MapWidget::onDidFailLoadingMap(const mln::MapLoadError error, const std::string& reason) {
+    logger.info("failed loading map: {} ({})", reason, magic_enum::enum_name(error));
+}
+
+void MapWidget::onRenderError(const std::exception_ptr exception_ptr) {
+    try {
+        if (exception_ptr) {
+            std::rethrow_exception(exception_ptr);
+        }
+    } catch (const std::exception& e) {
+        logger.error("MapLibre render exception: {}", e.what());
+    } catch (...) {
+        logger.error("MapLibre render exception: unknown");
+    }
+}
+
+// NOLINTNEXTLINE(*-unnecessary-value-param): callback is intentionally copied, otherwise it can go out of scope.
+void MapWidget::toLatLong(const geometry_msgs::msg::PoseStamped& pose, std::function<void(const geographic_msgs::msg::GeoPoint&)> callback) const {
+    // TODO 2026-10-29 (Will Free): consider using something like icey
+
+    geometry_msgs::msg::PoseStamped map_pose;
+
+    try {
+        // Transform at the detection timestamp.
+        map_pose = application.tfBuffer().transform(
+            pose,
+            // TODO 2026-10-29 (Will Free): don't hardcode target frame
+            "map",
+            tf2::durationFromSec(0.1)
+        );
+    } catch (const tf2::TransformException& e) {
+        // TODO 2026-10-28 (Will Free): handle
+        return;
+    }
+
+    const auto request = std::make_shared<robot_localization::srv::ToLL::Request>();
+    request->map_point = map_pose.pose.position;
+
+    // TODO 2026-10-29 (Will Free): handle case where client is not ready
+
+    // TODO 2026-10-29 (Will Free): handle case where future never completes (prune_pending_requests())
+
+    to_ll_client->async_send_request(
+        request,
+        // ReSharper disable once CppPassValueParameterByConstReference
+        [callback](rclcpp::Client<robot_localization::srv::ToLL>::SharedFuture future) { // NOLINT(*-unnecessary-value-param)
+            // TODO 2026-10-28 (Will Free): handle exception
+
+            callback(future.get()->ll_point);
+        }
+    );
+}
+
 void MapWidget::draw() {
     if (ImGui::IsWindowCollapsed())
         return;
@@ -363,61 +420,4 @@ void MapWidget::handleMouseClick(const bool in_bounds) {
     pitching = false;
     tracking = false;
     map->setGestureInProgress(false);
-}
-
-void MapWidget::invalidate() {
-    dirty = true;
-}
-
-void MapWidget::onDidFailLoadingMap(const mln::MapLoadError error, const std::string& reason) {
-    logger.info("failed loading map: {} ({})", reason, magic_enum::enum_name(error));
-}
-
-void MapWidget::onRenderError(const std::exception_ptr exception_ptr) {
-    try {
-        if (exception_ptr) {
-            std::rethrow_exception(exception_ptr);
-        }
-    } catch (const std::exception& e) {
-        logger.error("MapLibre render exception: {}", e.what());
-    } catch (...) {
-        logger.error("MapLibre render exception: unknown");
-    }
-}
-
-// NOLINTNEXTLINE(*-unnecessary-value-param): callback is intentionally copied, otherwise it can go out of scope.
-void MapWidget::toLatLong(const geometry_msgs::msg::PoseStamped& pose, std::function<void(const geographic_msgs::msg::GeoPoint&)> callback) const {
-    // TODO 2026-10-29 (Will Free): consider using something like icey
-
-    geometry_msgs::msg::PoseStamped map_pose;
-
-    try {
-        // Transform at the detection timestamp.
-        map_pose = application.tfBuffer().transform(
-            pose,
-            // TODO 2026-10-29 (Will Free): don't hardcode target frame
-            "map",
-            tf2::durationFromSec(0.1)
-        );
-    } catch (const tf2::TransformException& e) {
-        // TODO 2026-10-28 (Will Free): handle
-        return;
-    }
-
-    const auto request = std::make_shared<robot_localization::srv::ToLL::Request>();
-    request->map_point = map_pose.pose.position;
-
-    // TODO 2026-10-29 (Will Free): handle case where client is not ready
-
-    // TODO 2026-10-29 (Will Free): handle case where future never completes (prune_pending_requests())
-
-    to_ll_client->async_send_request(
-        request,
-        // ReSharper disable once CppPassValueParameterByConstReference
-        [callback](rclcpp::Client<robot_localization::srv::ToLL>::SharedFuture future) { // NOLINT(*-unnecessary-value-param)
-            // TODO 2026-10-28 (Will Free): handle exception
-
-            callback(future.get()->ll_point);
-        }
-    );
 }
