@@ -69,6 +69,8 @@ list(APPEND DEPENDENCY_TARGETS
         lunasvg
 
         stb
+
+        mbgl-core
 )
 
 find_package(PkgConfig REQUIRED)
@@ -141,36 +143,12 @@ scrb_add_executable(${PROJECT_NAME}
 
         # widgets
         src/widgets/logs_widget.cpp
-        src/widgets/map_widget.cpp
         src/widgets/video_widget.cpp
+        src/widgets/map_widget.cpp
 
-        # OSM map stuff
-        src/osm/osm_map_plot.cpp
-        src/osm/osm_rich_destination_calc_widget.cpp
-        src/osm/osm_rich_distance_calc_widget.cpp
-        src/osm/osm_rich_map_plot.cpp
-        src/osm/osm_rich_mark_editor_widget.cpp
-        src/osm/osm_rich_mark_item.cpp
-        src/osm/osm_rich_mark_item_widget.cpp
-        src/osm/osm_rich_mark_storage.cpp
-        src/osm/osm_tile.cpp
-        src/osm/osm_tile_grabber.cpp
-        src/osm/osm_tile_grabber_url.cpp
-        src/osm/osm_tile_grabber_widget.cpp
-        src/osm/osm_tile_loader.cpp
-        src/osm/osm_tile_loader_url.cpp
-        src/osm/osm_tile_saver.cpp
-        src/osm/osm_tile_source_async.cpp
-        src/osm/osm_tile_source_caching.cpp
-        src/osm/osm_tile_source_fs.cpp
-        src/osm/osm_tile_source_url.cpp
-        src/osm/osm_tile_source_url_impl.cpp
-        src/osm/osm_tile_source_widget.cpp
-        src/osm/osm_tile_texture.cpp
-
-        # OSM markers
-        src/osm/markers/rich_robot_marker.cpp
-        src/osm/markers/rich_gps_marker.cpp
+        # maplibre renderer
+        src/widgets/map/renderer_frontend.cpp
+        src/widgets/map/renderer_backend.cpp
 )
 
 target_link_libraries(${PROJECT_NAME} PUBLIC ${DEPENDENCY_TARGETS})
@@ -189,10 +167,6 @@ set(GENERATED_INCLUDE_DIR ${CMAKE_CURRENT_BINARY_DIR}/generated)
 configure_file(resources/resources.hpp.in ${GENERATED_INCLUDE_DIR}/foc2-gui/resources.hpp @ONLY)
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${GENERATED_INCLUDE_DIR})
-
-set(FONT_AWESOME_PATH "share/resources/fonts/fa-solid-900.ttf")
-
-target_compile_definitions(${PROJECT_NAME} INTERFACE FONT_AWESOME_PATH="${FONT_AWESOME_PATH}")
 
 scrb_target_precompile_headers(${PROJECT_NAME} PRIVATE
         <filesystem>
