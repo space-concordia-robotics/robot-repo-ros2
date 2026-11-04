@@ -25,8 +25,7 @@ find_dependencies(
 
 ## COMPILE
 
-scrb_add_library(
-        ${PROJECT_NAME} SHARED
+scrb_add_library(${PROJECT_NAME} NO_SANITIZERS SHARED
         src/common_util.cpp
         src/string_parsing.cpp
         src/fmt/formatters.cpp
