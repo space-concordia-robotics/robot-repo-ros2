@@ -33,6 +33,7 @@ namespace swerve_controller {
                 fmt::format("{}/position", params.modules.front_right.steering_joint),
                 fmt::format("{}/position", params.modules.rear_left.steering_joint),
                 fmt::format("{}/position", params.modules.rear_right.steering_joint),
+
                 // wheel joints
                 fmt::format("{}/velocity", params.modules.front_left.wheel_joint),
                 fmt::format("{}/velocity", params.modules.front_right.wheel_joint),
@@ -46,10 +47,17 @@ namespace swerve_controller {
         return {
             .type  = controller_interface::interface_configuration_type::INDIVIDUAL,
             .names = {
+                // steering joints
                 fmt::format("{}/position", params.modules.front_left.steering_joint),
                 fmt::format("{}/position", params.modules.front_right.steering_joint),
                 fmt::format("{}/position", params.modules.rear_left.steering_joint),
                 fmt::format("{}/position", params.modules.rear_right.steering_joint),
+
+                // wheel joints
+                fmt::format("{}/velocity", params.modules.front_left.wheel_joint),
+                fmt::format("{}/velocity", params.modules.front_right.wheel_joint),
+                fmt::format("{}/velocity", params.modules.rear_left.wheel_joint),
+                fmt::format("{}/velocity", params.modules.rear_right.wheel_joint),
             },
         };
     }
@@ -91,7 +99,7 @@ namespace swerve_controller {
                     msg->header.stamp = get_node()->now();
                 }
 
-                // copy message into rt buffer
+                // copy message into rt thread-safe box
                 velocity_message.writeFromNonRT(*msg);
 
                 // TODO 2026-10-07 (Will Free): handle timeout
@@ -193,6 +201,10 @@ namespace swerve_controller {
             if (!steering_command_handle.has_value())
                 return std::unexpected(steering_command_handle.error());
 
+            auto wheel_state_handle = find_state_handle(wheel_joint, hardware_interface::HW_IF_VELOCITY, state_interfaces);
+            if (!wheel_state_handle.has_value())
+                return std::unexpected(wheel_state_handle.error());
+
             auto wheel_command_handle = find_command_handle(wheel_joint, hardware_interface::HW_IF_VELOCITY, command_interfaces);
             if (!wheel_command_handle.has_value())
                 return std::unexpected(wheel_command_handle.error());
@@ -200,13 +212,15 @@ namespace swerve_controller {
             return SwerveModuleHandle{
                 .steering_feedback = steering_state_handle.value(),
                 .steering_position = steering_command_handle.value(),
+                .wheel_feedback    = wheel_state_handle.value(),
                 .wheel_velocity    = wheel_command_handle.value(),
             };
         };
 
         const auto front_left_module = find_module_handles(
             params.modules.front_left.steering_joint, params.modules.front_left.wheel_joint,
-            command_interfaces_, state_interfaces_);
+            command_interfaces_, state_interfaces_
+        );
         if (!front_left_module.has_value())
             return front_left_module.error();
 
