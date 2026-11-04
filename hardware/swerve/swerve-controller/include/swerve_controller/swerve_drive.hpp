@@ -63,6 +63,7 @@ namespace swerve_controller {
         struct SwerveModuleHandle {
             std::reference_wrapper<const hardware_interface::LoanedStateInterface> steering_feedback;
             std::reference_wrapper<hardware_interface::LoanedCommandInterface> steering_position;
+            std::reference_wrapper<const hardware_interface::LoanedStateInterface> wheel_feedback;
             std::reference_wrapper<hardware_interface::LoanedCommandInterface> wheel_velocity;
         };
 
