@@ -72,6 +72,7 @@ if (BUILD_TESTING)
     find_package(ament_cmake_gtest REQUIRED)
 
     ament_add_gtest(${PROJECT_NAME}_string_parsing_test test/string_parsing_test.cpp)
+    apply_target_defaults(${PROJECT_NAME}_string_parsing_test)
     target_include_directories(${PROJECT_NAME}_string_parsing_test PUBLIC
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
             $<INSTALL_INTERFACE:include>
