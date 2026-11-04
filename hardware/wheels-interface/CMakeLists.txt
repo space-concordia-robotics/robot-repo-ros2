@@ -26,9 +26,7 @@ find_dependencies(
 
 ## COMPILE
 
-scrb_add_library(
-        wheels_interface
-        SHARED
+scrb_add_library(${PROJECT_NAME} NO_SANITIZERS SHARED
         src/wheels_interface.cpp
         src/spark/spark_base.cpp
         src/spark/spark_max.cpp

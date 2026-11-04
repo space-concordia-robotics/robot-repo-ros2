@@ -22,7 +22,7 @@ find_dependencies(
 
 ## COMPILE
 
-scrb_add_library(${PROJECT_NAME} SHARED
+scrb_add_library(${PROJECT_NAME} NO_SANITIZERS SHARED
         src/arm_interface.cpp
         src/absenc.cpp
 )

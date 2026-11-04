@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.25)
 
 option(ENABLE_TSAN "Enable ThreadSanitizer for debug builds" OFF)
+option(ENABLE_SANITIZERS "Enable sanitizers for debug builds" ON)
+option(FORCE_SANITIZERS "Force sanitizers even on targets that have opted out" OFF)
 option(SCRB_PRECOMPILE_HEADERS "Enable precompiled headers" ON) # due to https://youtrack.jetbrains.com/issue/CPP-49453/, you need to disable these for CLion
 
 if (DEFINED ENV{SCRB_PRECOMPILE_HEADERS})
@@ -118,6 +120,8 @@ function(append_sanitizer_flags COMPILE_LIST_VAR LINK_LIST_VAR)
 endfunction()
 
 function(apply_target_defaults TARGET)
+    cmake_parse_arguments(arg "NO_SANITIZERS" "" "" ${ARGN})
+
     # enable C++23
     target_compile_features("${TARGET}" PUBLIC cxx_std_23)
     target_compile_features("${TARGET}" PUBLIC c_std_23)
@@ -150,35 +154,53 @@ function(apply_target_defaults TARGET)
             -fno-ipa-icf                # disable identical code folding for functions (GCC only)
     )
 
-    # sanitizers for debug mode
-    set(SANITIZERS "undefined")
-    if (ENABLE_TSAN)
-        list(APPEND SANITIZERS "thread")
-    else ()
-        # add asan & lsan
-        list(APPEND SANITIZERS "address" "leak")
-    endif ()
+    if (FORCE_SANITIZERS OR (ENABLE_SANITIZERS AND NOT arg_NO_SANITIZERS))
+        # sanitizers for debug mode
+        set(SANITIZERS "undefined")
+        if (ENABLE_TSAN)
+            list(APPEND SANITIZERS "thread")
+        else ()
+            # add asan & lsan
+            list(APPEND SANITIZERS "address" "leak")
+        endif ()
 
-    append_sanitizer_flags(DEBUG_COMPILE_FLAGS DEBUG_LINK_FLAGS ${SANITIZERS})
+        append_sanitizer_flags(DEBUG_COMPILE_FLAGS DEBUG_LINK_FLAGS ${SANITIZERS})
+    endif ()
 
     target_compile_options("${TARGET}" PRIVATE
             $<$<CONFIG:Debug>:${DEBUG_COMPILE_FLAGS}>
             $<$<CONFIG:RelWithDebInfo>:${DEBUG_COMPILE_FLAGS}>
     )
-    target_link_libraries("${TARGET}" PUBLIC
+    target_link_options("${TARGET}" PRIVATE
             $<$<CONFIG:Debug>:${DEBUG_LINK_FLAGS}>
             $<$<CONFIG:RelWithDebInfo>:${DEBUG_LINK_FLAGS}>
     )
 endfunction()
 
 function(scrb_add_executable TARGET)
-    add_executable("${TARGET}" ${ARGN})
-    apply_target_defaults("${TARGET}")
+    cmake_parse_arguments(arg "NO_SANITIZERS" "" "" ${ARGN})
+
+    add_executable("${TARGET}" ${arg_UNPARSED_ARGUMENTS})
+
+    # there isn't really a nicer way to do this
+    if (NO_SANITIZERS)
+        apply_target_defaults("${TARGET}" NO_SANITIZERS)
+    else ()
+        apply_target_defaults("${TARGET}")
+    endif ()
 endfunction()
 
 function(scrb_add_library TARGET)
-    add_library("${TARGET}" ${ARGN})
-    apply_target_defaults("${TARGET}")
+    cmake_parse_arguments(arg "NO_SANITIZERS" "" "" ${ARGN})
+
+    add_library("${TARGET}" ${arg_UNPARSED_ARGUMENTS})
+
+    # there isn't really a nicer way to do this
+    if (arg_NO_SANITIZERS)
+        apply_target_defaults("${TARGET}" NO_SANITIZERS)
+    else ()
+        apply_target_defaults("${TARGET}")
+    endif ()
 endfunction()
 
 function(scrb_target_precompile_headers TARGET_NAME)

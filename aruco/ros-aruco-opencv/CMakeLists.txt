@@ -34,7 +34,7 @@ list(APPEND DEPENDENCY_TARGETS magic_enum::magic_enum)
 
 ## COMPILE
 
-scrb_add_library(${PROJECT_NAME} SHARED
+scrb_add_library(${PROJECT_NAME} NO_SANITIZERS SHARED
         src/aruco_tracker.cpp
         src/detector.cpp
         src/board_loader.cpp
