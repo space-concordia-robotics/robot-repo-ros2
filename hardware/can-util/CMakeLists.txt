@@ -15,9 +15,7 @@ find_dependencies(
 
 ## COMPILE
 
-scrb_add_library(
-        can_util
-        SHARED
+scrb_add_library(${PROJECT_NAME} NO_SANITIZERS SHARED
         src/can_util.cpp
         src/can_controller.cpp
 )
