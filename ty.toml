@@ -1,7 +1,8 @@
 [src]
 exclude = [
+    "build",
     "install",
-    "log"
+    "log",
 ]
 
 [rules]
