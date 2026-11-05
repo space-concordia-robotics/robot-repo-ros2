@@ -265,6 +265,35 @@ namespace swerve_controller {
         modules.clear();
         // TODO 2026-10-07 (Will Free): reset buffers
         // TODO 2026-10-07 (Will Free): stop wheels
+
+        // start of changes 
+
+        auto message = geometry_msgs::msg::TwistStamped();
+
+        message.linear_x = 0.0;
+        message.linear_y = 0.0;
+        message.linear_z = 0.0;
+        message.angular_x = 0.0;
+        message.angular_y = 0.0;
+        message.angular_z = 0.0;
+
+
+        cmd.vel_subscription.reset();
+
+        while(rclpp::ok() && !cmd_vel_subscription.expired()) {
+            std_msgs::msg::String msg;
+            rclpp::MessageInfo info;
+            if(cmd_vel_subscription.lock()->take(msg, info)) {
+                continue;
+            } else {
+                break;
+            }
+            logger->warn("Waiting for cmd_vel subscription to be destroyed before deactivating controller");
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        }
+
+        // end of changes 
+
         return ControllerInterface::on_deactivate(previous_state);
     }
 
