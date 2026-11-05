@@ -40,6 +40,7 @@ ignore = [
     "TD003",
     "TD004", # TD004 is disabled until astral-sh/ruff#26451 is fixed
     "TRY003",
+    "CPY001",
 ]
 
 future-annotations = true
@@ -73,3 +74,4 @@ pyarrow = "pa"
 
 [lint.pylint]
 max-args = 8
+allow-magic-values = [0, 1, 2, -1, 0.0, 1.0, -1.0, 0.5, "", "__main__"]
