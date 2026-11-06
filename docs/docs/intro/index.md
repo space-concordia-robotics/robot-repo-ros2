@@ -18,4 +18,5 @@ Once you have finished your intro task, it is recommended that you read the foll
 
 - [ ] [Code Standards](../general/code-standards.md)
 - [ ] [IDE Setup](../general/ide-setup.md)
+- [ ] [Contributing](../general/contributing/index.md)
 - [ ] Any other page on this wiki! This list is not comprehensive, it's just something to help you get started :)
