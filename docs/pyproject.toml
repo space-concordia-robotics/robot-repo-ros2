@@ -1,0 +1,39 @@
+[project]
+name = "docs"
+version = "0.0.0"
+requires-python = ">=3.12"
+classifiers = [
+    "Private :: Do Not Upload",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+]
+dependencies = []
+
+[tool.uv.build-backend]
+module-name = "plugins"
+module-root = ""
+
+[tool.uv]
+exclude-dependencies = ["mkdocs"]
+
+[build-system]
+requires = ["uv_build>=0.9.26,<0.10.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "properdocs==1.6.6", # 1.6.7 breaks mkdocs-material
+    "zensical>=0.1.0",
+    "mkdocs-awesome-nav>=3.3.0",
+    "mkdocs-material-extensions>=1.3.1",
+    "mkdocs-material[imaging,recommended]>=9.8.0",
+    "pygments>=2.21.0",
+    "pymdown-extensions>=12.3",
+    "beautifulsoup4>=4.15.0",
+    "lxml>=6.1.3",
+]
+
+[project.entry-points."mkdocs.plugins"]
+extend-bash-lexer = "plugins.extend_bash:ExtendBashPlugin"
