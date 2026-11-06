@@ -1,16 +1,16 @@
 # Contributing
 
-??? tip inline end "Branch Naming"
+We are always open to new people joining the team and helping out.
+
+## Contribution Process
+
+???+ tip inline end "Branch Naming"
 
     When naming the branch, please use only lowercase letters and dashes.
     The name of the branch should begin with the type of change, followed by the name.
     The name should make it relatively obvious what the branch is for.
     For example, `feature/add-cameras`, `fix/broken-build`, `refactor/ik-cleanup`, etc.
     Sometimes it might also be beneficial to add a category: `feature/autonomy/improve-pathing`.
-
-We are always open to new people joining the team and helping out.
-
-## Contribution Process
 
 If you would like to get started with contributing, here is the general process:
 
