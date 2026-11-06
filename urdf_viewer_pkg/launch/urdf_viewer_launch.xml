@@ -1,0 +1,3 @@
+<launch>
+  <include file="$(find-pkg-share urdf_viewer_pkg)/launch/urdf_viewer_launch.py" />
+</launch>
