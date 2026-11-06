@@ -1,6 +1,7 @@
 # ruff: noqa: D100, D101, D102, D103, D107, CPY001
 
 import re
+import typing
 import xml.etree.ElementTree as ET
 from typing import override
 from xml.etree.ElementTree import Element
@@ -41,18 +42,19 @@ TYPE_COLOR_MAP = {
     "action_type": "red",
 }
 
-INTERFACE_PATTERN = re.compile(r"^(\w+)/(msg|srv|action)/(\w+)$")
+INTERFACE_PATTERN = re.compile(r"^(\w+)(?:/(msg|srv|action))?/(\w+)$")
 
 
-def parse_interface(value: str) -> tuple[str, str, str] | None:
+# noinspection unnecessary-cast
+def parse_interface(value: str) -> tuple[str, str | None, str] | None:
     match = INTERFACE_PATTERN.fullmatch(value)
 
     if match is None:
         return None
 
-    package: str = match.group(1)
-    interface_kind: str = match.group(2)
-    interface_name: str = match.group(3)
+    package: str = typing.cast(str, match.group(1))
+    interface_kind = typing.cast(str | None, match.group(2))
+    interface_name: str = typing.cast(str, match.group(3))
 
     return package, interface_kind, interface_name
 
@@ -106,8 +108,10 @@ class ROSInlineProcessor(InlineProcessor):
         package, interface_kind, interface_name = parsed
 
         # Make sure the syntax agrees with the prefix.
-        if interface_kind != INTERFACE_TYPES[reference_type]:
+        if interface_kind is not None and interface_kind != INTERFACE_TYPES[reference_type]:
             return self.make_code(match, value, reference_type)
+        if interface_kind is None:
+            interface_kind = INTERFACE_TYPES[reference_type]
 
         url = interface_url(
             distro=self.distro,
