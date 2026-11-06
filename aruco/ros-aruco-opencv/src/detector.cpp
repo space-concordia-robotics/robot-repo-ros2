@@ -225,7 +225,7 @@ namespace ros_aruco_opencv {
                         const auto& corners = marker_corners.at(i);
 
                         for (auto j = 0u; j < corners.size(); ++j) {
-                            const auto& point = corners.at(i);
+                            const auto& point = corners.at(j);
                             auto& corner = marker_poses.at(i).corners.at(j);
                             corner.x = point.x;
                             corner.y = point.y;
