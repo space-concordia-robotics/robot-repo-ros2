@@ -10,8 +10,8 @@
 - [ ] Per-wheel velocity limits
     - When limiting the velocity of one wheel, all the other wheels must be limited by the same factor.
     - Doing this might be sub-optimal, so maybe just limits on input velocity is sufficient?
-- [ ] Stop wheels on controller deactivation
-- [ ] Reset buffers on controller deactivation
+- [ X] Stop wheels on controller deactivation
+- [ X] Reset buffers on controller deactivation
 
 ## Odometry
 

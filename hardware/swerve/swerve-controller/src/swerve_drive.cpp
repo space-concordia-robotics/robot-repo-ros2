@@ -1,8 +1,13 @@
 #include "swerve_controller/swerve_drive.hpp"
+#include "swerve_controller/odom_publisher.hpp"
 
 #include <expected>
 #include <ranges>
 #include <hardware_interface/types/hardware_interface_type_values.hpp>
+#include <geometry_msgs/msg/transform_stamped.hpp>
+#include <nav_msgs/msg/odometry.hpp>
+#include <tf2/msgs/msg/tf_message.hpp>
+
 
 namespace swerve_controller {
     SwerveController::SwerveController() = default;
@@ -82,6 +87,13 @@ namespace swerve_controller {
             {x_rear, y_right},
         });
 
+        // auto wheel_velocities = Eigen::Matrix<double, 4, 2>({
+        //     {0.0, 0.0},
+        //     {0.0, 0,0},
+        //     {0.0, 0.0},
+        //     {0.0, 0.0},
+        // })
+
         kinematics = std::make_unique<SwerveKinematics>(wheel_positions);
 
         cmd_vel_subscription = get_node()->create_subscription<TwistStamped>(
@@ -102,23 +114,63 @@ namespace swerve_controller {
                 // copy message into rt thread-safe box
                 velocity_message.writeFromNonRT(*msg);
 
-                // TODO 2026-10-07 (Will Free): handle timeout
-                /*const auto current_time_diff = get_node()->now() - msg->header.stamp;
+                // TODO 2026-10-07 (Will Free): handle timeout    // auto wheel_velocities = Eigen::Matrix<double, 4, 2>({
+            // {0.0, 0.0},
+            // {0.0, 0,0},
+            // {0.0, 0.0},
+            // {0.0, 0.0},
+        });
+                // const auto current_time_diff = get_node()->now() - msg->header.stamp;
 
-                if (
-                    cmd_vel_timeout_ == rclcpp::Duration::from_seconds(0.0) ||
-                    current_time_diff < cmd_vel_timeout_) {
-                    received_velocity_msg_.set(*msg);
-                } else {
-                    RCLCPP_WARN(
-                        get_node()->get_logger(),
-                        "Ignoring the received message (timestamp %.10f) because it is older than "
-                        "the current time by %.10f seconds, which exceeds the allowed timeout (%.4f)",
-                        rclcpp::Time(msg->header.stamp).seconds(), current_time_diff.seconds(),
-                        cmd_vel_timeout_.seconds());
-                }*/
-            }
-        );
+        //         if (
+        //             cmd_vel_timeout_ == rclcpp::Duration::from_seconds(0.0) ||
+        //             current_time_diff < cmd_vel_timeout_) {
+        //             received_velocity_msg_.set(*msg);
+        //         } else {
+        //             RCLCPP_WARN(
+        //                 get_node()->get_logger(),
+        //                 "Ignoring the received message (timestamp %.10f) because it is older than "
+        //                 "the current time by %.10f seconds, which exceeds the allowed timeout (%.4f)",
+        //                 rclcpp::Time(msg->header.stamp).seconds(), current_time_diff.seconds(),
+        //                 cmd_vel_timeout_.seconds());
+        //         }
+        //     }
+        // );
+
+
+        odom_publisher = OdomPublisher();
+
+        void OdomPublisher::timer_callback(){
+            auto message = nav_msgs::msg::Odometry();
+            message.header.stamp = this->get_clock()->now();
+            message.header.frame_id = "odom";
+            message.child_frame_id = "base_link";
+
+            message.pose.position.x = 0.0;
+            message.pose.position.y = 0.0;
+            message.pose.position.z = 0.0;
+            message.pose.orientation.x = 0.0;
+            message.pose.orientation.y = 0.0;
+            message.pose.orientation.z = 0.0;
+            message.pose.orientation.w = 1.0;
+
+            message.twist.twist.linear_x = 1.0;
+            message.twist.twist.angular_z = 0.0;
+
+            geometry_msgs::msg::TransformStamped tf;
+            tf.header.stamp = message.header.stamp;
+            tf.header.frame_id = message.header.frame_id;
+            tf.child_frame_id = message.child_frame_id;
+            tf.transform.translation.x = message.pose.position.x;
+            tf.transform.translation.y = message.pose.position.y;
+            tf.transform.translation.z = message.pose.position.z;
+            tf.transform.rotation = message.pose.orientation;
+
+
+            odom_publisher_->publish(message);
+            tf_broadcaster_->sendTransform(tf);
+        }
+        
 
         try {
             limiter_linear_x = control_toolbox::RateLimiter(
@@ -262,42 +314,40 @@ namespace swerve_controller {
 
     controller_interface::CallbackReturn SwerveController::on_deactivate(const rclcpp_lifecycle::State& previous_state) {
         subscription_active = false;
-        modules.clear();
         // TODO 2026-10-07 (Will Free): reset buffers
         // TODO 2026-10-07 (Will Free): stop wheels
 
-        // start of changes 
-
-        auto message = geometry_msgs::msg::TwistStamped();
-
-        message.linear_x = 0.0;
-        message.linear_y = 0.0;
-        message.linear_z = 0.0;
-        message.angular_x = 0.0;
-        message.angular_y = 0.0;
-        message.angular_z = 0.0;
-
-
-        cmd.vel_subscription.reset();
-
-        while(rclpp::ok() && !cmd_vel_subscription.expired()) {
-            std_msgs::msg::String msg;
-            rclpp::MessageInfo info;
-            if(cmd_vel_subscription.lock()->take(msg, info)) {
-                continue;
-            } else {
-                break;
-            }
-            logger->warn("Waiting for cmd_vel subscription to be destroyed before deactivating controller");
-            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        auto success = true;
+        for (const auto& module : modules) {
+            success &= module.steering_position.get().set_value(0.0);
+            success &= module.wheel_velocity.get().set_value(0.0);
+        }
+        
+        if(!success){
+            logger->warn("Failed to reset module commands to zero on deactivation");
         }
 
-        // end of changes 
+        velocity_message.writeFromNonRT(TwistStamped({}));
+        previous_two_commands.at(0) = {Eigen::Vector2d::Zero(), 0.0};
+        previous_two_commands.at(1) = {Eigen::Vector2d::Zero(), 0.0};
+        
+        modules.clear();
 
         return ControllerInterface::on_deactivate(previous_state);
     }
 
-    controller_interface::return_type SwerveController::update(const rclcpp::Time& /*time*/, const rclcpp::Duration& period) {
+
+
+    void odometry_callback(const nav_msgs::msg::Odometry::SharedPtr msg) {
+        double x = msg->pose.pose.position.x;
+        double y = msg->pose.pose.position.y;
+
+        double yaw = msg->pose.pose.orientation.z;
+
+    }
+
+
+    controller_interface::return_type SwerveController::update(const rclcpp::Time& time, const rclcpp::Duration& period) {
         /*
          INVARIANT:
          we assume that if this method is called then modules contains 4 (and exactly 4) entries.
@@ -326,6 +376,12 @@ namespace swerve_controller {
 
         // TODO 2026-10-07 (Will Free): odometry
 
+        tf_broadcaster = std::make_unique<tf2_ros::TransformBroadcaster>(get_node());
+        double dt = (time - odom_messaage.readfromRT()->header.stamp).seconds();
+
+        // the odom message is implemented through the timer callback
+
+        
         Eigen::Vector4d module_angles = Eigen::Vector4d::Zero();
         for (const auto& [i, module] : std::views::enumerate(modules)) {
             auto position_feedback_optional = module.steering_feedback.get().get_optional();
@@ -365,6 +421,7 @@ namespace swerve_controller {
         return controller_interface::return_type::OK;
     }
 }
+
 
 #include <pluginlib/class_list_macros.hpp>
 PLUGINLIB_EXPORT_CLASS(swerve_controller::SwerveController, controller_interface::ControllerInterface)
