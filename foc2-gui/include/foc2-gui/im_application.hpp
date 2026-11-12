@@ -9,8 +9,7 @@ namespace tf2_ros {
     class TransformListener;
 }
 
-typedef struct SDL_GLContextState* SDL_GLContext;
-typedef struct SDL_Window SDL_Window;
+struct ImApplicationState;
 
 class ImApplication : public rclcpp::Node {
 public:
@@ -27,8 +26,8 @@ public:
 protected:
     ros2_fmt_logger::Logger logger;
 
-    SDL_GLContext gl_context;
-    SDL_Window* window;
+    // a separate state struct mainly exists to avoid needing to have imports for SDL in here
+    std::unique_ptr<ImApplicationState> state;
 
     virtual void onWindow() {}
 
@@ -38,14 +37,12 @@ protected:
     virtual void onShutdown() {}
 
 private:
-    std::string title{};
-    bool done = false;
-    std::chrono::time_point<std::chrono::steady_clock> last_frame;
+    std::string title;
 
     std::unique_ptr<tf2_ros::Buffer> tf_buffer;
     std::unique_ptr<tf2_ros::TransformListener> tf_listener;
 
-    void frame();
+    void frame() const;
     void render() const;
     void quit() const;
 };
