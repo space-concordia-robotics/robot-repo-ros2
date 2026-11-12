@@ -1,17 +1,19 @@
+# Parameter schema for `generate_parameter_library` (generates swerve_controller_parameters.hpp)
 swerve_controller:
+  # Joint name mapping for each of the 4 swerve modules (front_left, front_right, rear_left, rear_right)
   modules:
     front_left: &joints
       wheel_joint:
         type: string
         default_value: ""
-        description: "foo"
+        description: "Name of the continuous drive wheel joint for this swerve module."
         read_only: true
         validation:
           not_empty<>: [ ]
       steering_joint:
         type: string
         default_value: ""
-        description: ""
+        description: "Name of the revolute/continuous steering joint for this swerve module."
         read_only: true
         validation:
           not_empty<>: [ ]
@@ -19,6 +21,7 @@ swerve_controller:
     rear_left: *joints
     rear_right: *joints
 
+  # Physical chassis and wheel geometry parameters
   wheel_radius:
     type: double
     default_value: 0.0
@@ -46,6 +49,7 @@ swerve_controller:
       gt<>:
         - 0.0
 
+  # Odometry and TF frame configuration parameters
   # TODO 2026-10-14 (Will Free): odometry
   tf_frame_prefix:
     type: string
@@ -90,6 +94,7 @@ swerve_controller:
     description: "Odometry covariance for the encoder output of the robot for the speed. These values should be tuned to your robot's sample odometry data, but these values are a good place to start: ``[0.001, 0.001, 0.001, 0.001, 0.001, 0.01]``."
     read_only: true
 
+  # Hardware feedback and safety timeout settings
   # TODO 2026-10-07 (Will Free): support velocity feedback & commands for the steering motors??
   position_feedback:
     type: bool
@@ -121,6 +126,7 @@ swerve_controller:
     description: "Size of the rolling window for calculation of mean velocity use in odometry."
     read_only: true
 
+  # Velocity, acceleration, deceleration, and jerk rate limiter bounds for linear (x, y) and angular (z) axes
   # TODO 2026-10-14 (Will Free): use this
   linear:
     x: &control_limits

@@ -1,5 +1,6 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<!-- ROS 2 package manifest for swerve_controller (4-Wheel Independent Steering ros2_control plugin) -->
 <package format="3">
     <name>swerve_controller</name>
     <version>0.0.0</version>
@@ -7,12 +8,14 @@
     <maintainer email="will.free@spaceconcordia.ca">Will Free</maintainer>
     <license>MIT</license>
 
+    <!-- Build tool and custom Space Concordia CMake utilities -->
     <buildtool_depend>ament_cmake_ros</buildtool_depend>
-
     <build_depend>scrb_cmake_utils</build_depend>
 
+    <!-- Shared utility dependencies -->
     <depend>scrb_common_util</depend>
 
+    <!-- Linting and testing dependencies -->
     <test_depend>ament_lint_auto</test_depend>
     <test_depend>ament_lint_common</test_depend>
 
