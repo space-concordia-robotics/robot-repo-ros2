@@ -1,14 +1,16 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<!-- ROS 2 package manifest for swerve_simulation (Gazebo simulation environment for swerve drive) -->
 <package format="3">
     <name>swerve_simulation</name>
     <version>0.0.0</version>
-    <description>TODO: Package description</description>
+    <description>Gazebo simulation package for testing the 4-wheel swerve drive controller and robot model.</description>
     <maintainer email="will.free@spaceconcordia.ca">Will Free</maintainer>
     <license>MIT</license>
 
     <buildtool_depend>ament_cmake</buildtool_depend>
 
+    <!-- Runtime dependencies for launching Gazebo and spawning the swerve controller -->
     <exec_depend>launch_util</exec_depend>
     <exec_depend>swerve_controller</exec_depend>
 

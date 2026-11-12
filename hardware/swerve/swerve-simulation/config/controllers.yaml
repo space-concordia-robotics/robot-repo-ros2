@@ -1,20 +1,26 @@
+# ros2_control configuration for the Gazebo swervebot simulation
 /**/controller_manager:
   ros__parameters:
-    update_rate: 200
+    update_rate: 200  # Control loop frequency in Hz (matches Gazebo 200 Hz physics step)
     use_sim_time: true
 
+    # Publishes /joint_states and /dynamic_joint_states from hardware state interfaces
     joint_state_broadcaster:
       type: joint_state_broadcaster/JointStateBroadcaster
 
+    # Custom 4-wheel independent steering (4WIS) controller plugin
     swerve_controller:
       type: swerve_controller/SwerveController
 
+# Parameters passed to the SwerveController lifecycle node
 /**/swerve_controller:
   ros__parameters:
-    wheelbase: 1.6
-    track_width: 1.2
-    wheel_radius: 0.25
+    # Physical dimensions matching urdf/swervebot.urdf (in meters)
+    wheelbase: 1.6     # Distance between front and rear axles
+    track_width: 1.2   # Distance between left and right wheels
+    wheel_radius: 0.25 # Radius of each drive wheel
 
+    # Mapping of each swerve module to its URDF steering (position) and wheel (velocity) joint names
     modules:
       front_left:
         steering_joint: front_left_steering_joint
@@ -29,6 +35,7 @@
         steering_joint: rear_right_steering_joint
         wheel_joint: rear_right_wheel_joint
 
+    # Optional velocity and acceleration rate limits (m/s and m/s^2)
     #linear:
     #  x:
     #    max_velocity: 0.5

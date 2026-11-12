@@ -1,3 +1,4 @@
+<!-- Pluginlib manifest registering SwerveController with ros2_control's controller_interface -->
 <library path="swerve_controller">
     <class name="swerve_controller/SwerveController"
            type="swerve_controller::SwerveController"

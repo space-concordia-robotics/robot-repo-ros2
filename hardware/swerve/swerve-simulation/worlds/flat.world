@@ -1,35 +1,45 @@
 <?xml version="1.0" ?>
+<!--
+  Minimal Gazebo Sim (SDF 1.9) world file ('flat') for testing the swerve drive robot.
+  Configures a 200 Hz ODE physics engine, a directional sun light, and a 1000x1000m flat ground plane.
+-->
 <sdf xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.9"
      xmlns="https://sdformat.org/"
      xsi:schemaLocation="https://sdformat.org/ http://sdformat.org/schemas/root.xsd">
     <world name="flat">
+        <!-- Core Gazebo simulation systems: physics, interactive user commands, and GUI scene rendering -->
         <plugin filename="gz-sim-physics-system" name="gz::sim::systems::Physics"/>
         <plugin filename="gz-sim-user-commands-system" name="gz::sim::systems::UserCommands"/>
         <plugin filename="gz-sim-scene-broadcaster-system" name="gz::sim::systems::SceneBroadcaster"/>
 
+        <!-- Default camera pose when Gazebo GUI opens -->
         <gui>
             <camera name="user_camera">
                 <pose>-10 -5 5 0 0 0</pose>
             </camera>
         </gui>
 
+        <!-- Scene lighting and rendering settings (grid and shadows disabled for performance) -->
         <scene>
             <ambient>0.2 0.2 0.2 1.0</ambient>
             <grid>false</grid>
             <shadows>false</shadows>
         </scene>
 
+        <!-- ODE physics solver running at 200 Hz (5 ms step size) to match controller_manager update_rate -->
         <physics type="ode">
             <real_time_update_rate>200.0</real_time_update_rate>
             <max_step_size>0.005</max_step_size>
             <real_time_factor>1.0</real_time_factor>
         </physics>
 
+        <!-- Directional sun light from Gazebo Fuel -->
         <include>
             <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Sun</uri>
             <pose>0 0 100 0 0 0</pose>
         </include>
 
+        <!-- Static 1000m x 1000m flat ground plane -->
         <model name="ground plane">
             <static>true</static>
             <link name="link">
