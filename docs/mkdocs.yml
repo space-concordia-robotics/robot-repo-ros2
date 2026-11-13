@@ -58,6 +58,8 @@ plugins:
         - 'assets/js/**/*.js'
       css_files:
         - 'assets/css/**/*.css'
+  - link-embeds:
+      enabled: true
   # TODO 2026-03-14 (Will Free): add RSS plugin? maybe look for an Atom plugin?
 
 theme:
@@ -205,4 +207,5 @@ extra_javascript:
 
 extra_css:
   - assets/css/extra.css
+  - assets/css/link-embeds.css
   - https://unpkg.com/katex@0/dist/katex.min.css
