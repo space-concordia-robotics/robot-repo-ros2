@@ -37,3 +37,6 @@ dev = [
 
 [project.entry-points."mkdocs.plugins"]
 extend-bash-lexer = "plugins.extend_bash:ExtendBashPlugin"
+
+[tool.ty.environment]
+python = "./.venv"
