@@ -6,11 +6,8 @@
 ```                                                                                                                 
 # 2. Terminal 2: Start Teleop
                                                                                                                                                              
-##  Keyboard Teleop
+## Option A: Keyboard Teleop (teleop_twist_keyboard)
     
     source /opt/ros/jazzy/setup.bash
     ros2 run teleop_twist_keyboard teleop_twist_keyboard \
       --ros-args -p stamped:=true -r cmd_vel:=/swerve_controller/cmd_vel
-
-# Full report
-code ~/.gemini/antigravity-cli/brain/0cc9754d-1eb6-4586-afee-35b2ebe5b835/swerve_documentation_report.md

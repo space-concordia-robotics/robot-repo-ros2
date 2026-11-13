@@ -1,4 +1,3 @@
-# CMake build configuration for the swerve_controller ros2_control plugin package
 cmake_minimum_required(VERSION 3.22)
 project(swerve_controller)
 
@@ -6,14 +5,12 @@ if (POLICY CMP0167)
     cmake_policy(SET CMP0167 NEW)
 endif ()
 
-# Custom Space Concordia CMake utilities (provides find_dependencies, scrb_add_library, etc.)
 find_package(scrb_cmake_utils REQUIRED)
 
 ## DEPENDENCIES
 
 find_package(ament_cmake REQUIRED)
 
-# Locate required ROS 2, ros2_control, math, logging, and message packages
 find_dependencies(
         rclcpp
         rclcpp_components
@@ -40,14 +37,12 @@ find_package(generate_parameter_library REQUIRED)
 
 ## COMPILE
 
-# Generate C++ parameter structures and validators from src/swerve_controller_parameters.yaml
 get_target_property(TB_INCLUDE_DIRS control_toolbox::rate_limiter_parameters INTERFACE_INCLUDE_DIRECTORIES)
 generate_parameter_library(${PROJECT_NAME}_parameters
         src/${PROJECT_NAME}_parameters.yaml
         ${TB_INCLUDE_DIRS}/control_toolbox/custom_validators.hpp
 )
 
-# Build the shared library containing the SwerveController plugin and SwerveKinematics solver
 scrb_add_library(${PROJECT_NAME} SHARED
         src/swerve_drive.cpp
         src/swerve_kinematics.cpp
@@ -60,7 +55,6 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 
 target_link_libraries(${PROJECT_NAME} PUBLIC ${DEPENDENCY_TARGETS} ${PROJECT_NAME}_parameters)
 
-# Precompile heavy ROS 2 and ros2_control headers to speed up incremental builds
 scrb_target_precompile_headers(${PROJECT_NAME} PRIVATE
         <rclcpp/rclcpp.hpp>
         <controller_interface/controller_interface.hpp>
@@ -68,7 +62,7 @@ scrb_target_precompile_headers(${PROJECT_NAME} PRIVATE
         <ros2_fmt_logger/logger.hpp>
 )
 
-# Export the controller_interface plugin description XML for pluginlib discovery
+# Export hardware plugins
 pluginlib_export_plugin_description_file(controller_interface ${PROJECT_NAME}.xml)
 
 ## INSTALL
