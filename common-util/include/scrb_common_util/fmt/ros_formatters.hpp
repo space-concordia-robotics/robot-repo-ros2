@@ -11,7 +11,7 @@ struct fmt::formatter<builtin_interfaces::msg::Time> : formatter<std::chrono::sy
     auto format(const builtin_interfaces::msg::Time& time, format_context& ctx) const {
         using namespace std::chrono;
 
-        const auto tp = sys_time<nanoseconds>(
+        const auto tp = sys_time(
             seconds(time.sec) + nanoseconds(time.nanosec)
         );
         return formatter<sys_time<nanoseconds>>::format(tp, ctx);
@@ -23,7 +23,7 @@ struct fmt::formatter<rclcpp::Time> : formatter<std::chrono::sys_time<std::chron
     auto format(const rclcpp::Time& time, format_context& ctx) const {
         using namespace std::chrono;
 
-        const auto tp = sys_time<nanoseconds>(nanoseconds(time.nanoseconds()));
+        const auto tp = sys_time(nanoseconds(time.nanoseconds()));
         return formatter<sys_time<nanoseconds>>::format(tp, ctx);
     }
 };
@@ -40,7 +40,7 @@ struct fmt::formatter<builtin_interfaces::msg::Duration> : formatter<std::chrono
     auto format(const builtin_interfaces::msg::Time& time, format_context& ctx) const {
         using namespace std::chrono;
 
-        const auto tp = sys_time<nanoseconds>(
+        const auto tp = sys_time(
             seconds(time.sec) + nanoseconds(time.nanosec)
         );
         return formatter<sys_time<nanoseconds>>::format(tp, ctx);
