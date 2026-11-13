@@ -2,8 +2,8 @@
 
 from typing import Literal, override
 
-from mkdocs.config import Config
-from mkdocs.plugins import BasePlugin
+from properdocs.config import Config
+from properdocs.plugins import BasePlugin
 from pygments.lexers.shell import BashLexer
 from pygments.token import Name
 
