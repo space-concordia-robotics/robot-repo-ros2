@@ -79,5 +79,6 @@ namespace swerve_controller {
         control_toolbox::RateLimiter<double> limiter_angular;
 
         void configure_limiters();
+        void halt();
     };
 }
