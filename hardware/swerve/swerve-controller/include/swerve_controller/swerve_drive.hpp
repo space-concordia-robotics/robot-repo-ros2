@@ -42,6 +42,8 @@ namespace swerve_controller {
         // TODO 2026-10-07 (Will Free): can I avoid the pointer here?
         std::unique_ptr<SwerveKinematics> kinematics = nullptr;
 
+        rclcpp::Duration cmd_vel_timeout = rclcpp::Duration::from_seconds(0.5);
+
         double wheelbase = 1.0;
         double track_width = 1.0;
         double wheel_radius = 0.1;
@@ -75,5 +77,7 @@ namespace swerve_controller {
         control_toolbox::RateLimiter<double> limiter_linear_x;
         control_toolbox::RateLimiter<double> limiter_linear_y;
         control_toolbox::RateLimiter<double> limiter_angular;
+
+        void configure_limiters();
     };
 }

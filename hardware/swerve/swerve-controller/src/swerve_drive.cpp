@@ -69,6 +69,8 @@ namespace swerve_controller {
         track_width = params.track_width;
         wheel_radius = params.wheel_radius;
 
+        cmd_vel_timeout = rclcpp::Duration::from_seconds(params.cmd_vel_timeout);
+
         const double x_front = wheelbase / 2.0;
         const double x_rear = -wheelbase / 2.0;
 
@@ -86,59 +88,42 @@ namespace swerve_controller {
 
         cmd_vel_subscription = get_node()->create_subscription<TwistStamped>(
             "~/cmd_vel", rclcpp::SystemDefaultsQoS(),
-            // ReSharper disable once CppPassValueParameterByConstReference
-            // NOLINTNEXTLINE(*-unnecessary-value-param)
             [this](const std::shared_ptr<TwistStamped> msg) -> void {
                 if (!subscription_active) {
                     logger->warn("Can't accept new commands. Subscriber is inactive.");
                     return;
                 }
 
+                const auto now = get_node()->now();
+
                 if (msg->header.stamp.sec == 0 && msg->header.stamp.nanosec == 0) {
                     logger->warn_once("Received TwistStamped with zero timestamp, setting it to current time. This message will only be shown once.");
-                    msg->header.stamp = get_node()->now();
+                    msg->header.stamp = now;
                 }
 
-                // copy message into rt thread-safe box
-                velocity_message.writeFromNonRT(*msg);
+                const rclcpp::Time msg_stamp(msg->header.stamp, now.get_clock_type());
+                const auto current_time_diff = now - msg_stamp;
 
-                // TODO 2026-10-07 (Will Free): handle timeout
-                /*const auto current_time_diff = get_node()->now() - msg->header.stamp;
-
-                if (
-                    cmd_vel_timeout_ == rclcpp::Duration::from_seconds(0.0) ||
-                    current_time_diff < cmd_vel_timeout_) {
-                    received_velocity_msg_.set(*msg);
+                if (cmd_vel_timeout == rclcpp::Duration::from_seconds(0.0) ||
+                    current_time_diff < cmd_vel_timeout) {
+                    // copy message into rt thread-safe box
+                    velocity_message.writeFromNonRT(*msg);
                 } else {
-                    RCLCPP_WARN(
-                        get_node()->get_logger(),
-                        "Ignoring the received message (timestamp %.10f) because it is older than "
-                        "the current time by %.10f seconds, which exceeds the allowed timeout (%.4f)",
-                        rclcpp::Time(msg->header.stamp).seconds(), current_time_diff.seconds(),
-                        cmd_vel_timeout_.seconds());
-                }*/
+                    logger->warn(
+                        "Ignoring the received message (timestamp {:.4f}) because it is older than "
+                        "the current time by {:.4f} seconds, which exceeds the allowed timeout ({:.4f})",
+                        msg_stamp.seconds(),
+                        current_time_diff.seconds(),
+                        cmd_vel_timeout.seconds()
+                    );
+                }
             }
         );
 
         try {
-            limiter_linear_x = control_toolbox::RateLimiter(
-                params.linear.x.min_velocity, params.linear.x.max_velocity,
-                params.linear.x.max_acceleration_reverse, params.linear.x.max_acceleration,
-                params.linear.x.max_deceleration, params.linear.x.max_deceleration_reverse,
-                params.linear.x.min_jerk, params.linear.x.max_jerk
-            );
-            limiter_linear_y = control_toolbox::RateLimiter(
-                params.linear.x.min_velocity, params.linear.x.max_velocity,
-                params.linear.x.max_acceleration_reverse, params.linear.x.max_acceleration,
-                params.linear.x.max_deceleration, params.linear.x.max_deceleration_reverse,
-                params.linear.x.min_jerk, params.linear.x.max_jerk
-            );
+            configure_limiters();
         } catch (const std::invalid_argument& e) {
             logger->error("Failed to configure command speed limiters: {}", e.what());
-            return controller_interface::CallbackReturn::ERROR;
-        }
-        try {} catch (const std::invalid_argument& e) {
-            logger->error("Failed to configure linear speed limiter: {}", e.what());
             return controller_interface::CallbackReturn::ERROR;
         }
 
@@ -268,12 +253,17 @@ namespace swerve_controller {
         return ControllerInterface::on_deactivate(previous_state);
     }
 
-    controller_interface::return_type SwerveController::update(const rclcpp::Time& /*time*/, const rclcpp::Duration& period) {
-        /*
-         INVARIANT:
-         we assume that if this method is called then modules contains 4 (and exactly 4) entries.
-         */
+    controller_interface::return_type SwerveController::update(const rclcpp::Time& time, const rclcpp::Duration& period) {
         assert(modules.size() == 4);
+
+        if (param_listener->try_update_params(params)) {
+            cmd_vel_timeout = rclcpp::Duration::from_seconds(params.cmd_vel_timeout);
+            try {
+                configure_limiters();
+            } catch (const std::invalid_argument& e) {
+                logger->error("Failed to update speed limiter parameters: {}", e.what());
+            }
+        }
 
         const auto cmd_ptr = velocity_message.readFromRT();
         if (cmd_ptr == nullptr)
@@ -281,8 +271,19 @@ namespace swerve_controller {
 
         const auto cmd = *cmd_ptr;
 
+        if (cmd.header.stamp.sec == 0 && cmd.header.stamp.nanosec == 0)
+            return controller_interface::return_type::OK;
+
         auto angular_command = cmd.twist.angular.z;
         auto linear_command = Eigen::Vector2d({cmd.twist.linear.x, cmd.twist.linear.y});
+
+        const rclcpp::Time cmd_time(cmd.header.stamp, time.get_clock_type());
+
+        // If the command is older than the timeout duration, ignore it and stop the robot
+        if (cmd_vel_timeout != rclcpp::Duration::from_seconds(0.0) && (time - cmd_time) > cmd_vel_timeout) {
+            linear_command = Eigen::Vector2d::Zero();
+            angular_command = 0.0;
+        }
 
         auto& [last_linear, last_angular] = previous_two_commands.at(1);
         auto& [second_to_last_linear, second_to_last_angular] = previous_two_commands.at(0);
@@ -305,7 +306,6 @@ namespace swerve_controller {
                 return controller_interface::return_type::OK;
             }
 
-            // * instead of .value() to avoid branch prediction miss
             const auto position_feedback = *position_feedback_optional;
 
             if (std::isnan(position_feedback)) {
@@ -334,6 +334,28 @@ namespace swerve_controller {
             return controller_interface::return_type::ERROR;
 
         return controller_interface::return_type::OK;
+    }
+
+    // Syncs ROS parameter bounds into the linear and angular motion limiters 
+    void SwerveController::configure_limiters() {
+        limiter_linear_x.set_params(
+            params.linear.x.min_velocity, params.linear.x.max_velocity,
+            params.linear.x.max_acceleration_reverse, params.linear.x.max_acceleration,
+            params.linear.x.max_deceleration, params.linear.x.max_deceleration_reverse,
+            params.linear.x.min_jerk, params.linear.x.max_jerk
+        );
+        limiter_linear_y.set_params(
+            params.linear.y.min_velocity, params.linear.y.max_velocity,
+            params.linear.y.max_acceleration_reverse, params.linear.y.max_acceleration,
+            params.linear.y.max_deceleration, params.linear.y.max_deceleration_reverse,
+            params.linear.y.min_jerk, params.linear.y.max_jerk
+        );
+        limiter_angular.set_params(
+            params.angular.z.min_velocity, params.angular.z.max_velocity,
+            params.angular.z.max_acceleration_reverse, params.angular.z.max_acceleration,
+            params.angular.z.max_deceleration, params.angular.z.max_deceleration_reverse,
+            params.angular.z.min_jerk, params.angular.z.max_jerk
+        );
     }
 }
 
