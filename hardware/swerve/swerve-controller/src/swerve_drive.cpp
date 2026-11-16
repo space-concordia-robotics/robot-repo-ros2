@@ -247,10 +247,18 @@ namespace swerve_controller {
 
     controller_interface::CallbackReturn SwerveController::on_deactivate(const rclcpp_lifecycle::State& previous_state) {
         subscription_active = false;
+        halt();
         modules.clear();
-        // TODO 2026-10-07 (Will Free): reset buffers
-        // TODO 2026-10-07 (Will Free): stop wheels
+        velocity_message.reset();
+        previous_two_commands = {{{Eigen::Vector2d::Zero(), 0.0}, {Eigen::Vector2d::Zero(), 0.0}}};
         return ControllerInterface::on_deactivate(previous_state);
+    }
+
+    void SwerveController::halt() {
+        for (const auto& module : modules) {           
+            std::ignore =
+            module.wheel_velocity.get().set_value(0.0);
+        }
     }
 
     controller_interface::return_type SwerveController::update(const rclcpp::Time& time, const rclcpp::Duration& period) {
