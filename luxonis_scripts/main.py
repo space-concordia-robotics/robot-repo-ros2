@@ -455,6 +455,12 @@ def parse_args():
         choices=["bgr8", "rgb8", "mono8"],
         help="Encoding of the ROS images; mono8 is a third of the size and enough for ArUco (default: bgr8)",
     )
+    parser.add_argument(
+        "--ros-drop",
+        default="host",
+        choices=["host", "camera"],
+        help="Where frames above --ros-fps are dropped; camera keeps them off the PoE link (default: host)",
+    )
     return parser.parse_args()
 
 
@@ -468,7 +474,9 @@ def create_ros_output(args: argparse.Namespace) -> RosOutput:
         sys.exit(f"--ros needs ROS 2 in this Python environment ({e}). "
                  "Source /opt/ros/jazzy/setup.bash and see aruco_image_bridge/README.md.")
     try:
-        config = RosOutputConfig.from_args(args.ros_cameras, args.ros_size, args.ros_fps, args.ros_encoding)
+        config = RosOutputConfig.from_args(
+            args.ros_cameras, args.ros_size, args.ros_fps, args.ros_encoding, args.ros_drop,
+        )
     except ValueError as e:
         sys.exit(f"Invalid ROS option: {e}")
     return RosOutput(RosBridge(), config)
@@ -517,24 +525,52 @@ FFC_SOCKETS = {
 }
 
 
+# Runs on the camera: forwards one frame in every `keep_every` and drops the rest.
+DROP_FRAMES_SCRIPT = """
+keep_every = {keep_every}
+count = 0
+while True:
+    frame = node.inputs["in"].get()
+    if count == 0:
+        node.outputs["out"].send(frame)
+    count = (count + 1) % keep_every
+"""
+
+
 def add_aruco_output(
+    pipeline: dai.Pipeline,
     cam: dai.node.Camera,
     name: str,
     socket: dai.CameraBoardSocket,
     ros_config: RosOutputConfig | None,
     extra_queues: dict[str, Any],
+    camera_fps: float,
 ) -> None:
     """
     Add the ArUco output (--ros) next to a camera's encoder output.
 
-    Reduced size and rate, raw frames that stay on the Jetson. The frames are requested
+    Reduced size, raw frames that stay on the Jetson. The frames are requested
     in the format they are published in (bgr8 by default), so the host does not convert
     them. The small non-blocking queue drops frames if ROS falls behind instead of
     stalling RTSP.
+
+    The output runs at the encoder's ``camera_fps``: a lower per-output fps on the same
+    camera stalls every output after the first frame (seen on the OAK-D PoE). The extra
+    frames are dropped either on the host by ArucoFrameSink (``--ros-drop host``) or on
+    the camera by a Script node (``--ros-drop camera``), which keeps them off the PoE link.
     """
     if ros_config is None or name not in ros_config.cameras:
         return
-    aruco_out = cam.requestOutput(ros_config.size, type=ros_config.frame_type, fps=ros_config.fps)
+    aruco_out = cam.requestOutput(ros_config.size, type=ros_config.frame_type, fps=camera_fps)
+    if ros_config.drop_on == "camera":
+        dropper = pipeline.create(dai.node.Script)
+        dropper.setScript(DROP_FRAMES_SCRIPT.format(keep_every=max(1, round(camera_fps / ros_config.fps))))
+        # A non-blocking one-frame input: if the script falls behind, the camera overwrites
+        # the frame instead of waiting, so the encoder output never stalls.
+        dropper.inputs["in"].setBlocking(False)
+        dropper.inputs["in"].setMaxSize(1)
+        aruco_out.link(dropper.inputs["in"])
+        aruco_out = dropper.outputs["out"]
     extra_queues.setdefault("aruco", {})[name] = (socket, aruco_out.createOutputQueue(maxSize=2, blocking=False))
 
 
@@ -594,7 +630,7 @@ def build_pipeline(pipeline, mode, maxFps, bitrate, visualizer, cameras=None, ro
         # Group "images" matches DepthAI visualizer_encoded.py for compressed video.
         visualizer.addTopic(name, enc.out, "images")
 
-        add_aruco_output(cam, name, socket, ros_config, extra_queues)
+        add_aruco_output(pipeline, cam, name, socket, ros_config, extra_queues, maxFps)
 
     if mode == "oakd_yolo":
         cam_rgb   = pipeline.create(dai.node.Camera).build(dai.CameraBoardSocket.CAM_A, sensorFps=maxFps)

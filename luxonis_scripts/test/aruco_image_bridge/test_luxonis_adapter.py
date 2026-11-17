@@ -158,3 +158,10 @@ def test_defaults_follow_rover_description_names():
 def test_invalid_options_are_rejected(cameras: str, size: str, fps: float, encoding: str):
     with pytest.raises(ValueError, match=r"(?i)ros"):
         RosOutputConfig.from_args(cameras, size, fps, encoding)
+
+
+def test_frames_are_dropped_on_the_host_unless_asked():
+    assert RosOutputConfig.from_args("FRONT", "1280x720", 5).drop_on == "host"
+    assert RosOutputConfig.from_args("FRONT", "1280x720", 5, "mono8", "camera").drop_on == "camera"
+    with pytest.raises(ValueError, match="--ros-drop"):
+        RosOutputConfig.from_args("FRONT", "1280x720", 5, "mono8", "jetson")
