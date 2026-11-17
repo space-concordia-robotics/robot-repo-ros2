@@ -26,6 +26,7 @@
 #include <magic_enum/magic_enum.hpp>
 #include <opencv2/aruco.hpp>
 #include <opencv2/calib3d.hpp>
+#include <opencv2/imgproc.hpp>
 #include <tf2_ros/buffer.h>
 #include <tf2_ros/transform_broadcaster.h>
 #include <tf2_ros/transform_listener.h>
@@ -432,9 +433,21 @@ namespace ros_aruco_opencv {
             if (debug_pub_->get_subscription_count() > 0) {
                 auto debug_cv_ptr = std::make_shared<cv_bridge::CvImage>();
                 debug_cv_ptr->header = cv_ptr->header;
-                debug_cv_ptr->encoding = cv_ptr->encoding;
-                debug_cv_ptr->image = cv_ptr->image.clone();
-                cv::aruco::drawDetectedMarkers(debug_cv_ptr->image, marker_corners, marker_ids);
+                if (cv_ptr->image.channels() == 1) {
+                    // Annotations drawn on a mono8 image come out gray.
+                    debug_cv_ptr->encoding = sensor_msgs::image_encodings::BGR8;
+                    cv::cvtColor(cv_ptr->image, debug_cv_ptr->image, cv::COLOR_GRAY2BGR);
+                } else {
+                    debug_cv_ptr->encoding = cv_ptr->encoding;
+                    debug_cv_ptr->image = cv_ptr->image.clone();
+                }
+                cv::aruco::drawDetectedMarkers(debug_cv_ptr->image, marker_corners, cv::noArray());
+                for (auto i = 0u; i < marker_ids.size(); ++i) {
+                    const auto label = std::to_string(marker_ids.at(i));
+                    const cv::Point origin = cv::Point(marker_corners.at(i).at(0)) + cv::Point(0, -10);
+                    cv::putText(debug_cv_ptr->image, label, origin, cv::FONT_HERSHEY_SIMPLEX, 1.2, cv::Scalar(0, 0, 0), 6);
+                    cv::putText(debug_cv_ptr->image, label, origin, cv::FONT_HERSHEY_SIMPLEX, 1.2, cv::Scalar(0, 255, 255), 2);
+                }
 
                 // rejected markers
                 cv::aruco::drawDetectedMarkers(debug_cv_ptr->image, rejected_corners, cv::noArray(), cv::Scalar(100, 0, 255));

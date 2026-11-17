@@ -46,6 +46,8 @@ FRAME_TYPES: dict[str, dai.ImgFrame.Type] = {
     "mono8": dai.ImgFrame.Type.GRAY8,
 }
 OUTPUT_ENCODINGS = tuple(FRAME_TYPES)
+# Where frames above --ros-fps are dropped: on the Jetson, or on the camera before they cross the link.
+DROP_LOCATIONS = ("host", "camera")
 
 MAX_FPS = 30.0
 _RATE_TOLERANCE = 0.9  # tolerates normal frame-time jitter in the host-side rate guard
@@ -82,6 +84,7 @@ class RosOutputConfig:
     height: int = 720
     fps: float = 5.0
     encoding: str = "bgr8"
+    drop_on: str = "host"
 
     @property
     def size(self) -> tuple[int, int]:
@@ -94,7 +97,14 @@ class RosOutputConfig:
         return FRAME_TYPES[self.encoding]
 
     @classmethod
-    def from_args(cls, cameras_csv: str, size_text: str, fps: float, encoding: str = "bgr8") -> RosOutputConfig:
+    def from_args(
+        cls,
+        cameras_csv: str,
+        size_text: str,
+        fps: float,
+        encoding: str = "bgr8",
+        drop_on: str = "host",
+    ) -> RosOutputConfig:
         """Parse and validate the command-line values; raises ValueError with a readable message."""
         names = tuple(dict.fromkeys(name.strip().upper() for name in cameras_csv.split(",") if name.strip()))
         if not names:
@@ -112,7 +122,9 @@ class RosOutputConfig:
             raise ValueError(f"--ros-fps must be in (0, {MAX_FPS}], got {fps}")
         if encoding not in OUTPUT_ENCODINGS:
             raise ValueError(f"--ros-encoding must be one of {OUTPUT_ENCODINGS}, got '{encoding}'")
-        return cls(names, width, height, float(fps), encoding)
+        if drop_on not in DROP_LOCATIONS:
+            raise ValueError(f"--ros-drop must be one of {DROP_LOCATIONS}, got '{drop_on}'")
+        return cls(names, width, height, float(fps), encoding, drop_on)
 
     def topics(self, camera: str) -> tuple[str, str, str]:
         """(image topic, camera_info topic, frame_id) for ``camera``."""
@@ -163,8 +175,9 @@ class ArucoFrameSink:
         self._publisher = publisher
         self.camera = camera
         self.encoding = encoding
-        # The device already limits the rate; this host-side guard only matters if a
-        # firmware ignores the per-output fps.
+        # The camera output runs at the encoder rate (see main.add_aruco_output). With
+        # --ros-drop host this guard limits publishing to the requested fps; with
+        # --ros-drop camera the frames already arrive at about that rate.
         self._min_period = _RATE_TOLERANCE / fps
         self._clock_now = clock_now
         self._ros_now_ns = ros_now_ns

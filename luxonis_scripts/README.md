@@ -2,18 +2,18 @@
 
 We have two Luxonis cameras, and OAK-FFC-4P (4 directional cameras) and an OAK-D-PRO (depth camera)
 
-We are running [this depth model on the PRO](https://models.luxonis.com/luxonis/crestereo/4729a8bd-54df-467a-92ca-a8a5e70b52ab) and a custom trained YOLO model for the object detection
+The `oakd_yolo` mode runs a custom-trained YOLO model (`best_190_Epoch.rvc2.tar.xz`) with on-device stereo depth for object detection.
 
 ## Setup
 
-The current setup requires depthAI v3, which can be installed with:
+The current setup requires DepthAI v3 (`requirements.txt` pins `depthai==3.6.1`) and python3 (`sudo apt install python3`). On the Jetson, PyGObject is built from source and needs some apt packages first; see [Camera virtualenv](aruco_image_bridge/README.md#setup-on-the-jetson).
 
-**requires python3 (can be installed with `sudo apt install python3`)**
 ```
-source venv/bin/activate (use activate.fish if using a fish terminal)
+python3 -m venv venv
+source venv/bin/activate   # venv/bin/activate.fish in fish
 
 # Installs library and requirements
-pip install requirements.txt
+pip install -r requirements.txt
 ```
 
 ### Set usb rules
@@ -38,17 +38,23 @@ IPs* OAK-D Pro `10.240.0.67`, FFC PoE `10.240.0.69`.
 |------|---------|-----|------------|
 | ffc_all | 2 Mbps | 30 | `/FRONT` `/RIGHT` `/LEFT` `/BACK` |
 | ffc_front / ffc_back / ffc_right / ffc_left | 7 Mbps | 30 | one of the above |
+| ffc (REPL only: `mode ffc front,right`) | 4 Mbps | 30 | the chosen cameras |
 | oakd_rgb | 7 Mbps | 30 | `/RGB` |
-| oakd_yolo | 4 Mbps | 15 | `/RGB` + terminal `detections` |
-| all_cams | FFC 2 Mbps + RGB 7 Mbps | 30 | all five paths |
+| oakd_yolo | 4 Mbps | 15 | `/RGB` + REPL `detections` |
+
+The FFC and the OAK-D run in separate sessions, so one FFC mode and one OAK-D mode can run at the same time (start the second with `mode` at the prompt).
 
 ## ROS image output (`--ros`)
 
 `--ros` also publishes a low-rate raw image and `CameraInfo` for the ArUco tracker (see `aruco_image_bridge/`). It is off by default; without it `main.py` does not import ROS.
 
+For the full procedure (camera, tracker, viewing detections) and troubleshooting, see [Running ArUco detection on the rover](aruco_image_bridge/README.md#running-aruco-detection-on-the-rover). On the PoE cameras use `--ros-encoding mono8`; raw `bgr8` frames use most of the link.
+
 ```
-python3 main.py --mode ffc_front -d [MXID or IP] --ros
+python3 main.py --mode oakd_rgb -d 10.240.0.67 --ros --ros-cameras RGB --ros-encoding mono8 --ros-size 640x480
 ```
+
+`--ros` needs ROS 2 sourced (`source /opt/ros/jazzy/setup.bash`) in the same terminal as the virtualenv.
 
 | Option | Default | Meaning |
 |---|---|---|
@@ -57,6 +63,7 @@ python3 main.py --mode ffc_front -d [MXID or IP] --ros
 | `--ros-fps` | `5` | Output rate |
 | `--ros-size` | `1280x720` | Output resolution |
 | `--ros-encoding` | `bgr8` | `bgr8`, `rgb8` or `mono8` (`mono8` is a third of the size) |
+| `--ros-drop` | `host` | Where frames above `--ros-fps` are dropped: `host` (Jetson) or `camera` (keeps them off the PoE link; not yet validated on the rover) |
 
 | Camera | Image / CameraInfo topics | `frame_id` |
 |---|---|---|
@@ -68,27 +75,30 @@ python3 main.py --mode ffc_front -d [MXID or IP] --ros
 
 ## REPL commands
 
-To stop a pipeline run `stop` in the same terminal that ran it.
+`main.py` reads commands at its `>` prompt:
 
-To start a new pipeline, first run `stop`, then run `mode [mode_name]` to switch to the desired mode.
-
-To check bandwidth run `bw`
-To continuously check bandwidth run `watch [interval(s)]`
-
-To check status run `status`
+| Command | What it does |
+|---|---|
+| `mode <name> [device]` | Start a mode; restarts that camera's session if it is already running |
+| `mode ffc <cams> [device]` | FFC with a chosen set of cameras, e.g. `front,right` |
+| `stop [ffc\|oakd]` | Stop one session, or both without an argument |
+| `status` | Show which mode each session runs |
+| `bw` | Bandwidth and FPS per stream; `no traffic` means the camera stopped |
+| `watch [interval]` | `bw` repeatedly (Ctrl+C to stop) |
+| `detections` / `watch_detections [interval]` | Latest YOLO detections (`oakd_yolo` only) |
+| `panorama [filename]` | Stitch a panorama from the running FFC streams |
+| `help`, `quit` | `quit` (or `exit`, `q`) shuts down |
 
 ### Panorama
 
-`panorama [filename]` works by **stopping all running pipelines** and
-spawning `panorama.py` as a separate process. That subprocess opens
-the FFC directly to grab one BGR frame per camera (FRONT/RIGHT/LEFT/BACK)
-and the OAK-D directly for one IMU packet, then stitches everything
-with a cardinal-direction compass overlay.
+`panorama [filename]` needs all four FFC cameras streaming (`mode ffc_all`).
+It grabs one frame per camera from the local RTSP streams with `ffmpeg`,
+stitches them with a cardinal-direction compass overlay, and saves the
+result in `panoramas/`. The streams keep running. The REPL command does
+not read the OAK-D IMU, so the compass uses `yaw=0`.
 
-After the panorama finishes, the streams stay stopped. Resume with
-`mode ffc_all` (or whatever mode you want).
-
-You can also run the panorama capture by itself:
+To get the compass from the OAK-D IMU, stop the streams and run the
+capture by itself; it opens both cameras directly:
 
 ```
 python3 panorama.py                              # uses default MxIds
@@ -97,21 +107,20 @@ python3 panorama.py --ffc 10.240.0.69 \
                     --filename garden_north
 ```
 
-If the OAK-D IMU isn't reachable the panorama still builds with `yaw=0`.
+If the OAK-D IMU isn't reachable (or with `--no-imu`) the panorama still builds with `yaw=0`.
 
 
 ## main.py examples (To launch all cameras)
 
-  python3 main.py --mode oakd_rgb -d 10.240.0.50
+  python3 main.py --mode oakd_rgb -d 10.240.0.67
 ```
-  > mode ffc front,right                   # OAK keeps running; FFC starts with 2 cams
-  > mode ffc front,right,left              # FFC restarts with 3 cams; OAK untouched
-  > mode ffc front 10.240.0.40             # FFC = front only, on explicit device
-  > mode ffc_all                            # FFC restarts with all 4
-  > stop ffc                               # OAK keeps running
-  > stop                                   # stops both
+  > mode ffc front,right 10.240.0.69      # OAK keeps running; FFC starts with 2 cams
+  > mode ffc front,right,left 10.240.0.69 # FFC restarts with 3 cams; OAK untouched
+  > mode ffc_all 10.240.0.69              # FFC restarts with all 4
+  > stop ffc                              # OAK keeps running
+  > stop                                  # stops both
 ```
-  Valid ffc cameras: front, right, left, back (case-insensitive).
+  Valid ffc cameras: front, right, left, back (case-insensitive). Without a device argument, `mode` uses `-d` if it was given, even for the other camera, otherwise the built-in MxId for that camera. So when `main.py` was started with `-d`, give the device explicitly when switching to the other camera, as above.
 
 ## launch_cameras.sh examples
 

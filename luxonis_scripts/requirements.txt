@@ -5,3 +5,5 @@ numpy>=1.22,<2
 opencv-contrib-python-headless
 pgi==0.0.11.2
 PyGObject==3.56.2
+# rclpy imports yaml (needed by --ros); the apt python3-yaml is not visible inside the venv.
+PyYAML
