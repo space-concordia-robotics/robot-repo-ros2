@@ -102,6 +102,7 @@ swerve_controller:
     type: bool
     default_value: true
     description: "Publish transformation between ``odom_frame_id`` and ``base_frame_id``."
+
   # TODO 2026-10-14 (Will Free): use this
   cmd_vel_timeout:
     type: double

@@ -6,7 +6,7 @@
 
 ## Control
 
-- [ ] Implement command velocity timeout
+- [x] Implement command velocity timeout
 - [ ] Per-wheel velocity limits
     - When limiting the velocity of one wheel, all the other wheels must be limited by the same factor.
     - Doing this might be sub-optimal, so maybe just limits on input velocity is sufficient?
