@@ -44,3 +44,6 @@ target_link_libraries(
         z
         $<BUILD_INTERFACE:mbgl-vendor-sqlite>
 )
+
+# temporary workaround for maplibre/maplibre-native#5072
+target_compile_definitions(mbgl-harfbuzz PRIVATE HB_NO_PRAGMA_GCC_DIAGNOSTIC_ERROR)
