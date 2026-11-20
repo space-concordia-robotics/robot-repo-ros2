@@ -1,7 +1,6 @@
 #include "foc2-gui/widgets/map/layers/aruco_detections_layer.hpp"
 
 #include <fmt/format.h>
-#include <mln/style/conversion/stringify.hpp>
 #include <mln/style/expression/coalesce.hpp>
 #include <mln/style/expression/dsl.hpp>
 #include <mln/style/layers/symbol_layer.hpp>
