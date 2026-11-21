@@ -6,7 +6,7 @@ Checks:
   - -bugprone-narrowing-conversions
   - -bugprone-throwing-static-initialization # AllowedTypes does not seem to work
   - -clang-diagnostic-*
-  - -clang-analyzer-*
+  - -clang-analyzer-* # aliases
   - concurrency-*
   - cppcoreguidelines-*,
   - -cppcoreguidelines-avoid-magic-numbers # alias
@@ -14,11 +14,21 @@ Checks:
   - -cppcoreguidelines-pro-bounds-array-to-pointer-decay
   - -cppcoreguidelines-pro-type-vararg
   - -cppcoreguidelines-pro-type-reinterpret-cast
+  - google-*
+  - -google-build-using-namespace
+  - -google-default-arguments
+  - -google-readability-braces-around-statements # alias
+  - -google-readability-namespace-comments # alias
+  - -google-readability-todo # does not seem to work
+  - linuxkernel-must-check-errs
+  - misc-*
+  - -misc-no-recursion
   - modernize-*,
   - -modernize-use-trailing-return-type
   - openmp-*
   - performance-*
   - portability-*
+  - -portability-avoid-pragma-once # I like pragma once -Will Free
   # realistically, I'd prefer if readability-magic-numbers was enabled, however I also don't want to manually specify numbers like 0-128 or whatever
   - readability-*
   - -readability-magic-numbers
@@ -38,24 +48,58 @@ ImplementationFileExtensions:
   - cc
   - cpp
   - cxx
+SystemHeaders: false
 HeaderFilterRegex: 'src/|include/'
 ExcludeHeaderFilterRegex: ''
 FormatStyle: file
+
 CheckOptions:
   cppcoreguidelines-pro-bounds-avoid-unchecked-container-access.ExcludeClasses: >-
     ::std::map;::std::unordered_map;::std::flat_map;
     ::YAML::Node;
     ::cv::Vec.*;
-    ::tf2::.*
+    ::tf2::.*;
+    ::Eigen::.*;
   cppcoreguidelines-pro-type-member-init.UseAssignment: true
   cppcoreguidelines-pro-bounds-avoid-unchecked-container-access.FixMode: at
+
   readability-function-cognitive-complexity.Threshold: 32
   readability-function-cognitive-complexity.DescribeBasicIncrements: true
   readability-function-cognitive-complexity.IgnoreMacros: true
-  readability-uppercase-literal-suffix.NewSuffixes: 'L;uL;u;LL;uLL'
+
   readability-identifier-length.MinimumVariableNameLength: 2
-  readability-identifier-length.IgnoredVariableNames: "[xy]"
-  readability-identifier-length.MinimumParameterNameLength: 2
-  readability-identifier-length.MinimumExceptionNameLength: 1
-SystemHeaders: false
+  readability-identifier-length.IgnoredVariableNames: "[xyi]"
+  readability-identifier-length.MinimumBindingNameLength: 2
+  readability-identifier-length.IgnoredBindingNames: "^[_]$"
+  readability-identifier-length.MinimumParameterNameLength: 3
+  readability-identifier-length.IgnoredParameterNames: "^[xyz]$"
+  readability-identifier-length.MinimumLoopCounterNameLength: 2
+  readability-identifier-length.IgnoredLoopCounterNames: "^[ijkxyz_]$"
+  readability-identifier-length.MinimumExceptionNameLength: 2
+  readability-identifier-length.IgnoredExceptionVariableNames: "^[e]$"
+
+  readability-identifier-naming.NamespaceCase: lower_case
+  readability-identifier-naming.ClassCase: CamelCase
+  readability-identifier-naming.StructCase: CamelCase
+  readability-identifier-naming.EnumCase: CamelCase
+  readability-identifier-naming.EnumConstantCase: UPPER_CASE
+  readability-identifier-naming.UnionCase: CamelCase
+  readability-identifier-naming.TypeAliasCase: CamelCase
+  readability-identifier-naming.TypedefCase: CamelCase
+  readability-identifier-naming.ConceptCase: CamelCase
+  readability-identifier-naming.MethodCase: camelBack
+  readability-identifier-naming.VirtualMethodCase: camelBack
+  readability-identifier-naming.ParameterCase: lower_case
+  readability-identifier-naming.MemberCase: lower_case
+  readability-identifier-naming.FunctionCase: lower_case
+  readability-identifier-naming.GlobalFunctionCase: lower_case
+  readability-identifier-naming.LocalVariableCase: lower_case
+  readability-identifier-naming.StaticConstantCase: UPPER_CASE
+  readability-identifier-naming.ClassConstexprCase: UPPER_CASE
+  readability-identifier-naming.GlobalConstexprVariableCase: UPPER_CASE
+  readability-identifier-naming.StaticConstexprVariableCase: UPPER_CASE
+  readability-identifier-naming.MacroDefinitionCase: UPPER_CASE
+  readability-identifier-naming.TemplateParameterCase: CamelCase
+
+  readability-uppercase-literal-suffix.NewSuffixes: 'L;uL;u;LL;uLL'
 ...
