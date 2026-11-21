@@ -29,7 +29,7 @@ find_dependencies(
 
 ## COMPILE
 
-scrb_add_library(${PROJECT_NAME} SHARED
+scrb_add_library(${PROJECT_NAME} NO_SANITIZERS SHARED
         src/sil_interface.cpp
         src/sil_controller.cpp
 )
