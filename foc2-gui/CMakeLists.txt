@@ -88,12 +88,12 @@ set(API_TWEAKS_FILE "${CMAKE_CURRENT_BINARY_DIR}/api-tweaks.txt")
 file(WRITE "${API_TWEAKS_FILE}" "
 # these api tweaks can be removed when updating to gstreamer >=1.28.0. (aka updating to ubuntu 26.04 or later)
 # they're only necessary, because I don't want to force people to compile gstreamer from source.
-type	gst_calculate_linear_regression			xy		gpointer
-type	gst_calculate_linear_regression			temp		gpointer
-type	gst_util_simplify_fraction			numerator		gpointer
-type	gst_util_simplify_fraction			denominator		gpointer
+array	gst_calculate_linear_regression			xy
+array	gst_calculate_linear_regression			temp
+array	gst_util_simplify_fraction			numerator
+array	gst_util_simplify_fraction			denominator
 type	gst_caps_features_set_parent_refcount			refcount		gpointer
-type	gst_meta_deserialize			data		gpointer
+array	gst_meta_deserialize			data
 type	gst_iterator_new			master_cookie		gpointer
 type	gst_structure_set_parent_refcount			refcount		gpointer
 

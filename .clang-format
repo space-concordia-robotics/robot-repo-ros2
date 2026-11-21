@@ -40,7 +40,7 @@ BraceWrapping:
   SplitEmptyNamespace: false
 BreakBeforeBraces: Custom
 BreakBeforeTernaryOperators: true
-BreakConstructorInitializers: BeforeColon
+BreakConstructorInitializers: AfterComma
 BreakConstructorInitializersBeforeComma: false
 ColumnLimit: 160
 CompactNamespaces: false
