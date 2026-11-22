@@ -1,8 +1,9 @@
 from typing import Any
 
-from launch_util.events import When
+from launch_util.action_scope import ActionScope
+from launch_util.composable import ComposableContainerContext
 from launch_util.gazebo import BridgeDirection, GazeboBridge, GazeboType, ImageBridgeQoS
-from launch_util.group import Group
+from launch_util.group import ActionGroup
 from launch_util.simple_launcher import SimpleLauncher
 from launch_util.substitutions import (
     NormalizedSubstitutionsValueTypeDict,
@@ -17,17 +18,18 @@ from launch_util.substitutions import (
 from launch_util.util import flatten_substitutions
 
 __all__ = [
+    "ActionGroup",
+    "ActionScope",
     "BridgeDirection",
+    "ComposableContainerContext",
     "GazeboBridge",
     "GazeboType",
-    "Group",
     "ImageBridgeQoS",
     "NormalizedSubstitutionsValueTypeDict",
     "OpaqueFunctionSubstitution",
     "SimpleLauncher",
     "SomeSubstitutionsValueTypeDict",
     "Templated",
-    "When",
     "WriteTempFile",
     "Xacro",
     "flatten_substitutions",
@@ -57,7 +59,8 @@ def init_logging(enable: bool):
         style = "{"
     elif isinstance(formatter_style, logging.StringTemplateStyle):
         style = "$"
-    elif isinstance(formatter_style, logging.PercentStyle):
+    else:
+        assert isinstance(formatter_style, logging.PercentStyle)
         style = "%"
 
     colored_formatter = ColoredFormatter(fmt=f"{{log_color}}{fmt}", style=style)
