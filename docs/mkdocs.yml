@@ -2,6 +2,45 @@
 site_name: SCRB Software Documentation
 site_description: Space Concordia Robotics software documentation website
 site_url: https://space-concordia-robotics.github.io
+site_author: Space Concordia Robotics Contributors
+
+repo_url: https://github.com/space-concordia-robotics/robot-repo-ros2
+repo_name: scrb/robot-repo-ros2
+edit_uri_template: 'edit/feature/docs-site/docs/docs/{path}'
+
+docs_dir: 'docs'
+
+watch:
+  - overrides
+
+draft_docs: |
+  _*
+
+validation:
+  anchors: warn
+  absolute_links: warn # consider relative_to_docs? (allows absolute links relative to docs_dir)
+  omitted_files: warn
+  unrecognized_links: warn
+
+extra:
+  # TODO 2026-03-14 (Will Free): add social links
+  social: { }
+  generator: true # preserve generator name, as it's nice to know what a site was made with
+  annotate:
+    text: [ '*' ]
+
+# TODO 2026-03-31 (Will Free): move to MathJax instead of KaTeX?
+extra_javascript:
+  - assets/js/katex.js
+  - https://unpkg.com/katex@0/dist/katex.min.js
+  - https://unpkg.com/katex@0/dist/contrib/auto-render.min.js
+  #- assets/js/mathjax.js
+  #- https://unpkg.com/mathjax@4/tex-mml-chtml.js
+
+extra_css:
+  - assets/css/extra.css
+  - assets/css/link-embeds.css
+  - https://unpkg.com/katex@0/dist/katex.min.css
 
 plugins:
   # TODO 2026-03-14 (Will Free): add glightbox? see mkdocs-material documentation reference for "images"
@@ -94,10 +133,16 @@ theme:
         icon: material/brightness-4
         name: Switch to system preference
 
+  icon:
+    repo: simple/github
+
   features:
     #- content.code.annotate # annotations are enabled on individual code blocks that need it
     - content.code.copy
     - content.code.select
+    # TODO 2026-11-21 (Will Free): consider enabling these?
+    #- content.action.edit
+    #- content.action.view
     - content.footnote.tooltips
     - content.tabs.link
     - content.tooltips
@@ -186,26 +231,3 @@ markdown_extensions:
         kwds:
           case: lower
   - tables
-
-watch:
-  - overrides
-
-extra:
-  # TODO 2026-03-14 (Will Free): add social links
-  social: { }
-  generator: true # preserve generator name, as it's nice to know what a site was made with
-  annotate:
-    text: [ '*' ]
-
-# TODO: move to MathJax instead of KaTeX?
-extra_javascript:
-  - assets/js/katex.js
-  - https://unpkg.com/katex@0/dist/katex.min.js
-  - https://unpkg.com/katex@0/dist/contrib/auto-render.min.js
-  #- assets/js/mathjax.js
-  #- https://unpkg.com/mathjax@4/tex-mml-chtml.js
-
-extra_css:
-  - assets/css/extra.css
-  - assets/css/link-embeds.css
-  - https://unpkg.com/katex@0/dist/katex.min.css
