@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import argparse
 import os
 import subprocess
@@ -5,12 +7,17 @@ import tempfile
 import sys
 import threading
 import time
+from typing import TYPE_CHECKING, Any
 
 import cv2
 import depthai as dai
 
 import panorama
 from rtsp_server import RtspServer
+
+if TYPE_CHECKING:
+    # Type hints only: at runtime the bridge is imported by create_ros_output(), so RTSP-only use needs no ROS.
+    from aruco_image_bridge.luxonis_adapter import ArucoFrameSink, RosOutput, RosOutputConfig
 
 PANORAMA_DIR = os.path.join(os.path.dirname(__file__), "panoramas")
 RTSP_PORT = 8554
@@ -72,8 +79,9 @@ class StreamMetrics:
 
 
 class PipelineSession:
-    def __init__(self, server, metrics, visualizer):
+    def __init__(self, server, metrics, visualizer, ros_output: RosOutput | None = None):
         self._server = server
+        self._ros_output = ros_output  # aruco_image_bridge.luxonis_adapter.RosOutput, or None
         self._metrics = metrics
         self._visualizer = visualizer
         self._lock = threading.Lock()
@@ -135,6 +143,17 @@ class PipelineSession:
         with self._rgb_lock:
             return None if self._latest_rgb is None else self._latest_rgb
 
+    def _aruco_sinks(self, extra_queues: dict[str, Any], mode: str, device: dai.Device) -> list[tuple[ArucoFrameSink, dai.MessageQueue]]:
+        """One ROS sink per ArUco output queue requested with --ros; empty without --ros."""
+        if self._ros_output is None:
+            return []
+        aruco = extra_queues.get("aruco", {})
+        if not aruco:
+            self._ros_output.bridge.logger.warning(
+                f"--ros is set, but mode '{mode}' includes none of {','.join(self._ros_output.config.cameras)}; nothing is published from it",  # noqa: G004
+            )
+        return [(self._ros_output.sink(name, socket, device.readCalibration), queue) for name, (socket, queue) in aruco.items()]
+
     def _worker(self, mode, device_id, cameras=None):
         try:
             profile = profile_for(mode)
@@ -151,12 +170,17 @@ class PipelineSession:
                     pass
 
             with dai.Pipeline(device) as pipeline:
-                bitstream_queues, extra_queues = build_pipeline(pipeline, mode, fps, bitrate, self._visualizer, cameras)
+                ros_config = self._ros_output.config if self._ros_output else None
+                bitstream_queues, extra_queues = build_pipeline(
+                    pipeline, mode, fps, bitrate, self._visualizer, cameras, ros_config,
+                )
                 pipeline.start()
                 self._visualizer.registerPipeline(pipeline)
                 self._ready_event.set()
 
                 detection_queue = extra_queues.get("detections")
+                # Low-rate raw frames for the ArUco tracker (only with --ros)
+                aruco_sinks = self._aruco_sinks(extra_queues, mode, device)
 
                 while pipeline.isRunning() and not self._stop_event.is_set():
                     for name, q in bitstream_queues.items():
@@ -167,6 +191,7 @@ class PipelineSession:
                     if detection_queue is not None and detection_queue.has():
                         with self._detection_lock:
                             self._latest_detections = detection_queue.get()
+                    forward_aruco_frames(aruco_sinks)
                     self._visualizer.waitKey(1)
         except Exception as e:
             self._error = str(e)
@@ -177,14 +202,15 @@ class PipelineSession:
 
 def main():
     args = parse_args()
+    ros_output = create_ros_output(args) if args.ros else None
 
     server = RtspServer(stream_names=STREAM_NAMES)
     metrics = StreamMetrics()
     viz_ffc = dai.RemoteConnection(webSocketPort=8765, httpPort=8082)
     viz_oak = dai.RemoteConnection(webSocketPort=8766, httpPort=8083)
     sessions = {
-        "ffc": PipelineSession(server, metrics, viz_ffc),
-        "oakd": PipelineSession(server, metrics, viz_oak),
+        "ffc": PipelineSession(server, metrics, viz_ffc, ros_output),
+        "oakd": PipelineSession(server, metrics, viz_oak, ros_output),
     }
 
     def session_for(mode):
@@ -316,6 +342,8 @@ def main():
         print("\nShutting down.")
         for s in sessions.values():
             s.stop()
+        if ros_output is not None:
+            ros_output.shutdown()
         subprocess.Popen(["pkill", "-f", "run_cameras.sh"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
     print("\nShutting down.")
@@ -400,7 +428,50 @@ def parse_args():
         default=None,
         help="OAK-D MxId or IP used by the panorama subprocess for IMU (default: OAKD_MXID)"
     )
+    parser.add_argument(
+        "--ros",
+        action="store_true",
+        help="Also publish low-rate raw frames + CameraInfo to ROS 2 for the ArUco tracker",
+    )
+    parser.add_argument(
+        "--ros-cameras",
+        default="FRONT",
+        help="Comma-separated cameras to publish with --ros: FRONT,RIGHT,LEFT,BACK,RGB (default: FRONT)",
+    )
+    parser.add_argument(
+        "--ros-fps",
+        type=float,
+        default=5.0,
+        help="Frame rate of the ROS image topics (default: 5)",
+    )
+    parser.add_argument(
+        "--ros-size",
+        default="1280x720",
+        help="WIDTHxHEIGHT of the ROS images (default: 1280x720)",
+    )
+    parser.add_argument(
+        "--ros-encoding",
+        default="bgr8",
+        choices=["bgr8", "rgb8", "mono8"],
+        help="Encoding of the ROS images; mono8 is a third of the size and enough for ArUco (default: bgr8)",
+    )
     return parser.parse_args()
+
+
+def create_ros_output(args: argparse.Namespace) -> RosOutput:
+    """Import ROS only when --ros is used, so RTSP-only setups need no ROS install."""
+    try:
+        # Imported here, not at the top, so main.py without --ros runs without ROS installed.
+        from aruco_image_bridge.luxonis_adapter import RosOutput, RosOutputConfig  # noqa: PLC0415
+        from aruco_image_bridge.ros_bridge import RosBridge  # noqa: PLC0415
+    except ImportError as e:
+        sys.exit(f"--ros needs ROS 2 in this Python environment ({e}). "
+                 "Source /opt/ros/jazzy/setup.bash and see aruco_image_bridge/README.md.")
+    try:
+        config = RosOutputConfig.from_args(args.ros_cameras, args.ros_size, args.ros_fps, args.ros_encoding)
+    except ValueError as e:
+        sys.exit(f"Invalid ROS option: {e}")
+    return RosOutput(RosBridge(), config)
 
 
 def run_panorama_subprocess(sessions, filename, ffc_device, oakd_device):
@@ -446,7 +517,37 @@ FFC_SOCKETS = {
 }
 
 
-def build_pipeline(pipeline, mode, maxFps, bitrate, visualizer, cameras=None):
+def add_aruco_output(
+    cam: dai.node.Camera,
+    name: str,
+    socket: dai.CameraBoardSocket,
+    ros_config: RosOutputConfig | None,
+    extra_queues: dict[str, Any],
+) -> None:
+    """
+    Add the ArUco output (--ros) next to a camera's encoder output.
+
+    Reduced size and rate, raw frames that stay on the Jetson. The frames are requested
+    in the format they are published in (bgr8 by default), so the host does not convert
+    them. The small non-blocking queue drops frames if ROS falls behind instead of
+    stalling RTSP.
+    """
+    if ros_config is None or name not in ros_config.cameras:
+        return
+    aruco_out = cam.requestOutput(ros_config.size, type=ros_config.frame_type, fps=ros_config.fps)
+    extra_queues.setdefault("aruco", {})[name] = (socket, aruco_out.createOutputQueue(maxSize=2, blocking=False))
+
+
+def forward_aruco_frames(aruco_sinks: list[tuple[ArucoFrameSink, dai.MessageQueue]]) -> None:
+    """Hand any waiting ArUco frame to its ROS sink (non-blocking)."""
+    for sink, queue in aruco_sinks:
+        if queue.has():
+            frame = queue.get()
+            if isinstance(frame, dai.ImgFrame):
+                sink.handle(frame)
+
+
+def build_pipeline(pipeline, mode, maxFps, bitrate, visualizer, cameras=None, ros_config: RosOutputConfig | None = None):
     sockets = []
     if mode == "ffc":
         if not cameras:
@@ -492,6 +593,8 @@ def build_pipeline(pipeline, mode, maxFps, bitrate, visualizer, cameras=None):
         # Same H.264 bitstream as RTSP — no second encoder, far less link load than MJPEG.
         # Group "images" matches DepthAI visualizer_encoded.py for compressed video.
         visualizer.addTopic(name, enc.out, "images")
+
+        add_aruco_output(cam, name, socket, ros_config, extra_queues)
 
     if mode == "oakd_yolo":
         cam_rgb   = pipeline.create(dai.node.Camera).build(dai.CameraBoardSocket.CAM_A, sensorFps=maxFps)
