@@ -6,7 +6,7 @@ site_author: Space Concordia Robotics Contributors
 
 repo_url: https://github.com/space-concordia-robotics/robot-repo-ros2
 repo_name: scrb/robot-repo-ros2
-edit_uri_template: 'edit/feature/docs-site/docs/pages/{path}'
+edit_uri_template: 'edit/main/docs/pages/{path}'
 
 docs_dir: 'pages'
 
