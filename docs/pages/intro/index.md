@@ -10,7 +10,7 @@ Please read the [Onboarding](./onboarding.md) page to get a sense of the overall
 
 ## Intro Task
 
-For your intro task, please read the [Intro Task](./intro-task.md) page.
+For your intro task, please read the [Intro Task](./_intro-task.md) page.
 
 ## Post-Intro Task
 
