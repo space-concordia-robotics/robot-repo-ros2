@@ -7,12 +7,16 @@
 #include <implot.h>
 #include <implot3d.h>
 #include <utility>
+#include <SDL3/SDL_error.h>
+#include <SDL3/SDL_events.h>
+#include <SDL3/SDL_init.h>
+#include <SDL3/SDL_opengl.h>
 #include <backends/imgui_impl_opengl3.h>
 #include <backends/imgui_impl_sdl3.h>
-#include <SDL3/SDL.h>
-#include <SDL3/SDL_opengl.h>
 #include <tf2_ros/buffer.hpp>
 #include <tf2_ros/transform_listener.hpp>
+
+#include "foc2-gui/im_application_state.hpp"
 
 // Based on Dear ImGui example "Dear ImGui: standalone example application for
 // GLFW + OpenGL 3, using programmable pipeline"
@@ -25,11 +29,10 @@
 ImApplication::ImApplication(const std::string& node_name, std::string title)
     : Node(node_name),
       logger(this->get_logger()),
-      gl_context(nullptr),
-      window(nullptr),
       title(std::move(title)) {
     tf_buffer = std::make_unique<tf2_ros::Buffer>(this->get_clock());
     tf_listener = std::make_unique<tf2_ros::TransformListener>(*tf_buffer, this);
+    state = std::make_unique<ImApplicationState>();
 }
 
 ImApplication::~ImApplication() = default;
@@ -42,10 +45,10 @@ int ImApplication::run() {
 
     constexpr auto target_frame_duration = 1000.0ms / 60.0;
 
-    while (rclcpp::ok() && !done) {
-        std::this_thread::sleep_until(last_frame + target_frame_duration);
+    while (rclcpp::ok() && !state->done) {
+        std::this_thread::sleep_until(state->last_frame + target_frame_duration);
 
-        last_frame = steady_clock::now();
+        state->last_frame = steady_clock::now();
 
         frame();
         onFrame();
@@ -73,17 +76,17 @@ int ImApplication::init() {
     }
 
     // Create window with graphics context
-    window = SDL_CreateWindow(title.c_str(), 1280, 720, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_MAXIMIZED);
-    if (!window) {
+    state->window = SDL_CreateWindow(title.c_str(), 1280, 720, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_MAXIMIZED);
+    if (state->window == nullptr) {
         logger.error("Error: SDL_CreateWindow(): {}", SDL_GetError());
         return -1;
     }
 
-    gl_context = SDL_GL_CreateContext(window);
-    SDL_GL_MakeCurrent(window, gl_context);
+    state->gl_context = SDL_GL_CreateContext(state->window);
+    SDL_GL_MakeCurrent(state->window, state->gl_context);
     SDL_GL_SetSwapInterval(1); // Enable vsync
 
-    SDL_ShowWindow(window);
+    SDL_ShowWindow(state->window);
 
     onWindow();
 
@@ -110,7 +113,7 @@ int ImApplication::init() {
     // ImGui::StyleColorsLight();
 
     // Setup Platform/Renderer backends
-    ImGui_ImplSDL3_InitForOpenGL(window, gl_context);
+    ImGui_ImplSDL3_InitForOpenGL(state->window, state->gl_context);
     ImGui_ImplOpenGL3_Init(nullptr);
 
     // Setup Font
@@ -134,16 +137,16 @@ int ImApplication::init() {
     return 0;
 }
 
-void ImApplication::frame() {
+void ImApplication::frame() const {
     // Poll and handle events (inputs, window resize, etc.)
     SDL_Event event;
     if (SDL_WaitEventTimeout(&event, 1)) {
         do {
             if (event.type == SDL_EVENT_QUIT)
-                done = true;
+                state->done = true;
 
-            if (event.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED && event.window.windowID == SDL_GetWindowID(window))
-                done = true;
+            if (event.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED && event.window.windowID == SDL_GetWindowID(state->window))
+                state->done = true;
 
             ImGui_ImplSDL3_ProcessEvent(&event);
         } while (SDL_PollEvent(&event));
@@ -161,7 +164,7 @@ void ImApplication::render() const {
     glClear(GL_COLOR_BUFFER_BIT);
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-    if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
+    if ((ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable) != 0) {
         // backup current window & context to restore them later
         const auto previous_window = SDL_GL_GetCurrentWindow();
         const auto previous_context = SDL_GL_GetCurrentContext();
@@ -172,7 +175,7 @@ void ImApplication::render() const {
         SDL_GL_MakeCurrent(previous_window, previous_context);
     }
 
-    SDL_GL_SwapWindow(window);
+    SDL_GL_SwapWindow(state->window);
 }
 
 void ImApplication::quit() const {
@@ -183,7 +186,7 @@ void ImApplication::quit() const {
     ImPlot::DestroyContext();
     ImGui::DestroyContext();
 
-    SDL_GL_DestroyContext(gl_context);
-    SDL_DestroyWindow(window);
+    SDL_GL_DestroyContext(state->gl_context);
+    SDL_DestroyWindow(state->window);
     SDL_Quit();
 }
