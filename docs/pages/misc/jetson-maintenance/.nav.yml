@@ -1,0 +1,5 @@
+nav:
+  - setup.md
+  - backup-process.md
+  - periodic-maintenance.md
+  - "*"
