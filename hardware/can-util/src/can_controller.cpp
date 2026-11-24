@@ -16,6 +16,7 @@ namespace can_util {
 
     CANController::~CANController() {
         readThread.join();
+        // TODO 2026-05-26 (Will Free): clean up & close socket
     }
 
     bool CANController::initialize() {
