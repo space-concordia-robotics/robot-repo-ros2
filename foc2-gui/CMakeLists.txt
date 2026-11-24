@@ -1,15 +1,27 @@
 cmake_minimum_required(VERSION 3.22)
 project(foc2_gui)
 
-if (NOT CMAKE_CXX_STANDARD)
-    set(CMAKE_CXX_STANDARD 23)
+if (POLICY CMP0135)
+    cmake_policy(SET CMP0135 NEW)
 endif ()
+
+find_package(scrb_cmake_utils REQUIRED)
 
 ## DEPENDENCIES
 
 include(external/dependencies.cmake)
 
-set(DEPENDENCIES
+# Geographiclib installs FindGeographicLib.cmake to this non-standard location on Ubuntu
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "/usr/share/cmake/geographiclib/")
+
+CPM()
+
+CPMAddFmt()
+CPMAddMagicEnum()
+
+find_package(ament_cmake REQUIRED)
+
+find_dependencies(
         rclcpp
         rclcpp_components
         rclcpp_action
@@ -28,6 +40,7 @@ set(DEPENDENCIES
         GeographicLib
         magic_enum
         CURL
+        "Boost REQUIRED CONFIG COMPONENTS"
 
         geometry_msgs
         tf2_geometry_msgs
@@ -37,50 +50,63 @@ set(DEPENDENCIES
         lifecycle_msgs
         ros_aruco_opencv_msgs
         rover_msgs
+
+        scrb_common_util
 )
 
-include(../cmake/CPM.cmake)
+list(APPEND DEPENDENCY_TARGETS magic_enum::magic_enum)
 
-# find dependencies
-CPMAddPackage("gh:fmtlib/fmt#11.2.0")
-CPMAddPackage("gh:Neargye/magic_enum#v0.9.7")
+list(APPEND DEPENDENCY_TARGETS
+        SDL3::SDL3
 
-find_package(ament_cmake REQUIRED)
-find_package(backward_ros REQUIRED)
+        imgui
+        implot
+        implot3d
+        imfonts
 
-foreach (dependency IN ITEMS ${DEPENDENCIES})
-    find_package(${dependency} REQUIRED)
-endforeach ()
+        iconfonts
+
+        lunasvg
+
+        stb
+)
 
 find_package(PkgConfig REQUIRED)
 
-pkg_check_modules(GSTREAMER REQUIRED gstreamer-1.0)
-pkg_check_modules(GSTREAMER_APP REQUIRED gstreamer-app-1.0)
-pkg_check_modules(GSTREAMER_RTSP REQUIRED
+pkg_check_modules(Gst REQUIRED IMPORTED_TARGET gstreamer-1.0)
+pkg_check_modules(GstApp REQUIRED IMPORTED_TARGET gstreamer-app-1.0)
+pkg_check_modules(GstRtsp REQUIRED IMPORTED_TARGET
         gstreamer-sdp-1.0
         gstreamer-net-1.0
         gstreamer-rtp-1.0
         gstreamer-rtsp-1.0
 )
 
-list(APPEND DEPENDENCIES GSTREAMER GSTREAMER_APP GSTREAMER_RTSP)
+list(APPEND DEPENDENCY_TARGETS PkgConfig::Gst PkgConfig::GstApp PkgConfig::GstRtsp)
 
 set(API_TWEAKS_FILE "${CMAKE_CURRENT_BINARY_DIR}/api-tweaks.txt")
 file(WRITE "${API_TWEAKS_FILE}" "
 # these api tweaks can be removed when updating to gstreamer >=1.28.0. (aka updating to ubuntu 26.04 or later)
 # they're only necessary, because I don't want to force people to compile gstreamer from source.
-type	gst_calculate_linear_regression			xy		gpointer
-type	gst_calculate_linear_regression			temp		gpointer
-type	gst_util_simplify_fraction			numerator		gpointer
-type	gst_util_simplify_fraction			denominator		gpointer
+array	gst_calculate_linear_regression			xy
+array	gst_calculate_linear_regression			temp
+array	gst_util_simplify_fraction			numerator
+array	gst_util_simplify_fraction			denominator
 type	gst_caps_features_set_parent_refcount			refcount		gpointer
-type	gst_meta_deserialize			data		gpointer
+array	gst_meta_deserialize			data
 type	gst_iterator_new			master_cookie		gpointer
 type	gst_structure_set_parent_refcount			refcount		gpointer
 
 # these last two are either due to a bug in peel or in gstreamer's rtsp server. unsure.
 skip	gst_rtsp_stream_transport_set_callbacks
 skip	gst_rtsp_stream_transport_set_list_callbacks
+
+# gstreamer moment. they forgot to add ref and unref to the gir
+ref		GstMessage		gst_message_ref
+unref	GstMessage		gst_message_unref
+
+ref		GstSample		gst_sample_ref
+unref	GstSample		gst_sample_unref
 "
 )
 
@@ -90,15 +116,20 @@ peel_generate(GstApp 1.0 RECURSIVE TWEAKS "${API_TWEAKS_FILE}")
 peel_generate(GstRtsp 1.0 RECURSIVE TWEAKS "${API_TWEAKS_FILE}")
 peel_generate(GstRtspServer 1.0 RECURSIVE TWEAKS "${API_TWEAKS_FILE}")
 
-find_package(Boost REQUIRED CONFIG COMPONENTS)
+list(APPEND DEPENDENCY_TARGETS
+        peel::peel
+        peel::Gst
+        peel::GstNet
+        peel::GstApp
+        peel::GstRtsp
+        peel::GstRtspServer
+)
 
-list(APPEND DEPENDENCIES Boost)
-
-## TARGETS
+## COMPILE
 
 # TODO 2026-05-05 (Will Free): split these out into multiple libraries to improve compile times.
 
-add_executable(${PROJECT_NAME}
+scrb_add_executable(${PROJECT_NAME}
         src/main.cpp
         src/im_application.cpp
 
@@ -130,6 +161,7 @@ add_executable(${PROJECT_NAME}
         src/osm/osm_tile_loader_url.cpp
         src/osm/osm_tile_saver.cpp
         src/osm/osm_tile_source_async.cpp
+        src/osm/osm_tile_source_caching.cpp
         src/osm/osm_tile_source_fs.cpp
         src/osm/osm_tile_source_url.cpp
         src/osm/osm_tile_source_url_impl.cpp
@@ -138,43 +170,14 @@ add_executable(${PROJECT_NAME}
 
         # OSM markers
         src/osm/markers/rich_robot_marker.cpp
+        src/osm/markers/rich_gps_marker.cpp
 )
 
-ament_target_dependencies(${PROJECT_NAME} PUBLIC ${DEPENDENCIES})
-
-target_link_libraries(${PROJECT_NAME} PUBLIC
-        magic_enum::magic_enum
-
-        SDL3::SDL3
-
-        imgui
-        implot
-        implot3d
-        imfonts
-
-        iconfonts
-
-        peel::peel
-        peel::Gst
-        peel::GstNet
-        peel::GstApp
-        peel::GstRtsp
-        peel::GstRtspServer
-
-        lunasvg
-
-        stb
-)
+target_link_libraries(${PROJECT_NAME} PUBLIC ${DEPENDENCY_TARGETS})
 
 # fixes issue with mold
 # TODO 2026-05-02 (Will Free): remove
 target_link_options(${PROJECT_NAME} PUBLIC -static-libgcc -static-libstdc++)
-
-target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_23)
-
-if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -Wpedantic)
-endif ()
 
 target_include_directories(${PROJECT_NAME} PUBLIC
         $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
@@ -190,6 +193,22 @@ target_include_directories(${PROJECT_NAME} PRIVATE ${GENERATED_INCLUDE_DIR})
 set(FONT_AWESOME_PATH "share/resources/fonts/fa-solid-900.ttf")
 
 target_compile_definitions(${PROJECT_NAME} INTERFACE FONT_AWESOME_PATH="${FONT_AWESOME_PATH}")
+
+scrb_target_precompile_headers(${PROJECT_NAME} PRIVATE
+        <filesystem>
+        <rclcpp/rclcpp.hpp>
+        <tf2_ros/buffer.hpp>
+        <fmt/format.h>
+        <ros2_fmt_logger/logger.hpp>
+        <Eigen/Core>
+        <Eigen/Dense>
+        <opencv2/opencv.hpp>
+        <opencv2/core/eigen.hpp>
+        <imgui.h>
+        <imgui_internal.h>
+        <implot.h>
+        <implot3d.h>
+)
 
 ## INSTALL
 
@@ -225,5 +244,6 @@ install(
 )
 
 ## EXPORTS
+
 ament_export_targets(export_${PROJECT_NAME})
 ament_package()

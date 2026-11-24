@@ -1,28 +1,40 @@
-from .events import When
-from .gazebo import GazeboType, BridgeDirection, ImageBridgeQoS, GazeboBridge
-from .group import Group
-from .simple_launcher import SimpleLauncher
-from .substitutions import normalize_typed_dict_substitutions, perform_typed_dict_substitutions, SomeSubstitutionsValueTypeDict, \
-    NormalizedSubstitutionsValueTypeDict, Xacro, WriteTempFile, OpaqueFunctionSubstitution, Templated
-from .util import flatten_substitutions
+from typing import Any
+
+from launch_util.action_scope import ActionScope
+from launch_util.composable import ComposableContainerContext
+from launch_util.gazebo import BridgeDirection, GazeboBridge, GazeboType, ImageBridgeQoS
+from launch_util.group import ActionGroup
+from launch_util.simple_launcher import SimpleLauncher
+from launch_util.substitutions import (
+    NormalizedSubstitutionsValueTypeDict,
+    OpaqueFunctionSubstitution,
+    SomeSubstitutionsValueTypeDict,
+    Templated,
+    WriteTempFile,
+    Xacro,
+    normalize_typed_dict_substitutions,
+    perform_typed_dict_substitutions,
+)
+from launch_util.util import flatten_substitutions
 
 __all__ = [
-    "When",
-    "GazeboType",
+    "ActionGroup",
+    "ActionScope",
     "BridgeDirection",
-    "ImageBridgeQoS",
+    "ComposableContainerContext",
     "GazeboBridge",
-    "Group",
+    "GazeboType",
+    "ImageBridgeQoS",
+    "NormalizedSubstitutionsValueTypeDict",
+    "OpaqueFunctionSubstitution",
     "SimpleLauncher",
     "SomeSubstitutionsValueTypeDict",
-    "NormalizedSubstitutionsValueTypeDict",
+    "Templated",
+    "WriteTempFile",
+    "Xacro",
+    "flatten_substitutions",
     "normalize_typed_dict_substitutions",
     "perform_typed_dict_substitutions",
-    "Xacro",
-    "WriteTempFile",
-    "OpaqueFunctionSubstitution",
-    "Templated",
-    "flatten_substitutions",
 ]
 
 
@@ -30,23 +42,25 @@ def init_logging(enable: bool):
     if not enable:
         return
 
-    import launch
-    import logging
-    from typing import Literal
-    from colorlog.formatter import ColoredFormatter
+    import logging  # noqa: PLC0415
+    from typing import Literal  # noqa: PLC0415
+
+    import launch  # noqa: PLC0415
+    from colorlog.formatter import ColoredFormatter  # noqa: PLC0415
 
     launch_config = launch.logging.launch_config
-    formatter: logging.Formatter = launch_config.screen_formatter
-    screen_handler = launch_config.screen_handler
-    fmt = formatter._fmt
-    formatter_style = formatter._style
+    formatter: logging.Formatter | None = launch_config.screen_formatter
+    screen_handler: Any = launch_config.screen_handler
+    fmt = formatter._fmt  # noqa: SLF001  # ty:ignore[unresolved-attribute]
+    formatter_style = formatter._style  # noqa: SLF001  # ty:ignore[unresolved-attribute]
 
     style: Literal["%", "{", "$"] = "%"
     if isinstance(formatter_style, logging.StrFormatStyle):
         style = "{"
     elif isinstance(formatter_style, logging.StringTemplateStyle):
         style = "$"
-    elif isinstance(formatter_style, logging.PercentStyle):
+    else:
+        assert isinstance(formatter_style, logging.PercentStyle)
         style = "%"
 
     colored_formatter = ColoredFormatter(fmt=f"{{log_color}}{fmt}", style=style)

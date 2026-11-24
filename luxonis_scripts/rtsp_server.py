@@ -58,9 +58,11 @@ class RtspFactory(GstRtspServer.RTSPMediaFactory):
 
 # --- RTSP server ---
 class RtspServer(GstRtspServer.RTSPServer):
-    def __init__(self, stream_names):
+    def __init__(self, stream_names, service="8554"):
         super().__init__()
         Gst.init(None)
+
+        self.set_service(str(service))
 
         self.factories = {}
         mounts = self.get_mount_points()

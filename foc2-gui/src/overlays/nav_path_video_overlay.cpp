@@ -6,14 +6,15 @@
 #include <ranges>
 #include <tuple>
 #include <Eigen/Core>
-#include <geometry_msgs/msg/pose_stamped.hpp>
+#include <Eigen/Geometry>
 #include <opencv2/calib3d.hpp>
 #include <opencv2/core/eigen.hpp>
 #include <opencv2/core/matx.hpp>
+#include <geometry_msgs/msg/pose_stamped.hpp>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 
 #include "foc2-gui/util/imgui_util.hpp"
-#include "foc2-gui/util/tf2_util.hpp"
+#include "scrb_common_util/tf2_util.hpp"
 
 NavPathVideoOverlay::NavPathVideoOverlay(ImApplication& application, std::string path_topic, const ImVec4& path_color)
     : UiOverlay(application),
@@ -25,7 +26,9 @@ void NavPathVideoOverlay::onInit() {
     path_subscription = application.create_subscription<Path>(
         path_topic,
         10,
-        std::bind(&NavPathVideoOverlay::onPath, this, std::placeholders::_1)
+        [this](const Path::UniquePtr& path) {
+            onPath(path);
+        }
     );
 }
 
@@ -38,19 +41,19 @@ void NavPathVideoOverlay::onDraw(ImDrawList* draw_list, const ImRect& bounds) {
     cv::Matx33d camera_k;
     std::string cam_frame;
     std::string path_frame;
-    int camera_width;
-    int camera_height;
+    int camera_width; // NOLINT(*-init-variables)
+    int camera_height; // NOLINT(*-init-variables)
 
     {
-        std::lock_guard lock(mutex);
+        std::scoped_lock lock(mutex);
         if (!camera_info.has_value() || path.poses.empty()) {
             using namespace std::chrono_literals;
             logger.warn_throttle(1s, "no poses (or camera info is empty: {})", camera_info.has_value());
             return;
         }
         poses.reserve(path.poses.size());
-        for (const auto& p : path.poses)
-            poses.push_back(p);
+        for (const auto& pose : path.poses)
+            poses.push_back(pose);
 
         camera_k = cv::Matx33d(camera_info->k.data());
         cam_frame = camera_info->header.frame_id;
@@ -100,6 +103,23 @@ void NavPathVideoOverlay::onDraw(ImDrawList* draw_list, const ImRect& bounds) {
         cv::projectPoints(pts_cam, rvec, cvec, camera_k, cv::noArray(), image_pts);
     }
 
+    const auto scale_x = bounds.GetWidth() / camera_width;
+    const auto scale_y = bounds.GetHeight() / camera_height;
+    const auto scale = ImVec2(scale_x, scale_y);
+
+    std::vector<std::vector<PathPoint>> segments = segmentPathPoints(bounds, camera_width, camera_height, scale, pts_cam, image_pts);
+
+    drawSegments(draw_list, segments);
+}
+
+std::vector<std::vector<NavPathVideoOverlay::PathPoint>> NavPathVideoOverlay::segmentPathPoints(
+    const ImRect& bounds,
+    const int camera_width,
+    const int camera_height,
+    const ImVec2 scale,
+    const std::vector<cv::Point3d>& pts_cam,
+    const std::vector<cv::Point2d>& image_pts
+) {
     const auto isInImage = [&](const cv::Point2d& point) {
         return point.x >= 0.0 && point.x < static_cast<double>(camera_width) && point.y >= 0.0 && point.y < static_cast<double>(camera_height);
     };
@@ -108,18 +128,8 @@ void NavPathVideoOverlay::onDraw(ImDrawList* draw_list, const ImRect& bounds) {
         return point.x >= bounds.Min.x && point.x <= bounds.Max.x && point.y >= bounds.Min.y && point.y <= bounds.Max.y;
     };
 
-    const auto scale_x = bounds.GetWidth() / camera_width;
-    const auto scale_y = bounds.GetHeight() / camera_height;
-    const auto scale = ImVec2(scale_x, scale_y);
-
     auto cumulative_dist = 0.0;
     std::optional<Eigen::Vector3d> last_camera_point;
-
-    struct PathPoint {
-        ImVec2 pos;
-        double alpha;
-        double thickness;
-    };
 
     std::vector<std::vector<PathPoint>> segments;
     segments.emplace_back();
@@ -130,9 +140,10 @@ void NavPathVideoOverlay::onDraw(ImDrawList* draw_list, const ImRect& bounds) {
     };
 
     for (auto i = 0u; i < image_pts.size(); ++i) {
-        const auto& point = image_pts[i];
+        const auto& point = image_pts.at(i);
 
-        auto camera_point = Eigen::Vector3d(pts_cam[i].x, pts_cam[i].y, pts_cam[i].z);
+        auto camera_point_cv = pts_cam.at(i);
+        auto camera_point = Eigen::Vector3d(camera_point_cv.x, camera_point_cv.y, camera_point_cv.z);
         if (last_camera_point.has_value())
             cumulative_dist += (camera_point - last_camera_point.value()).norm();
         last_camera_point = camera_point;
@@ -159,13 +170,17 @@ void NavPathVideoOverlay::onDraw(ImDrawList* draw_list, const ImRect& bounds) {
 
         segments.back().emplace_back(
             PathPoint{
-                .pos = screen_point,
-                .alpha = alpha,
+                .pos       = screen_point,
+                .alpha     = alpha,
                 .thickness = thickness,
             }
         );
     }
 
+    return segments;
+}
+
+void NavPathVideoOverlay::drawSegments(ImDrawList* draw_list, const std::vector<std::vector<PathPoint>>& segments) const {
     constexpr auto discontinuity_marker_size = 6.0;
 
     const auto drawDiscontinuityMarker = [&](const std::optional<PathPoint>& path_point) {
@@ -177,11 +192,11 @@ void NavPathVideoOverlay::onDraw(ImDrawList* draw_list, const ImRect& bounds) {
 
         const auto marker_color = ImGui::ImColor(255, 50, 50, 255 * alpha);
 
-        constexpr auto d = ImVec2(discontinuity_marker_size, discontinuity_marker_size);
-        constexpr auto d2 = ImVec2(discontinuity_marker_size, -discontinuity_marker_size);
+        constexpr auto offset_1 = ImVec2(discontinuity_marker_size, discontinuity_marker_size);
+        constexpr auto offset_2 = ImVec2(discontinuity_marker_size, -discontinuity_marker_size);
 
-        draw_list->AddLine(point - d, point + d, marker_color, 2.0);
-        draw_list->AddLine(point - d2, point + d2, marker_color, 2.0);
+        draw_list->AddLine(point - offset_1, point + offset_1, marker_color, 2.0);
+        draw_list->AddLine(point - offset_2, point + offset_2, marker_color, 2.0);
     };
 
     const auto segmentColor = [&](const double alpha) {
@@ -193,15 +208,15 @@ void NavPathVideoOverlay::onDraw(ImDrawList* draw_list, const ImRect& bounds) {
     std::optional<PathPoint> last_segment_end;
 
     for (const auto& segment : segments) {
-        if (segment.size() == 0) {
+        if (segment.empty()) {
             continue;
         } else if (segment.size() == 1) {
-            const auto& [point, alpha, thickness] = segment[0];
+            const auto& [point, alpha, thickness] = segment.at(0);
             draw_list->AddCircle(point, thickness, segmentColor(alpha));
 
             drawDiscontinuityMarker(last_segment_end);
 
-            last_segment_end = segment[0];
+            last_segment_end = segment.at(0);
             continue;
         }
 
@@ -239,13 +254,17 @@ void NavPathVideoOverlay::onDraw(ImDrawList* draw_list, const ImRect& bounds) {
 }
 
 void NavPathVideoOverlay::onCameraInfo(const CameraInfo::SharedPtr& msg) {
-    if (!msg) return;
-    std::lock_guard lock(mutex);
+    if (!msg)
+        return;
+
+    std::scoped_lock lock(mutex);
     camera_info = *msg;
 }
 
 void NavPathVideoOverlay::onPath(const nav_msgs::msg::Path::UniquePtr& msg) {
-    if (!msg) return;
-    std::lock_guard lock(mutex);
+    if (!msg)
+        return;
+
+    std::scoped_lock lock(mutex);
     path = *msg;
 }

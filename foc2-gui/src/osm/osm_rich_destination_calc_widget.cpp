@@ -15,7 +15,8 @@ namespace ImOsm::Rich {
         float bearing;
     };
 
-    DestinationCalcWidget::DestinationCalcWidget(const std::shared_ptr<MarkStorage>& storage) : ui(std::make_unique<Ui>()), storage(storage) {}
+    DestinationCalcWidget::DestinationCalcWidget(const std::shared_ptr<MarkStorage>& storage)
+        : ui(std::make_unique<Ui>()), storage(storage) {}
 
     DestinationCalcWidget::~DestinationCalcWidget() = default;
 

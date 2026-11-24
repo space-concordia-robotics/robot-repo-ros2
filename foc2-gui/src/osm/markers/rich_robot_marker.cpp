@@ -19,7 +19,9 @@ void RichRobotMarker::onInit() {
     );
 }
 
-void RichRobotMarker::onShutdown() const {}
+void RichRobotMarker::onShutdown() {
+    fix_subscription.reset();
+}
 
 bool RichRobotMarker::inBounds(const Eigen::AlignedBox2d /*geo_box*/) const {
     // return geo_box.contains(Eigen::Vector2d(robot_transform.translation.x, robot_transform.translation.z));
@@ -39,7 +41,7 @@ void RichRobotMarker::paint() {
 
     const auto spec = ImPlotSpec(
         ImPlotProp_Marker, ImPlotMarker_Circle,
-        ImPlotProp_MarkerSize, 8.0f,
+        ImPlotProp_MarkerSize, 4.0f,
         ImPlotProp_MarkerFillColor, ImVec4(255, 0, 0, 200),
         ImPlotProp_LineWeight, 1.5f,
         ImPlotProp_LineColor, ImVec4(255, 0, 0, 200)

@@ -12,7 +12,8 @@ namespace ImOsm {
         int request_limit = 10;
     };
 
-    TileSourceWidget::TileSourceWidget(const std::shared_ptr<MapPlot>& map_plot) : map_plot(map_plot), ui(std::make_unique<Ui>()) {
+    TileSourceWidget::TileSourceWidget(const std::shared_ptr<MapPlot>& map_plot)
+        : map_plot(map_plot), ui(std::make_unique<Ui>()) {
         updateTileLoader();
     }
 
@@ -68,7 +69,7 @@ namespace ImOsm {
         if (ui->source.starts_with("http")) {
             tile_loader = std::make_shared<TileLoaderUrlMap>(ui->source, ui->request_limit);
         } else if (!ui->source.empty()) {
-            tile_loader = std::make_shared<TileLoaderFsMap>(ui->source, ui->request_limit);
+            tile_loader = std::make_shared<TileLoaderFsMap>(ui->source, std::nullopt, ui->request_limit);
         }
         map_plot->setTileLoader(tile_loader);
     }

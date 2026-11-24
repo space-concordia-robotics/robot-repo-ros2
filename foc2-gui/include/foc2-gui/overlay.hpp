@@ -2,13 +2,14 @@
 
 #include <imgui_internal.h>
 
-#include "element.hpp"
+#include "im_application.hpp"
 
 class UiOverlay {
 public:
     RCLCPP_SMART_PTR_ALIASES_ONLY(UiOverlay)
 
-    explicit UiOverlay(ImApplication& application) : application(application), logger(application.get_logger()) {}
+    explicit UiOverlay(ImApplication& application)
+        : application(application), logger(application.get_logger()) {}
 
     virtual ~UiOverlay() = default;
 

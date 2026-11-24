@@ -1,6 +1,12 @@
 # SCRB Rover Code
 
-This repository contains the code for rover for URC and other competitions that SCRB participates in.
+This repository contains the code for the NVIDIA Jetson for the SCRB software team.
+
+## Getting Started
+
+To get started, please read our online documentation found at: https://space-concordia-robotics.github.io/
+
+This documentation is derived from the `docs/` folder, so you can also read it from within your IDE.
 
 ## Building
 
@@ -12,7 +18,7 @@ vcs import external < external.repos
 
 This uses `git clone` to clone all the repositories in `external.repos` to `external`
 
-Then, you can build everything with `colcon`
+Then, you can build everything using `colcon`
 
 # License
 

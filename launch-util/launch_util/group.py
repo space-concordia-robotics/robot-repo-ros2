@@ -1,83 +1,104 @@
-from typing import Optional, List, Text, Union, Tuple
+"""Action group scopes."""
 
-from launch import Action, Condition, SomeSubstitutionsType
+from __future__ import annotations
+
+from typing import TypeVar, override
+
+from launch import Action, SomeSubstitutionsType, Substitution
 from launch.actions import GroupAction
+from launch.utilities.type_utils import SomeValueType
 from launch_ros.actions import PushRosNamespace
+from launch_ros.parameter_descriptions import Parameter
+from launch_ros.parameters_type import SomeParameterFile, SomeParameters, SomeParametersDict
 
-from .events import When
+from launch_util.action_scope import ActionScope
+from launch_util.substitutions import SomeSubstitutionsValueTypeDict
 
 __all__ = [
-    'Group',
+    "ActionGroup",
 ]
 
+A = TypeVar("A", bound=Action)
 
-class Group:
-    __parent: Optional['Group']
-    __condition: Optional[Condition]
-    __container: Text
-    __when: Optional[When]
-    __root: 'Group'
-    __ns: List[SomeSubstitutionsType]
-    __actions: List[Action]
 
-    def __init__(
-            self,
-            ns: SomeSubstitutionsType = None,
-            condition: Optional[Condition] = None,
-            container: Text = '',
-            parent: Optional['Group'] = None,
-            when: When = None,
-    ):
+class ActionGroup(ActionScope):
+    """
+    A scoped action group.
+
+    **See also:** :class:`GroupAction`
+    """
+
+    __parent: ActionScope
+    __namespace: SomeSubstitutionsType | None
+    __scoped: bool
+    __forwarding: bool
+    __actions: list[Action]
+
+    def __init__(self, parent: ActionScope, namespace: SomeSubstitutionsType | None, scoped: bool, forwarding: bool):
+        """
+        Creates a new action group.
+
+        **See also:** :class:`launch.actions.GroupAction`
+
+        :param parent: The parent scope.
+        :param namespace: The namespace for this group.
+        :param scoped: If the action group is scoped.
+        :param forwarding: If the action group is forwarding.
+        """
+
+        super().__init__()
         self.__parent = parent
-        self.__condition = condition
-        self.__container = container
-        self.__when = when
-
-        # inherit namespace from this branch
-        ns = [ns] if ns is not None else []
-        if parent is None:
-            self.__root = self
-            self.__ns = ns
-        else:
-            self.__root = parent.__root
-            self.__ns = parent.__ns + ns
-
-        # actions are always active and added to the root group
+        self.__namespace = namespace
+        self.__scoped = scoped
+        self.__forwarding = forwarding
         self.__actions = []
-        # managed are added as Event or Containers
-        self.__managed = []  # TODO 2026-02-07 (Will Free): what is this?
 
-    def is_container(self):
-        return self.__container
+    @property
+    @override
+    def scope_included_files(self) -> bool:
+        return self.__parent.scope_included_files
 
-    def close(self) -> Union[Tuple['Group', List[Action]], List[Action], 'Group']:
-        if self.__parent is None:
-            # main group
-            return self.__actions
+    @property
+    @override
+    def default_parameters(self) -> dict[str, SomeSubstitutionsType]:
+        return self.__parent.default_parameters
 
-        if self.__container:
-            # actions (e.g. ComposableNodes) are added by SimpleLauncher when creating the container
-            return self.__parent, self.__actions
+    @override
+    def add_action(self, action: A) -> A:
+        self.__actions.append(action)
+        return action
 
-        # closing a classical group, potentially with event handling
-        if self.__actions:
+    @override
+    def make_parameters(
+            self,
+            parameters: SomeParameters | SomeParameterFile | Parameter | SomeParametersDict | None = None,
+            exclude_default_params: bool = False,
+    ) -> SomeParameters | None:
+        return self.__parent.make_parameters(parameters, exclude_default_params)
 
-            if any(not isinstance(action, Action) for action in self.__actions):
-                # probably a raw function call due to OnProcessIO
-                # skip GroupAction as it makes it not callable
-                group = self.__actions
-            else:
-                ns_tree = list(map(PushRosNamespace, self.__ns))
-                group = GroupAction(ns_tree + self.__actions, condition=self.__condition)
-            if self.__when is not None:
-                self.__root.add_action(self.__when.register(group))
-            else:
-                self.__root.add_action(group)
+    def create_action(self) -> GroupAction:
+        """
+        Creates a :class:`GroupAction` for the current group.
 
-        return self.__parent
+        :return: The newly created :class:`GroupAction`
+        """
 
-    def add_action(self, action: Action):
-        if isinstance(action, list):
-            self.__actions.extend(action)
-        else:
-            self.__actions.append(action)
+        actions = list(self.__actions)
+        if self.__namespace is not None:
+            actions.insert(0, PushRosNamespace(self.__namespace))
+        return GroupAction(
+            scoped=self.__scoped,
+            forwarding=self.__forwarding,
+            actions=actions,
+        )
+
+    @override
+    def gazebo_world(
+            self,
+            package: SomeSubstitutionsType | None = None,
+            directory: SomeSubstitutionsType = "worlds",
+            file: SomeSubstitutionsType | None = None,
+            xacro_args: SomeSubstitutionsValueTypeDict | None = None,
+            strip_comments: SomeValueType | None = None,
+    ) -> Substitution:
+        return self.__parent.gazebo_world(package, directory, file, xacro_args, strip_comments)

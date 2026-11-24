@@ -7,7 +7,8 @@ namespace ImOsm::Rich {
         ry.resize(static_cast<int>(360.0 / dphi) + 1);
     }
 
-    MarkItem::MarkItem(const GeographicLib::GeoCoords& coords, const std::string& text) : coords(coords), text(text) {
+    MarkItem::MarkItem(const GeographicLib::GeoCoords& coords, const std::string& text)
+        : coords(coords), text(text) {
         osm_coords = OsmCoords(coords);
         rx.resize(static_cast<int>(360.0 / dphi) + 1);
         ry.resize(static_cast<int>(360.0 / dphi) + 1);

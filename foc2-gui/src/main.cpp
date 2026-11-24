@@ -1,17 +1,18 @@
 #define IMGUI_USER_CONFIG "foc2-gui/imgui_user.hpp"
 
-#include <filesystem>
 #include <IconsFontAwesome7.h>
+#include <filesystem>
 #include <imgui.h>
 #include <lunasvg.h>
+#include <SDL3/SDL.h>
 #include <ament_index_cpp/get_package_share_directory.hpp>
 #include <rclcpp/executors.hpp>
 #include <rclcpp/utilities.hpp>
-#include <SDL3/SDL.h>
 
 #include "foc2-gui/im_application.hpp"
 #include "foc2-gui/resources.hpp"
 #include "foc2-gui/widgets/logs_widget.hpp"
+#include "foc2-gui/widgets/map_widget.hpp"
 #include "foc2-gui/widgets/video_widget.hpp"
 
 // include stb image implementation
@@ -19,33 +20,85 @@
 // ReSharper disable once CppUnusedIncludeDirective
 #include <stb_image.h>
 
-#include "foc2-gui/widgets/map_widget.hpp"
+std::unique_ptr<lunasvg::Document> loadSvg(const std::filesystem::path& path) {
+    auto svg = lunasvg::Document::loadFromFile(path);
 
-
-SDL_Surface* loadSvgSurface(const std::filesystem::path& path, const int width = 0, const int height = 0) {
-    auto doc = lunasvg::Document::loadFromFile(path);
-    if (!doc)
+    if (!svg)
         throw std::runtime_error(fmt::format("Failed to load SVG: {}", path.string()));
-    const auto svg = std::move(doc);
 
-    const auto bitmap = svg->renderToBitmap(width, height);
-
-    // TODO 2026-05-09 (Will Free): this is load bearing. I do not know why, and it disturbs me.
-    [[maybe_unused]] const auto ignored = bitmap.writeToPng(std::filesystem::temp_directory_path() / "foc2-gui-IGNORED.png");
-
-    return SDL_CreateSurfaceFrom(
-        bitmap.width(),
-        bitmap.height(),
-        SDL_PIXELFORMAT_BGRA32,
-        bitmap.data(),
-        bitmap.width() * 4
-    );
+    return svg;
 }
 
+SDL_Surface* renderSvg(const std::unique_ptr<lunasvg::Document>& svg, const int width = 0, const int height = 0) {
+    auto bitmap = svg->renderToBitmap(width, height);
+
+    bitmap.convertToRGBA();
+
+    const auto surface = SDL_CreateSurface(
+        bitmap.width(),
+        bitmap.height(),
+        SDL_PIXELFORMAT_ARGB8888
+    );
+
+    if (!surface)
+        return nullptr;
+
+    // TODO 2026-05-24 (Will Free): I'm just going to pretend this can never error
+    SDL_LockSurface(surface);
+
+    std::memcpy(
+        surface->pixels,
+        bitmap.data(),
+        // stride is width * bytes per pixel
+        bitmap.stride() * bitmap.height()
+    );
+
+    SDL_UnlockSurface(surface);
+
+    return surface;
+}
+
+const static auto SHARE_DIR = std::filesystem::path(ament_index_cpp::get_package_share_directory(FOC2_PACKAGE_NAME));
+static SDL_Surface* WINDOW_ICON;
+
+void initializeWindowIcon() {
+    if (WINDOW_ICON)
+        return;
+
+    const auto svg = loadSvg(SHARE_DIR / "resources" / "icon.svg");
+
+    // sufficiently high resolution for task switcher
+    const auto icon = renderSvg(svg, 128, 128);
+
+    // higher resolutions for high DPI screens
+    static constexpr auto ALTERNATE_ICON_SIZES = std::array{256, 512};
+
+    for (auto&& size : ALTERNATE_ICON_SIZES) {
+        const auto alternate_size = renderSvg(svg, size, size);
+
+        SDL_AddSurfaceAlternateImage(icon, alternate_size);
+        SDL_DestroySurface(alternate_size);
+    }
+
+    WINDOW_ICON = icon;
+}
+
+void cleanupWindowIcon() {
+    SDL_DestroySurface(WINDOW_ICON);
+    WINDOW_ICON = nullptr;
+}
+
+static constexpr auto MAP_WIDGET_NAME = "Map";
+static constexpr auto LOGS_WIDGET_NAME = "ROS Logs";
+static constexpr auto TOP_LEFT_STREAM_WIDGET_NAME = "Top Left Stream";
+static constexpr auto TOP_RIGHT_STREAM_WIDGET_NAME = "Top Right Stream";
+static constexpr auto BOTTOM_RIGHT_STREAM_WIDGET_NAME = "Bottom Right Stream";
+static constexpr auto BOTTOM_LEFT_STREAM_WIDGET_NAME = "Bottom Left Stream";
 
 class FOC2Application : public ImApplication {
 public:
-    FOC2Application() : ImApplication("foc2_gui", "SCRB C2 Station") {}
+    FOC2Application()
+        : ImApplication("foc2_gui", "SCRB C2 Station") {}
 
     FOC2Application(const FOC2Application& other) = delete;
     FOC2Application(FOC2Application&& other) noexcept = delete;
@@ -56,12 +109,11 @@ protected:
     void onWindow() override {
         const auto share_dir = ament_index_cpp::get_package_share_directory(FOC2_PACKAGE_NAME);
 
-        const auto icon = loadSvgSurface(std::filesystem::path(share_dir) / "resources" / "icon.svg", 64, 64);
+        initializeWindowIcon();
 
-        if (!SDL_SetWindowIcon(window, icon)) {
-            logger.warn("Error: SDL_CreateWindow(): {}", SDL_GetError());
+        if (!SDL_SetWindowIcon(window, WINDOW_ICON)) {
+            logger.warn("Error: SDL_SetWindowIcon(): {}", SDL_GetError());
         }
-        SDL_DestroySurface(icon);
     }
 
     void onInit() override {
@@ -71,6 +123,26 @@ protected:
 
         const auto& io = ImGui::GetIO();
 
+        {
+            auto& platform_io = ImGui::GetPlatformIO();
+            // this is safe because there is only ever a single instance of FOC2Application
+            static auto originalCreateWindow = platform_io.Platform_CreateWindow;
+
+            platform_io.Platform_CreateWindow = [](ImGuiViewport* vp) {
+                originalCreateWindow(vp);
+
+                const auto window_id = static_cast<SDL_WindowID>(reinterpret_cast<intptr_t>(vp->PlatformHandle));
+                const auto window = SDL_GetWindowFromID(window_id);
+
+                if (!window)
+                    return;
+
+                // TODO 2026-05-24 (Will Free): I'm just going to pretend this can never error
+                SDL_SetWindowIcon(window, WINDOW_ICON);
+            };
+        }
+
+
         static constexpr auto BASE_FONT_SIZE = 13.0f; // 13.0f is the size of the default font. Change to the font size you use.
         static constexpr auto ICON_FONT_SIZE = BASE_FONT_SIZE * 2.0f / 3.0f;
         // FontAwesome fonts need to have their sizes reduced by 2.0f/3.0f in order to align correctly
@@ -78,7 +150,6 @@ protected:
         static constexpr ImWchar FONTAWESOME_ICON_RANGE[] = {ICON_MIN_FA, ICON_MAX_16_FA, 0};
         auto fontawesome_config = ImFontConfig();
         strcpy(fontawesome_config.Name, "FontAwesome Solid");
-        // font_cfg.PixelSnapH = true;
         fontawesome_config.MergeMode = true;
         fontawesome_config.PixelSnapH = true;
         fontawesome_config.GlyphMinAdvanceX = ICON_FONT_SIZE;
@@ -86,7 +157,8 @@ protected:
         const auto filename = std::filesystem::path(share_dir) / "resources" / "fonts" / FONT_ICON_FILE_NAME_FAS;
         io.Fonts->AddFontFromFileTTF(filename.c_str(), ICON_FONT_SIZE, &fontawesome_config, FONTAWESOME_ICON_RANGE);
 
-        video_top = std::make_shared<VideoWidget>(*this, "rtsp://127.0.0.1:8554/test", "/rover/ffc/front/image_raw", true);
+        video_top_left = std::make_shared<VideoWidget>(*this, "rtsp://127.0.0.1:8554/test", "/rover/ffc/front/image_raw", true);
+        video_top_right = std::make_shared<VideoWidget>(*this, "rtsp://127.0.0.1:8554/test", "/rover/ffc/front/image_raw", true);
         video_bottom_left = std::make_shared<VideoWidget>(*this, "rtsp://10.240.0.10:8445/left", "/rover/ffc/left/image_raw", false);
         video_bottom_right = std::make_shared<VideoWidget>(*this, "rtsp://10.240.0.10:8445/right", "/rover/ffc/right/image_raw", false);
 
@@ -94,7 +166,8 @@ protected:
 
         logs = std::make_shared<RosLogWidget>(*this);
 
-        video_top->onInit();
+        video_top_left->onInit();
+        video_top_right->onInit();
         video_bottom_left->onInit();
         video_bottom_right->onInit();
 
@@ -109,120 +182,117 @@ protected:
 
         style.AntiAliasedLines = true;
         style.AntiAliasedLinesUseTex = true;
+
+        // TODO 2026-05-24 (Will Free): for now we're just disabling the ini file so layout is never saved
+        //  eventually, we should make sure to save the layout somewhere.
+        ImGui::GetIO().IniFilename = nullptr;
     }
 
     void onFrame() override {
         const auto viewport = ImGui::GetMainViewport();
-        ImGui::SetNextWindowPos(viewport->Pos);
-        ImGui::SetNextWindowSize(viewport->Size);
+        const auto dockspace_id = ImGui::DockSpaceOverViewport(0, viewport, ImGuiDockNodeFlags_AutoHideTabBar);
 
-        constexpr auto flags = ImGuiWindowFlags_NoTitleBar |
-            ImGuiWindowFlags_NoResize |
-            ImGuiWindowFlags_NoMove |
-            ImGuiWindowFlags_NoScrollbar |
-            ImGuiWindowFlags_NoSavedSettings |
-            ImGuiWindowFlags_NoBringToFrontOnFocus;
-
-        ImGui::Begin("MainUI", nullptr, flags);
-
-        const ImVec2 available = ImGui::GetContentRegionAvail();
-
-        // TODO 2026-05-05 (Will Free): for now these are just split 50/50. figure out something better for layout later.
-        const float left_width = available.x * 0.5f;
-
-        // TODO 2026-05-05 (Will Free): figure out what to put on the left side
-
-        ImGui::BeginChild("Left", ImVec2(left_width, 0), false);
-        drawLeft();
-        ImGui::EndChild();
-
-        ImGui::SameLine();
-
-        {
-            const auto draw_list = ImGui::GetWindowDrawList();
-            const auto cursor_pos = ImGui::GetCursorScreenPos();
-
-            const auto top = ImGui::GetWindowPos().y;
-            const auto bottom = top + ImGui::GetWindowSize().y;
-
-            draw_list->AddLine(
-                ImVec2(cursor_pos.x, top + 8),
-                ImVec2(cursor_pos.x, bottom - 8),
-                ImGui::ImColor(200, 200, 200, 40),
-                2.0
-            );
+        if (!layout_initialized) {
+            setupInitialLayout(dockspace_id);
+            layout_initialized = true;
         }
 
-        ImGui::BeginChild("Video Streams", ImVec2(0, 0), false);
-        drawRight();
-        ImGui::EndChild();
+        drawUtilWindows();
 
-        ImGui::End();
+        drawStreamWindows();
     }
 
     void onShutdown() override {
-        video_top->onShutdown();
+        video_top_left->onShutdown();
+        video_top_right->onShutdown();
         video_bottom_left->onShutdown();
         video_bottom_right->onShutdown();
         map_widget->onShutdown();
         logs->onShutdown();
+
+        cleanupWindowIcon();
     }
 
 private:
-    std::shared_ptr<VideoWidget> video_top;
-    std::shared_ptr<VideoWidget> video_bottom_left;
-    std::shared_ptr<VideoWidget> video_bottom_right;
-    std::shared_ptr<RosLogWidget> logs;
+    bool layout_initialized = false;
 
-    std::shared_ptr<MapWidget> map_widget;
+    VideoWidget::SharedPtr video_top_left;
+    VideoWidget::SharedPtr video_top_right;
+    VideoWidget::SharedPtr video_bottom_left;
+    VideoWidget::SharedPtr video_bottom_right;
+    RosLogWidget::SharedPtr logs;
 
-    void drawLeft() const {
-        const auto available = ImGui::GetContentRegionAvail();
+    MapWidget::SharedPtr map_widget;
 
-        // TODO 2026-05-07 (Will Free): make this a percent
-        ImGui::BeginChild("Map", ImVec2(0, available.y - 240), 0);
+    static void setupInitialLayout(const ImGuiID& dock_main_id) {
+        ImGuiID node_left;
+        ImGuiID node_right;
+        ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Left, 0.5, &node_left, &node_right);
+
+        setupInitialLayoutLeft(node_left);
+
+        setupInitialLayoutRight(node_right);
+
+        ImGui::DockBuilderFinish(dock_main_id);
+    }
+
+    static void setupInitialLayoutLeft(const ImGuiID node_left) {
+        ImGuiID node_left_bottom;
+        ImGuiID node_left_top;
+        ImGui::DockBuilderSplitNode(node_left, ImGuiDir_Up, 0.75, &node_left_top, &node_left_bottom);
+
+        ImGui::DockBuilderGetNode(node_left_bottom)->SetLocalFlags(ImGuiDockNodeFlags_AutoHideTabBar);
+        ImGui::DockBuilderGetNode(node_left_top)->SetLocalFlags(ImGuiDockNodeFlags_AutoHideTabBar);
+
+        ImGui::DockBuilderDockWindow(MAP_WIDGET_NAME, node_left_top);
+        ImGui::DockBuilderDockWindow(LOGS_WIDGET_NAME, node_left_bottom);
+    }
+
+    static void setupInitialLayoutRight(const ImGuiID node_right) {
+        ImGuiID dock_right_top;
+        ImGuiID dock_right_bottom;
+        ImGui::DockBuilderSplitNode(node_right, ImGuiDir_Up, 0.6, &dock_right_top, &dock_right_bottom);
+
+        ImGuiID dock_right_top_right;
+        ImGuiID dock_right_top_left;
+        ImGui::DockBuilderSplitNode(dock_right_top, ImGuiDir_Left, 0.5, &dock_right_top_left, &dock_right_top_right);
+        ImGui::DockBuilderGetNode(dock_right_top)->SetLocalFlags(ImGuiDockNodeFlags_AutoHideTabBar);
+        ImGui::DockBuilderDockWindow(TOP_LEFT_STREAM_WIDGET_NAME, dock_right_top_left);
+        ImGui::DockBuilderDockWindow(TOP_RIGHT_STREAM_WIDGET_NAME, dock_right_top_right);
+
+        ImGuiID dock_right_bottom_right;
+        ImGuiID dock_right_bottom_left;
+        ImGui::DockBuilderSplitNode(dock_right_bottom, ImGuiDir_Left, 0.5, &dock_right_bottom_left, &dock_right_bottom_right);
+
+        ImGui::DockBuilderGetNode(dock_right_bottom_left)->SetLocalFlags(ImGuiDockNodeFlags_AutoHideTabBar);
+        ImGui::DockBuilderGetNode(dock_right_bottom_right)->SetLocalFlags(ImGuiDockNodeFlags_AutoHideTabBar);
+
+        ImGui::DockBuilderDockWindow(BOTTOM_LEFT_STREAM_WIDGET_NAME, dock_right_bottom_left);
+        ImGui::DockBuilderDockWindow(BOTTOM_RIGHT_STREAM_WIDGET_NAME, dock_right_bottom_right);
+    }
+
+    void drawUtilWindows() const {
+        ImGui::Begin(MAP_WIDGET_NAME, nullptr, ImGuiWindowFlags_None);
         map_widget->onFrame();
-        ImGui::EndChild();
+        ImGui::End();
 
-        ImGui::BeginChild("ROS Logs", ImGui::GetContentRegionAvail(), 0);
+        ImGui::Begin(LOGS_WIDGET_NAME, nullptr, ImGuiWindowFlags_None);
         logs->onFrame();
-        ImGui::EndChild();
+        ImGui::End();
     }
 
-    void drawRight() const {
-        // TODO 2026-05-05 (Will Free): give the streams proper names
+    void drawStreamWindows() const {
+        constexpr auto drawStreamWindow = [](auto name, const VideoWidget::SharedPtr& video) {
+            if (ImGui::Begin(name, nullptr, ImGuiWindowFlags_None)) {
+                drawStream(video);
+            }
+            ImGui::End();
+        };
 
-        // TODO 2026-05-06 (Will Free): vertically center windows.
-        //  this can be done in two ways:
-        //  1. compute the size of all the children manually and just that to set the cursor position
-        //  2. render in two passes: a first invisible pass which is used to get the height, and a second pass to render.
-
-        const auto available = ImGui::GetContentRegionAvail();
-
-        ImGui::BeginChild("Top Stream", ImVec2(0, available.y * 0.6f), 0);
-        drawStream(video_top);
-        ImGui::EndChild();
-
-        ImGui::BeginChild("Bottom Left Stream", ImVec2(available.x * 0.5f, 0), 0);
-        drawStream(video_bottom_left);
-        ImGui::EndChild();
-
-        ImGui::SameLine();
-
-        ImGui::BeginChild("Bottom Right Stream", ImVec2(0, 0), 0);
-        drawStream(video_bottom_right);
-        ImGui::EndChild();
-    }
-
-    static void drawCenteredLabel(const std::string& label) {
-        const auto available_x = ImGui::GetContentRegionAvail().x;
-
-        const auto label_size = ImGui::CalcTextSize(label);
-
-        const auto off = (available_x - label_size.x) / 2;
-        ImGui::SetCursorPosX(ImGui::GetCursorPosX() + off);
-
-        ImGui::TextUnformatted(label);
+        drawStreamWindow(TOP_LEFT_STREAM_WIDGET_NAME, video_top_left);
+        drawStreamWindow(TOP_RIGHT_STREAM_WIDGET_NAME, video_top_right);
+        drawStreamWindow(BOTTOM_LEFT_STREAM_WIDGET_NAME, video_bottom_left);
+        drawStreamWindow(BOTTOM_RIGHT_STREAM_WIDGET_NAME, video_bottom_right);
     }
 
     static void drawStream(const std::shared_ptr<VideoWidget>& video_widget) {

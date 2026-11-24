@@ -1,7 +1,13 @@
+# ruff: noqa: D100, D101, D102, D103, D107
+from typing import Literal
+
 import rclpy
-from rclpy.node import Node
-from sensor_msgs.msg import Joy, JointState
 from geometry_msgs.msg import Twist
+from rclpy.node import Node
+from rclpy.publisher import Publisher
+from rclpy.subscription import Subscription
+from sensor_msgs.msg import JointState, Joy
+
 
 from .vkb_layout import VKBButtonLayout, VKBAxesLayout  # noqa: F401 (re-exported for callers)
 
@@ -43,6 +49,13 @@ def _throttle_multiplier(axis: float) -> float:
 
 
 class JoyMuxController(Node):
+    subscription: Subscription
+    rover_pub: Publisher
+    arm_pub: Publisher
+    deadman_button: int
+    toggle_button: int
+    current_mode: Literal[0, 1]
+    last_toggle: int
 
     def __init__(self):
         super().__init__('joy_mux_controller')
@@ -232,12 +245,13 @@ class JoyMuxController(Node):
                 self.arm_pub.publish(self._cached_joint)
 
 
-def main(args=None):
-    rclpy.init(args=args)
+def main():
+    rclpy.init()
     node = JoyMuxController()
     rclpy.spin(node)
     node.destroy_node()
     rclpy.shutdown()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

@@ -4,6 +4,7 @@ FetchContent_Declare(
         implot3d
         GIT_REPOSITORY https://github.com/brenocq/implot3d.git
         GIT_TAG v0.4
+        GIT_PROGRESS TRUE
 )
 
 FetchContent_MakeAvailable(implot3d)

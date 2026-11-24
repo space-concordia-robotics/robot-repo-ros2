@@ -1,4 +1,5 @@
 #pragma once
+
 #include <rclcpp/duration.hpp>
 
 struct TargetConfig {

@@ -8,7 +8,7 @@ namespace ImOsm {
 
     class TileSourceWidget {
     public:
-        TileSourceWidget(const std::shared_ptr<MapPlot>& map_plot);
+        explicit TileSourceWidget(const std::shared_ptr<MapPlot>& map_plot);
         ~TileSourceWidget();
 
         void loadState(/*const mINI::INIStructure& ini*/);

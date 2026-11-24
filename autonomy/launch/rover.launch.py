@@ -1,5 +1,4 @@
 from launch_ros.actions import SetRemap
-
 from launch_util import SimpleLauncher
 
 
@@ -15,18 +14,19 @@ def generate_launch_description():
 
     with sl.group():
         sl.add_action(
-            SetRemap(src="/ouster/points", dst="rover/lidar/scan/points"),
+            SetRemap(src="/points", dst="/rover/lidar/scan/points"),
         )
         sl.add_action(
-            SetRemap(src="/ouster/scan", dst="rover/lidar/scan"),
+            SetRemap(src="/scan", dst="/rover/lidar/scan"),
         )
         sl.add_action(
-            SetRemap(src="/ouster/imu", dst="rover/lidar/imu/data"),
+            SetRemap(src="/imu", dst="/rover/lidar/imu/data"),
         )
         sl.include(
             package="ouster_ros",
             launch_file="sensor.launch.xml",
             launch_arguments={
+                "ouster_ns": "",
                 "sensor_hostname": "os1-992005000098.local",
                 "sensor_frame": "lidar_link",
                 # "imu_frame": "lidar_link",
@@ -39,6 +39,7 @@ def generate_launch_description():
     sl.node(
         package="tm_imu",
         executable="transducer_m_imu",
+        name="tm_imu",
         parameters=[sl.params(package="rover_description", file="transducer.yaml")],
         remappings=[
             ("/imu_data", "rover/imu/data"),
@@ -47,10 +48,10 @@ def generate_launch_description():
         ],
     )
 
-    sl.include(
-        package="autonomy",
-        launch_file="gps.launch.py",
-    )
+    # sl.include(
+    #     package="autonomy",
+    #     launch_file="gps.launch.py",
+    # )
 
     sl.include(package="rover_description", launch_file="rsp.launch.py")
     sl.include(package="rover_description", launch_file="joystick.launch.py")
@@ -59,7 +60,7 @@ def generate_launch_description():
     sl.node(
         package="twist_mux",
         parameters=[twist_mux_params],
-        remappings=[("/cmd_vel_out", "rover/diff_drive_base_controller/cmd_vel_unstamped")],
+        remappings=[("/cmd_vel_out", "diff_drive_base_controller/cmd_vel_unstamped")],
     )
 
     controllers = sl.params(package="rover_description", file="controllers.yaml")
@@ -77,7 +78,7 @@ def generate_launch_description():
     sl.node(
         "controller_manager",
         "spawner",
-        namespace="rover",
+        # namespace="rover",
         exec_name="diff_drive_spawner",
         arguments=["diff_drive_base_controller", "--param-file", controllers],
     )
@@ -85,7 +86,15 @@ def generate_launch_description():
     sl.node(
         "controller_manager",
         "spawner",
-        namespace="rover",
+        # namespace="rover",
+        exec_name="sil_spawner",
+        arguments=["sil_controller", "--param-file", controllers],
+    )
+
+    sl.node(
+        "controller_manager",
+        "spawner",
+        # namespace="rover",
         exec_name="jsp_spawner",
         arguments=["joint_state_broadcaster"],
     )
@@ -100,9 +109,9 @@ def generate_launch_description():
         package="nav2_bringup",
         launch_file="navigation_launch.py",
         launch_arguments={
-            "autostart": 'True',
-            "use_composition": 'False',  # TODO 2026-02-09 (Will Free): consider using composition?
-            "use_respawn": 'True',  # only relevant when composition is disabled
+            "autostart": "True",
+            "use_composition": "False",  # TODO 2026-02-09 (Will Free): consider using composition?
+            "use_respawn": "True",  # only relevant when composition is disabled
             "params_file": sl.params(package="autonomy", file="nav2_params.yaml"),
         }.items(),
     )

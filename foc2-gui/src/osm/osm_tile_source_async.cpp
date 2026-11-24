@@ -9,7 +9,8 @@
 namespace ImOsm {
     using namespace std::chrono_literals;
 
-    TileSourceAsync::TileSourceAsync(const int requestLimit, const bool preload) : request_limit(requestLimit), preload(preload) {}
+    TileSourceAsync::TileSourceAsync(const int request_limit, const bool preload)
+        : request_limit(request_limit), preload(preload) {}
 
     TileSourceAsync::~TileSourceAsync() {
         interrupt = true;
@@ -31,9 +32,9 @@ namespace ImOsm {
         if (canRequest()) {
             requests.emplace_back(
                 TileAsync{
-                    .z = z,
-                    .x = x,
-                    .y = y,
+                    .z      = z,
+                    .x      = x,
+                    .y      = y,
                     .future = std::async(std::launch::async, &TileSourceAsync::onHandleRequest, this, z, x, y)
                 }
             );
@@ -67,7 +68,7 @@ namespace ImOsm {
 
     int TileSourceAsync::takeReady(std::vector<std::shared_ptr<ITile>>& tiles) {
         int taken = 0;
-        for (auto it{requests.begin()}; it != requests.end();) {
+        for (auto it = requests.begin(); it != requests.end();) {
             if (it->ready()) {
                 tiles.push_back(it->future.get().tile);
                 it = requests.erase(it);

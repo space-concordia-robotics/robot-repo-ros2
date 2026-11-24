@@ -6,6 +6,7 @@
 #include <imgui.h>
 #include <implot.h>
 #include <implot3d.h>
+#include <utility>
 #include <backends/imgui_impl_opengl3.h>
 #include <backends/imgui_impl_sdl3.h>
 #include <SDL3/SDL.h>
@@ -21,25 +22,30 @@
 // io.BackendFlags |= ImGuiBackendFlags_RendererHasVtxOffset' and handle
 // ImDrawCmd::VtxOffset #define ImDrawIdx unsigned int
 
-ImApplication::ImApplication(const std::string& node_name, const std::string& title)
+ImApplication::ImApplication(const std::string& node_name, std::string title)
     : Node(node_name),
-      logger(this->get_logger()), title(title),
-      tf_buffer(this->get_clock()),
-      tf_listener(tf_buffer, this) {}
+      logger(this->get_logger()),
+      gl_context(nullptr),
+      window(nullptr),
+      title(std::move(title)) {
+    tf_buffer = std::make_unique<tf2_ros::Buffer>(this->get_clock());
+    tf_listener = std::make_unique<tf2_ros::TransformListener>(*tf_buffer, this);
+}
 
-ImApplication::~ImApplication() {}
+ImApplication::~ImApplication() = default;
 
 int ImApplication::run() {
     onInit();
 
     using namespace std::chrono_literals;
+    using namespace std::chrono;
 
-    constexpr auto target_dt = 1.0s / 60.0;
+    constexpr auto target_frame_duration = 1000.0ms / 60.0;
 
     while (rclcpp::ok() && !done) {
-        std::this_thread::sleep_until(last_frame + target_dt);
+        std::this_thread::sleep_until(last_frame + target_frame_duration);
 
-        last_frame = std::chrono::steady_clock::now();
+        last_frame = steady_clock::now();
 
         frame();
         onFrame();
@@ -49,6 +55,10 @@ int ImApplication::run() {
     quit();
 
     return 0;
+}
+
+tf2_ros::Buffer& ImApplication::tfBuffer() const {
+    return *tf_buffer;
 }
 
 void ImApplication::onInit() {}
@@ -87,9 +97,9 @@ int ImApplication::init() {
     // Backend
     io.BackendFlags |= ImGuiBackendFlags_RendererHasVtxOffset;
     // Docking
-    // io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
     // Viewport
-    // io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+    io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
     // Keyboard Controls
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
     // Gamepad
@@ -132,6 +142,9 @@ void ImApplication::frame() {
             if (event.type == SDL_EVENT_QUIT)
                 done = true;
 
+            if (event.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED && event.window.windowID == SDL_GetWindowID(window))
+                done = true;
+
             ImGui_ImplSDL3_ProcessEvent(&event);
         } while (SDL_PollEvent(&event));
     }
@@ -147,6 +160,17 @@ void ImApplication::render() const {
     glViewport(0, 0, 800, 600);
     glClear(GL_COLOR_BUFFER_BIT);
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+    if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
+        // backup current window & context to restore them later
+        const auto previous_window = SDL_GL_GetCurrentWindow();
+        const auto previous_context = SDL_GL_GetCurrentContext();
+
+        ImGui::UpdatePlatformWindows();
+        ImGui::RenderPlatformWindowsDefault();
+
+        SDL_GL_MakeCurrent(previous_window, previous_context);
+    }
 
     SDL_GL_SwapWindow(window);
 }
