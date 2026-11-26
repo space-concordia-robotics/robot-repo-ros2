@@ -1,0 +1,39 @@
+name: Feature
+description: A new feature that needs to be implemented
+type: Feature
+body:
+- type: textarea
+  attributes:
+    label: Description
+    description: Clearly describe what the feature is, why it is needed, etc.
+    placeholder: What needs to be added? What problem does this solve?
+  validations:
+    required: true
+
+- type: textarea
+  attributes:
+    label: Implementation Details
+    description: |
+      Are there any relevant implementation details that should be mentioned?
+      Provide any information that might be helpful to someone getting started on this feature.
+      For example documentation links, references, examples, etc.
+    placeholder: Describe any relevant implementation details that might helpful for someone getting started on this feature.
+  validations:
+    required: false
+
+- type: textarea
+  attributes:
+    label: Additional Context
+    description: Add any additional context or other relevant information, such as why this feature is needed, the reasoning behind it, etc.
+    placeholder: Any additional context that might help.
+  validations:
+    required: false
+
+- type: checkboxes
+  attributes:
+    label: Checklist
+    options:
+      - label: I have added the necessary issue fields and labels to the issue (on the right)
+        required: true
+  validation:
+    required: true

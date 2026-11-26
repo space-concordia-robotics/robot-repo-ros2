@@ -1,0 +1,56 @@
+name: Documentation
+description: Documentation that needs to be improved or updated.
+type: Documentation
+body:
+- type: dropdown
+  attributes:
+    label: Type
+    description: What kind of documentation issue is this?
+    options:
+      - Missing documentation
+      - Incorrect information
+      - Improvement
+      - Other
+  validation:
+    required: true
+
+- type: input
+  attributes:
+    label: Area
+    description: Which part of the documentation is affected?
+    placeholder: e.g. Autonomy, Software Onboarding, Jetson Setup, etc.
+  validations:
+    required: true
+
+- type: textarea
+  attributes:
+    label: Description
+    description: Clearly describe the issue with the documentation.
+    placeholder: What needs improvements or to be updated?
+  validations:
+    required: true
+
+- type: textarea
+  attributes:
+    label: Proposed Changes
+    description: How could the documentation be improved?
+    placeholder: Describe your suggested changes or provide corrected content.
+  validations:
+    required: false
+
+- type: textarea
+  attributes:
+    label: Additional Context
+    description: Add any additional context or other relevant information, such as screenshots, examples, etc.
+    placeholder: Any additional information that might help.
+  validations:
+    required: false
+
+- type: checkboxes
+  attributes:
+    label: Checklist
+    options:
+      - label: I have added the necessary issue fields to the issue (on the right)
+        required: true
+  validation:
+    required: true
