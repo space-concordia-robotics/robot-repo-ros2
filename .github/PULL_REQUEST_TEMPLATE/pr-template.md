@@ -76,7 +76,7 @@
   If you did not use any LLM-based tools, then you may remove this section.
 -->
 
-### Changelog
+### Changes
 
 <!--
   A list of things that you have changed or are going to change.
