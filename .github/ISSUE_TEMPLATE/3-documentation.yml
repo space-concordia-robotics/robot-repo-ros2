@@ -17,7 +17,7 @@ body:
 - type: input
   attributes:
     label: Area
-    description: which part of the documentation is affected?
+    description: Which part of the documentation is affected?
     placeholder: e.g. Autonomy, Software Onboarding, Jetson Setup, etc.
   validations:
     required: true

@@ -1,0 +1,55 @@
+name: Bug
+description: A bug that needs to be resolved
+type: Bug
+body:
+- type: textarea
+  attributes:
+    label: Description
+    description: Clearly describe the bug or issue.
+    placeholder: What is broken? How is it broken?
+  validations:
+    required: true
+
+- type: textarea
+  attributes:
+    label: Steps to Reproduce
+    description: The steps needed to reproduce the bug.
+    placeholder: |
+      1. Go to '...'
+      2. Click on '...'
+      3. Program crashes
+  validations:
+    required: true
+
+- type: textarea
+  attributes:
+    label: Expected Behaviour
+    description: What did you expect to happen?
+    placeholder: The program should not crash.
+  validations:
+    required: true
+
+- type: textarea
+  attributes:
+    label: Proposed Solution
+    description: How could the bug be fixed?
+    placeholder: Describe your suggested solution to the issue.
+  validations:
+    required: false
+
+- type: textarea
+  attributes:
+    label: Additional Context
+    description: Add any additional context or other relevant information, such as screenshots, etc.
+    placeholder: Any additional information that might help with reproducing.
+  validations:
+    required: false
+
+- type: checkboxes
+  attributes:
+    label: Checklist
+    options:
+      - label: I have added the necessary issue fields to the issue (on the right)
+        required: true
+  validation:
+    required: true
