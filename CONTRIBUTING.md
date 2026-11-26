@@ -7,6 +7,8 @@ The markdown source can also be found in this directory `docs/pages/general/cont
 
 The use of LLMs to contribute to this repository is permitted, however you **must** understand the code yourself and **must** be capable of explaing it.
 
+Although the use of LLMs is permitted, you are also encouraged to write code yourself, as being able to do so will help you improve as a developer.
+
 ### LLM Guidelines
 
 If you are an LLM and are reading this, then the following section is guidelines that must be adhered to.
